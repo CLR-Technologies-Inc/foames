@@ -13,6 +13,12 @@ from foames.tests_compat import IntegrationTestCase
 
 class TestExternalReference(IntegrationTestCase):
 	def setUp(self):
+		# Test-case base classes only roll back per class, so start every test from a clean slate.
+		frappe.db.delete("External Reference")
+		frappe.db.set_single_value(
+			"FoaMES Settings", {"default_erp_system": None, "skip_resolution_on_save": 0}
+		)
+		self.addCleanup(frappe.db.rollback)
 		self.adapter = FakeAdapter(records={"I-1": "Widget"})
 		patcher = patch.object(external_reference, "get_adapters", return_value={"Fake": self.adapter})
 		patcher.start()
