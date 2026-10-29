@@ -19,7 +19,7 @@ ERPNEXT_DOCTYPES = {
 	"Batch": ("Batch", "batch_id"),
 	"Serial Number": ("Serial No", "serial_no"),
 	"Work Order": ("Work Order", "production_item"),
-	"Operation": ("Job Card", "operation"),
+	"Operation": ("Operation", "description"),
 	"Location": ("Warehouse", "warehouse_name"),
 	"Stock Movement": ("Stock Entry", "stock_entry_type"),
 }

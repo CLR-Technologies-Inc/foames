@@ -12,7 +12,8 @@
   "column_break_status",
   "label",
   "status",
-  "last_resolved_on"
+  "last_resolved_on",
+  "reference_key"
  ],
  "fields": [
   {
@@ -22,7 +23,7 @@
    "in_standard_filter": 1,
    "label": "ERP System",
    "reqd": 1,
-   "description": "Key of a registered ERP adapter, for example ERPNext."
+   "description": "Key of a registered ERP adapter, for example ERPNext. Defaults to the one set in FoaMES Settings."
   },
   {
    "fieldname": "reference_type",
@@ -66,6 +67,16 @@
    "fieldtype": "Datetime",
    "label": "Last Resolved On",
    "read_only": 1
+  },
+  {
+   "fieldname": "reference_key",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Reference Key",
+   "no_copy": 1,
+   "read_only": 1,
+   "unique": 1,
+   "description": "Hash of ERP system, reference type and external ID. Enforces one reference per ERP record."
   }
  ],
  "index_web_pages_for_search": 0,

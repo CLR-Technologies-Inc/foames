@@ -74,5 +74,27 @@ class TestExternalReference(IntegrationTestCase):
 			self.make().insert()
 
 	def test_get_reference_reuses_existing(self):
-		first = get_reference("Fake", "Item", "I-1")
-		self.assertEqual(get_reference("Fake", "Item", "I-1"), first)
+		first = get_reference("Item", "I-1", erp_system="Fake")
+		self.assertEqual(get_reference("Item", "I-1", erp_system="Fake"), first)
+
+	def test_default_erp_system_from_settings(self):
+		frappe.db.set_single_value("FoaMES Settings", "default_erp_system", "Fake")
+		doc = frappe.get_doc("External Reference", get_reference("Item", "I-1"))
+		self.assertEqual(doc.erp_system, "Fake")
+		self.assertEqual(self.make(erp_system=None, external_id="I-2").insert().erp_system, "Fake")
+
+	def test_identity_change_clears_old_resolution(self):
+		frappe.db.set_single_value("FoaMES Settings", "skip_resolution_on_save", 1)
+		doc = self.make()
+		doc.resolve_from_erp()
+		doc.insert()
+		self.assertEqual(doc.status, "Resolved")
+		doc.external_id = "I-2"
+		doc.save()
+		self.assertEqual(doc.status, "Unverified")
+		self.assertIsNone(doc.label)
+		self.assertIsNone(doc.last_resolved_on)
+
+	def test_reference_key_is_unique_in_database(self):
+		meta = frappe.get_meta("External Reference")
+		self.assertTrue(meta.get_field("reference_key").unique)
