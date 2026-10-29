@@ -84,7 +84,11 @@ class TestERPNextAdapter(IntegrationTestCase):
 			self.skipTest("ERPNext is not installed on this site")
 
 	def test_resolves_unit_of_measure(self):
-		uom = frappe.db.get_value("UOM", {}, "name")
+		# A fresh site has no UOMs until the setup wizard runs, so create one.
+		uom = "FoaMES Test Unit"
+		if not frappe.db.exists("UOM", uom):
+			frappe.get_doc({"doctype": "UOM", "uom_name": uom}).insert()
+		self.addCleanup(frappe.db.rollback)
 		resolved = get_adapter("ERPNext").resolve("Unit of Measure", uom)
 		self.assertEqual(resolved.external_id, uom)
 		self.assertEqual(resolved.data["doctype"], "UOM")
