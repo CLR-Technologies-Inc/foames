@@ -41,6 +41,20 @@ class TestExternalReference(IntegrationTestCase):
 		doc = self.make("I-404").insert()
 		self.assertEqual(doc.status, "Missing")
 
+	def test_missing_clears_previous_label(self):
+		doc = self.make().insert()
+		del self.adapter.records["I-1"]
+		doc.save()
+		self.assertEqual(doc.status, "Missing")
+		self.assertIsNone(doc.label)
+
+	def test_resolve_action_looks_up_once(self):
+		doc = self.make().insert()
+		self.adapter.fetch_count = 0
+		doc.resolve()
+		self.assertEqual(self.adapter.fetch_count, 1)
+		self.assertEqual(doc.status, "Resolved")
+
 	def test_stays_unverified_when_erp_unavailable(self):
 		self.adapter.available = False
 		doc = self.make().insert()

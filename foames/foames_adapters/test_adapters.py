@@ -28,11 +28,13 @@ class FakeAdapter(ERPAdapter):
 	def __init__(self, available=True, records=None):
 		self.available = available
 		self.records = records or {}
+		self.fetch_count = 0
 
 	def is_available(self):
 		return self.available
 
 	def fetch(self, erp_type, reference_type, external_id):
+		self.fetch_count += 1
 		label = self.records.get(external_id)
 		if label is None:
 			return None

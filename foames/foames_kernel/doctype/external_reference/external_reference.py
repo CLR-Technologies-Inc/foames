@@ -19,7 +19,9 @@ class ExternalReference(Document):
 	def validate(self):
 		self.validate_adapter()
 		self.validate_unique()
-		if not frappe.db.get_single_value("FoaMES Settings", "skip_resolution_on_save"):
+		if not self.flags.resolved and not frappe.db.get_single_value(
+			"FoaMES Settings", "skip_resolution_on_save"
+		):
 			self.resolve_if_available()
 
 	def validate_adapter(self):
@@ -68,6 +70,7 @@ class ExternalReference(Document):
 			self.label = resolved.label
 		else:
 			self.status = "Missing"
+			self.label = None
 
 	@frappe.whitelist()
 	def resolve(self):
@@ -76,7 +79,12 @@ class ExternalReference(Document):
 			self.resolve_from_erp()
 		except AdapterError as e:
 			frappe.throw(str(e))
-		self.save()
+		# Already resolved above; don't look the record up again in validate.
+		self.flags.resolved = True
+		try:
+			self.save()
+		finally:
+			self.flags.resolved = False
 		return self.status
 
 
