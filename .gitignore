@@ -1,0 +1,26 @@
+.DS_Store
+*.pyc
+*.egg-info
+*.swp
+tags
+node_modules
+__pycache__
+
+# Local tooling
+.venv/
+.env
+.idea/
+.vscode/
+
+# Design and build workspace files stay out of this public repository.
+# Agent files meant to help others adopt FoaMES live under docs/agents/ and are committed.
+.claude/
+.agent/
+.agents/
+.cursor/
+.aider*
+CLAUDE.md
+worktrees/
+.worktrees/
+design/
+.design/
