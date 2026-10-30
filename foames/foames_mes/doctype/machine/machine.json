@@ -1,0 +1,180 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-29 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "code",
+  "title",
+  "machine_type",
+  "cb_head",
+  "status",
+  "last_seen",
+  "disabled",
+  "ideal_cycle_seconds",
+  "scheduled_minutes_per_day",
+  "sb_source",
+  "source_id",
+  "counter_rollover",
+  "cb_source",
+  "workstation_reference",
+  "location_reference"
+ ],
+ "fields": [
+  {
+   "fieldname": "code",
+   "fieldtype": "Data",
+   "label": "Code",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "machine_type",
+   "fieldtype": "Data",
+   "label": "Machine Type"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Unknown\nRunning\nIdle\nDown\nSetup",
+   "default": "Unknown",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "last_seen",
+   "fieldtype": "Datetime",
+   "label": "Last Seen",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled",
+   "default": "0"
+  },
+  {
+   "fieldname": "ideal_cycle_seconds",
+   "fieldtype": "Float",
+   "label": "Ideal Cycle Time (s)",
+   "description": "Seconds per unit at rated speed, for OEE performance"
+  },
+  {
+   "fieldname": "scheduled_minutes_per_day",
+   "fieldtype": "Float",
+   "label": "Scheduled Minutes Per Day",
+   "default": "480",
+   "description": "Planned production time per day, for the daily OEE period"
+  },
+  {
+   "fieldname": "sb_source",
+   "fieldtype": "Section Break",
+   "label": "Machine Data Source"
+  },
+  {
+   "fieldname": "source_id",
+   "fieldtype": "Data",
+   "label": "Source ID",
+   "unique": 1,
+   "description": "Identifier the gateways use for this machine: an MQTT topic segment, an OPC UA node prefix, or the webhook's machine field"
+  },
+  {
+   "fieldname": "counter_rollover",
+   "fieldtype": "Int",
+   "label": "Counter Rollover",
+   "description": "Value at which the machine's counter wraps to zero. Leave 0 for a counter that never wraps"
+  },
+  {
+   "fieldname": "cb_source",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "workstation_reference",
+   "fieldtype": "Link",
+   "label": "ERP Workstation Reference",
+   "options": "External Reference"
+  },
+  {
+   "fieldname": "location_reference",
+   "fieldtype": "Link",
+   "label": "ERP Location Reference",
+   "options": "External Reference"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-29 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Machine",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "field:code",
+ "title_field": "title",
+ "search_fields": "title,source_id"
+}

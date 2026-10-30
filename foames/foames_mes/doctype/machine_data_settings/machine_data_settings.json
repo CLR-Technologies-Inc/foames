@@ -1,0 +1,192 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-29 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "sb_webhook",
+  "webhook_secret",
+  "signature_tolerance_seconds",
+  "sb_mqtt",
+  "mqtt_enabled",
+  "mqtt_broker",
+  "mqtt_port",
+  "mqtt_tls",
+  "cb_mqtt",
+  "mqtt_username",
+  "mqtt_password",
+  "mqtt_topic_prefix",
+  "sb_opcua",
+  "opcua_enabled",
+  "opcua_endpoint",
+  "opcua_poll_seconds",
+  "cb_opcua",
+  "opcua_username",
+  "opcua_password",
+  "opcua_nodes",
+  "sb_health",
+  "stale_after_minutes"
+ ],
+ "fields": [
+  {
+   "fieldname": "sb_webhook",
+   "fieldtype": "Section Break",
+   "label": "Webhook"
+  },
+  {
+   "fieldname": "webhook_secret",
+   "fieldtype": "Password",
+   "label": "Webhook Secret",
+   "description": "Shared secret for the HMAC-SHA256 signature on POSTs to foames.foames_mes.api.ingest_machine_events"
+  },
+  {
+   "fieldname": "signature_tolerance_seconds",
+   "fieldtype": "Int",
+   "label": "Signature Tolerance (s)",
+   "default": "300"
+  },
+  {
+   "fieldname": "sb_mqtt",
+   "fieldtype": "Section Break",
+   "label": "MQTT"
+  },
+  {
+   "fieldname": "mqtt_enabled",
+   "fieldtype": "Check",
+   "label": "MQTT Enabled",
+   "default": "0"
+  },
+  {
+   "fieldname": "mqtt_broker",
+   "fieldtype": "Data",
+   "label": "Broker Host"
+  },
+  {
+   "fieldname": "mqtt_port",
+   "fieldtype": "Int",
+   "label": "Port",
+   "default": "1883"
+  },
+  {
+   "fieldname": "mqtt_tls",
+   "fieldtype": "Check",
+   "label": "Use TLS",
+   "default": "0"
+  },
+  {
+   "fieldname": "cb_mqtt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "mqtt_username",
+   "fieldtype": "Data",
+   "label": "Username"
+  },
+  {
+   "fieldname": "mqtt_password",
+   "fieldtype": "Password",
+   "label": "Password"
+  },
+  {
+   "fieldname": "mqtt_topic_prefix",
+   "fieldtype": "Data",
+   "label": "Topic Prefix",
+   "default": "foames",
+   "description": "Gateway subscribes to <prefix>/<machine source id>/<event type>"
+  },
+  {
+   "fieldname": "sb_opcua",
+   "fieldtype": "Section Break",
+   "label": "OPC UA"
+  },
+  {
+   "fieldname": "opcua_enabled",
+   "fieldtype": "Check",
+   "label": "OPC UA Enabled",
+   "default": "0"
+  },
+  {
+   "fieldname": "opcua_endpoint",
+   "fieldtype": "Data",
+   "label": "Endpoint URL",
+   "description": "opc.tcp://host:4840"
+  },
+  {
+   "fieldname": "opcua_poll_seconds",
+   "fieldtype": "Int",
+   "label": "Poll Interval (s)",
+   "default": "5"
+  },
+  {
+   "fieldname": "cb_opcua",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "opcua_username",
+   "fieldtype": "Data",
+   "label": "Username"
+  },
+  {
+   "fieldname": "opcua_password",
+   "fieldtype": "Password",
+   "label": "Password"
+  },
+  {
+   "fieldname": "opcua_nodes",
+   "fieldtype": "Table",
+   "label": "OPC UA Nodes",
+   "options": "Machine Node Map"
+  },
+  {
+   "fieldname": "sb_health",
+   "fieldtype": "Section Break",
+   "label": "Health"
+  },
+  {
+   "fieldname": "stale_after_minutes",
+   "fieldtype": "Int",
+   "label": "Mark Machine Unknown After (min)",
+   "default": "15",
+   "description": "A machine with no event for this long is marked Unknown by the scheduler"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-29 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Machine Data Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "issingle": 1
+}

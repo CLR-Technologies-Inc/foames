@@ -69,7 +69,12 @@ from foames.foames_adapters.doctype.s4hana_outbox.s4hana_outbox import enqueue
 
 enqueue(
 	"Production Order Confirmation",
-	{"OrderID": "1000123", "OrderOperation": "0010", "ConfirmationYieldQuantity": "100", "ConfirmationUnit": "KG"},
+	{
+		"OrderID": "1000123",
+		"OrderOperation": "0010",
+		"ConfirmationYieldQuantity": "100",
+		"ConfirmationUnit": "KG",
+	},
 	idempotency_key="<the business event, for example segment and process>",
 	sequence_group="1000123",
 )

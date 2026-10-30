@@ -1,0 +1,66 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-29 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "machine",
+  "node_id",
+  "event_type",
+  "name_or_counter",
+  "state_map"
+ ],
+ "fields": [
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "node_id",
+   "fieldtype": "Data",
+   "label": "OPC UA Node ID",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "For example ns=2;s=Line1.GoodCount"
+  },
+  {
+   "fieldname": "event_type",
+   "fieldtype": "Select",
+   "label": "Event Type",
+   "options": "State\nCount\nMeasurement\nAlarm\nMessage",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "name_or_counter",
+   "fieldtype": "Data",
+   "label": "Counter / Measurement Name",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "state_map",
+   "fieldtype": "Small Text",
+   "label": "State Map",
+   "description": "For State nodes: value=State pairs, one per line, for example 1=Running"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-29 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Machine Node Map",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0,
+ "istable": 1,
+ "editable_grid": 1
+}
