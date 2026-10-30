@@ -28,4 +28,4 @@ You accept and agree to the following terms and conditions for Your present and 
 
 ## How to sign
 
-Comment on your pull request with the sentence in [CONTRIBUTING.md](../CONTRIBUTING.md#contributor-license-agreement), or sign through the CLA check on the pull request when it is enabled. Your GitHub account, the date, and the version of this Agreement are recorded as your signature.
+Sign through the CLA Assistant link that is posted on your first pull request (see [CONTRIBUTING.md](../CONTRIBUTING.md#contributor-license-agreement)). Your GitHub account, the date, and the version of this Agreement are recorded as your signature.
