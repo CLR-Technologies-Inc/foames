@@ -1,0 +1,132 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-30 03:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "idoc_number",
+  "message_type",
+  "idoc_type",
+  "sender",
+  "column_break_status",
+  "status",
+  "external_reference",
+  "error",
+  "data_section",
+  "summary",
+  "control",
+  "segments"
+ ],
+ "fields": [
+  {
+   "fieldname": "idoc_number",
+   "fieldtype": "Data",
+   "label": "IDoc Number",
+   "read_only": 1,
+   "in_list_view": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "message_type",
+   "fieldtype": "Data",
+   "label": "Message Type",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "idoc_type",
+   "fieldtype": "Data",
+   "label": "Basic Type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sender",
+   "fieldtype": "Data",
+   "label": "Sender Partner",
+   "read_only": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "column_break_status",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Received\nProcessed\nFailed",
+   "default": "Received",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "external_reference",
+   "fieldtype": "Link",
+   "label": "External Reference",
+   "options": "External Reference",
+   "read_only": 1
+  },
+  {
+   "fieldname": "error",
+   "fieldtype": "Small Text",
+   "label": "Error",
+   "read_only": 1
+  },
+  {
+   "fieldname": "data_section",
+   "fieldtype": "Section Break",
+   "label": "Data"
+  },
+  {
+   "fieldname": "summary",
+   "fieldtype": "Code",
+   "label": "Summary",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "fieldname": "control",
+   "fieldtype": "Code",
+   "label": "Control Record",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "fieldname": "segments",
+   "fieldtype": "Code",
+   "label": "Segments",
+   "options": "JSON",
+   "read_only": 1
+  }
+ ],
+ "in_create": 1,
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-30 03:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Adapters",
+ "name": "S4HANA Inbound IDoc",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "delete": 1,
+   "role": "System Manager",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "role": "FoaMES Integration"
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}

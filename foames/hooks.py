@@ -19,7 +19,14 @@ app_license = "apache-2.0"
 
 foames_erp_adapters = [
 	"foames.foames_adapters.erpnext.ERPNextAdapter",
+	"foames.foames_adapters.s4hana.adapter.S4HANAAdapter",
 ]
+
+# IDocs received from S/4HANA, by message type. Each handler is called with the S4HANA Inbound IDoc
+# record, the parsed IDoc and its summary, after the IDoc's External Reference has been recorded.
+# foames_s4hana_idoc_handlers = {
+# 	"LOIPRO": ["myapp.s4hana.on_order_download"],
+# }
 
 # Installation
 # ------------
@@ -46,11 +53,12 @@ foames_erp_adapters = [
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"daily": [
-# 		"foames.tasks.daily"
-# 	],
-# }
+scheduler_events = {
+	"all": [
+		# Sends due postings to S/4HANA; does nothing unless the S/4HANA adapter is enabled.
+		"foames.foames_adapters.doctype.s4hana_outbox.s4hana_outbox.process_outbox",
+	],
+}
 
 # Testing
 # -------

@@ -15,9 +15,11 @@ FoaMES is a single Frappe app that depends on the Frappe framework only. ERP sys
 | --- | --- |
 | FoaMES Kernel | The shared records every FoaMES product builds on, plus `External Reference` (a pointer to a record in an ERP) and `FoaMES Settings` |
 | FoaMES MES | Shop-floor execution: monitoring, downtime, OEE and machine data |
-| FoaMES Adapters | The ERP adapter contract and the ERPNext adapter |
+| FoaMES Adapters | The ERP adapter contract, the ERPNext adapter and the SAP S/4HANA adapter |
 
 FoaMES records never use Link fields to ERP DocTypes. They store an `External Reference` (ERP system, reference type, external ID) and the matching adapter resolves it. The ERPNext adapter activates only when ERPNext is installed on the same site. Other apps can register more adapters through the `foames_erp_adapters` hook.
+
+The SAP S/4HANA adapter is remote: it resolves references over S/4HANA's released OData APIs, sends postings through an outbox with idempotency keys and retries, and receives IDocs over HTTP. It does not use RFC. Setup and licensing notes are in [docs/s4hana-adapter.md](docs/s4hana-adapter.md).
 
 ## Installation
 

@@ -8,7 +8,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import now_datetime
 
-from foames.foames_adapters import AdapterError, get_adapter, get_adapters
+from foames.foames_adapters import AdapterError, AdapterUnavailable, get_adapter, get_adapters
 
 IDENTITY_FIELDS = ("erp_system", "reference_type", "external_id")
 
@@ -74,7 +74,12 @@ class ExternalReference(Document):
 
 	def resolve_if_available(self):
 		if get_adapter(self.erp_system).is_available():
-			self.resolve_from_erp()
+			try:
+				self.resolve_from_erp()
+			except AdapterUnavailable:
+				# A remote ERP that is down must not block saving; the reference stays Unverified
+				# and can be resolved later.
+				pass
 
 	def resolve_from_erp(self):
 		resolved = get_adapter(self.erp_system).resolve(self.reference_type, self.external_id)
