@@ -1,0 +1,17 @@
+FoaMES
+Copyright 2026 CLR Technologies Inc.
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Prior art and credits
+
+- frappe/erpnext#50827 (https://github.com/frappe/erpnext/issues/50827) asked for
+  real-time machine monitoring, plant floor visibility, downtime tracking, OEE,
+  work order and job card tracking, and PLC/IoT integration in ERPNext. FoaMES
+  takes up that requirement list.
+
+- Floorgraph (https://github.com/s1dharthpv/floorgraph) by s1dharthpv, licensed
+  under the MIT License, is an earlier shop-floor execution app for ERPNext built
+  in response to that issue. FoaMES is an independent implementation and contains
+  no Floorgraph code. If any Floorgraph code is reused in the future, its MIT
+  copyright and permission notice will be included with it.
