@@ -47,4 +47,6 @@ GitHub Actions runs the tests on Frappe v15 and v16 without an ERP, and on Frapp
 
 ## License
 
-BSD 3-Clause. See [LICENSE](LICENSE).
+Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+
+Copyright 2026 CLR Technologies Inc.

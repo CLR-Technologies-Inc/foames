@@ -3,7 +3,7 @@ app_title = "FoaMES"
 app_publisher = "CLR Technologies Inc."
 app_description = "Process-engineered, ERP-agnostic MES on the Frappe framework"
 app_email = ""
-app_license = "bsd-3-clause"
+app_license = "apache-2.0"
 
 # Apps
 # ------------------
