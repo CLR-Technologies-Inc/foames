@@ -132,6 +132,16 @@ def mqtt_message_to_raw(topic: str, payload: bytes | str, prefix: str) -> dict:
 	return body
 
 
+def parse_state_map(text: str | None) -> dict[str, str]:
+	"""`value=State` lines from a node or metric map row, for example `1=Running`."""
+	mapping = {}
+	for line in (text or "").splitlines():
+		if "=" in line:
+			key, value = line.split("=", 1)
+			mapping[key.strip()] = value.strip()
+	return mapping
+
+
 def _number(value, label) -> float:
 	try:
 		return float(value)

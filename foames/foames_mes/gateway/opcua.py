@@ -14,16 +14,7 @@ import asyncio
 
 import frappe
 
-from foames.foames_mes.gateway.mapping import EventError
-
-
-def parse_state_map(text: str | None) -> dict[str, str]:
-	mapping = {}
-	for line in (text or "").splitlines():
-		if "=" in line:
-			key, value = line.split("=", 1)
-			mapping[key.strip()] = value.strip()
-	return mapping
+from foames.foames_mes.gateway.mapping import EventError, parse_state_map
 
 
 def node_value_to_raw(row, value) -> dict:
@@ -57,7 +48,11 @@ async def poll_forever(settings):
 		client.set_user(settings.opcua_username)
 		client.set_password(settings.get_password("opcua_password", raise_exception=False))
 	async with client:
-		nodes = [(row, client.get_node(row.node_id)) for row in settings.opcua_nodes]
+		nodes = [
+			(row, client.get_node(row.node_id))
+			for row in settings.node_map
+			if (row.source or "OPC UA") == "OPC UA"
+		]
 		while True:
 			for row, node in nodes:
 				try:

@@ -1,12 +1,13 @@
 # Machine data: how events reach FoaMES
 
-FoaMES takes machine events three ways. All three end in the same place: a Machine Event record that is processed into machine state, downtime and counter deltas.
+FoaMES takes machine events four ways. All three end in the same place: a Machine Event record that is processed into machine state, downtime and counter deltas.
 
 | Path | How | Needs |
 | --- | --- | --- |
 | Signed webhook | `POST /api/method/foames.foames_mes.api.ingest_machine_events` with `{"events": [...]}`; headers `X-FoaMES-Timestamp` (Unix seconds) and `X-FoaMES-Signature` (hex HMAC-SHA256 of `<timestamp>.<body>` with the secret in Machine Data Settings) | Nothing installed; any PLC gateway or IoT bridge that can POST JSON |
 | MQTT | `bench --site <site> execute foames.foames_mes.gateway.mqtt.run`; subscribes to `<prefix>/<machine source id>/<event type>` | `pip install paho-mqtt`, a broker |
 | OPC UA | `bench --site <site> execute foames.foames_mes.gateway.opcua.run`; polls the nodes mapped in Machine Data Settings | `pip install asyncua` |
+| Sparkplug B | `bench --site <site> execute foames.foames_mes.gateway.sparkplug.run`; subscribes to `spBv1.0/<group>/#` on the same broker and decodes the protobuf payloads itself | `pip install paho-mqtt`, a broker; this is how Ignition publishes, see [ignition.md](ignition.md) |
 
 A logged-in user with the FoaMES Operator role may also post events unsigned, which is how a manual entry or a test harness works.
 

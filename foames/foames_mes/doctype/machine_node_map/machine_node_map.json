@@ -6,6 +6,7 @@
  "engine": "InnoDB",
  "field_order": [
   "machine",
+  "source",
   "node_id",
   "event_type",
   "name_or_counter",
@@ -21,12 +22,21 @@
    "in_list_view": 1
   },
   {
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "OPC UA\nSparkplug B",
+   "default": "OPC UA",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
    "fieldname": "node_id",
    "fieldtype": "Data",
-   "label": "OPC UA Node ID",
+   "label": "Node ID or Metric Path",
    "reqd": 1,
    "in_list_view": 1,
-   "description": "For example ns=2;s=Line1.GoodCount"
+   "description": "OPC UA: a node id such as ns=2;s=[default]Line1/GoodCount. Sparkplug B: <group>/<edge node>/<device>/<metric name>, or without the group or device"
   },
   {
    "fieldname": "event_type",

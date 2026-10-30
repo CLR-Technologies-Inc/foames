@@ -17,6 +17,9 @@
   "mqtt_username",
   "mqtt_password",
   "mqtt_topic_prefix",
+  "sb_sparkplug",
+  "sparkplug_enabled",
+  "sparkplug_group_id",
   "sb_opcua",
   "opcua_enabled",
   "opcua_endpoint",
@@ -24,7 +27,7 @@
   "cb_opcua",
   "opcua_username",
   "opcua_password",
-  "opcua_nodes",
+  "node_map",
   "sb_health",
   "stale_after_minutes"
  ],
@@ -49,7 +52,8 @@
   {
    "fieldname": "sb_mqtt",
    "fieldtype": "Section Break",
-   "label": "MQTT"
+   "label": "MQTT",
+   "description": "The broker below serves both the plain MQTT gateway and the Sparkplug B gateway"
   },
   {
    "fieldname": "mqtt_enabled",
@@ -96,6 +100,24 @@
    "description": "Gateway subscribes to <prefix>/<machine source id>/<event type>"
   },
   {
+   "fieldname": "sb_sparkplug",
+   "fieldtype": "Section Break",
+   "label": "Sparkplug B (Ignition)"
+  },
+  {
+   "fieldname": "sparkplug_enabled",
+   "fieldtype": "Check",
+   "label": "Sparkplug B Enabled",
+   "default": "0",
+   "description": "Subscribe to spBv1.0 messages on the MQTT broker above, as published by Ignition's MQTT Transmission module"
+  },
+  {
+   "fieldname": "sparkplug_group_id",
+   "fieldtype": "Data",
+   "label": "Group ID",
+   "description": "Only this Sparkplug group; leave empty for all groups"
+  },
+  {
    "fieldname": "sb_opcua",
    "fieldtype": "Section Break",
    "label": "OPC UA"
@@ -133,10 +155,11 @@
    "label": "Password"
   },
   {
-   "fieldname": "opcua_nodes",
+   "fieldname": "node_map",
    "fieldtype": "Table",
-   "label": "OPC UA Nodes",
-   "options": "Machine Node Map"
+   "label": "Node and Metric Map",
+   "options": "Machine Node Map",
+   "description": "What each OPC UA node or Sparkplug B metric means. Sparkplug metrics that follow the naming convention in docs/ignition.md need no row"
   },
   {
    "fieldname": "sb_health",

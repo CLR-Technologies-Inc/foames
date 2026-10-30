@@ -54,9 +54,9 @@ GitHub Actions runs the tests on Frappe v15 and v16 without an ERP, and on Frapp
 | Machine | MES | A machine that reports events, with its state, last-seen time, counter rollover and OEE parameters. |
 | Machine Event | MES | One event from a machine (state, count, measurement, alarm, message), processed into state, downtime and counter deltas. |
 | Downtime Reason, Downtime Record | MES | Downtime opened and closed automatically from machine state, with a reason an operator assigns. |
-| Machine Data Settings | MES | Webhook secret, MQTT broker, OPC UA endpoint and node map, staleness threshold. |
+| Machine Data Settings | MES | Webhook secret, MQTT broker, Sparkplug B group, OPC UA endpoint, the node and metric map, staleness threshold. |
 
-Events arrive through a signed webhook, an MQTT gateway or an OPC UA gateway. Counter readings become deltas, and a first, reset or out-of-order reading never invents production. See [docs/machine-data.md](docs/machine-data.md), including the hook other apps use to act on processed events.
+Events arrive through a signed webhook, an MQTT gateway, a Sparkplug B gateway or an OPC UA gateway. Ignition SCADA connects through any of the three machine-data paths it supports (Sparkplug B via MQTT Transmission, its OPC UA server, or a gateway script posting to the webhook); see [docs/ignition.md](docs/ignition.md). Counter readings become deltas, and a first, reset or out-of-order reading never invents production. See [docs/machine-data.md](docs/machine-data.md), including the hook other apps use to act on processed events.
 
 ## OEE, the floor view and agent suggestions
 
