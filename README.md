@@ -31,6 +31,8 @@ bench --site $SITE install-app foames
 
 ## Contributing
 
+Contributions need a signed Contributor License Agreement. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 This app uses `pre-commit` for formatting and linting (ruff, eslint, prettier):
 
 ```bash
