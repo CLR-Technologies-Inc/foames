@@ -21,6 +21,10 @@ REFERENCE_TYPES = (
 	"Operation",
 	"Location",
 	"Stock Movement",
+	"Job Card",
+	"Bill of Materials",
+	"Routing",
+	"Workstation",
 )
 
 

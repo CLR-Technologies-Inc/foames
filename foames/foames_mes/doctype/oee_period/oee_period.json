@@ -1,0 +1,223 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-29 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "machine",
+  "from_time",
+  "to_time",
+  "cb_head",
+  "planned_minutes",
+  "ideal_cycle_seconds",
+  "sb_time",
+  "run_minutes",
+  "planned_downtime_minutes",
+  "unplanned_downtime_minutes",
+  "cb_time",
+  "unknown_minutes",
+  "coverage",
+  "sb_counts",
+  "good_count",
+  "scrap_count",
+  "sb_oee",
+  "availability",
+  "performance",
+  "cb_oee",
+  "quality",
+  "oee"
+ ],
+ "fields": [
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "from_time",
+   "fieldtype": "Datetime",
+   "label": "From",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "to_time",
+   "fieldtype": "Datetime",
+   "label": "To",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "planned_minutes",
+   "fieldtype": "Float",
+   "label": "Planned Minutes",
+   "reqd": 1,
+   "description": "Scheduled production time in the period, before any downtime"
+  },
+  {
+   "fieldname": "ideal_cycle_seconds",
+   "fieldtype": "Float",
+   "label": "Ideal Cycle Time (s)",
+   "description": "Copied from the machine when the period is computed"
+  },
+  {
+   "fieldname": "sb_time",
+   "fieldtype": "Section Break",
+   "label": "Time Ledger"
+  },
+  {
+   "fieldname": "run_minutes",
+   "fieldtype": "Float",
+   "label": "Run Minutes",
+   "read_only": 1
+  },
+  {
+   "fieldname": "planned_downtime_minutes",
+   "fieldtype": "Float",
+   "label": "Planned Downtime (min)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "unplanned_downtime_minutes",
+   "fieldtype": "Float",
+   "label": "Unplanned Downtime (min)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_time",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "unknown_minutes",
+   "fieldtype": "Float",
+   "label": "Unknown Minutes",
+   "read_only": 1,
+   "description": "Time with no machine signal. Counted as loss, never as run time"
+  },
+  {
+   "fieldname": "coverage",
+   "fieldtype": "Percent",
+   "label": "Signal Coverage",
+   "read_only": 1,
+   "description": "Share of the period with a known machine state"
+  },
+  {
+   "fieldname": "sb_counts",
+   "fieldtype": "Section Break",
+   "label": "Counts"
+  },
+  {
+   "fieldname": "good_count",
+   "fieldtype": "Float",
+   "label": "Good Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "scrap_count",
+   "fieldtype": "Float",
+   "label": "Scrap Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_oee",
+   "fieldtype": "Section Break",
+   "label": "OEE"
+  },
+  {
+   "fieldname": "availability",
+   "fieldtype": "Percent",
+   "label": "Availability",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "performance",
+   "fieldtype": "Percent",
+   "label": "Performance",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "cb_oee",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "quality",
+   "fieldtype": "Percent",
+   "label": "Quality",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "oee",
+   "fieldtype": "Percent",
+   "label": "OEE",
+   "read_only": 1,
+   "in_list_view": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-29 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "OEE Period",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "format:OEE-{machine}-{from_time}"
+}

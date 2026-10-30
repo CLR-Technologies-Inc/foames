@@ -1,0 +1,72 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-30 03:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "reference_type",
+  "service",
+  "entity_set",
+  "key_fields",
+  "optional_keys",
+  "label_field"
+ ],
+ "fields": [
+  {
+   "fieldname": "reference_type",
+   "fieldtype": "Select",
+   "label": "Reference Type",
+   "options": "Item\nUnit of Measure\nBatch\nSerial Number\nWork Order\nOperation\nLocation\nStock Movement",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "service",
+   "fieldtype": "Data",
+   "label": "OData Service",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "Technical service name, for example API_PRODUCT_SRV."
+  },
+  {
+   "fieldname": "entity_set",
+   "fieldtype": "Data",
+   "label": "Entity Set",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "key_fields",
+   "fieldtype": "Data",
+   "label": "Key Fields",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "Comma-separated, in the order used in External ID (values joined by |)."
+  },
+  {
+   "fieldname": "optional_keys",
+   "fieldtype": "Data",
+   "label": "Optional Keys",
+   "description": "Key fields that may be left out of External ID; they default to an empty value."
+  },
+  {
+   "fieldname": "label_field",
+   "fieldtype": "Data",
+   "label": "Label Field"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-10-30 03:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Adapters",
+ "name": "S4HANA Entity Mapping",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

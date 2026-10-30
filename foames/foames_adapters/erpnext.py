@@ -22,6 +22,10 @@ ERPNEXT_DOCTYPES = {
 	"Operation": ("Operation", "description"),
 	"Location": ("Warehouse", "warehouse_name"),
 	"Stock Movement": ("Stock Entry", "stock_entry_type"),
+	"Job Card": ("Job Card", "operation"),
+	"Bill of Materials": ("BOM", "item"),
+	"Routing": ("Routing", "routing_name"),
+	"Workstation": ("Workstation", "workstation_name"),
 }
 
 
