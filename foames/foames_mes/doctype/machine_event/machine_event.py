@@ -12,15 +12,24 @@ path is called with the processed event and its machine, after the steps above.
 """
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
+from frappe.utils import get_datetime
 
 from foames.foames_mes.counters import counter_delta
+
+STATES = ("Running", "Idle", "Down", "Setup", "Unknown")
 
 
 class MachineEvent(Document):
 	def validate(self):
-		if self.event_type == "Count" and self.counter_name:
-			self.counter_name = self.counter_name.lower()
+		if self.event_type == "State":
+			if self.state not in STATES:
+				frappe.throw(_("A State event needs one of the states {0}").format(", ".join(STATES)))
+		elif self.event_type == "Count":
+			if self.counter_value is None:
+				frappe.throw(_("A Count event needs the counter's running total"))
+			self.counter_name = (self.counter_name or "good").lower()
 
 	def after_insert(self):
 		try:
@@ -35,6 +44,9 @@ class MachineEvent(Document):
 		if self.event_type == "State":
 			machine.set_state(self.state, self.timestamp)
 		elif self.event_type == "Count":
+			# Compare with the latest reading already recorded, whatever its timestamp. A reading
+			# that arrives after a later one is out of order and counts zero, so no interval is
+			# counted twice.
 			previous = frappe.db.get_value(
 				"Machine Event",
 				{
@@ -42,12 +54,17 @@ class MachineEvent(Document):
 					"event_type": "Count",
 					"counter_name": self.counter_name,
 					"name": ("!=", self.name),
-					"timestamp": ("<=", self.timestamp),
 				},
-				"counter_value",
+				["counter_value", "timestamp"],
 				order_by="timestamp desc, creation desc",
+				as_dict=True,
 			)
-			self.delta = counter_delta(previous, self.counter_value, machine.counter_rollover)
+			if previous and get_datetime(previous.timestamp) > get_datetime(self.timestamp):
+				self.delta = 0
+			else:
+				self.delta = counter_delta(
+					previous.counter_value if previous else None, self.counter_value, machine.counter_rollover
+				)
 			self.db_set("delta", self.delta, update_modified=False)
 			machine.last_seen = self.timestamp
 			machine.db_update()

@@ -19,7 +19,7 @@ A logged-in user with the FoaMES Operator role may also post events unsigned, wh
 | `type` | Fields | Effect |
 | --- | --- | --- |
 | `State` | `state`: Running, Idle, Down, Setup, Unknown (aliases such as run, fault, changeover are accepted) | Sets the machine state. Down opens a Downtime Record; the next other state closes it |
-| `Count` | `counter` (good, scrap, or any name), `value` = the machine's running total | The delta from the previous reading of that counter is stored on the event and feeds OEE. A first reading, a reset or an out-of-order reading counts zero: FoaMES never invents production. Set the machine's Counter Rollover to handle wrap-around |
+| `Count` | `counter` (good, scrap, or any name), `value` = the machine's running total | The delta from the previous reading of that counter is stored on the event and feeds OEE. A first reading, a reset, or a reading that arrives after a later one counts zero: FoaMES never invents production. Set the machine's Counter Rollover to handle wrap-around |
 | `Measurement` | `name`, `value` | Stored for SPC and OEE work |
 | `Alarm` | `code` or `value`, `text` | Stored and marks the machine Down |
 | `Message` | `text` | Stored; refreshes the machine's last-seen time |

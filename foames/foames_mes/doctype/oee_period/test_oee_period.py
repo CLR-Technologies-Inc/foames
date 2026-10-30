@@ -18,7 +18,7 @@ def make_machine(code="T-PRESS", **overrides):
 
 class TestOEEPeriod(IntegrationTestCase):
 	def setUp(self):
-		make_machine("T-OEE", ideal_cycle_seconds=60, scheduled_minutes_per_day=480)
+		make_machine("T-OEE", ideal_cycle_seconds=60, scheduled_minutes_per_day=480, shift_start="06:00:00")
 		if not frappe.db.exists("Downtime Reason", "T-PM"):
 			frappe.get_doc({"doctype": "Downtime Reason", "code": "T-PM", "category": "Planned"}).insert()
 
@@ -68,7 +68,9 @@ class TestOEEPeriod(IntegrationTestCase):
 		doc = frappe.get_doc("OEE Period", created[0]) if "T-OEE" in created[0] else None
 		if doc:
 			self.assertEqual(doc.planned_minutes, 480)
-			self.assertAlmostEqual(doc.unknown_minutes, 480)  # no signal at all that day
+			self.assertEqual(str(doc.from_time), "2026-10-21 06:00:00")
+			self.assertEqual(str(doc.to_time), "2026-10-21 14:00:00")
+			self.assertAlmostEqual(doc.unknown_minutes, 480)  # no signal at all that shift
 
 
 class TestSuggestions(IntegrationTestCase):
@@ -97,4 +99,13 @@ class TestSuggestions(IntegrationTestCase):
 		doc.status = "Accepted"
 		doc.save()
 		self.assertTrue(doc.resolved_on)
+		# The same finding after resolution reopens the suggestion instead of being swallowed.
+		self.assertEqual(
+			post_suggestion(
+				"Check the chiller", "Downtime", "tripped again", agent="plant-agent", rule_key="ext:chiller"
+			),
+			name,
+		)
+		doc.reload()
+		self.assertEqual((doc.status, doc.resolved_on, doc.suggestion), ("Open", None, "tripped again"))
 		self.assertIsInstance(run_suggestion_rules(), list)

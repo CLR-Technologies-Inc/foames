@@ -139,7 +139,7 @@ class ODataClient:
 		if c.scope:
 			form["scope"] = c.scope
 		basic = base64.b64encode(f"{c.client_id}:{c.client_secret}".encode()).decode("ascii")
-		response = self.transport(
+		response = self.send(
 			"POST",
 			c.token_url,
 			{
@@ -148,7 +148,7 @@ class ODataClient:
 				"Accept": "application/json",
 			},
 			urllib.parse.urlencode(form).encode(),
-			c.timeout,
+			idempotent=True,
 		)
 		if response.status != 200:
 			raise ODataError(
@@ -169,14 +169,20 @@ class ODataClient:
 
 	# Requests
 
-	def send(self, method: str, url: str, headers: dict, body: bytes | None = None) -> Response:
+	def send(
+		self, method: str, url: str, headers: dict, body: bytes | None = None, *, idempotent: bool = False
+	) -> Response:
+		"""One HTTP call. Transport failures become transient ODataErrors; `idempotent` marks a request
+		(a token fetch, a read) whose loss cannot have changed anything in S/4HANA."""
 		try:
 			return self.transport(method, url, headers, body, self.connection.timeout)
 		except (OSError, TimeoutError) as e:
 			# Connection refused or reset, DNS failure, timeout. For a write we cannot tell whether
 			# S/4HANA received it.
 			raise ODataError(
-				f"Could not reach S/4HANA: {e}", transient=True, maybe_applied=method not in ("GET", "HEAD")
+				f"Could not reach S/4HANA: {e}",
+				transient=True,
+				maybe_applied=method not in ("GET", "HEAD") and not idempotent,
 			)
 
 	def get(self, service: str, path: str = "", query: dict | None = None) -> dict | None:

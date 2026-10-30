@@ -48,14 +48,17 @@ def receive(idoc: idoc_parser.IDoc) -> tuple[str, bool]:
 		if summary.get("reference_type") and summary.get("external_id"):
 			from foames.foames_kernel.doctype.external_reference.external_reference import get_reference
 
+			# receive_idoc checked the caller's permission on the IDoc; the reference it derives is
+			# recorded with that authority, since integration users cannot create references.
 			doc.external_reference = get_reference(
-				summary["reference_type"], summary["external_id"], ADAPTER_KEY
+				summary["reference_type"], summary["external_id"], ADAPTER_KEY, ignore_permissions=True
 			)
 		for handler in frappe.get_hooks("foames_s4hana_idoc_handlers", {}).get(idoc.message_type, []):
 			frappe.get_attr(handler)(doc, idoc, summary)
 		doc.status = "Processed"
 	except Exception as e:
 		frappe.db.rollback(save_point="foames_s4hana_idoc")
+		doc.external_reference = None  # rolled back with the savepoint
 		doc.status = "Failed"
 		doc.error = str(e)[:1000]
 		frappe.log_error(title=_("S/4HANA IDoc {0} could not be processed").format(name))

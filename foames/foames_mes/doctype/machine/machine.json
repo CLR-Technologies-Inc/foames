@@ -13,6 +13,7 @@
   "last_seen",
   "disabled",
   "ideal_cycle_seconds",
+  "shift_start",
   "scheduled_minutes_per_day",
   "sb_source",
   "source_id",
@@ -75,11 +76,17 @@
    "description": "Seconds per unit at rated speed, for OEE performance"
   },
   {
+   "fieldname": "shift_start",
+   "fieldtype": "Time",
+   "label": "Shift Start",
+   "description": "Start of the scheduled production window. The daily OEE period runs from here for the scheduled minutes; leave empty to measure the whole day"
+  },
+  {
    "fieldname": "scheduled_minutes_per_day",
    "fieldtype": "Float",
    "label": "Scheduled Minutes Per Day",
    "default": "480",
-   "description": "Planned production time per day, for the daily OEE period"
+   "description": "Planned production time per day, for the daily OEE period. Ignored without a Shift Start"
   },
   {
    "fieldname": "sb_source",

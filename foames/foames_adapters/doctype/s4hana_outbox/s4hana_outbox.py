@@ -158,21 +158,32 @@ def enqueue(
 	return doc.name
 
 
-def due_postings() -> list[dict]:
-	now = now_datetime()
+def release_stale_sending():
+	"""A posting a dead worker left in Sending goes back to the queue as Unknown, to be checked first."""
 	stale = frappe.get_all(
 		"S4HANA Outbox",
-		filters={"status": "Sending", "last_attempt_at": ("<", now - STALE_SENDING)},
+		filters={"status": "Sending", "last_attempt_at": ("<", now_datetime() - STALE_SENDING)},
 		pluck="name",
 	)
 	for name in stale:
 		frappe.db.set_value("S4HANA Outbox", name, "status", "Unknown", update_modified=False)
+
+
+def due_postings(after=None, page_size: int = BATCH_SIZE * 4) -> list[dict]:
+	"""Pending postings whose next attempt is due, oldest first, one page at a time (`after` is the
+	creation time of the last row of the previous page, so sent rows dropping out of the set never
+	shift the page). Rows that wait on an earlier posting of their sequence group are still listed
+	and skipped by `claim`."""
+	filters = {"status": ("in", PENDING)}
+	if after:
+		filters["creation"] = (">", after)
 	return frappe.get_all(
 		"S4HANA Outbox",
-		filters={"status": ("in", PENDING)},
-		fields=["name", "next_attempt_at"],
+		filters=filters,
+		or_filters=[["next_attempt_at", "is", "not set"], ["next_attempt_at", "<=", now_datetime()]],
+		fields=["name", "creation"],
 		order_by="creation asc",
-		limit=BATCH_SIZE * 4,
+		limit_page_length=page_size,
 	)
 
 
@@ -188,35 +199,44 @@ def process_outbox(transport=None):
 	if not settings.enabled or settings.outbox_paused or not settings.base_url:
 		return
 	client = settings.client(transport)
-	now = now_datetime()
+	release_stale_sending()
 	sent = 0
-	for row in due_postings():
-		if sent >= BATCH_SIZE:
+	after = None
+	while sent < BATCH_SIZE:
+		rows = due_postings(after)
+		if not rows:
 			break
-		if row.next_attempt_at and get_datetime(row.next_attempt_at) > now:
-			continue
-		doc = claim(row.name)
-		if not doc:
-			continue
-		try:
-			doc.attempt(client)
-		except Exception:
-			# A bug, not an S/4HANA answer. Back off like a failed send, and check before resending.
-			frappe.db.rollback()
-			attempts = (frappe.db.get_value("S4HANA Outbox", row.name, "attempts") or 0) + 1
-			frappe.db.set_value(
-				"S4HANA Outbox",
-				row.name,
-				{
-					"status": "Failed" if outbox.give_up(attempts) else "Unknown",
-					"attempts": attempts,
-					"next_attempt_at": add_to_date(now_datetime(), seconds=outbox.retry_delay(attempts)),
-				},
-				update_modified=False,
-			)
-			frappe.log_error(title=_("S/4HANA outbox: {0} raised an error").format(row.name))
-		frappe.db.commit()  # nosemgrep
-		sent += 1
+		after = rows[-1].creation
+		for row in rows:
+			if sent >= BATCH_SIZE:
+				break
+			sent += _process_row(row, client)
+
+
+def _process_row(row, client) -> int:
+	"""Claim and send one due posting. Returns 1 when an attempt was made, else 0."""
+	doc = claim(row.name)
+	if not doc:
+		return 0
+	try:
+		doc.attempt(client)
+	except Exception:
+		# A bug, not an S/4HANA answer. Back off like a failed send, and check before resending.
+		frappe.db.rollback()
+		attempts = (frappe.db.get_value("S4HANA Outbox", row.name, "attempts") or 0) + 1
+		frappe.db.set_value(
+			"S4HANA Outbox",
+			row.name,
+			{
+				"status": "Failed" if outbox.give_up(attempts) else "Unknown",
+				"attempts": attempts,
+				"next_attempt_at": add_to_date(now_datetime(), seconds=outbox.retry_delay(attempts)),
+			},
+			update_modified=False,
+		)
+		frappe.log_error(title=_("S/4HANA outbox: {0} raised an error").format(row.name))
+	frappe.db.commit()  # nosemgrep
+	return 1
 
 
 def claim(name: str):

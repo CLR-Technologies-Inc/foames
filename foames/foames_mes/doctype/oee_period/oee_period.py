@@ -6,7 +6,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import add_days, get_datetime, getdate, now_datetime
+from frappe.utils import add_days, add_to_date, get_datetime, getdate, now_datetime
 
 from foames.foames_mes.counters import minutes_between
 from foames.foames_mes.oee import compute_oee, ledger_from_states
@@ -47,9 +47,22 @@ def state_intervals(machine: str, start, end) -> list[tuple[float, str, bool]]:
 	The state before `start` carries into the period. Down intervals take their planned flag from
 	the Downtime Record's reason, when one is assigned.
 	"""
-	events = frappe.get_all(
+	state_filters = {"machine": machine, "event_type": ("in", ("State", "Alarm"))}
+	before = frappe.get_all(
 		"Machine Event",
-		filters={"machine": machine, "event_type": ("in", ("State", "Alarm")), "timestamp": ("<", end)},
+		filters={**state_filters, "timestamp": ("<=", start)},
+		fields=["timestamp", "state", "event_type"],
+		order_by="timestamp desc, creation desc",
+		limit_page_length=1,
+	)
+	events = before + frappe.get_all(
+		"Machine Event",
+		filters=[
+			["machine", "=", machine],
+			["event_type", "in", ("State", "Alarm")],
+			["timestamp", ">", start],
+			["timestamp", "<", end],
+		],
 		fields=["timestamp", "state", "event_type"],
 		order_by="timestamp asc",
 	)
@@ -58,6 +71,7 @@ def state_intervals(machine: str, start, end) -> list[tuple[float, str, bool]]:
 		for d in frappe.get_all(
 			"Downtime Record",
 			filters={"machine": machine, "start_time": ("<", end), "reason": ("is", "set")},
+			or_filters=[["end_time", "is", "not set"], ["end_time", ">=", start]],
 			fields=["start_time", "end_time", "reason"],
 		)
 		if frappe.db.get_value("Downtime Reason", d.reason, "counts_as_planned")
@@ -100,12 +114,15 @@ def counts_in(machine: str, start, end) -> tuple[float, float]:
 
 
 def compute_daily_oee(for_date=None):
-	"""Scheduled daily: one OEE Period per enabled machine for the previous day."""
+	"""Scheduled daily: one OEE Period per enabled machine for the previous day.
+
+	A machine with a Shift Start is measured over its scheduled window only, so state time and counts
+	outside the shift never enter the period. Without one, the whole day is the planned time.
+	"""
 	day = getdate(for_date) if for_date else add_days(getdate(now_datetime()), -1)
-	start = get_datetime(f"{day} 00:00:00")
-	end = get_datetime(f"{add_days(day, 1)} 00:00:00")
 	created = []
-	for m in frappe.get_all("Machine", {"disabled": 0}, ["name", "scheduled_minutes_per_day"]):
+	for m in frappe.get_all("Machine", {"disabled": 0}, ["name", "scheduled_minutes_per_day", "shift_start"]):
+		start, end, planned = scheduled_window(day, m.shift_start, m.scheduled_minutes_per_day)
 		if frappe.db.exists("OEE Period", {"machine": m.name, "from_time": start, "to_time": end}):
 			continue
 		doc = frappe.get_doc(
@@ -114,11 +131,20 @@ def compute_daily_oee(for_date=None):
 				"machine": m.name,
 				"from_time": start,
 				"to_time": end,
-				"planned_minutes": m.scheduled_minutes_per_day or 480,
+				"planned_minutes": planned,
 			}
 		).insert(ignore_permissions=True)
 		created.append(doc.name)
 	return created
+
+
+def scheduled_window(day, shift_start, scheduled_minutes):
+	"""(from, to, planned minutes) of a machine's production window on `day`."""
+	if shift_start and scheduled_minutes and scheduled_minutes > 0:
+		start = get_datetime(f"{day} {shift_start}")
+		return start, add_to_date(start, minutes=scheduled_minutes), scheduled_minutes
+	start = get_datetime(f"{day} 00:00:00")
+	return start, get_datetime(f"{add_days(day, 1)} 00:00:00"), 1440
 
 
 @frappe.whitelist()

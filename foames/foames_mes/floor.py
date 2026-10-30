@@ -50,26 +50,24 @@ def floor_snapshot(days: int = 1) -> dict:
 		)
 	downtime = []
 	for m in machines:
-		rows = frappe.get_all(
-			"Downtime Record",
-			{"machine": m.name, "status": "Closed", "start_time": (">=", since), "reason": ("is", "set")},
-			["reason", "sum(duration_minutes) as minutes"],
-			group_by="reason",
-			order_by="minutes desc",
-		)
-		total = sum(r.minutes or 0 for r in rows)
-		if rows:
+		by_reason = downtime_by_reason(m.name, since, now)
+		if by_reason:
+			top_reason, top_minutes = max(by_reason.items(), key=lambda item: item[1])
 			downtime.append(
 				{
 					"machine": m.name,
 					"period": f"last {days} day(s)",
-					"total_minutes": total,
-					"top_reason": rows[0].reason,
-					"top_minutes": rows[0].minutes,
+					"total_minutes": sum(by_reason.values()),
+					"top_reason": top_reason,
+					"top_minutes": top_minutes,
 				}
 			)
-	references = frappe.get_all(
-		"External Reference", {"status": "Missing"}, ["name", "reference_type", "external_id", "status"]
+	references = (
+		frappe.get_all(
+			"External Reference", {"status": "Missing"}, ["name", "reference_type", "external_id", "status"]
+		)
+		if frappe.has_permission("External Reference", "read")
+		else []
 	)
 	snapshot = {
 		"as_of": now,
@@ -85,6 +83,28 @@ def floor_snapshot(days: int = 1) -> dict:
 	for extension in frappe.get_hooks("foames_floor_snapshot_extensions") or []:
 		frappe.get_attr(extension)(snapshot, since, now)
 	return snapshot
+
+
+def downtime_by_reason(machine: str, since, until) -> dict[str, float]:
+	"""Minutes of downtime per reason inside [since, until), counting the part of each record that
+	overlaps the window. Open downtime counts up to `until`."""
+	rows = frappe.get_all(
+		"Downtime Record",
+		filters=[
+			["machine", "=", machine],
+			["reason", "is", "set"],
+			["start_time", "<", until],
+		],
+		or_filters=[["end_time", "is", "not set"], ["end_time", ">=", since]],
+		fields=["reason", "start_time", "end_time"],
+	)
+	minutes: dict[str, float] = {}
+	for r in rows:
+		start = max(get_datetime(r.start_time), since)
+		end = min(get_datetime(r.end_time), until) if r.end_time else until
+		if end > start:
+			minutes[r.reason] = minutes.get(r.reason, 0) + minutes_between(start, end)
+	return minutes
 
 
 def counts_since(machine: str, since) -> dict[str, float]:

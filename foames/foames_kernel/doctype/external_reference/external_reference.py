@@ -112,10 +112,13 @@ def make_reference_key(erp_system: str, reference_type: str, external_id: str) -
 	return hashlib.sha256("\x1f".join(parts).encode()).hexdigest()
 
 
-def get_reference(reference_type: str, external_id: str, erp_system: str | None = None) -> str:
+def get_reference(
+	reference_type: str, external_id: str, erp_system: str | None = None, ignore_permissions: bool = False
+) -> str:
 	"""Name of the External Reference for this ERP record, creating it when it does not exist yet.
 
-	`erp_system` defaults to the one set in FoaMES Settings.
+	`erp_system` defaults to the one set in FoaMES Settings. `ignore_permissions` lets a caller that
+	has already checked its own permission (an integration endpoint) record the reference it derives.
 	"""
 	erp_system = erp_system or frappe.db.get_single_value("FoaMES Settings", "default_erp_system")
 	key = make_reference_key(erp_system, reference_type, external_id)
@@ -132,7 +135,7 @@ def get_reference(reference_type: str, external_id: str, erp_system: str | None 
 				"reference_type": reference_type,
 				"external_id": external_id,
 			}
-		).insert()
+		).insert(ignore_permissions=ignore_permissions)
 	except (frappe.DuplicateEntryError, frappe.UniqueValidationError):
 		# Another worker created it between the lookup and the insert.
 		frappe.db.rollback(save_point="foames_get_reference")

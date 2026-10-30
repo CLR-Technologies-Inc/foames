@@ -85,6 +85,19 @@ class TestMachineEvent(IntegrationTestCase):
 		)
 		self.assertEqual([d.delta for d in deltas], [0, 5, 8])
 
+	def test_late_reading_counts_zero(self):
+		record_events(
+			[
+				{"machine": "T-PRESS", "type": "Count", "value": 100, "timestamp": "2026-10-20T08:00:00"},
+				{"machine": "T-PRESS", "type": "Count", "value": 130, "timestamp": "2026-10-20T08:02:00"},
+				{"machine": "T-PRESS", "type": "Count", "value": 110, "timestamp": "2026-10-20T08:01:00"},
+			]
+		)
+		deltas = frappe.get_all(
+			"Machine Event", {"machine": "T-PRESS", "event_type": "Count"}, ["delta"], order_by="creation asc"
+		)
+		self.assertEqual([d.delta for d in deltas], [0, 30, 0])
+
 	def test_unknown_source_is_rejected_and_handlers_run(self):
 		original = frappe.get_hooks
 

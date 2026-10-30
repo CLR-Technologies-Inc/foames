@@ -51,10 +51,12 @@ async def poll_forever(settings):
 	from foames.foames_mes.api import record_event
 
 	last: dict[str, object] = {}
-	async with Client(url=settings.opcua_endpoint) as client:
-		if settings.opcua_username:
-			client.set_user(settings.opcua_username)
-			client.set_password(settings.get_password("opcua_password", raise_exception=False))
+	client = Client(url=settings.opcua_endpoint)
+	if settings.opcua_username:
+		# Credentials must be set before connect(), which `async with` calls on entry.
+		client.set_user(settings.opcua_username)
+		client.set_password(settings.get_password("opcua_password", raise_exception=False))
+	async with client:
 		nodes = [(row, client.get_node(row.node_id)) for row in settings.opcua_nodes]
 		while True:
 			for row, node in nodes:
@@ -63,17 +65,20 @@ async def poll_forever(settings):
 				except Exception:
 					frappe.log_error(title=f"OPC UA read {row.node_id}", message=frappe.get_traceback())
 					continue
-				if last.get(row.node_id) == value:
+				if row.node_id in last and last[row.node_id] == value:
 					continue
-				last[row.node_id] = value
 				try:
 					record_event(node_value_to_raw(row, value), source="OPC UA")
 					frappe.db.commit()
 				except EventError as e:
+					# The same value would be rejected again, so remember it and stop retrying it.
 					frappe.logger("foames.opcua").warning(f"rejected {row.node_id}: {e}")
 				except Exception:
+					# Leave the cache alone: the next poll records this change again.
 					frappe.db.rollback()
 					frappe.log_error(title="OPC UA gateway", message=frappe.get_traceback())
+					continue
+				last[row.node_id] = value
 			await asyncio.sleep(settings.opcua_poll_seconds or 5)
 
 

@@ -62,7 +62,7 @@ Events arrive through a signed webhook, an MQTT gateway or an OPC UA gateway. Co
 
 | Record or page | Module | Role |
 | --- | --- | --- |
-| OEE Period | MES | OEE for a machine over a period from its events, downtime and counts. Planned downtime is excluded from availability; time without a machine signal is counted as loss, never as run time. One period per machine per day is computed by the scheduler. |
+| OEE Period | MES | OEE for a machine over a period from its events, downtime and counts. Planned downtime is excluded from availability; time without a machine signal is counted as loss, never as run time. One period per machine per day is computed by the scheduler over the machine's scheduled shift. |
 | Floor View (page) | MES | Live tiles per machine with state, counts and OEE, plus open suggestions. |
 | Agent Suggestion | MES | A finding raised by the built-in rules or by an external agent, with evidence, for a person to accept or dismiss. |
 

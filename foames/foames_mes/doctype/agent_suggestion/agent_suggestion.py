@@ -21,14 +21,22 @@ class AgentSuggestion(Document):
 
 
 def raise_suggestions(findings: list[dict], agent: str = "foames-rules") -> list[str]:
-	"""Insert findings whose rule_key is not already open. Returns the names created."""
+	"""Insert findings whose rule_key is not already open. A finding whose key belongs to a resolved
+	suggestion reopens that suggestion with the new evidence. Returns the names created or reopened."""
 	created = []
 	for finding in findings:
-		if frappe.db.exists("Agent Suggestion", {"rule_key": finding["rule_key"]}):
+		existing = frappe.db.get_value(
+			"Agent Suggestion", {"rule_key": finding["rule_key"]}, ["name", "status"]
+		)
+		if existing and existing[1] == "Open":
 			continue
-		doc = frappe.get_doc({"doctype": "Agent Suggestion", "agent": agent, **finding})
+		if existing:
+			doc = frappe.get_doc("Agent Suggestion", existing[0])
+			doc.update({**finding, "agent": agent, "status": "Open", "resolution": None})
+		else:
+			doc = frappe.get_doc({"doctype": "Agent Suggestion", "agent": agent, **finding})
 		if isinstance(doc.evidence, dict | list):
 			doc.evidence = frappe.as_json(doc.evidence)
-		doc.insert(ignore_permissions=True)
+		doc.save(ignore_permissions=True)
 		created.append(doc.name)
 	return created
