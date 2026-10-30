@@ -1,0 +1,184 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-30 03:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "connection_section",
+  "base_url",
+  "sap_client",
+  "language",
+  "column_break_connection",
+  "timeout",
+  "ca_bundle",
+  "auth_section",
+  "auth_method",
+  "username",
+  "password",
+  "column_break_auth",
+  "token_url",
+  "client_id",
+  "client_secret",
+  "scope",
+  "mapping_section",
+  "entity_mappings",
+  "outbox_section",
+  "outbox_paused"
+ ],
+ "fields": [
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "0",
+   "description": "Turns on reference resolution, the outbox and the IDoc receiver. Postings from FoaMES create documents in S/4HANA that SAP may count under Digital Access licensing; check the customer's SAP contract."
+  },
+  {
+   "fieldname": "connection_section",
+   "fieldtype": "Section Break",
+   "label": "Connection"
+  },
+  {
+   "fieldname": "base_url",
+   "fieldtype": "Data",
+   "label": "Base URL",
+   "options": "URL",
+   "description": "Scheme, host and port of the S/4HANA ABAP server, for example https://s4.example.com:44300.",
+   "mandatory_depends_on": "enabled"
+  },
+  {
+   "fieldname": "sap_client",
+   "fieldtype": "Data",
+   "label": "SAP Client",
+   "length": 3
+  },
+  {
+   "fieldname": "language",
+   "fieldtype": "Data",
+   "label": "Language",
+   "default": "EN",
+   "length": 2
+  },
+  {
+   "fieldname": "column_break_connection",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "timeout",
+   "fieldtype": "Int",
+   "label": "Timeout (seconds)",
+   "default": "30"
+  },
+  {
+   "fieldname": "ca_bundle",
+   "fieldtype": "Data",
+   "label": "CA Bundle Path",
+   "description": "Path on this server to a PEM file, when S/4HANA uses a certificate from a private CA."
+  },
+  {
+   "fieldname": "auth_section",
+   "fieldtype": "Section Break",
+   "label": "Authentication"
+  },
+  {
+   "fieldname": "auth_method",
+   "fieldtype": "Select",
+   "label": "Method",
+   "options": "Basic\nOAuth 2.0 Client Credentials",
+   "default": "Basic",
+   "description": "Basic uses a communication user. OAuth needs an OAuth client set up in S/4HANA."
+  },
+  {
+   "fieldname": "username",
+   "fieldtype": "Data",
+   "label": "Username",
+   "depends_on": "eval:doc.auth_method==\"Basic\""
+  },
+  {
+   "fieldname": "password",
+   "fieldtype": "Password",
+   "label": "Password",
+   "depends_on": "eval:doc.auth_method==\"Basic\""
+  },
+  {
+   "fieldname": "column_break_auth",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "token_url",
+   "fieldtype": "Data",
+   "label": "Token URL",
+   "depends_on": "eval:doc.auth_method==\"OAuth 2.0 Client Credentials\""
+  },
+  {
+   "fieldname": "client_id",
+   "fieldtype": "Data",
+   "label": "Client ID",
+   "depends_on": "eval:doc.auth_method==\"OAuth 2.0 Client Credentials\""
+  },
+  {
+   "fieldname": "client_secret",
+   "fieldtype": "Password",
+   "label": "Client Secret",
+   "depends_on": "eval:doc.auth_method==\"OAuth 2.0 Client Credentials\""
+  },
+  {
+   "fieldname": "scope",
+   "fieldtype": "Data",
+   "label": "Scope",
+   "depends_on": "eval:doc.auth_method==\"OAuth 2.0 Client Credentials\""
+  },
+  {
+   "fieldname": "mapping_section",
+   "fieldtype": "Section Break",
+   "label": "Entity Mappings",
+   "description": "Reference types resolve against these OData entities. Item, Batch, Work Order and Stock Movement have defaults; a row here overrides a default or adds a reference type."
+  },
+  {
+   "fieldname": "entity_mappings",
+   "fieldtype": "Table",
+   "label": "Entity Mappings",
+   "options": "S4HANA Entity Mapping"
+  },
+  {
+   "fieldname": "outbox_section",
+   "fieldtype": "Section Break",
+   "label": "Outbox"
+  },
+  {
+   "fieldname": "outbox_paused",
+   "fieldtype": "Check",
+   "label": "Pause Outbox",
+   "default": "0",
+   "description": "Postings keep queuing but are not sent until this is cleared."
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-10-30 03:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Adapters",
+ "name": "S4HANA Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

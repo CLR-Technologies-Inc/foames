@@ -1,0 +1,202 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-29 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "title",
+  "category",
+  "severity",
+  "cb_head",
+  "status",
+  "agent",
+  "reference_doctype",
+  "reference_name",
+  "sb_body",
+  "suggestion",
+  "evidence",
+  "rule_key",
+  "sb_resolution",
+  "resolution",
+  "resolved_by",
+  "resolved_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "SUG-.YYYY.-",
+   "default": "SUG-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Select",
+   "label": "Category",
+   "options": "Yield\nDowntime\nQuality\nRelease\nMachine Data\nERP\nOther",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "severity",
+   "fieldtype": "Select",
+   "label": "Severity",
+   "options": "Info\nWarning\nCritical",
+   "default": "Warning",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Open\nAccepted\nDismissed\nDone",
+   "default": "Open",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "agent",
+   "fieldtype": "Data",
+   "label": "Agent",
+   "description": "Who raised it: the built-in rules, or the name of an external agent",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "label": "Reference DocType",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "reference_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Reference Name",
+   "options": "reference_doctype"
+  },
+  {
+   "fieldname": "sb_body",
+   "fieldtype": "Section Break",
+   "label": "Suggestion"
+  },
+  {
+   "fieldname": "suggestion",
+   "fieldtype": "Text Editor",
+   "label": "Suggestion",
+   "reqd": 1
+  },
+  {
+   "fieldname": "evidence",
+   "fieldtype": "JSON",
+   "label": "Evidence",
+   "description": "The numbers the suggestion rests on, so a person can check them"
+  },
+  {
+   "fieldname": "rule_key",
+   "fieldtype": "Data",
+   "label": "Rule Key",
+   "unique": 1,
+   "hidden": 1,
+   "description": "Stops the same finding being raised twice while it is open"
+  },
+  {
+   "fieldname": "sb_resolution",
+   "fieldtype": "Section Break",
+   "label": "Resolution"
+  },
+  {
+   "fieldname": "resolution",
+   "fieldtype": "Small Text",
+   "label": "Resolution"
+  },
+  {
+   "fieldname": "resolved_by",
+   "fieldtype": "Link",
+   "label": "Resolved By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "resolved_on",
+   "fieldtype": "Datetime",
+   "label": "Resolved On",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-29 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Agent Suggestion",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "title",
+ "search_fields": "title,category"
+}

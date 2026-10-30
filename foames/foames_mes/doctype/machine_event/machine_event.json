@@ -1,0 +1,204 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-29 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "machine",
+  "event_type",
+  "timestamp",
+  "source",
+  "cb_head",
+  "state",
+  "counter_name",
+  "counter_value",
+  "delta",
+  "measurement_name",
+  "value",
+  "text",
+  "sb_proc",
+  "processed",
+  "processing_note",
+  "cb_proc",
+  "payload",
+  "event_key"
+ ],
+ "fields": [
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "event_type",
+   "fieldtype": "Select",
+   "label": "Event Type",
+   "options": "State\nCount\nMeasurement\nAlarm\nMessage",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "timestamp",
+   "fieldtype": "Datetime",
+   "label": "Timestamp",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "Webhook\nMQTT\nOPC UA\nManual",
+   "default": "Manual",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "state",
+   "fieldtype": "Select",
+   "label": "State",
+   "options": "\nUnknown\nRunning\nIdle\nDown\nSetup",
+   "depends_on": "eval:doc.event_type=='State'"
+  },
+  {
+   "fieldname": "counter_name",
+   "fieldtype": "Data",
+   "label": "Counter",
+   "depends_on": "eval:doc.event_type=='Count'",
+   "description": "good, scrap or any named counter"
+  },
+  {
+   "fieldname": "counter_value",
+   "fieldtype": "Float",
+   "label": "Counter Value",
+   "depends_on": "eval:doc.event_type=='Count'",
+   "description": "The machine's running total, not the increment"
+  },
+  {
+   "fieldname": "delta",
+   "fieldtype": "Float",
+   "label": "Delta",
+   "read_only": 1,
+   "description": "Production derived from this reading minus the previous one. Never invented: a first or reset reading gives 0"
+  },
+  {
+   "fieldname": "measurement_name",
+   "fieldtype": "Data",
+   "label": "Measurement",
+   "depends_on": "eval:doc.event_type=='Measurement'"
+  },
+  {
+   "fieldname": "value",
+   "fieldtype": "Float",
+   "label": "Value",
+   "depends_on": "eval:doc.event_type in ['Measurement','Alarm']"
+  },
+  {
+   "fieldname": "text",
+   "fieldtype": "Data",
+   "label": "Text",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "sb_proc",
+   "fieldtype": "Section Break",
+   "label": "Processing"
+  },
+  {
+   "fieldname": "processed",
+   "fieldtype": "Check",
+   "label": "Processed",
+   "default": "0",
+   "read_only": 1
+  },
+  {
+   "fieldname": "processing_note",
+   "fieldtype": "Small Text",
+   "label": "Processing Note",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_proc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "payload",
+   "fieldtype": "JSON",
+   "label": "Raw Payload"
+  },
+  {
+   "fieldname": "event_key",
+   "fieldtype": "Data",
+   "label": "Event Key",
+   "unique": 1,
+   "hidden": 1,
+   "description": "Source-supplied id, for deduplication"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-29 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Machine Event",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "hash"
+}

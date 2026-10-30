@@ -8,7 +8,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import now_datetime
 
-from foames.foames_adapters import AdapterError, get_adapter, get_adapters
+from foames.foames_adapters import AdapterError, AdapterUnavailable, get_adapter, get_adapters
 
 IDENTITY_FIELDS = ("erp_system", "reference_type", "external_id")
 
@@ -74,7 +74,12 @@ class ExternalReference(Document):
 
 	def resolve_if_available(self):
 		if get_adapter(self.erp_system).is_available():
-			self.resolve_from_erp()
+			try:
+				self.resolve_from_erp()
+			except AdapterUnavailable:
+				# A remote ERP that is down must not block saving; the reference stays Unverified
+				# and can be resolved later.
+				pass
 
 	def resolve_from_erp(self):
 		resolved = get_adapter(self.erp_system).resolve(self.reference_type, self.external_id)
@@ -107,10 +112,13 @@ def make_reference_key(erp_system: str, reference_type: str, external_id: str) -
 	return hashlib.sha256("\x1f".join(parts).encode()).hexdigest()
 
 
-def get_reference(reference_type: str, external_id: str, erp_system: str | None = None) -> str:
+def get_reference(
+	reference_type: str, external_id: str, erp_system: str | None = None, ignore_permissions: bool = False
+) -> str:
 	"""Name of the External Reference for this ERP record, creating it when it does not exist yet.
 
-	`erp_system` defaults to the one set in FoaMES Settings.
+	`erp_system` defaults to the one set in FoaMES Settings. `ignore_permissions` lets a caller that
+	has already checked its own permission (an integration endpoint) record the reference it derives.
 	"""
 	erp_system = erp_system or frappe.db.get_single_value("FoaMES Settings", "default_erp_system")
 	key = make_reference_key(erp_system, reference_type, external_id)
@@ -127,7 +135,7 @@ def get_reference(reference_type: str, external_id: str, erp_system: str | None 
 				"reference_type": reference_type,
 				"external_id": external_id,
 			}
-		).insert()
+		).insert(ignore_permissions=ignore_permissions)
 	except (frappe.DuplicateEntryError, frappe.UniqueValidationError):
 		# Another worker created it between the lookup and the insert.
 		frappe.db.rollback(save_point="foames_get_reference")

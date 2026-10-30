@@ -3,9 +3,26 @@
 
 """Test base classes that work on both Frappe v15 and v16."""
 
+import frappe
+
 try:
-	from frappe.tests import IntegrationTestCase
+	from frappe.tests import IntegrationTestCase as _IntegrationTestCase
 except ImportError:  # Frappe v15
-	from frappe.tests.utils import FrappeTestCase as IntegrationTestCase
+	from frappe.tests.utils import FrappeTestCase as _IntegrationTestCase
+
+
+class IntegrationTestCase(_IntegrationTestCase):
+	"""Rolls each test back to a savepoint, so tests in one class do not see each other's records."""
+
+	SAVEPOINT = "foames_test"
+
+	def setUp(self):
+		super().setUp()
+		frappe.db.savepoint(self.SAVEPOINT)
+
+	def tearDown(self):
+		frappe.db.rollback(save_point=self.SAVEPOINT)
+		super().tearDown()
+
 
 __all__ = ["IntegrationTestCase"]
