@@ -10,7 +10,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import add_days, add_to_date, get_datetime, getdate, now_datetime
 
-from foames.foames_mes.counters import minutes_between
+from foames.foames_mes.counters import good_and_scrap, minutes_between
 from foames.foames_mes.oee import compute_oee, ledger_from_states
 
 
@@ -128,9 +128,7 @@ def counts_in(machine: str, start, end) -> tuple[float, float]:
 		fields=["counter_name", "sum(delta) as total"],
 		group_by="counter_name",
 	)
-	good = sum(r.total or 0 for r in rows if r.counter_name in ("good", "count", "total", "parts"))
-	scrap = sum(r.total or 0 for r in rows if r.counter_name in ("scrap", "reject", "bad", "ng"))
-	return good, scrap
+	return good_and_scrap({r.counter_name: r.total for r in rows})
 
 
 def compute_daily_oee(for_date=None):

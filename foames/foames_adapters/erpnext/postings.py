@@ -77,6 +77,14 @@ OPERATIONS: dict[str, Operation] = {
 		reference_type="Job Card",
 		creates_document=False,
 	),
+	"Job Card Production Log": Operation(
+		label="Job Card Production Log",
+		required=("job_card", "from_time", "to_time"),
+		optional=("completed_qty", "process_loss_qty", "run_intervals", "remarks", "submit"),
+		doctype="Job Card",
+		reference_type="Job Card",
+		creates_document=False,
+	),
 	"Work Order Status": Operation(
 		label="Work Order Status",
 		required=("work_order", "status"),
@@ -109,7 +117,7 @@ def prepare(operation: Operation, payload: dict) -> dict:
 		raise ValueError(f"{operation.label} does not understand {', '.join(unknown)}")
 
 	prepared = dict(payload)
-	for name in ("qty", "completed_qty"):
+	for name in ("qty", "completed_qty", "process_loss_qty"):
 		if name in prepared and prepared[name] not in (None, ""):
 			try:
 				prepared[name] = float(prepared[name])
@@ -123,6 +131,17 @@ def prepare(operation: Operation, payload: dict) -> dict:
 		prepared.get("start_time") or prepared.get("complete_time")
 	):
 		raise ValueError("Job Card Time Log needs start_time, complete_time or both")
+	if operation.label == "Job Card Production Log":
+		if str(prepared["from_time"]) >= str(prepared["to_time"]):
+			raise ValueError("Job Card Production Log needs from_time before to_time")
+		intervals = prepared.get("run_intervals")
+		if intervals not in (None, ""):
+			if not isinstance(intervals, list) or any(
+				not isinstance(pair, (list, tuple)) or len(pair) != 2 or str(pair[0]) >= str(pair[1])
+				for pair in intervals
+			):
+				raise ValueError("run_intervals must be a list of [from, to] pairs with from before to")
+			prepared["run_intervals"] = [[str(a), str(b)] for a, b in intervals]
 	if operation.label == "Work Order Status" and prepared["status"] not in WORK_ORDER_STATUSES:
 		raise ValueError(f"Work Order Status must be one of {', '.join(WORK_ORDER_STATUSES)}")
 	return prepared

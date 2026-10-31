@@ -83,6 +83,7 @@ The adapter is built in and switches on by itself when the `erpnext` app is inst
 | --- | --- | --- |
 | FoaMES reads ERPNext | Resolve External References (Item, UOM, Batch, Serial No, Work Order, Operation, Warehouse, Stock Entry, Job Card, BOM, Routing, Workstation) with their details; list open Work Orders and Job Cards | `frappe.db` reads of ERPNext's tables |
 | FoaMES writes ERPNext | Stock Entries against a Work Order (transfer, manufacture, consumption), Job Card time logs, Work Order stop, resume and close | ERPNext's own whitelisted functions, through the **ERPNext Outbox** |
+| Machines write ERPNext | A machine's good and scrap counts and its running time, rolled up to the Job Card it is working on | The machine's **Current Job Reference**, the scheduler and the outbox |
 | ERPNext tells FoaMES | A mapped record was saved, renamed or deleted | `doc_events` hooks that refresh the matching External Reference |
 | The floor | Open Job Cards and Work Orders per machine, and a rule for a machine running without one | `foames_floor_snapshot_extensions` and `foames_suggestion_rules` |
 
@@ -95,6 +96,8 @@ The adapter is built in and switches on by itself when the `erpnext` app is inst
      postings queue up and wait; nothing is lost.
    - **Pause the Outbox** to stop performing postings for a while, for example during a stock take.
    - **Submit Job Cards When Complete** is the default for time-log postings that do not say.
+   - **Roll Up Machine Counts to Job Cards** queues each machine's counts and run time to the Job
+     Card named by its Current Job Reference; see [Rolling machine counts up](#rolling-machine-counts-up-to-job-cards).
    - **Show Job Cards on the Floor** and **Look Ahead (days)** control the floor snapshot section.
    - **Refresh Unresolved References Daily** re-checks references that are Unverified or Missing.
 3. Point each Machine at its ERPNext Workstation through **Workstation Reference** (an External
@@ -154,6 +157,7 @@ status; `get_posting(name)` reports progress.
 | `Manufacture` | same | The **Finish** entry: consumes from WIP and receives the finished good, updating the Work Order's produced quantity and status |
 | `Material Consumption for Manufacture` | same | Consumes materials without receiving finished goods (needs **Allow Continuous Material Consumption** in Manufacturing Settings) |
 | `Job Card Time Log` | `job_card`, `start_time` and/or `complete_time`, optional `completed_qty`, `employees`, `submit` | `start_time` opens a time log row and `complete_time` closes the open one, both through `make_time_log`, which validates the operation sequence and updates the Job Card's status; a posting with both times is applied as a start followed by a completion, and a completion with no open row is rejected. The Job Card's totals are recomputed, and with `submit` (or the settings default) it is submitted once its completed quantity reaches its for quantity |
+| `Job Card Production Log` | `job_card`, `from_time`, `to_time`, optional `completed_qty`, `process_loss_qty`, `run_intervals` (list of `[from, to]`), `remarks`, `submit` | Appends one time log per run interval (or one for the whole window) with `completed_qty` on the last, adds `process_loss_qty` to the Job Card's process loss, and saves through the Job Card's own validation (overlaps, totals); a Job Card that is no longer a draft rejects it; with `submit` (or the settings default) the Job Card is submitted once completed plus loss reaches its for quantity |
 | `Work Order Status` | `work_order`, `status` = `Stopped`, `Resumed` or `Closed` | `stop_unstop` or `close_work_order`; already being in that state counts as done |
 
 `qty` defaults to the Work Order's remaining quantity, as it does in the form. `submit` defaults
@@ -182,6 +186,39 @@ to true for Stock Entries; pass `false` to leave a draft for review.
 - **Who posts.** A posting runs as the user who queued it, so ERPNext's permissions on Stock Entry,
   Job Card and Work Order apply to that user. Postings queued by the scheduler run as Administrator.
 - **Monitoring.** Filter the ERPNext Outbox list by status. Retries also leave an Error Log entry.
+
+### Rolling machine counts up to Job Cards
+
+A Machine says which job it is working on through **Current Job Reference**, an External Reference
+of type Job Card (set on the form, through
+`foames.foames_mes.api.set_current_job(machine, reference, at=None)`, or by an agent). **Current
+Job Since** is set with it. The core keeps only that reference; everything ERPNext-specific is in
+the adapter.
+
+With **Enable Postings** and **Roll Up Machine Counts to Job Cards** on, every ten minutes the
+adapter takes, for each machine with a current ERPNext Job Card, the window since its last roll-up
+(or since the job was set), sums the Count deltas of the good counters (`good`, `count`, `total`,
+`parts`) and the scrap counters (`scrap`, `reject`, `bad`, `ng`), and finds the stretches the
+machine reported Running. If any of the three is more than zero it queues one
+`Job Card Production Log` posting for the window, with the Job Card as the sequence group and the
+Machine as the posting's reference. The window's end is its idempotency key, so a repeated run
+queues nothing new, and the newest posting for the machine and card tells the next run where to
+start. An idle window queues nothing.
+
+When the machine's current job changes (the `foames_machine_job_changed` hook), the job that
+ended is rolled up to the moment of the change first, so counts never land on the wrong card.
+
+On the Job Card each run stretch becomes a time log (the good quantity rides on the last one),
+and the scrap goes to **Process Loss Qty** where the installed ERPNext has that field. The Job
+Card validates the rows as if they were entered by hand: a stretch overlapping another Job Card's
+time log on a workstation at capacity is rejected and the posting goes to **Failed** with ERPNext's
+message. Because the sequence group is the Job Card, later windows wait behind it until it is
+requeued or cancelled, and no window is skipped.
+
+The floor snapshot shows the current job on each machine (`current_job`, with `open` and
+`docstatus` from ERPNext) and marks the matching entry of `job_cards` with `current: true`. The
+rule `current_job_card_not_open` raises a suggestion for a machine whose current Job Card is
+submitted, cancelled or gone, since its counts can no longer be rolled up.
 
 ### Keeping references current
 
@@ -220,7 +257,9 @@ posts twice.
 
 ### Tests
 
-`foames/foames_adapters/erpnext/test_postings.py` covers the rules without a site. The outbox's
+`foames/foames_adapters/erpnext/test_postings.py` and `test_production.py` cover the rules and
+the roll-up arithmetic without a site; `foames_mes/doctype/machine/test_machine.py` covers the
+machine's current job on any site. The outbox's
 queue behaviour runs on any Frappe site (`doctype/erpnext_outbox/test_erpnext_outbox.py`). The
 end-to-end tests in `test_erpnext_integration.py` need ERPNext on the site; they create a company
 `FoaMES Test Co` with a raw material, a finished good with a one-operation BOM and a workstation,
