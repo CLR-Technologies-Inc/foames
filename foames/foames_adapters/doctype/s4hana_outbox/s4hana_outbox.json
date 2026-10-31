@@ -33,7 +33,7 @@
    "fieldname": "operation",
    "fieldtype": "Select",
    "label": "Operation",
-   "options": "Production Order Confirmation\nProcess Order Confirmation\nGoods Movement",
+   "options": "Production Order Confirmation\nProcess Order Confirmation\nGoods Movement\nConfirmation Cancellation\nProcess Confirmation Cancellation\nMaterial Document Reversal",
    "reqd": 1,
    "in_list_view": 1,
    "in_standard_filter": 1
