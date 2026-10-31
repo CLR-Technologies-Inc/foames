@@ -282,9 +282,9 @@ from foames.foames_adapters.base import ERPAdapter, ResolvedReference
 
 
 class AcmeERPAdapter(ERPAdapter):
-	key = "AcmeERP"          # stored on External Reference.erp_system
-	label = "Acme ERP"       # shown to users
-	reference_map = {        # kernel reference type -> the ERP's own record type
+	key = "AcmeERP"  # stored on External Reference.erp_system
+	label = "Acme ERP"  # shown to users
+	reference_map = {  # kernel reference type -> the ERP's own record type
 		"Item": "material",
 		"Work Order": "production_order",
 		"Location": "storage_location",
