@@ -95,6 +95,27 @@ def site_timezone():
 		return None
 
 
+# Current job -------------------------------------------------------------------------------------
+
+
+@frappe.whitelist(methods=["POST"])
+def set_current_job(machine: str, reference: str | None = None, at=None) -> dict:
+	"""Start a job on a machine, or end its current job by passing no reference.
+
+	`reference` is an External Reference of type Job Card (any ERP). From `at` (default now) the
+	machine's counts and run time belong to that job; the ERP adapter rolls up the job that ended.
+	Needs write permission on the Machine (roles FoaMES Operator and Engineer have it).
+	"""
+	doc = frappe.get_doc("Machine", machine)
+	doc.check_permission("write")
+	doc.set_current_job(reference or None, at)
+	return {
+		"machine": doc.name,
+		"current_job_reference": doc.current_job_reference,
+		"current_job_since": doc.current_job_since,
+	}
+
+
 # Floor and suggestions --------------------------------------------------------------------------
 
 

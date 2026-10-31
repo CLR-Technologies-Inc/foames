@@ -24,10 +24,25 @@ def floor_snapshot(days: int = 1) -> dict:
 	machines = frappe.get_all(
 		"Machine",
 		{"disabled": 0},
-		["name", "title", "status", "last_seen", "last_count_at", "machine_type", "ideal_cycle_seconds"],
+		[
+			"name",
+			"title",
+			"status",
+			"last_seen",
+			"last_count_at",
+			"machine_type",
+			"ideal_cycle_seconds",
+			"current_job_reference",
+			"current_job_since",
+		],
 		order_by="name",
 	)
+	jobs = current_jobs([m.current_job_reference for m in machines if m.current_job_reference])
 	for m in machines:
+		m["current_job"] = jobs.get(m.pop("current_job_reference"))
+		if m["current_job"]:
+			m["current_job"]["since"] = m.current_job_since
+		m.pop("current_job_since")
 		# Measured from the machine's latest count ever (kept on the Machine by event processing), not
 		# only inside the window, so a machine that counted yesterday and reports Running without
 		# counting today is still caught by the rules.
@@ -81,6 +96,27 @@ def floor_snapshot(days: int = 1) -> dict:
 	for extension in frappe.get_hooks("foames_floor_snapshot_extensions") or []:
 		frappe.get_attr(extension)(snapshot, since, now)
 	return snapshot
+
+
+def current_jobs(references: list[str]) -> dict[str, dict]:
+	"""External Reference name -> {reference, erp_system, external_id, label, status} for the jobs
+	machines are working on."""
+	if not references:
+		return {}
+	return {
+		r.name: {
+			"reference": r.name,
+			"erp_system": r.erp_system,
+			"external_id": r.external_id,
+			"label": r.label,
+			"status": r.status,
+		}
+		for r in frappe.get_all(
+			"External Reference",
+			{"name": ("in", references)},
+			["name", "erp_system", "external_id", "label", "status"],
+		)
+	}
 
 
 def downtime_by_reason(machine: str, since, until) -> dict[str | None, float]:

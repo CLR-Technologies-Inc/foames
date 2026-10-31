@@ -123,6 +123,8 @@ bench --site <site> run-tests --app foames
 bench --site <site> run-tests --app foames --module foames.foames_mes.doctype.oee_period.test_oee_period
 ```
 
+Without a bench on the machine, `cd docker && ./bench.sh up && ./bench.sh test` runs the suite in Docker on Frappe v15 or v16, with or without ERPNext; see [docs/dev-bench.md](docs/dev-bench.md).
+
 The S/4HANA tests use `foames/foames_adapters/s4hana/fake.py`, an in-memory stand-in for the OData transport, so no SAP system is needed; they run under `bench run-tests` because the adapters package imports Frappe. CI runs the suite on Frappe v15, v16, and v16 with ERPNext, plus Frappe's semgrep rules and pip-audit.
 
 ## Conventions
