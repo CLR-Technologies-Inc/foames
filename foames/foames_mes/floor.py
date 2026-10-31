@@ -16,7 +16,6 @@ import frappe
 from frappe.utils import add_days, get_datetime, now_datetime
 
 from foames.foames_mes.counters import minutes_between
-from foames.foames_mes.events import counter_totals
 
 
 def floor_snapshot(days: int = 1) -> dict:
@@ -144,7 +143,13 @@ def downtime_by_reason(machine: str, since, until) -> dict[str | None, float]:
 
 def counts_since(machine: str, since) -> dict[str, float]:
 	"""Counter deltas per counter name since `since`, for example {"good": 120, "scrap": 3}."""
-	return counter_totals(machine, since)
+	rows = frappe.get_all(
+		"Machine Event",
+		{"machine": machine, "event_type": "Count", "timestamp": (">=", since)},
+		["counter_name", "sum(delta) as total"],
+		group_by="counter_name",
+	)
+	return {r.counter_name: r.total or 0 for r in rows}
 
 
 def collect_findings(snapshot: dict) -> list[dict]:

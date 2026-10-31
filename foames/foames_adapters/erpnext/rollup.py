@@ -25,7 +25,6 @@ from frappe.utils import get_datetime, now_datetime
 
 from foames.foames_adapters.erpnext import ADAPTER_KEY, erpnext_installed
 from foames.foames_adapters.erpnext.production import production_payload, running_intervals, window_key
-from foames.foames_mes.events import counter_totals
 
 OPERATION = "Job Card Production Log"
 
@@ -94,7 +93,20 @@ def roll_up(machine, job_card: str | None = None, until=None, since=None) -> str
 	if end <= start:
 		return None
 
-	totals = counter_totals(machine.name, start, end, start_inclusive=False, end_inclusive=True)
+	totals = {
+		r.counter_name: r.total or 0
+		for r in frappe.get_all(
+			"Machine Event",
+			filters=[
+				["machine", "=", machine.name],
+				["event_type", "=", "Count"],
+				["timestamp", ">", start],
+				["timestamp", "<=", end],
+			],
+			fields=["counter_name", "sum(delta) as total"],
+			group_by="counter_name",
+		)
+	}
 	intervals = running_intervals(
 		state_before(machine.name, start), state_events(machine.name, start, end), start, end
 	)

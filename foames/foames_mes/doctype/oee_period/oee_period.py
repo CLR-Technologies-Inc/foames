@@ -11,7 +11,6 @@ from frappe.model.document import Document
 from frappe.utils import add_days, add_to_date, get_datetime, getdate, now_datetime
 
 from foames.foames_mes.counters import good_and_scrap, minutes_between
-from foames.foames_mes.events import counter_totals
 from foames.foames_mes.oee import compute_oee, ledger_from_states
 
 
@@ -118,7 +117,18 @@ def downtime_windows(machine: str, start, end) -> list[tuple]:
 
 
 def counts_in(machine: str, start, end) -> tuple[float, float]:
-	return good_and_scrap(counter_totals(machine, start, end))
+	rows = frappe.get_all(
+		"Machine Event",
+		filters=[
+			["machine", "=", machine],
+			["event_type", "=", "Count"],
+			["timestamp", ">=", start],
+			["timestamp", "<", end],
+		],
+		fields=["counter_name", "sum(delta) as total"],
+		group_by="counter_name",
+	)
+	return good_and_scrap({r.counter_name: r.total for r in rows})
 
 
 def compute_daily_oee(for_date=None):
