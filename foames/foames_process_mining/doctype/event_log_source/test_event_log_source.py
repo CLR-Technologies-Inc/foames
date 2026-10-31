@@ -48,7 +48,8 @@ class TestEventLogSource(IntegrationTestCase):
 			}
 		).insert()
 		events = source.extract("2026-10-22 00:00:00", "2026-10-23 00:00:00")
-		self.assertEqual(sorted(e.activity for e in events), ["good", "good", "scrap"])
+		self.assertEqual(events[0].activity, "good")  # the 08:00 reading comes first
+		self.assertEqual(sorted(e.activity for e in events[1:]), ["good", "scrap"])  # both at 09:00
 		self.assertEqual(events[0].objects, {"machine": [self.machine]})
 		self.assertEqual(events[0].attributes["source_doctype"], "Machine Event")
 		log = build_event_log(
