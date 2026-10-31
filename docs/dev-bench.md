@@ -30,7 +30,9 @@ cp .env.example .env        # optional: edit to pick v15, ERPNext, another Pytho
 
 The first `up` takes a while: it builds the image, clones Frappe (and ERPNext if configured), installs the Python and Node requirements and creates the site. Later runs of `up` skip every step whose result already exists and only refresh the requirements, so they finish in a minute or two.
 
-The site is `test_site` with the Administrator password `admin`. `./bench.sh serve` serves it on <http://localhost:8000> for clicking through the Floor View and the DocTypes.
+The site is `test_site` with the Administrator password `admin`. `./bench.sh serve` serves it on <http://localhost:8000> for clicking through the Floor View and the DocTypes. The port is published on `127.0.0.1` only, because of that well-known login; set `BENCH_BIND=0.0.0.0` in `.env` to reach it from another machine.
+
+Each checkout gets its own containers and volumes: `bench.sh` derives a Compose project name from the checkout path, so two clones or worktrees never share a bench, and `reset` in one leaves the other alone. Set `COMPOSE_PROJECT_NAME` in `.env` to pin a name, and pass the same `-p` to plain `docker compose` calls.
 
 ## Running tests
 
@@ -96,4 +98,5 @@ The GitHub Actions workflow in `.github/workflows/ci.yml` copies the checkout in
 - **Port 8000 is taken.** Set `BENCH_PORT` in `.env`.
 - **Git Bash turns the container paths into `C:/Program Files/Git/usr/local/...`.** `bench.sh` sets `MSYS_NO_PATHCONV=1` to stop that. When calling `docker compose exec` yourself from Git Bash, prefix the command with `MSYS_NO_PATHCONV=1`.
 - **Windows line endings.** Keep the checkout with LF line endings (`git config core.autocrlf input`), or the scripts inside the container may fail to parse Python files with CRLF.
+- **`bench init` failed half-way** (a lost connection while cloning Frappe, for example). Run `./bench.sh up` again: the script only treats a bench as created once `bench init` has returned, and removes a partial one before retrying.
 - **Something is wedged.** `./bench.sh reset` and `./bench.sh up` rebuild everything from the images, which stay cached.
