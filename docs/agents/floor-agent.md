@@ -11,7 +11,7 @@ FoaMES exposes the plant floor to agents as one snapshot and takes suggestions b
 
 | `foames.foames_mes.api.set_current_job(machine, reference, at=None)` | Tells FoaMES which job (an External Reference of type Job Card) a machine is working on, so its counts and run time roll up to that job; no reference ends the job. |
 
-Suggested MCP tool names: `foames_get_floor_snapshot`, `foames_post_suggestion`, `foames_get_oee`, `foames_set_current_job`.
+Over MCP these are the tools `foames_get_floor_snapshot`, `foames_post_suggestion`, `foames_run_suggestion_rules`, `foames_get_oee` and `foames_set_current_job`, next to `foames_list_machines`, `foames_get_machine`, `foames_list_downtime`, `foames_downtime_by_reason`, `foames_list_suggestions` and the `foames_mining_*` tools. Connecting a client and the full list are in [../mcp.md](../mcp.md).
 
 Rules for an agent:
 
