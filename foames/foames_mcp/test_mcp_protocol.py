@@ -11,6 +11,8 @@ for the site, and is skipped when the `mcp` package is not installed.
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import os
 import re
@@ -310,7 +312,9 @@ class TestBridge(unittest.TestCase):
 
 	def test_bad_credentials_become_a_jsonrpc_error(self):
 		b = self.make_bridge(secret="wrong")
-		response = json.loads(b.forward(json.dumps(request("ping"))))
+		with contextlib.redirect_stderr(io.StringIO()) as stderr:
+			response = json.loads(b.forward(json.dumps(request("ping"))))
+		self.assertIn("HTTP 403", stderr.getvalue())
 		self.assertEqual(response["error"]["code"], bridge.AUTH_ERROR)
 		self.assertEqual(response["id"], 1)
 
@@ -318,16 +322,15 @@ class TestBridge(unittest.TestCase):
 		b = bridge.build(
 			["--url", "http://127.0.0.1:9", "--api-key", "k", "--api-secret", "s", "--timeout", "2"]
 		)
-		response = json.loads(b.forward(json.dumps(request("ping"))))
+		with contextlib.redirect_stderr(io.StringIO()):
+			response = json.loads(b.forward(json.dumps(request("ping"))))
 		self.assertEqual(response["error"]["code"], bridge.UPSTREAM_ERROR)
 
 	def test_build_requires_credentials(self):
-		with self.assertRaises(SystemExit):
+		with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
 			bridge.build(["--url", self.site.url])
 
 	def test_serve_streams_lines(self):
-		import io
-
 		b = self.make_bridge()
 		stdin = io.StringIO(
 			json.dumps(request("ping")) + "\n\n" + json.dumps(request("tools/list", request_id=2)) + "\n"
