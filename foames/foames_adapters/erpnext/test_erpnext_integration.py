@@ -349,9 +349,9 @@ class TestJobCardRollUp(ERPNextTestCase):
 		self.assertEqual(card.total_completed_qty, 4)
 		self.assertEqual(card.total_time_in_mins, 35)
 		if card.meta.has_field("process_loss_qty"):
-			# Older ERPNext keeps the scrap the posting wrote; recent versions derive the field
-			# themselves as planned minus completed when the Job Card is saved.
-			self.assertIn(card.process_loss_qty, (1, card.for_quantity - card.total_completed_qty))
+			# Recent ERPNext derives the field as planned minus completed minus pending when the
+			# Job Card is saved; the posting sets the pending quantity so the scrap comes out exact.
+			self.assertEqual(card.process_loss_qty, 1)
 		self.assertIn(rules.marker(record.idempotency_key), card.remarks)
 		self.assertIn("scrap 1", card.remarks)
 
@@ -372,6 +372,8 @@ class TestJobCardRollUp(ERPNextTestCase):
 		card.reload()
 		self.assertEqual(card.total_completed_qty, 6)
 		self.assertEqual(len(card.time_logs), 2)
+		if card.meta.has_field("process_loss_qty"):
+			self.assertEqual(card.process_loss_qty, 1)
 
 	def test_machine_on_a_closed_job_card_is_flagged(self):
 		from foames.foames_adapters.erpnext.rollup import current_job_card_not_open

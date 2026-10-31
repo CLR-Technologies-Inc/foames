@@ -209,6 +209,13 @@ def post_job_card_production_log(payload: dict, marker: str) -> Result:
 	loss_before = flt(doc.get("process_loss_qty"))
 	if scrap and doc.meta.has_field("process_loss_qty"):
 		doc.process_loss_qty = loss_before + scrap
+	if doc.meta.has_field("pending_qty") and (loss_before + scrap or flt(doc.pending_qty)):
+		# Recent ERPNext derives Process Loss Qty when it saves: for quantity less total completed
+		# less pending. The pending quantity is what carries the loss, so it is set to leave exactly
+		# the loss recorded so far (never more than what is left to make), and kept in step as
+		# later windows complete more.
+		total_completed = flt(doc.total_completed_qty) + good
+		doc.pending_qty = max(flt(doc.for_quantity) - total_completed - loss_before - scrap, 0)
 	note = payload.get("remarks") or ""
 	if scrap:
 		note = f"{note} (scrap {scrap:g})".strip()
