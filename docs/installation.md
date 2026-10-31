@@ -28,8 +28,10 @@ Installation creates four roles before the DocTypes are synced:
 | Role | Meant for | What it can do |
 | --- | --- | --- |
 | FoaMES Engineer | Process and manufacturing engineers | Full access to Machines, Downtime Reasons, Machine Data Settings, OEE Periods and Agent Suggestions; may post machine events. |
-| FoaMES Operator | Shop-floor users | Machines, downtime and suggestions; may create Machine Events (manual entry or unsigned test posts). |
-| FoaMES Quality | Quality staff | Read access to the machine data, write access to downtime and suggestions. |
+| FoaMES Operator | Shop-floor users | Create and edit Machines, Downtime Records and Agent Suggestions; create Machine Events (manual entry or unsigned test posts); read Downtime Reasons and OEE Periods. |
+| FoaMES Quality | Quality staff | Edit (not create) Machines, Downtime Records and Agent Suggestions; read Machine Events, Downtime Reasons and OEE Periods. |
+
+Operators and Quality staff can therefore change a Machine's source id, OEE parameters and disabled flag. If that should be reserved to engineers, tighten the Machine permissions in Role Permissions Manager on the site.
 | FoaMES Integration | Service users for other systems | Creates S/4HANA inbound IDoc and outbox records. Give it to the user whose API key S/4HANA uses. |
 
 System Manager keeps full access to everything, including FoaMES Settings, S4HANA Settings and External References.

@@ -28,7 +28,7 @@ Downtime is opened and closed automatically from machine state. When a machine g
 
 What an operator adds is the **Reason**. Open the record (from the Downtime Record list, filtered on status Open, or from the Machine's connections) and pick a Downtime Reason. Until a reason is assigned the downtime counts as unplanned loss in OEE; once a reason flagged **Counts As Planned Downtime** is assigned, that time is excluded from the availability base instead. Notes are free text.
 
-A Downtime Record can also be created by hand with source Manual, for a stoppage the machine did not report. Give it a start, an end and a reason. An end before the start is refused.
+A Downtime Record can also be created by hand with source Manual, for a stoppage the machine did not report. Give it a start, an end and a reason. An end before the start is refused. A manual record documents the stoppage and counts in the downtime-by-reason figures, but it does not change the OEE time ledger, which is built from state events only: if the machine's last event was Running, those minutes are still run time in OEE. To have them counted as downtime, post a `Down` state event at the start and the real state at the end (a FoaMES Operator may post events unsigned), and then assign the reason on the record that opens.
 
 The Floor View does not list downtime itself. The floor snapshot carries downtime per machine with the top reason over the window, and the suggestion rule below turns a dominant reason into a suggestion. For the full picture use the Downtime Record list with the standard filters and group-by.
 
@@ -60,16 +60,16 @@ Moving a suggestion out of Open stamps **Resolved By** and **Resolved On**. Sett
 
 ### The built-in rules
 
-The scheduler runs the rules every hour over the last day. The **Run suggestion rules** button on the Floor View runs them now and reports how many new suggestions were created. The rules are in `foames/foames_mes/suggestions.py` and are plain functions over the floor snapshot:
+The scheduler runs the rules every hour over the last day. The **Run suggestion rules** button on the Floor View runs them now and reports how many new suggestions were created; it needs create permission on Agent Suggestion, so it works for FoaMES Engineer, FoaMES Operator and System Manager, and a FoaMES Quality user gets a permission error from it. The rules are in `foames/foames_mes/suggestions.py` and are plain functions over the floor snapshot:
 
 | Rule | Fires when | Category, severity |
 | --- | --- | --- |
 | Silent after counting | A machine counted in the window, has not counted for 30 minutes or more, and is now Unknown | Machine Data, Warning |
-| Running without counting | A machine reports Running but has not counted for 30 minutes or more | Downtime, Warning |
-| Dominant downtime reason | One reason is half or more of a machine's downtime over the window | Downtime, Info |
+| Running without counting | A machine counted in the window, reports Running, and has not counted for 30 minutes or more | Downtime, Warning |
+| Dominant downtime reason | One reason is half or more of a machine's downtime with a reason assigned over the window (downtime without a reason is not in the denominator) | Downtime, Info |
 | Missing ERP references | Any External Reference has resolved as Missing | ERP, Warning (one suggestion listing them) |
 
-The silent and stalled rules use the machine's last-seen time in their rule key, so a machine that goes quiet again after a fix raises a fresh suggestion. The downtime rule keys on machine, reason and window, so it raises once per day per reason.
+Both count-based rules need at least one count in the window; a machine that has never counted, for example a new machine with a broken counter signal, is not caught by them and shows on the Floor View as "No counts today" instead. They use the machine's last-seen time in their rule key, so a machine that goes quiet again after a fix raises a fresh suggestion. The downtime rule keys on machine and reason (its window label is always the same), so there is at most one open suggestion per machine and reason; once that suggestion is accepted, dismissed or done, the next hourly run reopens it if the reason is still dominant over the last day. Record what was decided in Resolution so a reopened suggestion carries its history.
 
 Other apps register further rules through the `foames_suggestion_rules` hook, and external agents post their own suggestions through the API. Both are described in [agents/floor-agent.md](agents/floor-agent.md).
 

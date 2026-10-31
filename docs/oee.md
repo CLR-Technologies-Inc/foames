@@ -24,7 +24,9 @@ Every minute of the planned period is assigned to exactly one bucket from the ma
 | Down, otherwise | Unplanned downtime | Loss |
 | Idle | Idle | Loss (not stored as downtime, but not run time either) |
 | Setup | Setup | Loss, same as Idle |
-| Unknown, or no event at all | Unknown | Loss. Time without a machine signal is never counted as run time |
+| Unknown (an explicit Unknown state event), or no state known yet at the start of the period | Unknown | Loss |
+
+The ledger is built from State and Alarm events only. The scheduler's staleness check (**Mark Machine Unknown After**) changes the status shown on the Floor View but does not write an event, so a machine whose last event was Running stays Running in the ledger until the next state event arrives. For silent time to count as loss, the data source has to say so: the Sparkplug B gateway does this itself (an NDEATH or DDEATH becomes an Unknown state event for the machines it covers); for the webhook, MQTT and OPC UA paths, send an explicit `Unknown` or `Down` state when the connection to the machine is lost, or the time until the next state event is attributed to the last known state.
 
 The state in force at the start of the period is the last state event before it, so a machine that was Running since the previous shift is Running from minute one. An Alarm event counts as Down.
 
@@ -40,7 +42,7 @@ Counts are the sum of the counter deltas inside the period, not the difference b
 | `scrap`, `reject`, `bad`, `ng` | Scrap |
 | anything else | Not in OEE (still stored and available for your own reports) |
 
-If a machine reports only a total and a scrap counter, send the total as `count` and the scrap as `scrap`: good is then total minus scrap in effect, because quality divides good by good plus scrap. If it reports good and total, send good as `good` and derive scrap on the gateway; FoaMES does not subtract counters for you.
+Good and scrap are added together to make the total, so send counters that do not overlap. If a machine reports a total that includes rejects plus a scrap counter, derive good on the gateway as total minus scrap and send that as `good` with the scrap as `scrap`; sending the total as `count` alongside `scrap` would count the rejects twice. If it reports good and total, send good as `good` and derive scrap as total minus good. FoaMES does not subtract counters for you.
 
 ### Notes the computation adds
 
@@ -69,9 +71,13 @@ In **Machine Data Settings**, **Mark Machine Unknown After** decides how quickly
 
 Once a day the scheduler creates one **OEE Period** per enabled machine for the previous day, over the machine's scheduled window. Its name is `OEE-<machine>-<from time>`. A period is not created twice for the same machine and window, so re-running the job is harmless.
 
+The daily job runs at the start of the day for the previous date, so a shift window that crosses midnight (for example a Shift Start of 22:00 with 480 minutes) is computed before it has ended, and the hours after midnight are measured as whatever state was last known with no counts. For such a shift, re-save the period after the shift ends to recompute it, or create the period by hand then; the duplicate check will not recreate it.
+
 Each period shows the time ledger (run, planned downtime, unplanned downtime, unknown minutes, coverage), the good and scrap counts, and the four factors. The ideal cycle time is copied from the machine when the period is computed, so a later change to the machine does not silently change old periods.
 
-A period is computed when it is saved. If events arrive late (a replay through the webhook, a gateway that was down), open the period and save it again to recompute, or create a period by hand for any window: pick the machine, the from and to times and the planned minutes, and the rest is filled in on save.
+A period is computed when it is saved. If state events arrive late, open the period and save it again to recompute, or create a period by hand for any window: pick the machine, the from and to times and the planned minutes, and the rest is filled in on save.
+
+Counts behave differently from states on a replay. A Count event's delta is fixed when the event is stored, against the latest reading already recorded; a reading that arrives after a later one is treated as out of order and gets a delta of zero. So when a gateway was down and then reconnects, the first new reading's delta already covers everything produced during the outage, attributed to the moment of that reading, and replaying the missed readings afterwards adds nothing. To place production in the right period, replay the missed readings in timestamp order before any newer reading is stored. Replaying state events with their original timestamps works at any time.
 
 To create the periods for a particular day from the bench:
 
@@ -106,7 +112,7 @@ A press with an ideal cycle time of 2 seconds, shift 06:00 to 14:00 (480 planned
 | 10:00–10:45 | Down, reason "Planned maintenance" (planned) | 45 | Planned downtime |
 | 10:45–13:00 | Running | 135 | Run |
 | 13:00–13:20 | Down, reason "Jam" | 20 | Unplanned downtime |
-| 13:20–14:00 | no events, machine marked Unknown | 40 | Unknown (loss) |
+| 13:20–14:00 | Unknown state event at 13:20 (the gateway reported the connection lost), nothing after | 40 | Unknown (loss) |
 
 Counters over the shift: good deltas sum to 9,000, scrap deltas to 300.
 
@@ -116,7 +122,7 @@ Counters over the shift: good deltas sum to 9,000, scrap deltas to 300.
 - OEE = 0.793 × 0.899 × 0.968 = 69.0 %
 - Coverage = 440 / 480 = 91.7 %, with the note *40 minutes without a machine signal counted as loss*
 
-The 40 silent minutes at the end cost about 7 points of OEE. If the press was in fact running and the gateway had dropped, the fix is the gateway, and the period can be recomputed once the events are replayed with their original timestamps.
+The 40 silent minutes at the end cost about 7 points of OEE. If the press was in fact running and only the gateway had dropped, the fix is the gateway; replay the state events with their original timestamps and re-save the period, bearing in mind the note on counts above.
 
 ## What OEE in FoaMES does not do
 
