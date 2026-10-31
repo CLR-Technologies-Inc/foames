@@ -71,9 +71,10 @@ def post_stock_entry(purpose: str, payload: dict, marker: str) -> Result:
 	values = make_stock_entry(payload["work_order"], purpose, qty=flt(qty) if qty is not None else None)
 	doc = frappe.get_doc(values)
 	doc.remarks = f"{marker} {payload.get('remarks') or ''}".strip()
-	if payload.get("posting_date"):
+	if payload.get("posting_date") or payload.get("posting_time"):
 		doc.set_posting_time = 1
-		doc.posting_date = payload["posting_date"]
+		if payload.get("posting_date"):
+			doc.posting_date = payload["posting_date"]
 		if payload.get("posting_time"):
 			doc.posting_time = payload["posting_time"]
 	doc.insert()
@@ -100,33 +101,51 @@ def post_stock_entry(purpose: str, payload: dict, marker: str) -> Result:
 
 
 def post_job_card_time_log(payload: dict, marker: str) -> Result:
-	"""Add a time log to a Job Card through ERPNext's own `make_time_log`, which validates the
-	operation sequence and updates the Job Card's status and totals. With `submit` and a completion
-	time, the Job Card is submitted once its completed quantity reaches the quantity it is for."""
+	"""Add time to a Job Card through ERPNext's own `make_time_log`, which validates the operation
+	sequence and updates the Job Card's status. `start_time` opens a time log row and `complete_time`
+	closes the open one; a posting may carry both, which is applied as a start followed by a
+	completion. A completion with no open row is rejected rather than silently dropped. With `submit`
+	and a completion, the Job Card is submitted once its completed quantity reaches its for quantity.
+	"""
 	make_time_log = frappe.get_attr(f"{JOB_CARD_API}.make_time_log")
 	name = payload["job_card"]
-	args = {"job_card_id": name}
-	for key in ("start_time", "complete_time", "completed_qty", "employees"):
-		if payload.get(key) not in (None, ""):
-			args[key] = payload[key]
-	make_time_log(args)
+	start_time, complete_time = payload.get("start_time"), payload.get("complete_time")
+	if complete_time and not start_time and not open_time_log(name):
+		frappe.throw(
+			_("Job Card {0} has no open time log to complete. Send start_time first, or both times.").format(
+				name
+			)
+		)
+	if start_time:
+		args = {"job_card_id": name, "start_time": start_time}
+		if payload.get("employees"):
+			args["employees"] = payload["employees"]
+		make_time_log(args)
+	if complete_time:
+		args = {"job_card_id": name, "complete_time": complete_time}
+		if payload.get("completed_qty") is not None:
+			args["completed_qty"] = payload["completed_qty"]
+		make_time_log(args)
 
 	remarks = frappe.db.get_value("Job Card", name, "remarks") or ""
 	frappe.db.set_value("Job Card", name, "remarks", f"{remarks}\n{marker}".strip(), update_modified=False)
 
 	doc = frappe.get_doc("Job Card", name)
+	refresh_totals(doc)
 	submitted = False
 	submit = (
 		payload["submit"]
 		if "submit" in payload
 		else frappe.db.get_single_value("ERPNext Adapter Settings", "submit_job_cards_when_complete")
 	)
-	if submit and payload.get("complete_time") and doc.docstatus == 0:
-		# make_time_log writes the rows directly; the total on the parent is only summed on save.
-		completed = max(flt(doc.total_completed_qty), sum(flt(row.completed_qty) for row in doc.time_logs))
-		if completed >= flt(doc.for_quantity):
-			doc.submit()
-			submitted = True
+	if (
+		submit
+		and complete_time
+		and doc.docstatus == 0
+		and flt(doc.total_completed_qty) >= flt(doc.for_quantity)
+	):
+		doc.submit()
+		submitted = True
 	return Result(
 		"Job Card",
 		name,
@@ -138,6 +157,32 @@ def post_job_card_time_log(payload: dict, marker: str) -> Result:
 			"submitted": submitted,
 		},
 	)
+
+
+def open_time_log(job_card: str) -> str | None:
+	"""The time log row of a Job Card that was started and not yet completed."""
+	return frappe.db.get_value(
+		"Job Card Time Log",
+		{
+			"parent": job_card,
+			"parenttype": "Job Card",
+			"from_time": ("is", "set"),
+			"to_time": ("is", "not set"),
+		},
+		"name",
+	)
+
+
+def refresh_totals(doc):
+	"""`make_time_log` writes the time log rows directly; the totals on the Job Card are only summed
+	on save. Sum them here so the response, the floor and the submit check see the new row."""
+	completed = sum(flt(row.completed_qty) for row in doc.time_logs)
+	minutes = sum(flt(row.time_in_mins) for row in doc.time_logs)
+	if (completed, minutes) != (flt(doc.total_completed_qty), flt(doc.total_time_in_mins)):
+		doc.db_set(
+			{"total_completed_qty": completed, "total_time_in_mins": minutes},
+			update_modified=False,
+		)
 
 
 def set_work_order_status(payload: dict) -> Result:

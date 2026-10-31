@@ -48,8 +48,8 @@ Whitelisted reads (roles FoaMES Operator, Engineer, Quality, Integration or Syst
 | Method | Returns |
 | --- | --- |
 | `foames.foames_adapters.erpnext.api.get_work_order(name)` | The Work Order's `data` dict |
-| `foames.foames_adapters.erpnext.api.list_open_work_orders(workstation=None)` | Submitted Work Orders that are Not Started or In Process |
-| `foames.foames_adapters.erpnext.api.list_open_job_cards(workstation=None, machine=None)` | Draft (not yet submitted) Job Cards, optionally for the workstation a Machine points at |
+| `foames.foames_adapters.erpnext.api.list_open_work_orders(workstation=None, limit=100)` | Submitted Work Orders that are Not Started, In Process or waiting on reserved stock |
+| `foames.foames_adapters.erpnext.api.list_open_job_cards(workstation=None, machine=None, limit=200)` | Job Cards that are still open: drafts, and submitted ones still Work In Progress; optionally for the workstation a Machine points at |
 | `foames.foames_adapters.erpnext.api.get_operations()` | The outbox operations and the payload keys each one takes |
 
 ## The outbox
@@ -78,7 +78,7 @@ status; `get_posting(name)` reports progress.
 | `Material Transfer for Manufacture` | `work_order`, optional `qty`, `posting_date`, `posting_time`, `remarks`, `submit` | Builds the Stock Entry the Work Order form's **Start** button builds (source warehouse to WIP), inserts and submits it |
 | `Manufacture` | same | The **Finish** entry: consumes from WIP and receives the finished good, updating the Work Order's produced quantity and status |
 | `Material Consumption for Manufacture` | same | Consumes materials without receiving finished goods (needs **Allow Continuous Material Consumption** in Manufacturing Settings) |
-| `Job Card Time Log` | `job_card`, `start_time` and/or `complete_time`, optional `completed_qty`, `employees`, `submit` | Adds the time log through `make_time_log`, which validates the operation sequence and updates the Job Card's status and totals; with `submit` (or the settings default) the Job Card is submitted once its completed quantity reaches its for quantity |
+| `Job Card Time Log` | `job_card`, `start_time` and/or `complete_time`, optional `completed_qty`, `employees`, `submit` | `start_time` opens a time log row and `complete_time` closes the open one, both through `make_time_log`, which validates the operation sequence and updates the Job Card's status; a posting with both times is applied as a start followed by a completion, and a completion with no open row is rejected. The Job Card's totals are recomputed, and with `submit` (or the settings default) it is submitted once its completed quantity reaches its for quantity |
 | `Work Order Status` | `work_order`, `status` = `Stopped`, `Resumed` or `Closed` | `stop_unstop` or `close_work_order`; already being in that state counts as done |
 
 `qty` defaults to the Work Order's remaining quantity, as it does in the form. `submit` defaults
@@ -120,7 +120,8 @@ without ERPNext.
 ## The floor
 
 With **Show Job Cards on the Floor** on, the floor snapshot gains, per machine, `workstation` and
-`job_cards` (the open Job Cards on that workstation, up to the look-ahead), and an `erp` section
+`job_cards` (the open Job Cards on that workstation whose expected start is within **Look Ahead
+(days)** of now, or that have no expected start), and an `erp` section
 with the open Work Orders, the Job Card count and the machines that have no workstation reference.
 The rule `running_without_job_card` raises an Agent Suggestion when a machine reports Running
 while its workstation has no open Job Card. External agents read the same snapshot through

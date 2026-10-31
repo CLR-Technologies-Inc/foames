@@ -17,6 +17,9 @@ PENDING = ("Queued", "Retry")
 # rolled back with it, so the posting simply goes back to the queue.
 STALE_SENDING = timedelta(minutes=15)
 BATCH_SIZE = 50
+# Pages of due postings one run looks through before giving up on finding BATCH_SIZE sendable ones
+# (a backlog of blocked or failed groups would otherwise be scanned to the end on every run).
+MAX_PAGES = 10
 
 
 class ERPNextOutbox(Document):
@@ -159,9 +162,24 @@ def enqueue(
 	Use a key that names the business event, for example "<work order>:<operation>:complete".
 	Postings that share a `sequence_group` (typically the Work Order) are performed in queue order.
 	"""
+	return enqueue_posting(
+		operation, payload, idempotency_key, sequence_group, reference_doctype, reference_name
+	)[0]
+
+
+def enqueue_posting(
+	operation: str,
+	payload: dict,
+	idempotency_key: str,
+	sequence_group: str | None = None,
+	reference_doctype: str | None = None,
+	reference_name: str | None = None,
+) -> tuple[str, bool]:
+	"""Like `enqueue`, and also says whether this call created the record (False when the key was
+	already queued, including by a concurrent caller)."""
 	existing = frappe.db.get_value("ERPNext Outbox", {"idempotency_key": idempotency_key}, "name")
 	if existing:
-		return existing
+		return existing, False
 	doc = frappe.get_doc(
 		{
 			"doctype": "ERPNext Outbox",
@@ -179,8 +197,8 @@ def enqueue(
 		doc.insert(ignore_permissions=True)
 	except (frappe.DuplicateEntryError, frappe.UniqueValidationError):
 		frappe.db.rollback(save_point="foames_erpnext_enqueue")
-		return frappe.db.get_value("ERPNext Outbox", {"idempotency_key": idempotency_key}, "name")
-	return doc.name
+		return frappe.db.get_value("ERPNext Outbox", {"idempotency_key": idempotency_key}, "name"), False
+	return doc.name, True
 
 
 def release_stale_sending():
@@ -204,7 +222,7 @@ def due_postings(after=None, page_size: int = BATCH_SIZE * 4) -> list[dict]:
 		"ERPNext Outbox",
 		filters=filters,
 		or_filters=[["next_attempt_at", "is", "not set"], ["next_attempt_at", "<=", now_datetime()]],
-		fields=["name", "creation"],
+		fields=["name", "creation", "sequence_group"],
 		order_by="creation asc",
 		limit_page_length=page_size,
 	)
@@ -228,7 +246,11 @@ def process_outbox():
 	release_stale_sending()
 	sent = 0
 	after = None
-	while sent < BATCH_SIZE:
+	# Groups found blocked or failed in this run: their later postings cannot go yet either.
+	held_groups: set[str] = set()
+	for _page in range(MAX_PAGES):
+		if sent >= BATCH_SIZE:
+			break
 		rows = due_postings(after)
 		if not rows:
 			break
@@ -236,14 +258,18 @@ def process_outbox():
 		for row in rows:
 			if sent >= BATCH_SIZE:
 				break
-			sent += _process_row(row)
+			if row.sequence_group and row.sequence_group in held_groups:
+				continue
+			sent += _process_row(row, held_groups)
 	return sent
 
 
-def _process_row(row) -> int:
+def _process_row(row, held_groups: set | None = None) -> int:
 	"""Claim and perform one due posting. Returns 1 when an attempt was made, else 0."""
 	doc = claim(row.name)
 	if not doc:
+		if held_groups is not None and row.sequence_group:
+			held_groups.add(row.sequence_group)
 		return 0
 	user = frappe.session.user
 	try:
@@ -257,6 +283,8 @@ def _process_row(row) -> int:
 		frappe.db.rollback()
 		doc.record_error(e)
 		frappe.db.commit()  # nosemgrep
+		if held_groups is not None and doc.sequence_group:
+			held_groups.add(doc.sequence_group)
 		if rules.classify(rules.error_types(e)) != "Failed":
 			frappe.log_error(title=_("ERPNext outbox: {0} will be retried").format(row.name))
 	finally:

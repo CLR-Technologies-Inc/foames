@@ -170,6 +170,44 @@ class TestJobCardAndStatusPostings(ERPNextTestCase):
 		self.assertEqual(wo.produced_qty, 2)
 		self.assertEqual(wo.status, "Completed")
 
+	def test_completion_without_an_open_time_log_fails(self):
+		wo = self.fixtures.make_work_order(qty=1)
+		job_card = self.fixtures.job_card_for(wo.name)
+		enqueue("Material Transfer for Manufacture", {"work_order": wo.name}, f"{wo.name}:transfer", wo.name)
+		complete = enqueue(
+			"Job Card Time Log",
+			{"job_card": job_card, "complete_time": now_datetime(), "completed_qty": 1},
+			f"{job_card}:complete-only",
+			wo.name,
+		)
+		self.run_outbox()
+		self.assertEqual(self.outbox(complete).status, "Failed")
+		self.assertIn("no open time log", self.outbox(complete).last_error)
+		self.assertEqual(frappe.db.get_value("Job Card", job_card, "total_completed_qty"), 0)
+
+	def test_both_times_in_one_posting(self):
+		wo = self.fixtures.make_work_order(qty=1)
+		job_card = self.fixtures.job_card_for(wo.name)
+		enqueue("Material Transfer for Manufacture", {"work_order": wo.name}, f"{wo.name}:transfer", wo.name)
+		both = enqueue(
+			"Job Card Time Log",
+			{
+				"job_card": job_card,
+				"start_time": add_to_date(now_datetime(), minutes=-10),
+				"complete_time": now_datetime(),
+				"completed_qty": 1,
+				"submit": False,
+			},
+			f"{job_card}:both",
+			wo.name,
+		)
+		self.run_outbox()
+		self.assertEqual(self.outbox(both).status, "Posted", self.outbox(both).last_error)
+		card = frappe.get_doc("Job Card", job_card)
+		self.assertEqual(card.docstatus, 0)
+		self.assertEqual(card.total_completed_qty, 1)
+		self.assertAlmostEqual(card.total_time_in_mins, 10, delta=1)
+
 	def test_manufacture_before_the_operation_is_complete_fails(self):
 		wo = self.fixtures.make_work_order(qty=2)
 		enqueue("Material Transfer for Manufacture", {"work_order": wo.name}, f"{wo.name}:transfer", wo.name)

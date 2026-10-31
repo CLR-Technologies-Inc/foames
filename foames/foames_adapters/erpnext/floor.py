@@ -33,13 +33,13 @@ def extend_snapshot(snapshot: dict, since, now):
 	workstation_by_machine = machine_workstations([m["name"] for m in snapshot.get("machines", [])])
 	workstations = sorted(set(workstation_by_machine.values()))
 	lookahead = frappe.db.get_single_value("ERPNext Adapter Settings", "floor_lookahead_days")
-	horizon = add_days(now, int(lookahead or 0) + 1) if lookahead is not None else None
+	# Look-ahead 0 means "due by now", 2 means "due within the next two days"; a card with no
+	# expected start is always shown. The snapshot is per machine, so no page limit applies.
+	horizon = add_days(now, int(lookahead or 0))
 	job_cards = [
 		jc
-		for jc in open_job_cards(workstations)
-		if horizon is None
-		or not jc.get("expected_start_date")
-		or get_datetime(jc["expected_start_date"]) < horizon
+		for jc in open_job_cards(workstations, limit=0)
+		if not jc.get("expected_start_date") or get_datetime(jc["expected_start_date"]) <= horizon
 	]
 	by_workstation: dict[str, list[dict]] = {}
 	for jc in job_cards:
@@ -75,6 +75,7 @@ def machine_workstations(machines: list[str]) -> dict[str, str]:
 				"name": ("in", [r.workstation_reference for r in rows]),
 				"erp_system": ADAPTER_KEY,
 				"reference_type": "Workstation",
+				"status": ("!=", "Missing"),
 			},
 			fields=["name", "external_id"],
 		)

@@ -156,9 +156,10 @@ def _has_column(doctype: str, fieldname: str) -> bool:
 	return fieldname == "name" or frappe.db.has_column(doctype, fieldname)
 
 
-OPEN_WORK_ORDER_STATUSES = ("Not Started", "In Process")
+OPEN_WORK_ORDER_STATUSES = ("Not Started", "In Process", "Stock Reserved", "Stock Partially Reserved")
 # A draft Job Card is open whatever its status reads (Open, Material Transferred, Work In Progress,
-# On Hold ...); a submitted one is done.
+# On Hold ...). A submitted one is done, except a card that tracks semi-finished goods, which stays
+# Work In Progress after submission until its output is manufactured.
 
 
 def open_work_orders(workstation: str | None = None, limit: int = 100) -> list[dict]:
@@ -196,8 +197,9 @@ def open_work_orders(workstation: str | None = None, limit: int = 100) -> list[d
 
 
 def open_job_cards(workstations: list[str] | str | None = None, limit: int = 200) -> list[dict]:
-	"""Draft Job Cards, which are the ones still to be worked, optionally on the given workstations."""
-	filters = {"docstatus": 0}
+	"""Job Cards still to be worked, optionally on the given workstations. `limit` 0 means all."""
+	filters = {"docstatus": ("<", 2)}
+	or_filters = [["docstatus", "=", 0], ["status", "=", "Work In Progress"]]
 	if isinstance(workstations, str):
 		workstations = [workstations]
 	if workstations is not None:
@@ -207,6 +209,7 @@ def open_job_cards(workstations: list[str] | str | None = None, limit: int = 200
 	return frappe.get_all(
 		"Job Card",
 		filters=filters,
+		or_filters=or_filters,
 		fields=[
 			"name",
 			"work_order",

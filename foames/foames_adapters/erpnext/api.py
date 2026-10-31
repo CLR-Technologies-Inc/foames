@@ -105,11 +105,12 @@ def post(
 		rules.prepare(rules.OPERATIONS[operation], payload)
 	except ValueError as e:
 		frappe.throw(str(e))
-	from foames.foames_adapters.doctype.erpnext_outbox.erpnext_outbox import enqueue
+	from foames.foames_adapters.doctype.erpnext_outbox.erpnext_outbox import enqueue_posting
 
-	existed = bool(frappe.db.exists("ERPNext Outbox", {"idempotency_key": idempotency_key}))
-	name = enqueue(operation, payload, idempotency_key, sequence_group, reference_doctype, reference_name)
-	return {"outbox": name, "already_queued": existed, **get_posting(name)}
+	name, created = enqueue_posting(
+		operation, payload, idempotency_key, sequence_group, reference_doctype, reference_name
+	)
+	return {"outbox": name, "already_queued": not created, **get_posting(name)}
 
 
 @frappe.whitelist()
