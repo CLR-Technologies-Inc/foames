@@ -31,6 +31,22 @@ bench get-app https://github.com/CLR-Technologies-Inc/foames
 bench --site $SITE install-app foames
 ```
 
+The full guide, including roles, the scheduler, running the gateways and a smoke test, is [docs/installation.md](docs/installation.md).
+
+## Documentation
+
+| Page | Covers |
+| --- | --- |
+| [docs/installation.md](docs/installation.md) | Install, update, roles, scheduler, gateways under supervisor, first configuration, development setup |
+| [docs/erpnext-adapter.md](docs/erpnext-adapter.md) | External References, the ERPNext adapter, running without an ERP, writing an adapter |
+| [docs/s4hana-adapter.md](docs/s4hana-adapter.md) | The SAP S/4HANA adapter: setup on both sides, the outbox, inbound IDocs, operation |
+| [docs/machine-data.md](docs/machine-data.md) | The webhook, MQTT, OPC UA and Sparkplug B paths and the event shape |
+| [docs/ignition.md](docs/ignition.md) | Connecting Ignition SCADA |
+| [docs/floor-view.md](docs/floor-view.md) | The Floor View, downtime and Agent Suggestions |
+| [docs/oee.md](docs/oee.md) | How OEE is computed and how to set a machine up for it |
+| [AGENTS.md](AGENTS.md) | For coding agents and developers building on FoaMES: invariants, hooks, API, tests |
+| [docs/agents/floor-agent.md](docs/agents/floor-agent.md) | For an agent reading the floor and raising suggestions at run time |
+
 ## Contributing
 
 Contributions need a signed Contributor License Agreement. See [CONTRIBUTING.md](CONTRIBUTING.md).
