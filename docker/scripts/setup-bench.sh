@@ -31,10 +31,17 @@ wait_for_db() {
 	return 1
 }
 
+# Written only after `bench init` returns, so a bench that failed half-way is not mistaken for one.
+INIT_MARKER=".foames-bench-initialised"
+
 init_bench() {
-	if [ -f "$BENCH_DIR/sites/common_site_config.json" ]; then
+	if [ -f "$BENCH_DIR/$INIT_MARKER" ]; then
 		log "Bench exists at $BENCH_DIR (Frappe $(cd "$BENCH_DIR/apps/frappe" && git rev-parse --abbrev-ref HEAD))"
 		return 0
+	fi
+	if [ -d "$BENCH_DIR" ]; then
+		log "Removing the incomplete bench at $BENCH_DIR from an earlier failed init"
+		rm -rf "$BENCH_DIR"
 	fi
 	log "Creating the bench from Frappe $FRAPPE_BRANCH"
 	mkdir -p "$(dirname "$BENCH_DIR")"
@@ -45,6 +52,7 @@ init_bench() {
 		--skip-assets \
 		--no-backups \
 		"$BENCH_DIR"
+	echo "$FRAPPE_BRANCH" > "$BENCH_DIR/$INIT_MARKER"
 }
 
 configure_bench() {
