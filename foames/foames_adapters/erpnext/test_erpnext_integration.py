@@ -39,6 +39,8 @@ class ERPNextTestCase(IntegrationTestCase):
 	def setUp(self):
 		super().setUp()
 		frappe.db.delete("ERPNext Outbox")
+		# References are resolved on save here; an earlier test may have committed the skip flag.
+		frappe.db.set_single_value("FoaMES Settings", "skip_resolution_on_save", 0)
 
 	def run_outbox(self):
 		return process_outbox()
@@ -158,9 +160,12 @@ class TestJobCardAndStatusPostings(ERPNextTestCase):
 			),
 			enqueue("Manufacture", {"work_order": wo.name, "qty": 2}, f"{wo.name}:manufacture", wo.name),
 		]
-		self.assertEqual(self.run_outbox(), 4)
+		sent = self.run_outbox()
+		# Check the statuses before the count, so a rejected posting fails with ERPNext's message
+		# rather than with a bare count.
 		for name in postings:
 			self.assertEqual(self.outbox(name).status, "Posted", f"{name}: {self.outbox(name).last_error}")
+		self.assertEqual(sent, 4)
 		card = frappe.get_doc("Job Card", job_card)
 		self.assertEqual(card.total_completed_qty, 2)
 		self.assertEqual(card.docstatus, 1)
@@ -315,7 +320,8 @@ class TestJobCardRollUp(ERPNextTestCase):
 		wo = self.fixtures.make_work_order(qty=10)
 		job_card = self.fixtures.job_card_for(wo.name)
 		# Well clear of the time logs other tests leave on the same workstation, which would overlap.
-		start = add_to_date(now_datetime(), hours=-26)
+		# Whole seconds: ERPNext stores time log boundaries without microseconds.
+		start = add_to_date(now_datetime().replace(microsecond=0), hours=-26)
 		t = lambda minutes: add_to_date(start, minutes=minutes)  # noqa: E731
 		set_current_job(self.machine.name, get_reference("Job Card", job_card, ADAPTER_KEY), at=t(0))
 		self.events(
@@ -343,8 +349,11 @@ class TestJobCardRollUp(ERPNextTestCase):
 		self.assertEqual(card.total_completed_qty, 4)
 		self.assertEqual(card.total_time_in_mins, 35)
 		if card.meta.has_field("process_loss_qty"):
-			self.assertEqual(card.process_loss_qty, 1)
+			# Older ERPNext keeps the scrap the posting wrote; recent versions derive the field
+			# themselves as planned minus completed when the Job Card is saved.
+			self.assertIn(card.process_loss_qty, (1, card.for_quantity - card.total_completed_qty))
 		self.assertIn(rules.marker(record.idempotency_key), card.remarks)
+		self.assertIn("scrap 1", card.remarks)
 
 		# The next window starts where this one ended and has nothing to report.
 		self.assertIsNone(roll_up(self.machine.name, until=t(90)))

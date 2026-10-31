@@ -38,6 +38,10 @@ def confirmation_posted(group="77"):
 
 
 class TestS4HANAOutbox(IntegrationTestCase):
+	def restore_resolution_flag(self):
+		frappe.db.set_single_value("FoaMES Settings", "skip_resolution_on_save", 0)
+		frappe.db.commit()  # nosemgrep
+
 	def setUp(self):
 		enable_s4hana()
 		frappe.db.delete("S4HANA Outbox")
@@ -122,6 +126,8 @@ class TestS4HANAOutbox(IntegrationTestCase):
 				"results": [{"Material": "FG-1", "Plant": "1010", "GoodsMovementType": "101"}]
 			},
 		}
+		# The outbox commits, so the flag would outlive this test's rollback: put it back afterwards.
+		self.addCleanup(self.restore_resolution_flag)
 		frappe.db.set_single_value("FoaMES Settings", "skip_resolution_on_save", 1)
 		name = enqueue("Goods Movement", payload, "gr-1")
 		fake = (

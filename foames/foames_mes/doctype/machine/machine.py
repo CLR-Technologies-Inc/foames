@@ -22,6 +22,15 @@ REFERENCE_TYPES = {
 
 
 class Machine(Document):
+	def _set_defaults(self):
+		# Frappe fills an empty Time field with the current time when a document is created. An
+		# empty Shift Start means the whole day is scheduled (see oee_period.scheduled_window), so a
+		# machine created without one must stay without one.
+		shift_start = self.shift_start
+		super()._set_defaults()
+		if not shift_start:
+			self.shift_start = None
+
 	def validate(self):
 		if not self.title:
 			self.title = self.code
