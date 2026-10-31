@@ -28,4 +28,4 @@ You accept and agree to the following terms and conditions for Your present and 
 
 ## How to sign
 
-Sign through the CLA Assistant link that is posted on your first pull request (see [CONTRIBUTING.md](../CONTRIBUTING.md#contributor-license-agreement)). Your GitHub account, the date, and the version of this Agreement are recorded as your signature.
+Sign through the CLA Assistant link that is posted on your first pull request (see https://github.com/CLR-Technologies-Inc/foames/blob/main/CONTRIBUTING.md#contributor-license-agreement). Your GitHub account, the date, and the version of this Agreement are recorded as your signature.

@@ -24,21 +24,31 @@ def floor_snapshot(days: int = 1) -> dict:
 	machines = frappe.get_all(
 		"Machine",
 		{"disabled": 0},
-		["name", "title", "status", "last_seen", "machine_type", "ideal_cycle_seconds"],
+		[
+			"name",
+			"title",
+			"status",
+			"last_seen",
+			"last_count_at",
+			"machine_type",
+			"ideal_cycle_seconds",
+			"current_job_reference",
+			"current_job_since",
+		],
 		order_by="name",
 	)
-	last_count = {
-		r.machine: r.last
-		for r in frappe.get_all(
-			"Machine Event",
-			{"event_type": "Count", "timestamp": (">=", since)},
-			["machine", "max(timestamp) as last"],
-			group_by="machine",
-		)
-	}
+	jobs = current_jobs([m.current_job_reference for m in machines if m.current_job_reference])
 	for m in machines:
+		m["current_job"] = jobs.get(m.pop("current_job_reference"))
+		if m["current_job"]:
+			m["current_job"]["since"] = m.current_job_since
+		m.pop("current_job_since")
+		# Measured from the machine's latest count ever (kept on the Machine by event processing), not
+		# only inside the window, so a machine that counted yesterday and reports Running without
+		# counting today is still caught by the rules.
+		last_count_at = m.pop("last_count_at")
 		m["minutes_since_count"] = (
-			minutes_between(get_datetime(last_count[m.name]), now) if m.name in last_count else None
+			minutes_between(get_datetime(last_count_at), now) if last_count_at else None
 		)
 		m["counts"] = counts_since(m.name, since)
 		m["oee_today"] = frappe.db.get_value(
@@ -49,15 +59,18 @@ def floor_snapshot(days: int = 1) -> dict:
 			order_by="from_time desc",
 		)
 	downtime = []
+	period = f"{since:%Y-%m-%d} to {now:%Y-%m-%d}"
 	for m in machines:
 		by_reason = downtime_by_reason(m.name, since, now)
-		if by_reason:
-			top_reason, top_minutes = max(by_reason.items(), key=lambda item: item[1])
+		classified = {reason: minutes for reason, minutes in by_reason.items() if reason}
+		if classified:
+			top_reason, top_minutes = max(classified.items(), key=lambda item: item[1])
 			downtime.append(
 				{
 					"machine": m.name,
-					"period": f"last {days} day(s)",
+					"period": period,
 					"total_minutes": sum(by_reason.values()),
+					"unclassified_minutes": by_reason.get(None, 0),
 					"top_reason": top_reason,
 					"top_minutes": top_minutes,
 				}
@@ -85,14 +98,35 @@ def floor_snapshot(days: int = 1) -> dict:
 	return snapshot
 
 
-def downtime_by_reason(machine: str, since, until) -> dict[str, float]:
+def current_jobs(references: list[str]) -> dict[str, dict]:
+	"""External Reference name -> {reference, erp_system, external_id, label, status} for the jobs
+	machines are working on."""
+	if not references:
+		return {}
+	return {
+		r.name: {
+			"reference": r.name,
+			"erp_system": r.erp_system,
+			"external_id": r.external_id,
+			"label": r.label,
+			"status": r.status,
+		}
+		for r in frappe.get_all(
+			"External Reference",
+			{"name": ("in", references)},
+			["name", "erp_system", "external_id", "label", "status"],
+		)
+	}
+
+
+def downtime_by_reason(machine: str, since, until) -> dict[str | None, float]:
 	"""Minutes of downtime per reason inside [since, until), counting the part of each record that
-	overlaps the window. Open downtime counts up to `until`."""
+	overlaps the window. Open downtime counts up to `until`. Downtime with no reason assigned yet is
+	returned under the key None, so shares are computed over all downtime, not only the classified part."""
 	rows = frappe.get_all(
 		"Downtime Record",
 		filters=[
 			["machine", "=", machine],
-			["reason", "is", "set"],
 			["start_time", "<", until],
 		],
 		or_filters=[["end_time", "is", "not set"], ["end_time", ">=", since]],

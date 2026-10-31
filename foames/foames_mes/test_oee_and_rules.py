@@ -88,6 +88,10 @@ class TestSuggestionRules(unittest.TestCase):
 		found = dominant_downtime_reason(snap)
 		self.assertEqual(found[0]["category"], "Downtime")
 		self.assertIn("70%", found[0]["title"])
+		# The window is part of the key, so a new window raises the finding again after it was resolved.
+		self.assertEqual(found[0]["rule_key"], "downtime:M1:CHANGEOVER:last 1 day(s)")
+		snap["downtime_by_machine"][0]["period"] = "2026-10-30 to 2026-10-31"
+		self.assertNotEqual(dominant_downtime_reason(snap)[0]["rule_key"], found[0]["rule_key"])
 
 	def test_all_rules_on_empty_snapshot(self):
 		self.assertEqual(all_rules({}), [])

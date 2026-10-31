@@ -1,0 +1,195 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-31 05:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "source_name",
+  "enabled",
+  "source_doctype",
+  "cb_fields",
+  "case_field",
+  "activity_field",
+  "fixed_activity",
+  "sb_time",
+  "timestamp_field",
+  "end_timestamp_field",
+  "cb_time",
+  "resource_field",
+  "sb_extra",
+  "filters",
+  "attribute_fields",
+  "object_fields",
+  "cb_extra",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "source_name",
+   "fieldtype": "Data",
+   "label": "Source Name",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "source_doctype",
+   "fieldtype": "Data",
+   "label": "Source DocType",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "Name of any DocType on this site, for example Job Card. It is resolved at run time and the source is skipped when the DocType is not installed, so an ERP source never becomes a dependency."
+  },
+  {
+   "fieldname": "cb_fields",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "case_field",
+   "fieldtype": "Data",
+   "label": "Case Field",
+   "reqd": 1,
+   "description": "Field whose value groups events into one trace, for example work_order."
+  },
+  {
+   "fieldname": "activity_field",
+   "fieldtype": "Data",
+   "label": "Activity Field",
+   "description": "Field whose value names the activity, for example operation. Leave empty to use a fixed activity."
+  },
+  {
+   "fieldname": "fixed_activity",
+   "fieldtype": "Data",
+   "label": "Fixed Activity",
+   "depends_on": "eval:!doc.activity_field",
+   "mandatory_depends_on": "eval:!doc.activity_field"
+  },
+  {
+   "fieldname": "sb_time",
+   "fieldtype": "Section Break",
+   "label": "Time and resource"
+  },
+  {
+   "fieldname": "timestamp_field",
+   "fieldtype": "Data",
+   "label": "Timestamp Field",
+   "reqd": 1,
+   "description": "Datetime field of the event, or the start when an end field is set."
+  },
+  {
+   "fieldname": "end_timestamp_field",
+   "fieldtype": "Data",
+   "label": "End Timestamp Field",
+   "description": "Optional. When set, each record becomes a start and a complete event, so the activity has a duration."
+  },
+  {
+   "fieldname": "cb_time",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "resource_field",
+   "fieldtype": "Data",
+   "label": "Resource Field",
+   "description": "Optional field naming who or what performed the activity, for example workstation or employee."
+  },
+  {
+   "fieldname": "sb_extra",
+   "fieldtype": "Section Break",
+   "label": "Attributes and filters"
+  },
+  {
+   "fieldname": "filters",
+   "fieldtype": "Small Text",
+   "label": "Filters",
+   "description": "JSON filters passed to frappe.get_all, for example {\"docstatus\": 1}."
+  },
+  {
+   "fieldname": "attribute_fields",
+   "fieldtype": "Data",
+   "label": "Attribute Fields",
+   "description": "Comma-separated fields copied onto each event as attributes."
+  },
+  {
+   "fieldname": "object_fields",
+   "fieldtype": "Data",
+   "label": "Object Fields",
+   "description": "Comma-separated OCEL object references, as type=field or just field, for example machine=workstation, item=production_item."
+  },
+  {
+   "fieldname": "cb_extra",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-31 05:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Process Mining",
+ "name": "Event Log Source",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "field:source_name",
+ "naming_rule": "By fieldname"
+}

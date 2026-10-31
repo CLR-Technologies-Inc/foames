@@ -11,10 +11,15 @@
   "cb_head",
   "status",
   "last_seen",
+  "last_count_at",
   "disabled",
   "ideal_cycle_seconds",
   "shift_start",
   "scheduled_minutes_per_day",
+  "sb_job",
+  "current_job_reference",
+  "cb_job",
+  "current_job_since",
   "sb_source",
   "source_id",
   "counter_rollover",
@@ -64,6 +69,13 @@
    "in_list_view": 1
   },
   {
+   "fieldname": "last_count_at",
+   "fieldtype": "Datetime",
+   "label": "Last Count At",
+   "read_only": 1,
+   "description": "Timestamp of the latest Count event ever recorded for this machine; kept here so the floor never scans the event history"
+  },
+  {
    "fieldname": "disabled",
    "fieldtype": "Check",
    "label": "Disabled",
@@ -87,6 +99,30 @@
    "label": "Scheduled Minutes Per Day",
    "default": "480",
    "description": "Planned production time per day, for the daily OEE period. Ignored without a Shift Start"
+  },
+  {
+   "fieldname": "sb_job",
+   "fieldtype": "Section Break",
+   "label": "Current Job"
+  },
+  {
+   "fieldname": "current_job_reference",
+   "fieldtype": "Link",
+   "label": "Current Job Reference",
+   "options": "External Reference",
+   "in_standard_filter": 1,
+   "description": "The ERP job this machine is working on, as an External Reference of type Job Card. Counts and run time reported from here on are rolled up to it by the ERP adapter. Clear it when the job is done"
+  },
+  {
+   "fieldname": "cb_job",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "current_job_since",
+   "fieldtype": "Datetime",
+   "label": "Current Job Since",
+   "read_only": 1,
+   "description": "When the current job was set. Counts before this time belong to the previous job"
   },
   {
    "fieldname": "sb_source",
@@ -125,7 +161,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-29 22:00:00.000000",
+ "modified": "2026-10-31 07:00:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES MES",
  "name": "Machine",
