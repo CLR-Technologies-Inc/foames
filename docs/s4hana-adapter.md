@@ -120,7 +120,7 @@ enqueue(
 | --- | --- | --- |
 | Queued | Waiting for the scheduler, or for an earlier posting of its sequence group | Nothing |
 | Sending | A worker is sending it now. A row left in Sending for 15 minutes belongs to a worker that died and is put back as Unknown | Nothing |
-| Retry | A transient failure (throttling, 5xx, network); **Next Attempt** says when it is tried again | Nothing, unless S/4HANA stays down |
+| Retry | A transient failure (throttling, 5xx, network, a rejected login); **Next Attempt** says when it is tried again | Nothing, unless S/4HANA stays down or the credentials are wrong |
 | Unknown | The last send got no clear answer. The next attempt looks for the idempotency marker in S/4HANA first | Nothing; it resolves itself to Posted or Retry |
 | Posted | S/4HANA created the document; **S/4HANA Document** holds its key, and a Goods Movement also gets an External Reference of type Stock Movement | Nothing |
 | Failed | S/4HANA rejected it, or 12 attempts were used up; **Last Error** has SAP's message | Fix the cause, then **Requeue**, or **Cancel Posting** |
@@ -134,7 +134,7 @@ Requeue and Cancel Posting are limited to System Managers. Requeue first puts th
 - A posting that is Failed with a business message (period closed, order locked, batch missing) is fixed in S/4HANA or by correcting the payload on the record, then requeued. Do not create a second outbox record for the same business event; the idempotency key would return the first one anyway.
 - **Pause Outbox** before planned S/4HANA downtime. Queued postings keep accumulating and are sent in order when it is cleared.
 - Reference lookups that fail because S/4HANA is unreachable leave the External Reference Unverified rather than blocking a save. Resolve them later from the form or by saving again.
-- Rotate the communication user's password in S/4HANA and in S4HANA Settings together, and **Pause Outbox** while you do it. For reference lookups a 401 or 403 counts as the adapter being unavailable, so references stay Unverified and resolve later. For the outbox it is a rejection: the posting goes to **Failed** and holds the rest of its sequence group, so after the credentials are fixed, requeue every posting that failed with a 401 or 403 (the reconciliation report lists them).
+- Rotate the communication user's password in S/4HANA and in S4HANA Settings together. A 401 or 403 is treated as temporary on both paths: reference lookups leave the reference Unverified to resolve later, and outbox postings go to **Retry** with the usual backoff, so nothing is failed or held as long as the credentials are fixed within the retry window (12 attempts, up to 6 hours apart).
 - The Digital Access point above applies to every Posted row: it is a document created in S/4HANA by a third-party system.
 
 ## Inbound IDocs

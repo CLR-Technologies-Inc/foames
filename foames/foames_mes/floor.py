@@ -27,11 +27,13 @@ def floor_snapshot(days: int = 1) -> dict:
 		["name", "title", "status", "last_seen", "machine_type", "ideal_cycle_seconds"],
 		order_by="name",
 	)
+	# The latest count ever, not only inside the window, so a machine that counted yesterday and
+	# reports Running without counting today is still caught by the rules.
 	last_count = {
 		r.machine: r.last
 		for r in frappe.get_all(
 			"Machine Event",
-			{"event_type": "Count", "timestamp": (">=", since)},
+			{"event_type": "Count"},
 			["machine", "max(timestamp) as last"],
 			group_by="machine",
 		)
@@ -49,15 +51,18 @@ def floor_snapshot(days: int = 1) -> dict:
 			order_by="from_time desc",
 		)
 	downtime = []
+	period = f"{since:%Y-%m-%d} to {now:%Y-%m-%d}"
 	for m in machines:
 		by_reason = downtime_by_reason(m.name, since, now)
-		if by_reason:
-			top_reason, top_minutes = max(by_reason.items(), key=lambda item: item[1])
+		classified = {reason: minutes for reason, minutes in by_reason.items() if reason}
+		if classified:
+			top_reason, top_minutes = max(classified.items(), key=lambda item: item[1])
 			downtime.append(
 				{
 					"machine": m.name,
-					"period": f"last {days} day(s)",
+					"period": period,
 					"total_minutes": sum(by_reason.values()),
+					"unclassified_minutes": by_reason.get(None, 0),
 					"top_reason": top_reason,
 					"top_minutes": top_minutes,
 				}
@@ -85,14 +90,14 @@ def floor_snapshot(days: int = 1) -> dict:
 	return snapshot
 
 
-def downtime_by_reason(machine: str, since, until) -> dict[str, float]:
+def downtime_by_reason(machine: str, since, until) -> dict[str | None, float]:
 	"""Minutes of downtime per reason inside [since, until), counting the part of each record that
-	overlaps the window. Open downtime counts up to `until`."""
+	overlaps the window. Open downtime counts up to `until`. Downtime with no reason assigned yet is
+	returned under the key None, so shares are computed over all downtime, not only the classified part."""
 	rows = frappe.get_all(
 		"Downtime Record",
 		filters=[
 			["machine", "=", machine],
-			["reason", "is", "set"],
 			["start_time", "<", until],
 		],
 		or_filters=[["end_time", "is", "not set"], ["end_time", ">=", since]],

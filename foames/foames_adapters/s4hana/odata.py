@@ -59,6 +59,9 @@ class ODataError(Exception):
 
 
 TRANSIENT_STATUSES = {408, 429, 500, 502, 503, 504}
+# A rejected login cannot have applied a posting and clears up when the credentials are fixed, so
+# the outbox retries it instead of failing the posting and holding its sequence group.
+AUTH_STATUSES = {401, 403}
 
 
 def urllib_transport(cookies: CookieJar, cafile: str | None = None):
@@ -251,7 +254,7 @@ def error_from_response(response: Response, prefix: str = "S/4HANA rejected the 
 	except (ValueError, AttributeError):
 		message = response.body[:500].decode("utf-8", "replace")
 	status = response.status
-	transient = status in TRANSIENT_STATUSES
+	transient = status in TRANSIENT_STATUSES or status in AUTH_STATUSES
 	text = f"{prefix} (HTTP {status}{', ' + code if code else ''})"
 	if message:
 		text += f": {message}"

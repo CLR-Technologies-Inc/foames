@@ -5,12 +5,14 @@ frappe.pages["floor-view"].on_page_load = function (wrapper) {
 	const page = frappe.ui.make_app_page({ parent: wrapper, title: __("Floor View"), single_column: true });
 	const view = new FloorView(page);
 	page.set_secondary_action(__("Refresh"), () => view.refresh());
-	page.add_inner_button(__("Run suggestion rules"), () => {
-		frappe.call("foames.foames_mes.api.run_suggestion_rules").then((r) => {
-			frappe.show_alert({ message: __("{0} new suggestions", [(r.message || []).length]), indicator: "blue" });
-			view.refresh();
+	if (frappe.model.can_create("Agent Suggestion")) {
+		page.add_inner_button(__("Run suggestion rules"), () => {
+			frappe.call("foames.foames_mes.api.run_suggestion_rules").then((r) => {
+				frappe.show_alert({ message: __("{0} new suggestions", [(r.message || []).length]), indicator: "blue" });
+				view.refresh();
+			});
 		});
-	});
+	}
 	view.refresh();
 	view.timer = setInterval(() => view.refresh(), 30000);
 	$(wrapper).on("remove", () => clearInterval(view.timer));
