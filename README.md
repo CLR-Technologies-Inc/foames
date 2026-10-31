@@ -16,6 +16,7 @@ FoaMES is a single Frappe app that depends on the Frappe framework only. ERP sys
 | FoaMES Kernel | The shared records every FoaMES product builds on, plus `External Reference` (a pointer to a record in an ERP) and `FoaMES Settings` |
 | FoaMES MES | Shop-floor execution: monitoring, downtime, OEE and machine data |
 | FoaMES Adapters | The ERP adapter contract, the ERPNext adapter and the SAP S/4HANA adapter |
+| FoaMES Process Mining | Event logs from FoaMES and ERP records, XES and OCEL export, discovery, performance and conformance analysis |
 
 FoaMES records never use Link fields to ERP DocTypes. They store an `External Reference` (ERP system, reference type, external ID) and the matching adapter resolves it. The ERPNext adapter activates only when ERPNext is installed on the same site. Other apps can register more adapters through the `foames_erp_adapters` hook.
 
@@ -69,6 +70,15 @@ Events arrive through a signed webhook, an MQTT gateway, a Sparkplug B gateway o
 | Agent Suggestion | MES | A finding raised by the built-in rules or by an external agent, with evidence, for a person to accept or dismiss. |
 
 The OEE arithmetic and the suggestion rules have no Frappe dependency (`foames/foames_mes/oee.py`, `suggestions.py`). The counter-delta, owed-count and coverage ideas follow public MES practice, including the FactorySemantics MES design notes. See [docs/agents/floor-agent.md](docs/agents/floor-agent.md) for the agent API and the hooks that add snapshot sections and rules.
+
+## Process mining
+
+| Record | Module | Role |
+| --- | --- | --- |
+| Event Log Source | Process Mining | A field map that turns any DocType's records into events (case, activity, timestamps, resource, objects). ERP records are named as text and skipped when not installed. |
+| Process Event Log | Process Mining | A saved extraction over a window and chosen sources, with discovery, conformance against another log, and XES or OCEL 2.0 export from the form. |
+
+Machine states and downtime are built-in sources. The analyses (directly-follows graph, variants, throughput, waiting times, rework, conformance replay and footprint comparison) have no Frappe dependency (`foames/foames_process_mining/discovery.py`, `conformance.py`). See [docs/process-mining.md](docs/process-mining.md).
 
 ## License
 

@@ -58,6 +58,13 @@ after_install = "foames.install.after_install"
 # foames_floor_snapshot_extensions = ["myapp.floor.extend_snapshot"]  # (snapshot, since, now) in place
 # foames_suggestion_rules = ["myapp.floor.my_rule"]  # (snapshot) -> list of finding dicts
 
+# Process mining
+# --------------
+# Other apps add events to the process-mining event log. Each dotted path is called with
+# (since, until) and returns an iterable of foames.foames_process_mining.eventlog.Event.
+#
+# foames_process_event_extractors = ["myapp.mining.job_events"]
+
 # Scheduled Tasks
 # ---------------
 

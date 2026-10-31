@@ -1,3 +1,4 @@
 FoaMES Kernel
 FoaMES MES
 FoaMES Adapters
+FoaMES Process Mining
