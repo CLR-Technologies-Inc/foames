@@ -48,7 +48,11 @@ def summary(
 
 @frappe.whitelist()
 def events(
-	event_log: str | None = None, since=None, until=None, sources=None, limit: int = 1000
+	event_log: str | None = None,
+	since: str | None = None,
+	until: str | None = None,
+	sources: str | list | None = None,
+	limit: int = 1000,
 ) -> list[dict]:
 	events = _log(event_log, since, until, sources).events
 	if limit:
@@ -59,9 +63,9 @@ def events(
 @frappe.whitelist()
 def discover(
 	event_log: str | None = None,
-	since=None,
-	until=None,
-	sources=None,
+	since: str | None = None,
+	until: str | None = None,
+	sources: str | list | None = None,
 	min_edge_count: int = 1,
 	dot: bool = False,
 ) -> dict:
