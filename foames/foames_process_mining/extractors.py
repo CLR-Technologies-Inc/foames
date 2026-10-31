@@ -157,7 +157,7 @@ def extract_from_mapping(mapping: dict, since: datetime | None, until: datetime 
 		filters=filters,
 		or_filters=or_filters,
 		fields=list(fields),
-		order_by=f"`{mapping['timestamp_field']}` asc",
+		order_by=f"{mapping['timestamp_field']} asc",
 	)
 	for row in rows:
 		case_id = row.get(mapping["case_field"])
