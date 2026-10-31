@@ -98,17 +98,16 @@ DEFAULT_ENTITIES: dict[str, EntitySpec] = {
 		key_fields=("MaterialDocumentYear", "MaterialDocument"),
 		label_field="MaterialDocumentHeaderText",
 	),
-	# A routing is a group, a group counter and an internal version; the version may be left out of
-	# the external ID when the system keeps one version per routing (`GROUP|COUNTER`).
+	# A routing is `GROUP|COUNTER|VERSION`: the internal version is part of the key, and routings
+	# without versioning still carry one (usually 1).
 	"Routing": EntitySpec(
 		service="API_PRODUCTION_ROUTING",
 		entity_set="ProductionRoutingHeader",
 		key_fields=("ProductionRoutingGroup", "ProductionRouting", "ProductionRoutingInternalVers"),
-		key_defaults={"ProductionRoutingInternalVers": ""},
 		label_field="BillOfOperationsDesc",
 	),
-	# A material BOM is `BOM|CATEGORY|VARIANT|VERSION`; category M and an empty version may be
-	# left out (`BOM|VARIANT`), which is the usual case on systems without BOM versions.
+	# A material BOM is keyed by seven fields. Category M, an empty version and an empty change
+	# document may be left out, giving `BOM|VARIANT|MATERIAL|PLANT`.
 	"Bill of Materials": EntitySpec(
 		service="API_BILL_OF_MATERIAL_SRV;v=0002",
 		entity_set="MaterialBOM",
@@ -117,8 +116,15 @@ DEFAULT_ENTITIES: dict[str, EntitySpec] = {
 			"BillOfMaterialCategory",
 			"BillOfMaterialVariant",
 			"BillOfMaterialVersion",
+			"EngineeringChangeDocument",
+			"Material",
+			"Plant",
 		),
-		key_defaults={"BillOfMaterialCategory": "M", "BillOfMaterialVersion": ""},
+		key_defaults={
+			"BillOfMaterialCategory": "M",
+			"BillOfMaterialVersion": "",
+			"EngineeringChangeDocument": "",
+		},
 		label_field="BOMHeaderText",
 	),
 	# Work centers are keyed by their internal ID and type (A = work center); the type may be left

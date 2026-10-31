@@ -201,8 +201,16 @@ def get_routings_for_material(material: str, plant: str) -> list[dict]:
 
 
 @frappe.whitelist()
-def get_bill_of_material(bom: str, variant: str = "1", category: str = "M", version: str = "") -> dict:
-	result = _read(orders.bill_of_material, bom, variant, category, version)
+def get_bill_of_material(
+	bom: str,
+	material: str,
+	plant: str,
+	variant: str = "1",
+	category: str = "M",
+	version: str = "",
+	change_document: str = "",
+) -> dict:
+	result = _read(orders.bill_of_material, bom, material, plant, variant, category, version, change_document)
 	if not result:
 		frappe.throw(_("BOM {0} does not exist in S/4HANA").format(bom), frappe.DoesNotExistError)
 	return result

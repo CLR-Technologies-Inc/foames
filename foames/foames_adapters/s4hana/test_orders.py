@@ -140,7 +140,7 @@ class TestOrders(unittest.TestCase):
 		result = orders.orders_for_material(client(fake), "FG-1", "1010", released_only=True)
 		self.assertEqual(
 			fake.requests[0]["query"]["$filter"],
-			"Material eq 'FG-1' and Plant eq '1010' and OrderIsReleased eq 'X'",
+			"Material eq 'FG-1' and ProductionPlant eq '1010' and OrderIsReleased eq true",
 		)
 		self.assertEqual(result[0]["order"], "1000123")
 
@@ -227,6 +227,7 @@ class TestOrders(unittest.TestCase):
 		movements = orders.order_goods_movements(client(fake), "1000123")
 		self.assertEqual(fake.requests[0]["query"]["$filter"], "ManufacturingOrder eq '1000123'")
 		self.assertEqual(fake.requests[0]["query"]["$expand"], "to_MaterialDocumentHeader")
+		self.assertEqual(fake.requests[0]["query"]["$skip"], "0")
 		self.assertEqual(len(movements), 5)
 		balance = orders.order_balance(client(fake), "1000123")
 		self.assertEqual(
@@ -237,6 +238,31 @@ class TestOrders(unittest.TestCase):
 			balance["receipts"],
 			[{"material": "FG-1", "batch": "L7", "quantity": Decimal("0.000"), "unit": "KG"}],
 		)
+
+	def test_order_goods_movements_follows_pages(self):
+		def page(request):
+			skip, top = int(request["query"]["$skip"]), int(request["query"]["$top"])
+			rows = [
+				{
+					"MaterialDocumentYear": "2026",
+					"MaterialDocument": str(n),
+					"Material": "RM-1",
+					"GoodsMovementType": "261",
+					"QuantityInEntryUnit": "1",
+					"EntryUnit": "KG",
+				}
+				for n in range(skip, min(skip + top, 5))
+			]
+			return ok({"results": rows})
+
+		fake = FakeS4HANA().on("GET", "A_MaterialDocumentItem", page)
+		movements = orders.order_goods_movements(client(fake), "1000123", page_size=2)
+		self.assertEqual([m["document"] for m in movements], [f"2026|{n}" for n in range(5)])
+		self.assertEqual([r["query"]["$skip"] for r in fake.requests], ["0", "2", "4"])
+		balance = orders.order_balance(
+			client(FakeS4HANA().on("GET", "A_MaterialDocumentItem", page)), "1000123"
+		)
+		self.assertEqual(balance["consumptions"][0]["quantity"], Decimal(5))
 
 
 ROUTING = {
@@ -305,7 +331,37 @@ class TestMasterData(unittest.TestCase):
 			],
 		)
 		self.assertEqual(result["valid_from"], date(2024, 1, 1))
-		self.assertIsNone(orders.routing(client(FakeS4HANA()), "1", "1"))
+		self.assertIsNone(orders.routing(client(FakeS4HANA()), "1", "1", "1"))
+
+	def test_routing_without_version_reads_the_newest(self):
+		fake = (
+			FakeS4HANA()
+			.on("GET", "ProductionRoutingHeader(", ok(ROUTING))
+			.on(
+				"GET",
+				"ProductionRoutingHeader",
+				ok(
+					{
+						"results": [
+							{
+								"ProductionRoutingGroup": "50000123",
+								"ProductionRouting": "1",
+								"ProductionRoutingInternalVers": "3",
+							}
+						]
+					}
+				),
+			)
+		)
+		result = orders.routing(client(fake), "50000123", "1")
+		listing, read = fake.requests
+		self.assertEqual(
+			listing["query"]["$filter"], "ProductionRoutingGroup eq '50000123' and ProductionRouting eq '1'"
+		)
+		self.assertEqual(listing["query"]["$orderby"], "ProductionRoutingInternalVers desc")
+		self.assertIn("ProductionRoutingInternalVers='3'", read["path"])
+		self.assertEqual(result["description"], "Foam block")
+		self.assertIsNone(orders.routing(client(FakeS4HANA()), "50000123", "1"))
 
 	def test_routings_for_material(self):
 		fake = FakeS4HANA().on(
@@ -351,9 +407,13 @@ class TestMasterData(unittest.TestCase):
 			},
 		}
 		fake = FakeS4HANA().on("GET", "MaterialBOM(", ok(bom))
-		result = orders.bill_of_material(client(fake), "00000123")
-		self.assertIn("/API_BILL_OF_MATERIAL_SRV;v=0002/MaterialBOM(", fake.requests[0]["path"])
-		self.assertIn("BillOfMaterialCategory='M'", fake.requests[0]["path"])
+		result = orders.bill_of_material(client(fake), "00000123", "FG-1", "1010")
+		self.assertEqual(
+			fake.requests[0]["path"],
+			"/sap/opu/odata/sap/API_BILL_OF_MATERIAL_SRV;v=0002/MaterialBOM(BillOfMaterial='00000123',"
+			"BillOfMaterialCategory='M',BillOfMaterialVariant='1',BillOfMaterialVersion='',"
+			"EngineeringChangeDocument='',Material='FG-1',Plant='1010')",
+		)
 		self.assertEqual(result["base_quantity"], Decimal("100.000"))
 		self.assertEqual(result["items"][0]["component"], "RM-1")
 		self.assertTrue(result["items"][0]["is_backflushed"])
@@ -389,41 +449,37 @@ class TestMasterData(unittest.TestCase):
 
 
 class TestNewEntityDefaults(unittest.TestCase):
-	def test_routing_key_with_and_without_version(self):
+	def test_routing_key_needs_the_version(self):
 		spec = DEFAULT_ENTITIES["Routing"]
 		self.assertEqual(
-			spec.keys_for("50000123|1"),
+			spec.keys_for("50000123|1|2"),
 			{
 				"ProductionRoutingGroup": "50000123",
 				"ProductionRouting": "1",
-				"ProductionRoutingInternalVers": "",
+				"ProductionRoutingInternalVers": "2",
 			},
 		)
-		self.assertEqual(spec.keys_for("50000123|1|2")["ProductionRoutingInternalVers"], "2")
-		self.assertEqual(
-			spec.external_id_for(
-				{
-					"ProductionRoutingGroup": "50000123",
-					"ProductionRouting": "1",
-					"ProductionRoutingInternalVers": "",
-				}
-			),
-			"50000123|1",
-		)
+		with self.assertRaises(ValueError):
+			spec.keys_for("50000123|1")
 		self.assertEqual(spec.label_for({"BillOfOperationsDesc": "Foam block"}), "Foam block")
 
-	def test_bom_key_defaults_category_and_version(self):
+	def test_bom_key_defaults_category_version_and_change_document(self):
 		spec = DEFAULT_ENTITIES["Bill of Materials"]
 		self.assertEqual(
-			spec.keys_for("00000123|1"),
+			spec.keys_for("00000123|1|FG-1|1010"),
 			{
 				"BillOfMaterial": "00000123",
 				"BillOfMaterialCategory": "M",
 				"BillOfMaterialVariant": "1",
 				"BillOfMaterialVersion": "",
+				"EngineeringChangeDocument": "",
+				"Material": "FG-1",
+				"Plant": "1010",
 			},
 		)
-		self.assertEqual(spec.keys_for("00000123|M|1|")["BillOfMaterialVersion"], "")
+		self.assertEqual(
+			spec.keys_for("00000123|M|1|2|500000001|FG-1|1010")["EngineeringChangeDocument"], "500000001"
+		)
 		self.assertEqual(
 			spec.external_id_for(
 				{
@@ -431,9 +487,12 @@ class TestNewEntityDefaults(unittest.TestCase):
 					"BillOfMaterialCategory": "M",
 					"BillOfMaterialVariant": "1",
 					"BillOfMaterialVersion": "",
+					"EngineeringChangeDocument": "",
+					"Material": "FG-1",
+					"Plant": "1010",
 				}
 			),
-			"00000123|1",
+			"00000123|1|FG-1|1010",
 		)
 
 	def test_work_center_key(self):

@@ -125,6 +125,7 @@ class TestConfirmation(unittest.TestCase):
 		self.assertEqual(
 			items[0],
 			{
+				"OrderID": "1000123",
 				"Material": "RM-1",
 				"Plant": "1010",
 				"StorageLocation": "0001",
@@ -225,6 +226,11 @@ class TestGoodsMovements(unittest.TestCase):
 		payload = goods_movements.goods_receipt_for_order("1000123", "FG-1", "1010", 1, "KG", reversal=True)
 		self.assertEqual(payload["GoodsMovementCode"], "02")
 		self.assertEqual(payload["to_MaterialDocumentItem"][0]["GoodsMovementType"], "102")
+
+	def test_posting_date_defaults_to_today(self):
+		payload = goods_movements.goods_receipt_for_order("1000123", "FG-1", "1010", 1, "KG")
+		self.assertEqual(payload["PostingDate"], date.today().isoformat() + "T00:00:00")
+		self.assertEqual(payload["DocumentDate"], payload["PostingDate"])
 
 	def test_goods_issue_to_order_from_dicts_and_items(self):
 		payload = goods_movements.goods_issue_to_order(

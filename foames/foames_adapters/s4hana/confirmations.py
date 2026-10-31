@@ -6,8 +6,11 @@ API_PROD_ORDER_CONFIRMATION_2_SRV and `ProcOrdConf2` in API_PROC_ORDER_CONFIRMAT
 
 A confirmation reports, for one operation of an order, the yield, scrap and rework quantities, the
 activities (machine time, labour time ... up to six), the execution times, who did the work and
-whether the operation is finished. Goods movements that belong to the confirmation (backflushed
-components, the automatic goods receipt) can ride along as `to_ProdnOrdConfMatlDocItm` items.
+whether the operation is finished. The goods movements that belong to the confirmation can ride
+along as `to_ProdnOrdConfMatlDocItm` items. S/4HANA treats that list as the complete set: as soon
+as one item is given, nothing is determined automatically any more, so a caller gives either no
+items (S/4HANA backflushes and receives according to the order) or every movement, backflushed
+components and goods receipt included.
 
 The builders here only shape the payload. They do not talk to S/4HANA: the S4HANA Outbox sends what
 they build, with the idempotency marker written into `ConfirmationText`. Field names follow SAP's
@@ -90,9 +93,12 @@ class Activity:
 
 @dataclass
 class GoodsMovementItem:
-	"""A component consumption or product receipt posted together with the confirmation. Used for
-	components that are not backflushed automatically, or to add a batch or storage location that
-	S/4HANA cannot determine itself."""
+	"""A component consumption or product receipt posted together with the confirmation.
+
+	Giving any item switches S/4HANA's automatic determination off for this confirmation, so the
+	items must then cover every movement: all backflushed components, the goods receipt of the
+	product and any by-products. Use it to set batches and storage locations S/4HANA cannot
+	determine itself; leave the list empty to let the order's settings decide."""
 
 	material: str
 	plant: str
@@ -199,7 +205,8 @@ def confirmation(
 		raise ValueError(
 			f"Final confirmation type must be one of {', '.join(repr(k) for k in FINAL_CONFIRMATION_TYPES)}"
 		)
-	if not quantities and not activities and not times and final is None and not goods_movements:
+	finishes = final is not None or final_confirmation_type not in (None, "")
+	if not quantities and not activities and not times and not finishes and not goods_movements:
 		raise ValueError("A confirmation needs a quantity, an activity, execution times or the final flag")
 
 	payload = clean(
@@ -238,7 +245,10 @@ def confirmation(
 	if times:
 		payload.update(times.fields())
 	if goods_movements:
-		payload["to_ProdnOrdConfMatlDocItm"] = [item.fields() for item in goods_movements]
+		# Every item names the order; S/4HANA requires it on the child and does not inherit it.
+		payload["to_ProdnOrdConfMatlDocItm"] = [
+			{"OrderID": str(order), **item.fields()} for item in goods_movements
+		]
 	if extra:
 		payload.update(clean(extra))
 	payload.pop("ConfirmationText", None)

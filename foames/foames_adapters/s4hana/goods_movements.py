@@ -23,6 +23,7 @@ This module has no Frappe imports.
 """
 
 from dataclasses import dataclass, field
+from datetime import date
 
 from foames.foames_adapters.s4hana.values import clean, date_string, decimal_string, parse_date, parse_decimal
 
@@ -53,7 +54,8 @@ MOVEMENT_CODES = {
 	RECEIPT_FOR_ORDER: "02",
 	RECEIPT_FOR_ORDER_REVERSAL: "02",
 	ISSUE_TO_ORDER: "03",
-	ISSUE_TO_ORDER_REVERSAL: "03",
+	# A return of components to stock is a receipt against the reservation: code 05, not 03.
+	ISSUE_TO_ORDER_REVERSAL: "05",
 	SCRAP: "03",
 	"201": "03",
 	"202": "03",
@@ -94,6 +96,8 @@ class Item:
 	gl_account: str = ""
 	reason_code: str = ""
 	text: str = ""
+	# MaterialDocumentPostingType: "1" posts a 262 return against the reservation item.
+	posting_type: str = ""
 	manufacture_date: object = None
 	shelf_life_expiration_date: object = None
 	extra: dict = field(default_factory=dict)
@@ -126,6 +130,7 @@ class Item:
 				"CostCenter": self.cost_center or None,
 				"GLAccount": self.gl_account or None,
 				"GoodsMovementReasonCode": self.reason_code or None,
+				"MaterialDocumentPostingType": self.posting_type or None,
 				"MaterialDocumentItemText": self.text[:50] if self.text else None,
 				"ManufactureDate": date_string(self.manufacture_date) if self.manufacture_date else None,
 				"ShelfLifeExpirationDate": date_string(self.shelf_life_expiration_date)
@@ -162,17 +167,17 @@ def material_document(
 	reference: str = "",
 	extra: dict | None = None,
 ) -> dict:
-	"""The `A_MaterialDocumentHeader` body with its items. Do not set `MaterialDocumentHeaderText`:
-	the outbox writes its idempotency marker there."""
+	"""The `A_MaterialDocumentHeader` body with its items. S/4HANA requires a posting date, so a
+	missing one is today. Do not set `MaterialDocumentHeaderText`: the outbox writes its idempotency
+	marker there."""
 	if not items:
 		raise ValueError("A material document needs at least one item")
+	posting_date = posting_date or date.today()
 	payload = clean(
 		{
 			"GoodsMovementCode": code_for(items, code),
-			"PostingDate": date_string(posting_date) if posting_date else None,
-			"DocumentDate": date_string(document_date or posting_date)
-			if (document_date or posting_date)
-			else None,
+			"PostingDate": date_string(posting_date),
+			"DocumentDate": date_string(document_date or posting_date),
 			"ReferenceDocument": reference[:16] if reference else None,
 			"to_MaterialDocumentItem": [item.fields() for item in items],
 		}
@@ -233,7 +238,11 @@ def goods_issue_to_order(
 	"""Consume components for an order (261), or return them (262 with `reversal`). Each component
 	is an Item, or a dict with the Item's fields (material, plant, quantity, unit, batch ...). The
 	order's reservation items (from the order's components) make S/4HANA settle the right
-	requirement; without them it consumes against the order as unplanned."""
+	requirement; without them it consumes against the order as unplanned.
+
+	A return is posted the way S/4HANA documents it: goods movement code 05 (other receipt), and
+	for a reserved component `MaterialDocumentPostingType` 1, so the quantity goes back onto the
+	reservation item."""
 	if not order:
 		raise ValueError("A goods issue to an order needs the order")
 	movement_type = ISSUE_TO_ORDER_REVERSAL if reversal else ISSUE_TO_ORDER
@@ -246,6 +255,8 @@ def goods_issue_to_order(
 		if not component.movement_type:
 			component.movement_type = movement_type
 		component.order = component.order or order
+		if reversal and component.reservation and not component.posting_type:
+			component.posting_type = "1"
 		items.append(component)
 	if not items:
 		raise ValueError("A goods issue needs at least one component")

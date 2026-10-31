@@ -116,7 +116,8 @@ the credentials are wrong.
 Compare the `$metadata` of each service with the names the adapter uses:
 
 - entity sets and key fields: `foames/foames_adapters/s4hana/entities.py` (override any of them in
-  **S4HANA Settings > Entity Mappings**);
+  **S4HANA Settings > Entity Mappings**); the routing key includes the internal version, and the
+  material BOM key has seven fields including the material and plant;
 - confirmation fields: `foames/foames_adapters/s4hana/confirmations.py`;
 - material document fields: `foames/foames_adapters/s4hana/goods_movements.py`;
 - function imports: `foames/foames_adapters/s4hana/actions.py`;

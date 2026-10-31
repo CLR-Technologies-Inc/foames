@@ -83,9 +83,9 @@ def orders_for_material(
 	"""Orders of a material (and plant), newest first, without their children."""
 	filters = {"Material": material}
 	if plant:
-		filters["Plant"] = plant
+		filters["ProductionPlant"] = plant
 	if released_only:
-		filters["OrderIsReleased"] = "X"
+		filters["OrderIsReleased"] = True
 	data = client.get(
 		ORDER_SERVICE,
 		ORDER_SET,
@@ -256,19 +256,31 @@ def order_confirmations(
 	return [confirmations.summarize(entity) for entity in _results(data)]
 
 
-def order_goods_movements(client: ODataClient, order: str, top: int = 500) -> list[dict]:
-	"""Material document items posted for an order: receipts, consumptions and their reversals."""
-	data = client.get(
-		"API_MATERIAL_DOCUMENT_SRV",
-		"A_MaterialDocumentItem",
-		{
-			"$filter": filter_expression({"ManufacturingOrder": str(order)}),
-			"$top": str(top),
-			"$expand": "to_MaterialDocumentHeader",
-			"$orderby": "MaterialDocumentYear,MaterialDocument,MaterialDocumentItem",
-		},
-	)
-	return [goods_movements.summarize_item(entity) for entity in _results(data)]
+PAGE_SIZE = 500
+MAX_PAGES = 200
+
+
+def order_goods_movements(client: ODataClient, order: str, page_size: int = PAGE_SIZE) -> list[dict]:
+	"""Every material document item posted for an order: receipts, consumptions and their
+	reversals. Pages through S/4HANA's answer, so a long-running order is read completely."""
+	items: list[dict] = []
+	for page in range(MAX_PAGES):
+		data = client.get(
+			"API_MATERIAL_DOCUMENT_SRV",
+			"A_MaterialDocumentItem",
+			{
+				"$filter": filter_expression({"ManufacturingOrder": str(order)}),
+				"$top": str(page_size),
+				"$skip": str(page * page_size),
+				"$expand": "to_MaterialDocumentHeader",
+				"$orderby": "MaterialDocumentYear,MaterialDocument,MaterialDocumentItem",
+			},
+		)
+		results = _results(data)
+		items.extend(goods_movements.summarize_item(entity) for entity in results)
+		if len(results) < page_size:
+			break
+	return items
 
 
 def order_balance(client: ODataClient, order: str) -> dict:
@@ -304,7 +316,25 @@ def order_balance(client: ODataClient, order: str) -> dict:
 
 
 def routing(client: ODataClient, group: str, counter: str, version: str = "") -> dict | None:
-	"""A routing with its sequences, operations and material assignments."""
+	"""A routing with its sequences, operations and material assignments.
+
+	The internal version is part of the key. Without one, the routing's versions are listed and the
+	newest one is read (the highest version number; routings without versioning have one)."""
+	if not version:
+		versions = client.get(
+			ROUTING_SERVICE,
+			ROUTING_SET,
+			{
+				"$filter": filter_expression({"ProductionRoutingGroup": group, "ProductionRouting": counter}),
+				"$select": "ProductionRoutingGroup,ProductionRouting,ProductionRoutingInternalVers",
+				"$orderby": "ProductionRoutingInternalVers desc",
+				"$top": "1",
+			},
+		)
+		found = _results(versions)
+		if not found:
+			return None
+		version = found[0].get("ProductionRoutingInternalVers", "")
 	entity = client.get_entity(
 		ROUTING_SERVICE,
 		ROUTING_SET,
@@ -411,9 +441,18 @@ def summarize_routing_operation(entity: dict) -> dict:
 
 
 def bill_of_material(
-	client: ODataClient, bom: str, variant: str = "1", category: str = "M", version: str = ""
+	client: ODataClient,
+	bom: str,
+	material: str,
+	plant: str,
+	variant: str = "1",
+	category: str = "M",
+	version: str = "",
+	change_document: str = "",
 ) -> dict | None:
-	"""A material BOM with its items."""
+	"""A material BOM with its items. `MaterialBOM` is keyed by the BOM number, category, variant,
+	version, engineering change document, material and plant, so all seven go into the key; the
+	category defaults to M (material BOM), and the version and change document to empty."""
 	entity = client.get_entity(
 		BOM_SERVICE,
 		BOM_SET,
@@ -422,6 +461,9 @@ def bill_of_material(
 			"BillOfMaterialCategory": category,
 			"BillOfMaterialVariant": variant,
 			"BillOfMaterialVersion": version,
+			"EngineeringChangeDocument": change_document,
+			"Material": material,
+			"Plant": plant,
 		},
 		{"$expand": BOM_EXPAND},
 	)
