@@ -19,6 +19,7 @@ from frappe.utils import getdate
 from foames.foames_mes.kpi import percentile
 from foames.foames_mes.report.utils import chart_of, summary_item
 from foames.foames_process_mining.discovery import throughput
+from foames.foames_process_mining.eventlog import seconds_between
 
 
 def execute(filters=None):
@@ -33,15 +34,17 @@ def execute(filters=None):
 	activity = filters.get("completing_activity")
 
 	buckets = defaultdict(lambda: {"cases": 0, "events": 0, "durations": []})
-	for events in log.traces().values():
+	selected = []
+	for case_id, events in log.traces().items():
 		if activity and not any(e.activity == activity for e in events):
 			continue
+		selected.append(case_id)
 		first, last = events[0].timestamp, events[-1].timestamp
 		key = bucket(getdate(last), interval)
 		b = buckets[key]
 		b["cases"] += 1
 		b["events"] += len(events)
-		b["durations"].append((last - first).total_seconds() / 3600.0)
+		b["durations"].append(seconds_between(first, last) / 3600.0)
 
 	rows = []
 	for key in sorted(buckets):
@@ -58,7 +61,7 @@ def execute(filters=None):
 			}
 		)
 
-	stats = throughput(log)
+	stats = throughput(log.filter_cases(selected) if activity else log)
 	return (
 		get_columns(),
 		rows,

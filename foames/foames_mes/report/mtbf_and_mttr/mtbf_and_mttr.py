@@ -6,13 +6,16 @@
 A failure is a closed, unplanned stoppage: a Downtime Record whose reason does not count as planned
 (records without a reason are unplanned until someone says otherwise). MTBF uses the calendar window
 less the downtime as operating time, which is the usual plant convention when a machine has no
-scheduled calendar; the Scheduled Minutes Per Day on the Machine refines it when set.
+scheduled calendar. When the Machine carries a Shift Start and Scheduled Minutes Per Day, only the
+downtime that falls inside that daily window counts and the window is the scheduled time, so a stop
+outside the shift does not lower MTBF.
 """
 
 import frappe
 from frappe import _
-from frappe.utils import get_datetime
+from frappe.utils import add_days, get_datetime, getdate
 
+from foames.foames_mes.doctype.oee_period.oee_period import scheduled_window
 from foames.foames_mes.kpi import clip_minutes, reliability
 from foames.foames_mes.report.utils import chart_of, date_window, machines_in_scope, summary_item
 
@@ -21,13 +24,7 @@ def execute(filters=None):
 	filters = frappe._dict(filters or {})
 	start, end = date_window(filters)
 	machines = machines_in_scope(filters)
-	window_days = (end - start).total_seconds() / 86400.0
-	schedule = {
-		m.name: m.scheduled_minutes_per_day
-		for m in frappe.get_all(
-			"Machine", {"name": ("in", list(machines) or [""])}, ["name", "scheduled_minutes_per_day"]
-		)
-	}
+	windows = {name: operating_windows(machines[name], start, end) for name in machines}
 	planned_reasons = {r.name for r in frappe.get_all("Downtime Reason", {"counts_as_planned": 1}, ["name"])}
 	breakdown_reasons = {
 		r.name for r in frappe.get_all("Downtime Reason", {"category": "Breakdown"}, ["name"])
@@ -54,7 +51,10 @@ def execute(filters=None):
 			continue
 		if only_breakdowns and r.reason not in breakdown_reasons:
 			continue
-		minutes = clip_minutes(get_datetime(r.start_time), get_datetime(r.end_time), start, end)
+		minutes = sum(
+			clip_minutes(get_datetime(r.start_time), get_datetime(r.end_time), w_start, w_end)
+			for w_start, w_end in windows[r.machine]
+		)
 		if minutes <= 0:
 			continue
 		entry = per_machine[r.machine]
@@ -64,8 +64,7 @@ def execute(filters=None):
 
 	rows = []
 	for name, entry in per_machine.items():
-		per_day = schedule.get(name) or 1440
-		window_minutes = min(per_day, 1440) * window_days
+		window_minutes = sum((w_end - w_start).total_seconds() / 60.0 for w_start, w_end in windows[name])
 		stats = reliability(entry["failures"], entry["downtime"], window_minutes)
 		rows.append(
 			{
@@ -101,6 +100,22 @@ def execute(filters=None):
 			summary_item(_("Inherent Availability"), fleet["availability"], "Percent"),
 		],
 	)
+
+
+def operating_windows(machine, start, end) -> list[tuple]:
+	"""The machine's scheduled window on each day of [start, end), clipped to the report window.
+	A machine without a schedule is on the clock around it."""
+	windows = []
+	day = getdate(start)
+	while get_datetime(f"{day} 00:00:00") < end:
+		w_start, w_end, _minutes = scheduled_window(
+			day, machine.get("shift_start"), machine.get("scheduled_minutes_per_day")
+		)
+		w_start, w_end = max(w_start, start), min(w_end, end)
+		if w_end > w_start:
+			windows.append((w_start, w_end))
+		day = add_days(day, 1)
+	return windows
 
 
 def get_columns():

@@ -5,7 +5,7 @@
  "docstatus": 0,
  "doctype": "Number Card",
  "document_type": "OEE Period",
- "dynamic_filters_json": "[[\"OEE Period\", \"from_time\", \">=\", \"frappe.datetime.add_days(frappe.datetime.get_today(), -7)\"]]",
+ "dynamic_filters_json": "[[\"OEE Period\", \"from_time\", \">=\", \"frappe.datetime.add_days(frappe.datetime.get_today(), -6)\"]]",
  "filters_json": "[]",
  "function": "Average",
  "idx": 0,

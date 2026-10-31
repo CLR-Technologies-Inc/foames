@@ -28,9 +28,9 @@ All six are script reports with a chart and a summary row, so each one can be pl
 | --- | --- | --- | --- |
 | OEE Trend | OEE Period | date range, machine, line, group by Machine / Line / Day, chart metric OEE / Availability / Performance / Quality | one row per group and day, rolled up from the stored periods: OEE, availability, performance, quality, the time ledger and counts. The chart draws one line per group (the eight busiest when there are more) |
 | Downtime Pareto | Downtime Record | date range, machine, line, group by Reason / Category / Machine, include planned, include open | downtime minutes per group largest first, with the share and cumulative share. Records are clipped to the window; records without a reason appear as `Unclassified` |
-| MTBF and MTTR | Downtime Record | date range, machine, line, breakdown reasons only | per machine: failures (closed, unplanned stoppages), MTBF in hours, MTTR in minutes, downtime, longest stop, inherent availability `MTBF / (MTBF + MTTR)`. Operating time is the window at the machine's Scheduled Minutes Per Day (the whole day without one) less the downtime |
+| MTBF and MTTR | Downtime Record | date range, machine, line, breakdown reasons only | per machine: failures (closed, unplanned stoppages), MTBF in hours, MTTR in minutes, downtime, longest stop, inherent availability `MTBF / (MTBF + MTTR)`. Operating time is the machine's scheduled window on each day of the range (Shift Start plus Scheduled Minutes Per Day; the whole day without a schedule) less the downtime inside it, so a stop outside the shift does not count |
 | Suggestion Status | Agent Suggestion | raised date range, group by Category / Severity / Agent, category, severity, agent | per group: open, accepted, done and dismissed counts, the share accepted or done, the median hours from raising to resolution |
-| Process Throughput | Process Event Log | event log (the latest extracted one by default), daily or weekly, only cases with an activity | cases completed per period (a case completes at its last event), events, median, mean, P90 and longest cycle time in hours; the summary carries the log's cases per day |
+| Process Throughput | Process Event Log | event log (the latest extracted one by default), daily or weekly, only cases with an activity | cases completed per period (a case completes at its last event), events, median, mean, P90 and longest cycle time in hours; the summary carries the cases per day of the selected cases |
 | ERP Outbox Health | S4HANA Outbox (reads the ERPNext Outbox too) | created date range, adapter, operation | per adapter and status: postings, age of the oldest unposted one, the most attempts, the next attempt and the last error. Unposted work outside the date range is always included |
 
 The OEE Trend does not recompute anything: it reads the OEE Periods the daily task created, so the report and the OEE Period list always agree. To see a day that has no period yet, run `compute_daily_oee` for it or use OEE on demand ([oee.md](oee.md)).
@@ -39,7 +39,7 @@ Report permissions follow Frappe's rules: a user needs the report's role and *re
 
 ## Number cards and charts
 
-The cards are plain `Document Type` cards (counts, sums and averages over a DocType with a filter), so the Dashboard Manager can open any of them and change the filter or the colour. Cards that say "7 Days" use a dynamic date filter evaluated in the browser.
+The cards are plain `Document Type` cards (counts, sums and averages over a DocType with a filter), so the Dashboard Manager can open any of them and change the filter or the colour. Cards that say "7 Days" use a dynamic date filter evaluated in the browser and cover today and the six days before it.
 
 | Module | Cards | Charts |
 | --- | --- | --- |

@@ -4,7 +4,7 @@
  "docstatus": 0,
  "doctype": "Number Card",
  "document_type": "Downtime Record",
- "dynamic_filters_json": "[[\"Downtime Record\", \"start_time\", \">=\", \"frappe.datetime.add_days(frappe.datetime.get_today(), -7)\"]]",
+ "dynamic_filters_json": "[[\"Downtime Record\", \"start_time\", \">=\", \"frappe.datetime.add_days(frappe.datetime.get_today(), -6)\"]]",
  "filters_json": "[[\"Downtime Record\", \"reason\", \"is\", \"not set\"], [\"Downtime Record\", \"status\", \"=\", \"Closed\"]]",
  "function": "Count",
  "idx": 0,

@@ -120,4 +120,6 @@ class TestSmallHelpers(unittest.TestCase):
 	def test_percentile(self):
 		self.assertEqual(percentile([5, 1, 3, 2, 4], 0.5), 3)
 		self.assertEqual(percentile([5, 1, 3, 2, 4], 0.9), 5)
+		self.assertEqual(percentile(list(range(1, 11)), 0.9), 9)  # nearest rank: ceil(0.9 * 10) = 9th
+		self.assertEqual(percentile([7], 0.5), 7)
 		self.assertIsNone(percentile([], 0.9))

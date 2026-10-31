@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from collections import OrderedDict
 from datetime import datetime
+from math import ceil
 from statistics import median
 
 
@@ -143,9 +144,10 @@ def resolution_hours(pairs: list[tuple[datetime, datetime | None]]) -> dict:
 
 
 def percentile(values: list[float], share: float) -> float | None:
-	"""The value below which `share` (0-1) of the sorted values fall, by nearest rank."""
+	"""The nearest-rank percentile: the smallest value such that at least `share` (0-1) of the values
+	are less than or equal to it."""
 	if not values:
 		return None
 	ordered = sorted(values)
-	rank = max(0, min(len(ordered) - 1, round(share * (len(ordered) - 1))))
+	rank = max(0, min(len(ordered) - 1, ceil(share * len(ordered)) - 1))
 	return ordered[rank]

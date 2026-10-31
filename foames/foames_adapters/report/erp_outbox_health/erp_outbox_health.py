@@ -40,9 +40,12 @@ def execute(filters=None):
 			fields=["name", "status", "operation", "attempts", "creation", "next_attempt_at", "last_error"],
 		)
 		# Unposted work outside the window still needs attention, so it is read without the window.
+		backlog_conditions = [["status", "in", ("Queued", "Sending", "Retry", "Unknown", "Failed")]]
+		if filters.get("operation"):
+			backlog_conditions.append(["operation", "=", filters.get("operation")])
 		backlog = frappe.get_all(
 			doctype,
-			filters=[["status", "in", ("Queued", "Sending", "Retry", "Unknown", "Failed")]],
+			filters=backlog_conditions,
 			fields=["name", "status", "operation", "attempts", "creation", "next_attempt_at", "last_error"],
 		)
 		seen = {p.name for p in postings}
