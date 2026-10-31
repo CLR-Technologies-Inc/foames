@@ -20,13 +20,13 @@ Every minute of the planned period is assigned to exactly one bucket from the ma
 | Machine state during the minute | Bucket | Effect on availability |
 | --- | --- | --- |
 | Running | Run | Counts as run time |
-| Down, inside a Downtime Record whose reason **Counts As Planned Downtime** | Planned downtime | Removed from the base, so it does not reduce availability |
-| Down, otherwise | Unplanned downtime | Loss |
+| Inside a Downtime Record whose reason **Counts As Planned Downtime** | Planned downtime | Removed from the base, so it does not reduce availability |
+| Down, or inside any other Downtime Record | Unplanned downtime | Loss |
 | Idle | Idle | Loss (not stored as downtime, but not run time either) |
 | Setup | Setup | Loss, same as Idle |
-| Unknown (an explicit Unknown state event), or no state known yet at the start of the period | Unknown | Loss |
+| Unknown, or no state known yet at the start of the period | Unknown | Loss |
 
-The ledger is built from State and Alarm events only. The scheduler's staleness check (**Mark Machine Unknown After**) changes the status shown on the Floor View but does not write an event, so a machine whose last event was Running stays Running in the ledger until the next state event arrives. For silent time to count as loss, the data source has to say so: the Sparkplug B gateway does this itself (an NDEATH or DDEATH becomes an Unknown state event for the machines it covers); for the webhook, MQTT and OPC UA paths, send an explicit `Unknown` or `Down` state when the connection to the machine is lost, or the time until the next state event is attributed to the last known state.
+The ledger is built from State and Alarm events, with every Downtime Record overlaid on top: the minutes a record covers are Down whatever the events say, so a stoppage an operator recorded by hand counts even when the machine never reported it. When a machine stops reporting, the scheduler's staleness check (**Mark Machine Unknown After**, 15 minutes by default) writes an Unknown state event with source System, timed at the moment the signal counted as lost, so silence after a Running event is credited as run time for at most that many minutes. The Sparkplug B gateway is quicker, because an NDEATH or DDEATH becomes an Unknown state event at once; a webhook, MQTT or OPC UA source can do the same by sending an explicit `Unknown` or `Down` state when it loses the machine.
 
 The state in force at the start of the period is the last state event before it, so a machine that was Running since the previous shift is Running from minute one. An Alarm event counts as Down.
 
@@ -71,7 +71,7 @@ In **Machine Data Settings**, **Mark Machine Unknown After** decides how quickly
 
 Once a day the scheduler creates one **OEE Period** per enabled machine for the previous day, over the machine's scheduled window. Its name is `OEE-<machine>-<from time>`. A period is not created twice for the same machine and window, so re-running the job is harmless.
 
-The daily job runs at the start of the day for the previous date, so a shift window that crosses midnight (for example a Shift Start of 22:00 with 480 minutes) is computed before it has ended, and the hours after midnight are measured as whatever state was last known with no counts. For such a shift, re-save the period after the shift ends to recompute it, or create the period by hand then; the duplicate check will not recreate it.
+The job looks at the previous two days and never computes a window that has not ended. A shift that crosses midnight (for example a Shift Start of 22:00 with 480 minutes) is therefore skipped by the run just after its date and created by the next day's run, once it is over.
 
 Each period shows the time ledger (run, planned downtime, unplanned downtime, unknown minutes, coverage), the good and scrap counts, and the four factors. The ideal cycle time is copied from the machine when the period is computed, so a later change to the machine does not silently change old periods.
 
@@ -112,7 +112,7 @@ A press with an ideal cycle time of 2 seconds, shift 06:00 to 14:00 (480 planned
 | 10:00–10:45 | Down, reason "Planned maintenance" (planned) | 45 | Planned downtime |
 | 10:45–13:00 | Running | 135 | Run |
 | 13:00–13:20 | Down, reason "Jam" | 20 | Unplanned downtime |
-| 13:20–14:00 | Unknown state event at 13:20 (the gateway reported the connection lost), nothing after | 40 | Unknown (loss) |
+| 13:20–14:00 | Unknown state event at 13:20 (the gateway reported the connection lost, or the staleness check fired), nothing after | 40 | Unknown (loss) |
 
 Counters over the shift: good deltas sum to 9,000, scrap deltas to 300.
 

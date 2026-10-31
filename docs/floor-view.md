@@ -16,7 +16,7 @@ One tile per enabled Machine, in code order. The colour is the machine's current
 | Yellow | Idle | A State event of Idle (`ready`, `waiting`, `starved`, `blocked`) |
 | Red | Down | A State event of Down (`fault`, `stopped`), or any Alarm event |
 | Blue | Setup | A State event of Setup (`changeover`) |
-| Grey | Unknown | No event yet, a State event of Unknown, or no event for longer than **Mark Machine Unknown After** in Machine Data Settings |
+| Grey | Unknown | No event yet, a State event of Unknown (the Sparkplug gateway sends one when a node or device dies), or no event for longer than **Mark Machine Unknown After** in Machine Data Settings, in which case the scheduler writes the Unknown state event itself with source System |
 
 Each tile also shows when the machine was last seen, how many minutes since its last count ("No counts today" when there is none in the window), the good and scrap counts over the last day, and "OEE n %" from the machine's most recent OEE Period when one exists. Clicking a tile opens the Machine record.
 
@@ -28,7 +28,7 @@ Downtime is opened and closed automatically from machine state. When a machine g
 
 What an operator adds is the **Reason**. Open the record (from the Downtime Record list, filtered on status Open, or from the Machine's connections) and pick a Downtime Reason. Until a reason is assigned the downtime counts as unplanned loss in OEE; once a reason flagged **Counts As Planned Downtime** is assigned, that time is excluded from the availability base instead. Notes are free text.
 
-A Downtime Record can also be created by hand with source Manual, for a stoppage the machine did not report. Give it a start, an end and a reason. An end before the start is refused. A manual record documents the stoppage and counts in the downtime-by-reason figures, but it does not change the OEE time ledger, which is built from state events only: if the machine's last event was Running, those minutes are still run time in OEE. To have them counted as downtime, post a `Down` state event at the start and the real state at the end (a FoaMES Operator may post events unsigned), and then assign the reason on the record that opens.
+A Downtime Record can also be created by hand with source Manual, for a stoppage the machine did not report. Give it a start, an end and a reason. An end before the start is refused. A manual record counts in the downtime-by-reason figures and in OEE alike: the minutes it covers are downtime in the time ledger even if the machine kept reporting Running, and planned downtime if its reason counts as planned. It does not change the machine's current state on the Floor View.
 
 The Floor View does not list downtime itself. The floor snapshot carries downtime per machine with the top reason over the window, and the suggestion rule below turns a dominant reason into a suggestion. For the full picture use the Downtime Record list with the standard filters and group-by.
 
@@ -60,16 +60,16 @@ Moving a suggestion out of Open stamps **Resolved By** and **Resolved On**. Sett
 
 ### The built-in rules
 
-The scheduler runs the rules every hour over the last day. The **Run suggestion rules** button on the Floor View runs them now and reports how many new suggestions were created; it needs create permission on Agent Suggestion, so it works for FoaMES Engineer, FoaMES Operator and System Manager, and a FoaMES Quality user gets a permission error from it. The rules are in `foames/foames_mes/suggestions.py` and are plain functions over the floor snapshot:
+The scheduler runs the rules every hour over the last day. The **Run suggestion rules** button on the Floor View runs them now and reports how many new suggestions were created; it is shown to users who may create Agent Suggestions (FoaMES Engineer, FoaMES Operator, System Manager). The rules are in `foames/foames_mes/suggestions.py` and are plain functions over the floor snapshot:
 
 | Rule | Fires when | Category, severity |
 | --- | --- | --- |
-| Silent after counting | A machine counted in the window, has not counted for 30 minutes or more, and is now Unknown | Machine Data, Warning |
-| Running without counting | A machine counted in the window, reports Running, and has not counted for 30 minutes or more | Downtime, Warning |
-| Dominant downtime reason | One reason is half or more of a machine's downtime with a reason assigned over the window (downtime without a reason is not in the denominator) | Downtime, Info |
+| Silent after counting | A machine has counted before, has not counted for 30 minutes or more, and is now Unknown | Machine Data, Warning |
+| Running without counting | A machine has counted before, reports Running, and has not counted for 30 minutes or more | Downtime, Warning |
+| Dominant downtime reason | One reason is half or more of a machine's downtime over the window, counting downtime that has no reason yet in the total | Downtime, Info |
 | Missing ERP references | Any External Reference has resolved as Missing | ERP, Warning (one suggestion listing them) |
 
-Both count-based rules need at least one count in the window; a machine that has never counted, for example a new machine with a broken counter signal, is not caught by them and shows on the Floor View as "No counts today" instead. They use the machine's last-seen time in their rule key, so a machine that goes quiet again after a fix raises a fresh suggestion. The downtime rule keys on machine and reason (its window label is always the same), so there is at most one open suggestion per machine and reason; once that suggestion is accepted, dismissed or done, the next hourly run reopens it if the reason is still dominant over the last day. Record what was decided in Resolution so a reopened suggestion carries its history.
+The count-based rules measure from the machine's last count ever, so a machine that counted yesterday and runs without counting today is caught; a machine that has never counted at all, for example a new machine whose counter signal was never wired, shows on the Floor View as "No counts today" instead. They use the machine's last-seen time in their rule key, so a machine that goes quiet again after a fix raises a fresh suggestion. The downtime rule keys on machine, reason and the dated window, so it raises at most once per day per reason; a suggestion that was accepted, dismissed or done is reopened only when the finding recurs under the same key.
 
 Other apps register further rules through the `foames_suggestion_rules` hook, and external agents post their own suggestions through the API. Both are described in [agents/floor-agent.md](agents/floor-agent.md).
 
@@ -87,7 +87,7 @@ Everything the page shows comes from one call, `foames.foames_mes.api.get_floor_
      "oee_today": {"oee": 69.0, "availability": 79.3, "performance": 89.9, "quality": 96.8}}
   ],
   "downtime_by_machine": [
-    {"machine": "press-1", "period": "last 1 day(s)", "total_minutes": 65,
+    {"machine": "press-1", "period": "2026-10-29 to 2026-10-30", "total_minutes": 65, "unclassified_minutes": 0,
      "top_reason": "Planned maintenance", "top_minutes": 45}
   ],
   "external_references": [],

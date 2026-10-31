@@ -54,7 +54,7 @@
    "fieldname": "source",
    "fieldtype": "Select",
    "label": "Source",
-   "options": "Webhook\nMQTT\nOPC UA\nManual",
+   "options": "Webhook\nMQTT\nOPC UA\nManual\nSystem",
    "default": "Manual",
    "in_standard_filter": 1
   },
