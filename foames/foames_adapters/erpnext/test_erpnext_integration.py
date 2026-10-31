@@ -39,6 +39,8 @@ class ERPNextTestCase(IntegrationTestCase):
 	def setUp(self):
 		super().setUp()
 		frappe.db.delete("ERPNext Outbox")
+		# References are resolved on save here; an earlier test may have committed the skip flag.
+		frappe.db.set_single_value("FoaMES Settings", "skip_resolution_on_save", 0)
 
 	def run_outbox(self):
 		return process_outbox()
@@ -347,8 +349,11 @@ class TestJobCardRollUp(ERPNextTestCase):
 		self.assertEqual(card.total_completed_qty, 4)
 		self.assertEqual(card.total_time_in_mins, 35)
 		if card.meta.has_field("process_loss_qty"):
-			self.assertEqual(card.process_loss_qty, 1)
+			# Older ERPNext keeps the scrap the posting wrote; recent versions derive the field
+			# themselves as planned minus completed when the Job Card is saved.
+			self.assertIn(card.process_loss_qty, (1, card.for_quantity - card.total_completed_qty))
 		self.assertIn(rules.marker(record.idempotency_key), card.remarks)
+		self.assertIn("scrap 1", card.remarks)
 
 		# The next window starts where this one ended and has nothing to report.
 		self.assertIsNone(roll_up(self.machine.name, until=t(90)))

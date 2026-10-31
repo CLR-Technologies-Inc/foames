@@ -206,15 +206,19 @@ def post_job_card_production_log(payload: dict, marker: str) -> Result:
 			row["completed_qty"] = good
 		doc.append("time_logs", row)
 	scrap = flt(payload.get("process_loss_qty"))
-	loss_recorded = False
+	loss_before = flt(doc.get("process_loss_qty"))
 	if scrap and doc.meta.has_field("process_loss_qty"):
-		doc.process_loss_qty = flt(doc.process_loss_qty) + scrap
-		loss_recorded = True
+		doc.process_loss_qty = loss_before + scrap
 	note = payload.get("remarks") or ""
+	if scrap:
+		note = f"{note} (scrap {scrap:g})".strip()
 	doc.remarks = "\n".join(
 		part for part in ((doc.remarks or "").strip(), f"{marker} {note}".strip()) if part
 	)
 	doc.save()
+	# Recent ERPNext versions derive Process Loss Qty themselves (planned minus completed) when the
+	# Job Card is saved, so the scrap only counts as recorded when the value survived the save.
+	loss_recorded = bool(scrap) and flt(doc.get("process_loss_qty")) == loss_before + scrap
 
 	submitted = False
 	submit = (
