@@ -3,6 +3,8 @@
 
 """OEE for one machine over one period, computed from its Machine Events and Downtime Records."""
 
+from itertools import pairwise
+
 import frappe
 from frappe import _
 from frappe.model.document import Document
@@ -44,8 +46,10 @@ class OEEPeriod(Document):
 def state_intervals(machine: str, start, end) -> list[tuple[float, str, bool]]:
 	"""(minutes, state, planned) for the machine's state history inside [start, end).
 
-	The state before `start` carries into the period. Down intervals take their planned flag from
-	the Downtime Record's reason, when one is assigned.
+	The state before `start` carries into the period. Every Downtime Record that overlaps the period
+	makes its minutes Down, whatever the state events say, so a stoppage an operator recorded by
+	hand counts even when the machine never reported it. A Down minute is planned when a record
+	covering it has a reason that counts as planned downtime.
 	"""
 	state_filters = {"machine": machine, "event_type": ("in", ("State", "Alarm"))}
 	before = frappe.get_all(
@@ -66,34 +70,50 @@ def state_intervals(machine: str, start, end) -> list[tuple[float, str, bool]]:
 		fields=["timestamp", "state", "event_type"],
 		order_by="timestamp asc",
 	)
-	planned_windows = [
-		(get_datetime(d.start_time), get_datetime(d.end_time) if d.end_time else end)
-		for d in frappe.get_all(
-			"Downtime Record",
-			filters={"machine": machine, "start_time": ("<", end), "reason": ("is", "set")},
-			or_filters=[["end_time", "is", "not set"], ["end_time", ">=", start]],
-			fields=["start_time", "end_time", "reason"],
-		)
-		if frappe.db.get_value("Downtime Reason", d.reason, "counts_as_planned")
-	]
-	state, cursor = "Unknown", start
+	windows = downtime_windows(machine, start, end)
+	state, changes = "Unknown", []
 	for e in events:
 		at = get_datetime(e.timestamp)
 		new_state = "Down" if e.event_type == "Alarm" else e.state
 		if at <= start:
 			state = new_state
-			continue
-		yield_from = cursor
-		cursor = at
-		intervals_append = (minutes_between(yield_from, at), state, _is_planned(yield_from, planned_windows))
-		state = new_state
-		yield intervals_append
-	if cursor < end:
-		yield (minutes_between(cursor, end), state, _is_planned(cursor, planned_windows))
+		else:
+			changes.append((at, new_state))
+	# Cut the period at every state change and every downtime boundary, then classify each piece.
+	points = {start, end, *(at for at, _ in changes)}
+	points.update(t for s, e, _ in windows for t in (s, e) if start < t < end)
+	ordered = sorted(points)
+	intervals, change_index = [], 0
+	for a, b in pairwise(ordered):
+		while change_index < len(changes) and changes[change_index][0] <= a:
+			state = changes[change_index][1]
+			change_index += 1
+		covering = [planned for s, e, planned in windows if s <= a < e]
+		if covering:
+			intervals.append((minutes_between(a, b), "Down", any(covering)))
+		else:
+			intervals.append((minutes_between(a, b), state, False))
+	return intervals
 
 
-def _is_planned(at, windows) -> bool:
-	return any(s <= at < e for s, e in windows)
+def downtime_windows(machine: str, start, end) -> list[tuple]:
+	"""(start, end, planned) of every Downtime Record overlapping [start, end). An open record runs
+	to the end of the period."""
+	records = frappe.get_all(
+		"Downtime Record",
+		filters={"machine": machine, "start_time": ("<", end)},
+		or_filters=[["end_time", "is", "not set"], ["end_time", ">=", start]],
+		fields=["start_time", "end_time", "reason"],
+	)
+	planned_reasons = {r.name for r in frappe.get_all("Downtime Reason", {"counts_as_planned": 1}, ["name"])}
+	return [
+		(
+			get_datetime(d.start_time),
+			min(get_datetime(d.end_time), end) if d.end_time else end,
+			bool(d.reason and d.reason in planned_reasons),
+		)
+		for d in records
+	]
 
 
 def counts_in(machine: str, start, end) -> tuple[float, float]:
@@ -114,15 +134,25 @@ def counts_in(machine: str, start, end) -> tuple[float, float]:
 
 
 def compute_daily_oee(for_date=None):
-	"""Scheduled daily: one OEE Period per enabled machine for the previous day.
+	"""Scheduled daily: one OEE Period per enabled machine for each of the previous two days whose
+	window has ended and has no period yet.
 
 	A machine with a Shift Start is measured over its scheduled window only, so state time and counts
-	outside the shift never enter the period. Without one, the whole day is the planned time.
+	outside the shift never enter the period. Without one, the whole day is the planned time. A shift
+	that crosses midnight has not ended when the job runs for its date, so it is skipped then and
+	created by the next day's run; a window is never computed before it is over.
 	"""
-	day = getdate(for_date) if for_date else add_days(getdate(now_datetime()), -1)
+	now = now_datetime()
+	today = getdate(now)
+	days = [getdate(for_date)] if for_date else [add_days(today, -1), add_days(today, -2)]
+	machines = frappe.get_all(
+		"Machine", {"disabled": 0}, ["name", "scheduled_minutes_per_day", "shift_start"]
+	)
 	created = []
-	for m in frappe.get_all("Machine", {"disabled": 0}, ["name", "scheduled_minutes_per_day", "shift_start"]):
+	for day, m in ((day, m) for day in days for m in machines):
 		start, end, planned = scheduled_window(day, m.shift_start, m.scheduled_minutes_per_day)
+		if end > now:
+			continue
 		if frappe.db.exists("OEE Period", {"machine": m.name, "from_time": start, "to_time": end}):
 			continue
 		doc = frappe.get_doc(

@@ -11,6 +11,7 @@
   "cb_head",
   "status",
   "last_seen",
+  "last_count_at",
   "disabled",
   "ideal_cycle_seconds",
   "shift_start",
@@ -62,6 +63,13 @@
    "label": "Last Seen",
    "read_only": 1,
    "in_list_view": 1
+  },
+  {
+   "fieldname": "last_count_at",
+   "fieldtype": "Datetime",
+   "label": "Last Count At",
+   "read_only": 1,
+   "description": "Timestamp of the latest Count event ever recorded for this machine; kept here so the floor never scans the event history"
   },
   {
    "fieldname": "disabled",
