@@ -12,6 +12,7 @@ from unittest.mock import patch
 
 from foames.foames_adapters.s4hana.fake import FakeS4HANA, csrf, ok, sap_error
 from foames.foames_adapters.s4hana.odata import (
+	AUTH_STATUSES,
 	TRANSIENT_STATUSES,
 	Connection,
 	ODataClient,
@@ -140,7 +141,8 @@ class TestOAuth(unittest.TestCase):
 		self.assertGreater(c._token[1], time.time() + 200)
 
 	def test_token_failures(self):
-		for status, transient in ((401, False), (503, True)):
+		# A rejected login is transient for the outbox: it clears up when the credentials are fixed.
+		for status, transient in ((401, True), (400, False), (503, True)):
 			fake = FakeS4HANA().on("POST", "/oauth/token", Response(status, {}, b""))
 			with self.assertRaises(ODataError) as raised:
 				self.oauth_client(fake).access_token()
@@ -284,7 +286,9 @@ class TestCSRF(unittest.TestCase):
 		self.assertEqual(raised.exception.status, 403)
 		self.assertEqual([r["method"] for r in fake.requests], ["GET", "POST", "GET", "POST"])
 
-	def test_plain_403_is_not_retried(self):
+	def test_plain_403_is_not_retried_with_a_new_token(self):
+		# Without the "Required" header a 403 is a real denial: no second token fetch. The error is
+		# transient (a fixed authorisation clears it) but nothing was applied.
 		fake = (
 			FakeS4HANA()
 			.on("FETCH", "S", csrf("T"))
@@ -293,7 +297,8 @@ class TestCSRF(unittest.TestCase):
 		with self.assertRaises(ODataError) as raised:
 			client(fake).post("S", "E", {})
 		self.assertEqual([r["method"] for r in fake.requests], ["GET", "POST"])
-		self.assertFalse(raised.exception.transient)
+		self.assertTrue(raised.exception.transient)
+		self.assertFalse(raised.exception.maybe_applied)
 
 	def test_post_body_and_response(self):
 		fake = FakeS4HANA().on("FETCH", "S", csrf("T")).on("POST", "E", ok({"Id": "9"}, 201))
@@ -350,10 +355,12 @@ class TestErrorFromResponse(unittest.TestCase):
 
 	def test_transient_statuses(self):
 		self.assertEqual(TRANSIENT_STATUSES, {408, 429, 500, 502, 503, 504})
-		for status in (400, 401, 403, 404, 409, 422):
+		for status in (400, 404, 409, 422):
 			self.assertFalse(error_from_response(Response(status, {}, b"")).transient)
-		for status in TRANSIENT_STATUSES:
+		for status in TRANSIENT_STATUSES | AUTH_STATUSES:
 			self.assertTrue(error_from_response(Response(status, {}, b"")).transient)
+		for status in AUTH_STATUSES:
+			self.assertFalse(error_from_response(Response(status, {}, b"")).maybe_applied)
 
 	def test_long_body_is_truncated(self):
 		error = error_from_response(Response(500, {}, b"x" * 2000))

@@ -148,10 +148,22 @@ class TestSend(unittest.TestCase):
 		outcome = outbox.send(client(fake), self.operation, self.payload(), verify_first=False)
 		self.assertEqual(outcome.status, "Retry")
 
-	def test_csrf_fetch_denied_fails(self):
+	def test_csrf_fetch_denied_is_retried(self):
+		# A rejected login clears up when the credentials are fixed, so the posting waits instead of
+		# failing and holding its sequence group.
 		fake = FakeS4HANA().on("FETCH", "API_MATERIAL_DOCUMENT_SRV", Response(401, {}, b""))
 		outcome = outbox.send(client(fake), self.operation, self.payload(), verify_first=False)
+		self.assertEqual(outcome.status, "Retry")
+
+	def test_business_rejection_fails(self):
+		fake = (
+			FakeS4HANA()
+			.on("FETCH", "API_MATERIAL_DOCUMENT_SRV", csrf())
+			.on("POST", "A_MaterialDocumentHeader", sap_error(400, "M7/021", "Posting period closed"))
+		)
+		outcome = outbox.send(client(fake), self.operation, self.payload(), verify_first=False)
 		self.assertEqual(outcome.status, "Failed")
+		self.assertIn("Posting period closed", outcome.error)
 
 	def test_transient_failure_while_verifying_stays_unknown(self):
 		fake = FakeS4HANA().on("GET", "A_MaterialDocumentHeader", Response(503, {}, b""))
