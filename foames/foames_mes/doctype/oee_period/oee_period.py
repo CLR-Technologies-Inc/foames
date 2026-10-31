@@ -6,6 +6,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
+from frappe.query_builder.functions import Sum
 from frappe.utils import add_days, add_to_date, get_datetime, getdate, now_datetime
 
 from foames.foames_mes.counters import minutes_between
@@ -97,16 +98,18 @@ def _is_planned(at, windows) -> bool:
 
 
 def counts_in(machine: str, start, end) -> tuple[float, float]:
-	rows = frappe.get_all(
-		"Machine Event",
-		filters=[
-			["machine", "=", machine],
-			["event_type", "=", "Count"],
-			["timestamp", ">=", start],
-			["timestamp", "<", end],
-		],
-		fields=["counter_name", "sum(delta) as total"],
-		group_by="counter_name",
+	event = frappe.qb.DocType("Machine Event")
+	rows = (
+		frappe.qb.from_(event)
+		.select(event.counter_name, Sum(event.delta).as_("total"))
+		.where(
+			(event.machine == machine)
+			& (event.event_type == "Count")
+			& (event.timestamp >= start)
+			& (event.timestamp < end)
+		)
+		.groupby(event.counter_name)
+		.run(as_dict=True)
 	)
 	good = sum(r.total or 0 for r in rows if r.counter_name in ("good", "count", "total", "parts"))
 	scrap = sum(r.total or 0 for r in rows if r.counter_name in ("scrap", "reject", "bad", "ng"))

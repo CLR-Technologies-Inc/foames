@@ -13,6 +13,7 @@ adds keys to the dict in place.
 """
 
 import frappe
+from frappe.query_builder.functions import Max, Sum
 from frappe.utils import add_days, get_datetime, now_datetime
 
 from foames.foames_mes.counters import minutes_between
@@ -27,13 +28,15 @@ def floor_snapshot(days: int = 1) -> dict:
 		["name", "title", "status", "last_seen", "machine_type", "ideal_cycle_seconds"],
 		order_by="name",
 	)
+	event = frappe.qb.DocType("Machine Event")
 	last_count = {
 		r.machine: r.last
-		for r in frappe.get_all(
-			"Machine Event",
-			{"event_type": "Count", "timestamp": (">=", since)},
-			["machine", "max(timestamp) as last"],
-			group_by="machine",
+		for r in (
+			frappe.qb.from_(event)
+			.select(event.machine, Max(event.timestamp).as_("last"))
+			.where((event.event_type == "Count") & (event.timestamp >= since))
+			.groupby(event.machine)
+			.run(as_dict=True)
 		)
 	}
 	for m in machines:
@@ -109,11 +112,13 @@ def downtime_by_reason(machine: str, since, until) -> dict[str, float]:
 
 def counts_since(machine: str, since) -> dict[str, float]:
 	"""Counter deltas per counter name since `since`, for example {"good": 120, "scrap": 3}."""
-	rows = frappe.get_all(
-		"Machine Event",
-		{"machine": machine, "event_type": "Count", "timestamp": (">=", since)},
-		["counter_name", "sum(delta) as total"],
-		group_by="counter_name",
+	event = frappe.qb.DocType("Machine Event")
+	rows = (
+		frappe.qb.from_(event)
+		.select(event.counter_name, Sum(event.delta).as_("total"))
+		.where((event.machine == machine) & (event.event_type == "Count") & (event.timestamp >= since))
+		.groupby(event.counter_name)
+		.run(as_dict=True)
 	)
 	return {r.counter_name: r.total or 0 for r in rows}
 

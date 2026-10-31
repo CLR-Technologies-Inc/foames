@@ -54,9 +54,9 @@ class TestOEEPeriod(IntegrationTestCase):
 		result = get_oee("T-OEE", "2026-10-20 08:00:00", "2026-10-20 13:00:00", planned_minutes=300)
 		self.assertAlmostEqual(result["run_minutes"], 210)
 		self.assertAlmostEqual(result["availability"], 210 / 270 * 100, places=3)
-		self.assertAlmostEqual(
-			result["performance"], 200 / 210 * 100, places=3
-		)  # 60 s ideal: 210 units possible, 200 counted
+		# 60 s ideal over 210 run minutes allows 210 pieces; 200 good + 10 scrap were made, so
+		# performance is 100 percent (scrap counts as output; quality is where it is lost).
+		self.assertAlmostEqual(result["performance"], 100.0, places=3)
 		self.assertAlmostEqual(result["quality"], 190 / 200 * 100, places=3)
 		self.assertEqual((result["good_count"], result["scrap_count"]), (200, 10))
 		self.assertAlmostEqual(result["unknown_minutes"], 0)

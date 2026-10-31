@@ -18,10 +18,21 @@ class IntegrationTestCase(_IntegrationTestCase):
 
 	def setUp(self):
 		super().setUp()
+		# A savepoint taken before InnoDB has joined the transaction (the first statement after a
+		# commit) is recorded by the SQL layer only, and ROLLBACK TO it then fails with error 1305.
+		# Reading a table first makes the storage engine part of the transaction.
+		frappe.db.sql("select name from `tabDocType` limit 1")
 		frappe.db.savepoint(self.SAVEPOINT)
+		self._savepoint_taken = True
 
 	def tearDown(self):
-		frappe.db.rollback(save_point=self.SAVEPOINT)
+		try:
+			if self._savepoint_taken:
+				frappe.db.rollback(save_point=self.SAVEPOINT)
+		except Exception:
+			# A test that committed (the outbox does) or rolled back fully has discarded the
+			# savepoint. Everything after the last commit goes, which is the next best isolation.
+			frappe.db.rollback()
 		super().tearDown()
 
 

@@ -347,7 +347,7 @@ def handle_message(topic_text: str, payload_bytes: bytes, aliases: AliasBook, ro
 			frappe.db.commit()
 		except EventError as e:
 			frappe.logger("foames.sparkplug").warning(f"rejected {topic_text} {raw.get('type')}: {e}")
-		except frappe.DuplicateEntryError:
+		except (frappe.DuplicateEntryError, frappe.UniqueValidationError):
 			frappe.db.rollback()
 		except Exception:
 			frappe.db.rollback()

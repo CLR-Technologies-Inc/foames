@@ -18,6 +18,7 @@ def remember(event, machine):
 
 class TestMachineEvent(IntegrationTestCase):
 	def setUp(self):
+		super().setUp()
 		self.machine = make_machine("T-PRESS", counter_rollover=10000)
 		HANDLED.clear()
 
