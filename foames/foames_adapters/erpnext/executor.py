@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 
 import frappe
 from frappe import _
-from frappe.utils import cint, flt
+from frappe.utils import cint, flt, get_datetime
 
 from foames.foames_adapters.erpnext.postings import Operation
 
@@ -43,6 +43,8 @@ def execute(operation: Operation, payload: dict, marker: str) -> Result:
 		return post_stock_entry(operation.label, payload, marker)
 	if operation.label == "Job Card Time Log":
 		return post_job_card_time_log(payload, marker)
+	if operation.label == "Job Card Production Log":
+		return post_job_card_production_log(payload, marker)
 	if operation.label == "Work Order Status":
 		return set_work_order_status(payload)
 	raise ValueError(f"No executor for {operation.label}")
@@ -56,7 +58,7 @@ def find_existing(operation: Operation, payload: dict, marker: str) -> Result | 
 		)
 		if name:
 			return Result("Stock Entry", name, {"found_by": "marker"}, existing=True)
-	elif operation.label == "Job Card Time Log":
+	elif operation.label in ("Job Card Time Log", "Job Card Production Log"):
 		remarks = frappe.db.get_value("Job Card", payload["job_card"], "remarks") or ""
 		if marker in remarks:
 			return Result("Job Card", payload["job_card"], {"found_by": "marker"}, existing=True)
@@ -183,6 +185,61 @@ def refresh_totals(doc):
 			{"total_completed_qty": completed, "total_time_in_mins": minutes},
 			update_modified=False,
 		)
+
+
+def post_job_card_production_log(payload: dict, marker: str) -> Result:
+	"""Record a machine's production window on a Job Card: one time log per stretch the machine
+	ran (or one for the whole window when it reported counts but no state), the good quantity as
+	the last log's completed quantity, and the scrap added to the Job Card's process loss.
+
+	The rows go through the Job Card's own validation (`validate_time_logs`), which rejects
+	overlaps and sums the totals. A Job Card that is no longer a draft rejects the posting."""
+	name = payload["job_card"]
+	doc = frappe.get_doc("Job Card", name)
+	if doc.docstatus != 0:
+		frappe.throw(_("Job Card {0} is not a draft; its production cannot be logged").format(name))
+	intervals = payload.get("run_intervals") or [[payload["from_time"], payload["to_time"]]]
+	good = flt(payload.get("completed_qty"))
+	for index, (from_time, to_time) in enumerate(intervals):
+		row = {"from_time": get_datetime(from_time), "to_time": get_datetime(to_time), "completed_qty": 0}
+		if index == len(intervals) - 1:
+			row["completed_qty"] = good
+		doc.append("time_logs", row)
+	scrap = flt(payload.get("process_loss_qty"))
+	loss_recorded = False
+	if scrap and doc.meta.has_field("process_loss_qty"):
+		doc.process_loss_qty = flt(doc.process_loss_qty) + scrap
+		loss_recorded = True
+	note = payload.get("remarks") or ""
+	doc.remarks = "\n".join(
+		part for part in ((doc.remarks or "").strip(), f"{marker} {note}".strip()) if part
+	)
+	doc.save()
+
+	submitted = False
+	submit = (
+		payload["submit"]
+		if "submit" in payload
+		else frappe.db.get_single_value("ERPNext Adapter Settings", "submit_job_cards_when_complete")
+	)
+	if submit and flt(doc.total_completed_qty) + flt(doc.get("process_loss_qty")) >= flt(doc.for_quantity):
+		doc.submit()
+		submitted = True
+	return Result(
+		"Job Card",
+		name,
+		{
+			"status": doc.status,
+			"docstatus": doc.docstatus,
+			"time_logs_added": len(intervals),
+			"completed_qty": good,
+			"process_loss_qty": scrap,
+			"process_loss_recorded": loss_recorded,
+			"total_completed_qty": doc.total_completed_qty,
+			"total_time_in_mins": doc.total_time_in_mins,
+			"submitted": submitted,
+		},
+	)
 
 
 def set_work_order_status(payload: dict) -> Result:
