@@ -28,7 +28,8 @@ frappe.query_reports["ERP Outbox Health"] = {
 	formatter(value, row, column, data, default_formatter) {
 		value = default_formatter(value, row, column, data);
 		if (column.fieldname === "status" && data) {
-			const colour = { Failed: "red", Retry: "orange", Unknown: "orange", Posted: "green" }[data.status];
+			const colours = { Failed: "red", Retry: "orange", Unknown: "orange", Posted: "green" };
+			const colour = colours[data.status];
 			if (colour) value = `<span class="indicator-pill ${colour}">${data.status}</span>`;
 		}
 		return value;

@@ -28,7 +28,16 @@ frappe.query_reports["Suggestion Status"] = {
 			fieldname: "category",
 			label: __("Category"),
 			fieldtype: "Select",
-			options: ["", "Yield", "Downtime", "Quality", "Release", "Machine Data", "ERP", "Other"],
+			options: [
+				"",
+				"Yield",
+				"Downtime",
+				"Quality",
+				"Release",
+				"Machine Data",
+				"ERP",
+				"Other",
+			],
 		},
 		{
 			fieldname: "severity",

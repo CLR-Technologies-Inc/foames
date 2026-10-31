@@ -26,7 +26,17 @@ frappe.query_reports["Downtime Pareto"] = {
 			options: ["Reason", "Category", "Machine"],
 			default: "Reason",
 		},
-		{ fieldname: "include_planned", label: __("Include Planned Downtime"), fieldtype: "Check", default: 0 },
-		{ fieldname: "include_open", label: __("Include Open Stoppages"), fieldtype: "Check", default: 0 },
+		{
+			fieldname: "include_planned",
+			label: __("Include Planned Downtime"),
+			fieldtype: "Check",
+			default: 0,
+		},
+		{
+			fieldname: "include_open",
+			label: __("Include Open Stoppages"),
+			fieldtype: "Check",
+			default: 0,
+		},
 	],
 };
