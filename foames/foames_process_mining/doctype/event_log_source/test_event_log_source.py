@@ -13,13 +13,16 @@ from foames.tests_compat import IntegrationTestCase
 
 class TestEventLogSource(IntegrationTestCase):
 	def setUp(self):
-		make_machine("T-ELS")
+		# A machine of its own per test, so records another test left behind cannot change the counts.
+		self.machine = "T-ELS-" + frappe.generate_hash(length=6).upper()
+		make_machine(self.machine)
+		m = self.machine
 		record_events(
 			[
-				{"machine": "T-ELS", "type": "Count", "value": 0, "timestamp": "2026-10-22T08:00:00"},
-				{"machine": "T-ELS", "type": "Count", "value": 50, "timestamp": "2026-10-22T09:00:00"},
+				{"machine": m, "type": "Count", "value": 0, "timestamp": "2026-10-22T08:00:00"},
+				{"machine": m, "type": "Count", "value": 50, "timestamp": "2026-10-22T09:00:00"},
 				{
-					"machine": "T-ELS",
+					"machine": m,
 					"type": "Count",
 					"counter": "scrap",
 					"value": 2,

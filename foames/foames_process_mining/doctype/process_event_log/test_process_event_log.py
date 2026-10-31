@@ -76,8 +76,8 @@ class TestProcessEventLog(IntegrationTestCase):
 		report = api.check_conformance(model='["Setup", "Running", "Idle"]', event_log=doc.name)
 		self.assertGreaterEqual(report["cases"], 2)  # at least this machine-day and its downtime record
 		deviating = {t["case_id"] for t in report["traces"]}
-		self.assertIn(f"{self.machine}:2026-10-21", deviating)  # Running -> Down is not in the sequence
-		self.assertGreaterEqual(report["deviation_counts"].get("disallowed_transition", 0), 1)
+		self.assertIn(f"{self.machine}:2026-10-21", deviating)  # Down is not in the sequence at all
+		self.assertGreaterEqual(report["deviation_counts"].get("unknown_activity", 0), 1)
 
 	def test_api_builds_a_log_without_a_record(self):
 		summary = api.summary(since="2026-10-21 00:00:00", until="2026-10-22 00:00:00")
