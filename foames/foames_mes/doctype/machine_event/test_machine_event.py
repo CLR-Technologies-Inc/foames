@@ -86,6 +86,17 @@ class TestMachineEvent(IntegrationTestCase):
 		)
 		self.assertEqual([d.delta for d in deltas], [0, 5, 8])
 
+	def test_machine_remembers_its_latest_count_time(self):
+		record_events(
+			[
+				{"machine": "T-PRESS", "type": "Count", "value": 10, "timestamp": "2026-10-20T10:00:00"},
+				{"machine": "T-PRESS", "type": "Count", "value": 12, "timestamp": "2026-10-20T09:00:00"},
+			]
+		)
+		self.assertEqual(
+			str(frappe.db.get_value("Machine", "T-PRESS", "last_count_at")), "2026-10-20 10:00:00"
+		)
+
 	def test_late_reading_counts_zero(self):
 		record_events(
 			[

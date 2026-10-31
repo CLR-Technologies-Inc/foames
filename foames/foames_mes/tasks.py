@@ -6,17 +6,31 @@ from frappe.utils import add_to_date, now_datetime
 
 
 def mark_stale_machines_unknown():
-	"""A machine that has not reported for the configured time is Unknown, not quietly Running."""
+	"""A machine that has not reported for the configured time is Unknown, not quietly Running.
+
+	The transition is written as a Machine Event (source System) at the moment the signal counted as
+	lost, so the OEE ledger, which is built from state events, stops crediting run time there.
+	"""
 	minutes = frappe.db.get_single_value("Machine Data Settings", "stale_after_minutes") or 15
 	cutoff = add_to_date(now_datetime(), minutes=-minutes)
 	stale = frappe.get_all(
 		"Machine",
 		{"status": ("not in", ("Unknown", "Down")), "last_seen": ("<", cutoff), "disabled": 0},
-		pluck="name",
+		fields=["name", "last_seen"],
 	)
-	for name in stale:
-		frappe.get_doc("Machine", name).set_state("Unknown", now_datetime())
-	return stale
+	for m in stale:
+		frappe.get_doc(
+			{
+				"doctype": "Machine Event",
+				"machine": m.name,
+				"event_type": "State",
+				"state": "Unknown",
+				"source": "System",
+				"timestamp": add_to_date(m.last_seen, minutes=minutes),
+				"text": f"no event for {minutes} minutes",
+			}
+		).insert(ignore_permissions=True)
+	return [m.name for m in stale]
 
 
 def run_suggestion_rules():

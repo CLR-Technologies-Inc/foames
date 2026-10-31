@@ -80,7 +80,15 @@ def normalise_event(raw: dict, source: str = "Webhook", tz=None) -> dict:
 		event["value"] = _number_or_none(value) if value is not None else _number_or_none(code)
 		if event["value"] is None:
 			event["value"] = 1.0
-		event["text"] = event["text"] or (str(code) if code is not None else "")
+		if not event["text"]:
+			# A text code names the alarm; so does a text value sent without a code (OPC UA nodes
+			# deliver the node value as `value`).
+			if code is not None:
+				event["text"] = str(code)
+			elif value is not None and _number_or_none(value) is None:
+				event["text"] = str(value)
+			else:
+				event["text"] = ""
 	return event
 
 

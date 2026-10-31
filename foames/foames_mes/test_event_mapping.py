@@ -109,6 +109,13 @@ class TestNormaliseEvent(unittest.TestCase):
 		event = normalise_event({"machine": "L1", "type": "Alarm", "value": 7, "code": "E42"})
 		self.assertEqual((event["value"], event["text"]), (7.0, "E42"))
 
+	def test_alarm_with_a_text_value_keeps_it_as_text(self):
+		# An OPC UA alarm node delivers its value as `value`, with no code.
+		event = normalise_event({"machine": "L1", "type": "Alarm", "value": "E42"})
+		self.assertEqual((event["value"], event["text"]), (1.0, "E42"))
+		event = normalise_event({"machine": "L1", "type": "Alarm", "value": "E42", "text": "Door open"})
+		self.assertEqual(event["text"], "Door open")
+
 	def test_alarm_with_nothing_is_on(self):
 		event = normalise_event({"machine": "L1", "type": "Alarm"})
 		self.assertEqual((event["value"], event["text"]), (1.0, ""))

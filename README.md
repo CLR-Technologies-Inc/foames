@@ -16,6 +16,7 @@ FoaMES is a single Frappe app that depends on the Frappe framework only. ERP sys
 | FoaMES Kernel | The shared records every FoaMES product builds on, plus `External Reference` (a pointer to a record in an ERP) and `FoaMES Settings` |
 | FoaMES MES | Shop-floor execution: monitoring, downtime, OEE and machine data |
 | FoaMES Adapters | The ERP adapter contract, the ERPNext adapter and the SAP S/4HANA adapter |
+| FoaMES Process Mining | Event logs from FoaMES and ERP records, XES and OCEL export, discovery, performance and conformance analysis |
 
 FoaMES records never use Link fields to ERP DocTypes. They store an `External Reference` (ERP system, reference type, external ID) and the matching adapter resolves it. The ERPNext adapter activates only when ERPNext is installed on the same site. Other apps can register more adapters through the `foames_erp_adapters` hook.
 
@@ -30,6 +31,22 @@ cd $PATH_TO_YOUR_BENCH
 bench get-app https://github.com/CLR-Technologies-Inc/foames
 bench --site $SITE install-app foames
 ```
+
+The full guide, including roles, the scheduler, running the gateways and a smoke test, is [docs/installation.md](docs/installation.md).
+
+## Documentation
+
+| Page | Covers |
+| --- | --- |
+| [docs/installation.md](docs/installation.md) | Install, update, roles, scheduler, gateways under supervisor, first configuration, development setup |
+| [docs/erpnext-adapter.md](docs/erpnext-adapter.md) | External References, the ERPNext adapter, running without an ERP, writing an adapter |
+| [docs/s4hana-adapter.md](docs/s4hana-adapter.md) | The SAP S/4HANA adapter: setup on both sides, the outbox, inbound IDocs, operation |
+| [docs/machine-data.md](docs/machine-data.md) | The webhook, MQTT, OPC UA and Sparkplug B paths and the event shape |
+| [docs/ignition.md](docs/ignition.md) | Connecting Ignition SCADA |
+| [docs/floor-view.md](docs/floor-view.md) | The Floor View, downtime and Agent Suggestions |
+| [docs/oee.md](docs/oee.md) | How OEE is computed and how to set a machine up for it |
+| [AGENTS.md](AGENTS.md) | For coding agents and developers building on FoaMES: invariants, hooks, API, tests |
+| [docs/agents/floor-agent.md](docs/agents/floor-agent.md) | For an agent reading the floor and raising suggestions at run time |
 
 ## Contributing
 
@@ -69,6 +86,15 @@ Events arrive through a signed webhook, an MQTT gateway, a Sparkplug B gateway o
 | Agent Suggestion | MES | A finding raised by the built-in rules or by an external agent, with evidence, for a person to accept or dismiss. |
 
 The OEE arithmetic and the suggestion rules have no Frappe dependency (`foames/foames_mes/oee.py`, `suggestions.py`). The counter-delta, owed-count and coverage ideas follow public MES practice, including the FactorySemantics MES design notes. See [docs/agents/floor-agent.md](docs/agents/floor-agent.md) for the agent API and the hooks that add snapshot sections and rules.
+
+## Process mining
+
+| Record | Module | Role |
+| --- | --- | --- |
+| Event Log Source | Process Mining | A field map that turns any DocType's records into events (case, activity, timestamps, resource, objects). ERP records are named as text and skipped when not installed. |
+| Process Event Log | Process Mining | A saved extraction over a window and chosen sources, with discovery, conformance against another log, and XES or OCEL 2.0 export from the form. |
+
+Machine states and downtime are built-in sources. The analyses (directly-follows graph, variants, throughput, waiting times, rework, conformance replay and footprint comparison) have no Frappe dependency (`foames/foames_process_mining/discovery.py`, `conformance.py`). See [docs/process-mining.md](docs/process-mining.md).
 
 ## License
 

@@ -13,7 +13,6 @@ adds keys to the dict in place.
 """
 
 import frappe
-from frappe.query_builder.functions import Max, Sum
 from frappe.utils import add_days, get_datetime, now_datetime
 
 from foames.foames_mes.counters import minutes_between
@@ -25,23 +24,16 @@ def floor_snapshot(days: int = 1) -> dict:
 	machines = frappe.get_all(
 		"Machine",
 		{"disabled": 0},
-		["name", "title", "status", "last_seen", "machine_type", "ideal_cycle_seconds"],
+		["name", "title", "status", "last_seen", "last_count_at", "machine_type", "ideal_cycle_seconds"],
 		order_by="name",
 	)
-	event = frappe.qb.DocType("Machine Event")
-	last_count = {
-		r.machine: r.last
-		for r in (
-			frappe.qb.from_(event)
-			.select(event.machine, Max(event.timestamp).as_("last"))
-			.where((event.event_type == "Count") & (event.timestamp >= since))
-			.groupby(event.machine)
-			.run(as_dict=True)
-		)
-	}
 	for m in machines:
+		# Measured from the machine's latest count ever (kept on the Machine by event processing), not
+		# only inside the window, so a machine that counted yesterday and reports Running without
+		# counting today is still caught by the rules.
+		last_count_at = m.pop("last_count_at")
 		m["minutes_since_count"] = (
-			minutes_between(get_datetime(last_count[m.name]), now) if m.name in last_count else None
+			minutes_between(get_datetime(last_count_at), now) if last_count_at else None
 		)
 		m["counts"] = counts_since(m.name, since)
 		m["oee_today"] = frappe.db.get_value(
@@ -52,15 +44,18 @@ def floor_snapshot(days: int = 1) -> dict:
 			order_by="from_time desc",
 		)
 	downtime = []
+	period = f"{since:%Y-%m-%d} to {now:%Y-%m-%d}"
 	for m in machines:
 		by_reason = downtime_by_reason(m.name, since, now)
-		if by_reason:
-			top_reason, top_minutes = max(by_reason.items(), key=lambda item: item[1])
+		classified = {reason: minutes for reason, minutes in by_reason.items() if reason}
+		if classified:
+			top_reason, top_minutes = max(classified.items(), key=lambda item: item[1])
 			downtime.append(
 				{
 					"machine": m.name,
-					"period": f"last {days} day(s)",
+					"period": period,
 					"total_minutes": sum(by_reason.values()),
+					"unclassified_minutes": by_reason.get(None, 0),
 					"top_reason": top_reason,
 					"top_minutes": top_minutes,
 				}
@@ -88,14 +83,14 @@ def floor_snapshot(days: int = 1) -> dict:
 	return snapshot
 
 
-def downtime_by_reason(machine: str, since, until) -> dict[str, float]:
+def downtime_by_reason(machine: str, since, until) -> dict[str | None, float]:
 	"""Minutes of downtime per reason inside [since, until), counting the part of each record that
-	overlaps the window. Open downtime counts up to `until`."""
+	overlaps the window. Open downtime counts up to `until`. Downtime with no reason assigned yet is
+	returned under the key None, so shares are computed over all downtime, not only the classified part."""
 	rows = frappe.get_all(
 		"Downtime Record",
 		filters=[
 			["machine", "=", machine],
-			["reason", "is", "set"],
 			["start_time", "<", until],
 		],
 		or_filters=[["end_time", "is", "not set"], ["end_time", ">=", since]],
@@ -112,13 +107,11 @@ def downtime_by_reason(machine: str, since, until) -> dict[str, float]:
 
 def counts_since(machine: str, since) -> dict[str, float]:
 	"""Counter deltas per counter name since `since`, for example {"good": 120, "scrap": 3}."""
-	event = frappe.qb.DocType("Machine Event")
-	rows = (
-		frappe.qb.from_(event)
-		.select(event.counter_name, Sum(event.delta).as_("total"))
-		.where((event.machine == machine) & (event.event_type == "Count") & (event.timestamp >= since))
-		.groupby(event.counter_name)
-		.run(as_dict=True)
+	rows = frappe.get_all(
+		"Machine Event",
+		{"machine": machine, "event_type": "Count", "timestamp": (">=", since)},
+		["counter_name", "sum(delta) as total"],
+		group_by="counter_name",
 	)
 	return {r.counter_name: r.total or 0 for r in rows}
 
