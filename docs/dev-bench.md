@@ -94,5 +94,6 @@ The GitHub Actions workflow in `.github/workflows/ci.yml` copies the checkout in
 - **`bench new-site` fails with an access-denied error for the site user.** The site's database user must be allowed to connect from the bench container. The script passes `--mariadb-user-host-login-scope='%'` and falls back to `--no-mariadb-socket` for older Frappe releases; check which one your Frappe branch accepts.
 - **The MariaDB client refuses to connect over TLS.** The image writes `skip-ssl` into the `frappe` user's `~/.my.cnf`, as CI does. If you run a client elsewhere, pass `--skip-ssl`.
 - **Port 8000 is taken.** Set `BENCH_PORT` in `.env`.
+- **Git Bash turns the container paths into `C:/Program Files/Git/usr/local/...`.** `bench.sh` sets `MSYS_NO_PATHCONV=1` to stop that. When calling `docker compose exec` yourself from Git Bash, prefix the command with `MSYS_NO_PATHCONV=1`.
 - **Windows line endings.** Keep the checkout with LF line endings (`git config core.autocrlf input`), or the scripts inside the container may fail to parse Python files with CRLF.
 - **Something is wedged.** `./bench.sh reset` and `./bench.sh up` rebuild everything from the images, which stay cached.

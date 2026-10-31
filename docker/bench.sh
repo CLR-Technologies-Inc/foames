@@ -13,6 +13,10 @@ set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
+# Git Bash on Windows rewrites arguments that look like POSIX paths (the in-container script paths
+# below) into Windows paths before Docker sees them. This turns that off for the docker calls.
+export MSYS_NO_PATHCONV=1
+
 # SITE_NAME and BENCH_DIR are set in the container's environment by docker-compose.yml.
 in_bench() { docker compose exec bench "$@"; }
 in_bench_dir() { in_bench bash -lc 'cd "$BENCH_DIR" && exec "$@"' bench "$@"; }
