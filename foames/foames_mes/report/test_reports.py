@@ -4,7 +4,6 @@
 """The script reports, the standard dashboard records the install creates, and who can see them."""
 
 import frappe
-from frappe.desk.desktop import get_workspace_sidebar_items
 from frappe.desk.query_report import run as run_report
 from frappe.utils import add_days, getdate, now_datetime
 
@@ -138,7 +137,7 @@ class TestReports(IntegrationTestCase):
 				{"machine": self.machine, "type": "Count", "value": 200, "timestamp": f"{d}T10:00:00"},
 				{"machine": self.machine, "type": "State", "state": "Down", "timestamp": f"{d}T10:00:00"},
 				{"machine": self.machine, "type": "State", "state": "Running", "timestamp": f"{d}T11:00:00"},
-				{"machine": self.machine, "type": "Count", "value": 350, "timestamp": f"{d}T14:00:00"},
+				{"machine": self.machine, "type": "Count", "value": 350, "timestamp": f"{d}T13:59:00"},
 				{"machine": self.machine, "type": "State", "state": "Idle", "timestamp": f"{d}T14:00:00"},
 			]
 		)
@@ -342,7 +341,16 @@ class TestRoleAccess(IntegrationTestCase):
 		super().tearDown()
 
 	def visible_pages(self):
-		return {p.name for p in get_workspace_sidebar_items()["pages"]}
+		# Frappe v16 lists the sidebar through get_workspaces and memoises it per request, so the
+		# memo is dropped between users.
+		try:
+			from frappe.desk.desktop import get_workspaces as list_workspaces
+		except ImportError:  # Frappe v15
+			from frappe.desk.desktop import get_workspace_sidebar_items as list_workspaces
+		cache = getattr(frappe.local, "request_cache", None)
+		if cache is not None:
+			cache.clear()
+		return {p.name for p in list_workspaces()["pages"]}
 
 	def test_each_role_sees_its_workspace_and_not_the_others(self):
 		for role, user in self.users.items():
