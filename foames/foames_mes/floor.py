@@ -32,7 +32,9 @@ def floor_snapshot(days: int = 1) -> dict:
 		# only inside the window, so a machine that counted yesterday and reports Running without
 		# counting today is still caught by the rules.
 		last_count_at = m.pop("last_count_at")
-		m["minutes_since_count"] = minutes_between(get_datetime(last_count_at), now) if last_count_at else None
+		m["minutes_since_count"] = (
+			minutes_between(get_datetime(last_count_at), now) if last_count_at else None
+		)
 		m["counts"] = counts_since(m.name, since)
 		m["oee_today"] = frappe.db.get_value(
 			"OEE Period",

@@ -67,7 +67,9 @@ class MachineEvent(Document):
 				)
 			self.db_set("delta", self.delta, update_modified=False)
 			machine.last_seen = self.timestamp
-			if not machine.last_count_at or get_datetime(self.timestamp) > get_datetime(machine.last_count_at):
+			if not machine.last_count_at or get_datetime(self.timestamp) > get_datetime(
+				machine.last_count_at
+			):
 				machine.last_count_at = self.timestamp
 			machine.db_update()
 		elif self.event_type == "Alarm":
