@@ -1,0 +1,22 @@
+{
+ "color": "#FF5858",
+ "creation": "2026-10-31 12:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "document_type": "Agent Suggestion",
+ "dynamic_filters_json": "[]",
+ "filters_json": "[[\"Agent Suggestion\", \"status\", \"=\", \"Open\"], [\"Agent Suggestion\", \"severity\", \"=\", \"Critical\"]]",
+ "function": "Count",
+ "idx": 0,
+ "is_public": 1,
+ "is_standard": 1,
+ "label": "Critical Open Suggestions",
+ "modified": "2026-10-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Critical Open Suggestions",
+ "owner": "Administrator",
+ "show_percentage_stats": 0,
+ "stats_time_interval": "Daily",
+ "type": "Document Type"
+}

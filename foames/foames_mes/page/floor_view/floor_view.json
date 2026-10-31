@@ -4,17 +4,31 @@
  "docstatus": 0,
  "doctype": "Page",
  "idx": 0,
- "modified": "2026-10-30 03:30:00.000000",
+ "modified": "2026-10-31 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES MES",
  "name": "floor-view",
  "owner": "Administrator",
  "page_name": "floor-view",
  "roles": [
-  {"role": "System Manager"},
-  {"role": "FoaMES Engineer"},
-  {"role": "FoaMES Operator"},
-  {"role": "FoaMES Quality"}
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "FoaMES Engineer"
+  },
+  {
+   "role": "FoaMES Operator"
+  },
+  {
+   "role": "FoaMES Quality"
+  },
+  {
+   "role": "FoaMES Supervisor"
+  },
+  {
+   "role": "FoaMES Maintenance"
+  }
  ],
  "script": null,
  "standard": "Yes",

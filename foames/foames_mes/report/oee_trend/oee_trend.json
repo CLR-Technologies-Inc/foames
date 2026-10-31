@@ -1,0 +1,40 @@
+{
+ "add_total_row": 0,
+ "columns": [],
+ "creation": "2026-10-31 12:00:00.000000",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "is_standard": "Yes",
+ "letterhead": null,
+ "modified": "2026-10-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "OEE Trend",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "OEE Period",
+ "report_name": "OEE Trend",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "FoaMES Engineer"
+  },
+  {
+   "role": "FoaMES Supervisor"
+  },
+  {
+   "role": "FoaMES Operator"
+  },
+  {
+   "role": "FoaMES Quality"
+  },
+  {
+   "role": "FoaMES Maintenance"
+  }
+ ]
+}

@@ -128,4 +128,4 @@ The 40 silent minutes at the end cost about 7 points of OEE. If the press was in
 
 - It does not count the silent time as run time, ever, and it does not let an operator type a run time in.
 - It does not infer scrap from a mismatch between counters.
-- It does not aggregate across machines or lines. Sum what you need from the OEE Period list or from your own report; a line OEE is a design decision about bottlenecks that FoaMES leaves to the plant.
+- It does not define a line OEE in the period itself. The OEE Trend report ([dashboards.md](dashboards.md)) rolls the stored periods up by the Machine's Line field as a time-weighted sum of ledgers and counts; whether that, or the bottleneck machine, is "the line's OEE" is a decision FoaMES leaves to the plant.

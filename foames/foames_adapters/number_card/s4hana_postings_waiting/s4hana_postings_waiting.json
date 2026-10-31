@@ -1,0 +1,22 @@
+{
+ "color": "#FFA00A",
+ "creation": "2026-10-31 12:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "document_type": "S4HANA Outbox",
+ "dynamic_filters_json": "[]",
+ "filters_json": "[[\"S4HANA Outbox\", \"status\", \"in\", [\"Queued\", \"Sending\", \"Retry\", \"Unknown\"]]]",
+ "function": "Count",
+ "idx": 0,
+ "is_public": 1,
+ "is_standard": 1,
+ "label": "S/4HANA Postings Waiting",
+ "modified": "2026-10-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Adapters",
+ "name": "S4HANA Postings Waiting",
+ "owner": "Administrator",
+ "show_percentage_stats": 0,
+ "stats_time_interval": "Daily",
+ "type": "Document Type"
+}

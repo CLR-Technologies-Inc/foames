@@ -1,0 +1,264 @@
+{
+ "app": "foames",
+ "charts": [
+  {
+   "chart_name": "ERP Outbox Health by Adapter",
+   "label": "ERP Outbox Health by Adapter"
+  },
+  {
+   "chart_name": "ERPNext Postings per Day",
+   "label": "ERPNext Postings per Day"
+  },
+  {
+   "chart_name": "S4HANA Postings per Day",
+   "label": "S4HANA Postings per Day"
+  },
+  {
+   "chart_name": "Inbound IDocs per Day",
+   "label": "Inbound IDocs per Day"
+  }
+ ],
+ "content": "[{\"id\": \"QELAGJDDzA\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Postings</b></span>\", \"col\": 12}}, {\"id\": \"Q-RP9k_Ale\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"ERPNext Postings Failed\", \"col\": 4}}, {\"id\": \"YJ-qcKyzNi\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"ERPNext Postings Waiting\", \"col\": 4}}, {\"id\": \"kf41ZLVmRU\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"S4HANA Postings Failed\", \"col\": 4}}, {\"id\": \"452EtTB3fd\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"S4HANA Postings Waiting\", \"col\": 4}}, {\"id\": \"v6ADrZ_IfX\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"S4HANA IDocs Failed\", \"col\": 4}}, {\"id\": \"unnBcGHeQM\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Missing External References\", \"col\": 4}}, {\"id\": \"U8MdskIV2z\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"EFjBNnENE5\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Health</b></span>\", \"col\": 12}}, {\"id\": \"3zdwKDQ2OF\", \"type\": \"chart\", \"data\": {\"chart_name\": \"ERP Outbox Health by Adapter\", \"col\": 12}}, {\"id\": \"VWiorpv47E\", \"type\": \"chart\", \"data\": {\"chart_name\": \"ERPNext Postings per Day\", \"col\": 6}}, {\"id\": \"G8NyWjEaoq\", \"type\": \"chart\", \"data\": {\"chart_name\": \"S4HANA Postings per Day\", \"col\": 6}}, {\"id\": \"qm7y4RaQVV\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Inbound IDocs per Day\", \"col\": 6}}, {\"id\": \"RazKHSEB8W\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"VYo5M2Yo6j\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Shortcuts</b></span>\", \"col\": 12}}, {\"id\": \"NRVCfVPGh5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"ERP Outbox Health\", \"col\": 4}}, {\"id\": \"CmQ5PciuGH\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"ERPNext Outbox\", \"col\": 4}}, {\"id\": \"i5lkfWMTZa\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"S/4HANA Outbox\", \"col\": 4}}, {\"id\": \"ma6Ko_hH3a\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"S/4HANA Reconciliation\", \"col\": 4}}, {\"id\": \"z-0EEXiR93\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Missing References\", \"col\": 4}}, {\"id\": \"STG4X1geB8\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Integration Dashboard\", \"col\": 4}}, {\"id\": \"1_M2BpyZC1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"Aqhmm-vQCc\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Settings and Records</b></span>\", \"col\": 12}}, {\"id\": \"fRUhYQt4ic\", \"type\": \"card\", \"data\": {\"card_name\": \"ERPNext\", \"col\": 4}}, {\"id\": \"WlDBYM3rq8\", \"type\": \"card\", \"data\": {\"card_name\": \"S/4HANA\", \"col\": 4}}, {\"id\": \"satEONSYxQ\", \"type\": \"card\", \"data\": {\"card_name\": \"Core\", \"col\": 4}}]",
+ "creation": "2026-10-31 12:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "integration",
+ "idx": 0,
+ "indicator_color": "cyan",
+ "is_hidden": 0,
+ "label": "FoaMES Integration",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "ERPNext",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "ERPNext Adapter Settings",
+   "link_count": 0,
+   "link_to": "ERPNext Adapter Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "ERPNext Outbox",
+   "link_count": 0,
+   "link_to": "ERPNext Outbox",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "S/4HANA",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "S4HANA Settings",
+   "link_count": 0,
+   "link_to": "S4HANA Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "S4HANA Outbox",
+   "link_count": 0,
+   "link_to": "S4HANA Outbox",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "S4HANA Inbound IDoc",
+   "link_count": 0,
+   "link_to": "S4HANA Inbound IDoc",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "S4HANA Outbox Reconciliation",
+   "link_count": 0,
+   "link_to": "S4HANA Outbox Reconciliation",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Core",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "External Reference",
+   "link_count": 0,
+   "link_to": "External Reference",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "FoaMES Settings",
+   "link_count": 0,
+   "link_to": "FoaMES Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Machine Data Settings",
+   "link_count": 0,
+   "link_to": "Machine Data Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "ERP Outbox Health",
+   "link_count": 0,
+   "link_to": "ERP Outbox Health",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-10-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Adapters",
+ "name": "FoaMES Integration",
+ "number_cards": [
+  {
+   "label": "ERPNext Postings Failed",
+   "number_card_name": "ERPNext Postings Failed"
+  },
+  {
+   "label": "ERPNext Postings Waiting",
+   "number_card_name": "ERPNext Postings Waiting"
+  },
+  {
+   "label": "S4HANA Postings Failed",
+   "number_card_name": "S4HANA Postings Failed"
+  },
+  {
+   "label": "S4HANA Postings Waiting",
+   "number_card_name": "S4HANA Postings Waiting"
+  },
+  {
+   "label": "S4HANA IDocs Failed",
+   "number_card_name": "S4HANA IDocs Failed"
+  },
+  {
+   "label": "Missing External References",
+   "number_card_name": "Missing External References"
+  }
+ ],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "",
+ "roles": [
+  {
+   "role": "FoaMES Integration"
+  },
+  {
+   "role": "FoaMES Engineer"
+  },
+  {
+   "role": "System Manager"
+  }
+ ],
+ "sequence_id": 24.0,
+ "shortcuts": [
+  {
+   "color": "Blue",
+   "doc_view": "",
+   "label": "ERP Outbox Health",
+   "link_to": "ERP Outbox Health",
+   "report_ref_doctype": "S4HANA Outbox",
+   "type": "Report"
+  },
+  {
+   "color": "Green",
+   "doc_view": "List",
+   "label": "ERPNext Outbox",
+   "link_to": "ERPNext Outbox",
+   "type": "DocType"
+  },
+  {
+   "color": "Blue",
+   "doc_view": "List",
+   "label": "S/4HANA Outbox",
+   "link_to": "S4HANA Outbox",
+   "type": "DocType"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "",
+   "label": "S/4HANA Reconciliation",
+   "link_to": "S4HANA Outbox Reconciliation",
+   "report_ref_doctype": "S4HANA Outbox",
+   "type": "Report"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "label": "Missing References",
+   "link_to": "External Reference",
+   "stats_filter": "{\"status\": \"Missing\"}",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "",
+   "label": "Integration Dashboard",
+   "link_to": "FoaMES Integration",
+   "type": "Dashboard"
+  }
+ ],
+ "title": "FoaMES Integration"
+}

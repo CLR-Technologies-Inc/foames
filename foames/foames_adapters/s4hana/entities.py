@@ -4,8 +4,9 @@
 """Which S/4HANA OData entity each kernel reference type resolves to.
 
 Only reference types with a well-known released API get a default. The others (Unit of Measure,
-Operation, Location, Serial Number) differ between releases and editions, so a site maps them in
-S4HANA Settings after checking the system's $metadata. A site can also override any default.
+Operation, Location, Serial Number, Job Card) differ between releases and editions, or have no
+single S/4HANA record, so a site maps them in S4HANA Settings after checking the system's
+$metadata. A site can also override any default.
 
 Composite keys are written into External Reference's single `external_id` as the key values joined
 by `|`, in `key_fields` order. Keys with a default may be left out: a Batch without a plant is
@@ -96,6 +97,44 @@ DEFAULT_ENTITIES: dict[str, EntitySpec] = {
 		entity_set="A_MaterialDocumentHeader",
 		key_fields=("MaterialDocumentYear", "MaterialDocument"),
 		label_field="MaterialDocumentHeaderText",
+	),
+	# A routing is `GROUP|COUNTER|VERSION`: the internal version is part of the key, and routings
+	# without versioning still carry one (usually 1).
+	"Routing": EntitySpec(
+		service="API_PRODUCTION_ROUTING",
+		entity_set="ProductionRoutingHeader",
+		key_fields=("ProductionRoutingGroup", "ProductionRouting", "ProductionRoutingInternalVers"),
+		label_field="BillOfOperationsDesc",
+	),
+	# A material BOM is keyed by seven fields. Category M, an empty version and an empty change
+	# document may be left out, giving `BOM|VARIANT|MATERIAL|PLANT`.
+	"Bill of Materials": EntitySpec(
+		service="API_BILL_OF_MATERIAL_SRV;v=0002",
+		entity_set="MaterialBOM",
+		key_fields=(
+			"BillOfMaterial",
+			"BillOfMaterialCategory",
+			"BillOfMaterialVariant",
+			"BillOfMaterialVersion",
+			"EngineeringChangeDocument",
+			"Material",
+			"Plant",
+		),
+		key_defaults={
+			"BillOfMaterialCategory": "M",
+			"BillOfMaterialVersion": "",
+			"EngineeringChangeDocument": "",
+		},
+		label_field="BOMHeaderText",
+	),
+	# Work centers are keyed by their internal ID and type (A = work center); the type may be left
+	# out of the external ID.
+	"Workstation": EntitySpec(
+		service="API_WORK_CENTERS",
+		entity_set="A_WorkCenters",
+		key_fields=("WorkCenterInternalID", "WorkCenterTypeCode"),
+		key_defaults={"WorkCenterTypeCode": "A"},
+		label_field="WorkCenter",
 	),
 }
 

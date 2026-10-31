@@ -8,6 +8,7 @@
   "code",
   "title",
   "machine_type",
+  "line",
   "cb_head",
   "status",
   "last_seen",
@@ -46,6 +47,13 @@
    "fieldname": "machine_type",
    "fieldtype": "Data",
    "label": "Machine Type"
+  },
+  {
+   "fieldname": "line",
+   "fieldtype": "Data",
+   "label": "Line",
+   "in_standard_filter": 1,
+   "description": "Production line or cell this machine belongs to; the OEE, downtime and reliability reports roll machines up by it"
   },
   {
    "fieldname": "cb_head",
@@ -161,7 +169,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-31 07:00:00.000000",
+ "modified": "2026-10-31 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES MES",
  "name": "Machine",
@@ -211,6 +219,26 @@
    "email": 1,
    "share": 1,
    "write": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "write": 1
   }
  ],
  "sort_field": "creation",
@@ -219,5 +247,5 @@
  "track_changes": 1,
  "autoname": "field:code",
  "title_field": "title",
- "search_fields": "title,source_id"
+ "search_fields": "title,source_id,line"
 }

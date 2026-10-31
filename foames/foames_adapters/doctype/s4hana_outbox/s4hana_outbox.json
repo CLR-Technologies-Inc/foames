@@ -33,7 +33,7 @@
    "fieldname": "operation",
    "fieldtype": "Select",
    "label": "Operation",
-   "options": "Production Order Confirmation\nProcess Order Confirmation\nGoods Movement",
+   "options": "Production Order Confirmation\nProcess Order Confirmation\nGoods Movement\nConfirmation Cancellation\nProcess Confirmation Cancellation\nMaterial Document Reversal",
    "reqd": 1,
    "in_list_view": 1,
    "in_standard_filter": 1
@@ -173,7 +173,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-30 03:00:00.000000",
+ "modified": "2026-10-31 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES Adapters",
  "name": "S4HANA Outbox",
@@ -195,7 +195,17 @@
   {
    "create": 1,
    "read": 1,
+   "report": 1,
    "role": "FoaMES Integration"
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
   }
  ],
  "sort_field": "creation",
