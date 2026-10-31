@@ -24,24 +24,15 @@ def floor_snapshot(days: int = 1) -> dict:
 	machines = frappe.get_all(
 		"Machine",
 		{"disabled": 0},
-		["name", "title", "status", "last_seen", "machine_type", "ideal_cycle_seconds"],
+		["name", "title", "status", "last_seen", "last_count_at", "machine_type", "ideal_cycle_seconds"],
 		order_by="name",
 	)
-	# The latest count ever, not only inside the window, so a machine that counted yesterday and
-	# reports Running without counting today is still caught by the rules.
-	last_count = {
-		r.machine: r.last
-		for r in frappe.get_all(
-			"Machine Event",
-			{"event_type": "Count"},
-			["machine", "max(timestamp) as last"],
-			group_by="machine",
-		)
-	}
 	for m in machines:
-		m["minutes_since_count"] = (
-			minutes_between(get_datetime(last_count[m.name]), now) if m.name in last_count else None
-		)
+		# Measured from the machine's latest count ever (kept on the Machine by event processing), not
+		# only inside the window, so a machine that counted yesterday and reports Running without
+		# counting today is still caught by the rules.
+		last_count_at = m.pop("last_count_at")
+		m["minutes_since_count"] = minutes_between(get_datetime(last_count_at), now) if last_count_at else None
 		m["counts"] = counts_since(m.name, since)
 		m["oee_today"] = frappe.db.get_value(
 			"OEE Period",

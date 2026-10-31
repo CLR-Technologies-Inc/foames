@@ -157,7 +157,7 @@ class ODataClient:
 			raise ODataError(
 				f"OAuth token request failed with HTTP {response.status}",
 				status=response.status,
-				transient=response.status in TRANSIENT_STATUSES,
+				transient=response.status in TRANSIENT_STATUSES or response.status in AUTH_STATUSES,
 			)
 		data = response.json() or {}
 		self._token = (data["access_token"], time.time() + float(data.get("expires_in") or 300))

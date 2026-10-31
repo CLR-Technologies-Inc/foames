@@ -250,6 +250,17 @@ class TestOutbox(unittest.TestCase):
 		self.assertEqual(result.status, "Retry")
 		self.assertIn("401", result.error)
 
+	def test_rejected_oauth_token_is_retried(self):
+		fake = FakeS4HANA().on("POST", "/oauth/token", Response(401, {}, b"invalid_client"))
+		c = client(
+			fake,
+			auth="OAuth 2.0 Client Credentials",
+			token_url="https://s4.example.com/oauth/token",
+			client_id="foames",
+			client_secret="rotated",
+		)
+		self.assertEqual(outbox.send(c, self.operation, self.payload(), False).status, "Retry")
+
 	def test_backoff(self):
 		self.assertEqual([outbox.retry_delay(n) for n in (1, 2, 3)], [60, 120, 240])
 		self.assertEqual(outbox.retry_delay(20), outbox.MAX_DELAY_SECONDS)
