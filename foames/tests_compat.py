@@ -3,12 +3,17 @@
 
 """Test base classes that work on both Frappe v15 and v16."""
 
+from unittest.mock import patch
+
 import frappe
 
 try:
 	from frappe.tests import IntegrationTestCase as _IntegrationTestCase
+	from frappe.tests.classes import integration_test_case as _frappe_test_case_module
 except ImportError:  # Frappe v15
 	from frappe.tests.utils import FrappeTestCase as _IntegrationTestCase
+
+	_frappe_test_case_module = None
 
 
 class IntegrationTestCase(_IntegrationTestCase):
@@ -16,6 +21,18 @@ class IntegrationTestCase(_IntegrationTestCase):
 
 	SAVEPOINT = "foames_test"
 	_singles = None
+
+	@classmethod
+	def setUpClass(cls):
+		# Frappe v16 generates test records for the DocType a test module sits next to and for every
+		# DocType reachable through its links. These tests build their own records, and on a site with
+		# ERPNext the walk from Agent Suggestion reaches User and from there a DocType of the payments
+		# app, which is not installed.
+		if _frappe_test_case_module is not None and hasattr(_frappe_test_case_module, "make_test_records"):
+			with patch.object(_frappe_test_case_module, "make_test_records", return_value=[]):
+				super().setUpClass()
+		else:
+			super().setUpClass()
 
 	def setUp(self):
 		super().setUp()

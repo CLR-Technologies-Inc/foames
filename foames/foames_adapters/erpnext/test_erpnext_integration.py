@@ -318,7 +318,8 @@ class TestJobCardRollUp(ERPNextTestCase):
 		wo = self.fixtures.make_work_order(qty=10)
 		job_card = self.fixtures.job_card_for(wo.name)
 		# Well clear of the time logs other tests leave on the same workstation, which would overlap.
-		start = add_to_date(now_datetime(), hours=-26)
+		# Whole seconds: ERPNext stores time log boundaries without microseconds.
+		start = add_to_date(now_datetime().replace(microsecond=0), hours=-26)
 		t = lambda minutes: add_to_date(start, minutes=minutes)  # noqa: E731
 		set_current_job(self.machine.name, get_reference("Job Card", job_card, ADAPTER_KEY), at=t(0))
 		self.events(
