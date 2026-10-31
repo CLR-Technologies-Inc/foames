@@ -247,7 +247,9 @@ def _process_row(row) -> int:
 		return 0
 	user = frappe.session.user
 	try:
-		frappe.set_user(doc.owner or "Administrator")
+		# A posting is performed as the user who queued it, so ERPNext's own permission checks on
+		# Stock Entry, Job Card and Work Order apply to that user rather than to the scheduler.
+		frappe.set_user(doc.owner or "Administrator")  # nosemgrep
 		doc.attempt()
 		frappe.db.commit()  # nosemgrep
 	except Exception as e:
@@ -258,7 +260,7 @@ def _process_row(row) -> int:
 		if rules.classify(rules.error_types(e)) != "Failed":
 			frappe.log_error(title=_("ERPNext outbox: {0} will be retried").format(row.name))
 	finally:
-		frappe.set_user(user)
+		frappe.set_user(user)  # nosemgrep
 	return 1
 
 

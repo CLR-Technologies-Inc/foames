@@ -28,7 +28,8 @@ def ensure_manufacturing_setup() -> dict:
 	ensure_workstation_and_operation()
 	bom = ensure_bom()
 	ensure_bom(with_operations=False)
-	frappe.db.commit()  # nosemgrep: fixtures outlive the per-test savepoint
+	# Fixtures must outlive the per-test savepoint, so they are committed once.
+	frappe.db.commit()  # nosemgrep
 	return {"company": COMPANY, "bom": bom, "item": FINISHED_GOOD, "workstation": WORKSTATION}
 
 
