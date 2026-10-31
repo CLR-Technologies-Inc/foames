@@ -15,9 +15,16 @@ def mark_stale_machines_unknown():
 	cutoff = add_to_date(now_datetime(), minutes=-minutes)
 	stale = frappe.get_all(
 		"Machine",
-		filters={"status": ("not in", ("Unknown", "Down")), "last_seen": ("<", cutoff), "disabled": 0},
+		filters={
+			"status": ("not in", ("Unknown", "Down")),
+			"last_seen": ("<", cutoff),
+			"disabled": 0,
+		},
 		fields=["name", "last_seen"],
 	)
+	# Frappe wraps a "<" filter in ifnull(), so a machine with no Last Seen at all would match and
+	# add_to_date(None) would stamp the event "now": a machine never seen has nothing to time out.
+	stale = [m for m in stale if m.last_seen]
 	for m in stale:
 		frappe.get_doc(
 			{
