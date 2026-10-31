@@ -9,7 +9,7 @@ FoaMES exposes the plant floor to agents as one snapshot and takes suggestions b
 | `foames.foames_mes.api.run_suggestion_rules(days=1)` | Runs the built-in rules now (silent or stalled machines, dominant downtime reason, missing ERP references) and any rule registered through the `foames_suggestion_rules` hook. The scheduler runs them hourly. |
 | `foames.foames_mes.doctype.oee_period.oee_period.get_oee(machine, from_time, to_time, planned_minutes)` | OEE on demand with the time ledger and notes. |
 
-Suggested MCP tool names: `foames_get_floor_snapshot`, `foames_post_suggestion`, `foames_get_oee`.
+Over MCP these are the tools `foames_get_floor_snapshot`, `foames_post_suggestion`, `foames_run_suggestion_rules` and `foames_get_oee`, next to `foames_list_machines`, `foames_get_machine`, `foames_list_downtime`, `foames_downtime_by_reason`, `foames_list_suggestions` and the `foames_mining_*` tools. Connecting a client and the full list are in [../mcp.md](../mcp.md).
 
 Rules for an agent:
 
