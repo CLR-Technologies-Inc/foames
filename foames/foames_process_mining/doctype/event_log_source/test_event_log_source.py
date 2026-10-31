@@ -48,11 +48,11 @@ class TestEventLogSource(IntegrationTestCase):
 			}
 		).insert()
 		events = source.extract("2026-10-22 00:00:00", "2026-10-23 00:00:00")
-		self.assertEqual([e.activity for e in events if e.case_id == "T-ELS"], ["good", "good", "scrap"])
-		self.assertEqual(events[0].objects, {"machine": ["T-ELS"]})
+		self.assertEqual([e.activity for e in events], ["good", "good", "scrap"])
+		self.assertEqual(events[0].objects, {"machine": [self.machine]})
 		self.assertEqual(events[0].attributes["source_doctype"], "Machine Event")
 		log = build_event_log(
-			"2026-10-22 00:00:00", "2026-10-23 00:00:00", sources=["T Counts"], built_in=False
+			"2026-10-22 00:00:00", "2026-10-23 00:00:00", sources=[source.name], built_in=False
 		)
 		self.assertEqual(log.summary()["cases"], 1)
 		preview = source.preview(limit=2)
