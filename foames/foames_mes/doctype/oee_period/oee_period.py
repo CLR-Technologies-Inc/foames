@@ -3,6 +3,8 @@
 
 """OEE for one machine over one period, computed from its Machine Events and Downtime Records."""
 
+from itertools import pairwise
+
 import frappe
 from frappe import _
 from frappe.model.document import Document
@@ -82,7 +84,7 @@ def state_intervals(machine: str, start, end) -> list[tuple[float, str, bool]]:
 	points.update(t for s, e, _ in windows for t in (s, e) if start < t < end)
 	ordered = sorted(points)
 	intervals, change_index = [], 0
-	for a, b in zip(ordered, ordered[1:], strict=False):
+	for a, b in pairwise(ordered):
 		while change_index < len(changes) and changes[change_index][0] <= a:
 			state = changes[change_index][1]
 			change_index += 1
@@ -103,10 +105,7 @@ def downtime_windows(machine: str, start, end) -> list[tuple]:
 		or_filters=[["end_time", "is", "not set"], ["end_time", ">=", start]],
 		fields=["start_time", "end_time", "reason"],
 	)
-	planned_reasons = {
-		r.name
-		for r in frappe.get_all("Downtime Reason", {"counts_as_planned": 1}, ["name"])
-	}
+	planned_reasons = {r.name for r in frappe.get_all("Downtime Reason", {"counts_as_planned": 1}, ["name"])}
 	return [
 		(
 			get_datetime(d.start_time),
@@ -146,7 +145,9 @@ def compute_daily_oee(for_date=None):
 	now = now_datetime()
 	today = getdate(now)
 	days = [getdate(for_date)] if for_date else [add_days(today, -1), add_days(today, -2)]
-	machines = frappe.get_all("Machine", {"disabled": 0}, ["name", "scheduled_minutes_per_day", "shift_start"])
+	machines = frappe.get_all(
+		"Machine", {"disabled": 0}, ["name", "scheduled_minutes_per_day", "shift_start"]
+	)
 	created = []
 	for day, m in ((day, m) for day in days for m in machines):
 		start, end, planned = scheduled_window(day, m.shift_start, m.scheduled_minutes_per_day)

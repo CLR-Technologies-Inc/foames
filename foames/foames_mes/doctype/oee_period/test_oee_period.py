@@ -79,9 +79,7 @@ class TestOEEPeriod(IntegrationTestCase):
 		self.assertAlmostEqual(result["run_minutes"], 180)
 		self.assertAlmostEqual(result["availability"], 75, places=3)
 		# With a planned reason the same hour leaves the availability base instead.
-		frappe.db.set_value(
-			"Downtime Record", {"machine": "T-OEE", "source": "Manual"}, "reason", "T-PM"
-		)
+		frappe.db.set_value("Downtime Record", {"machine": "T-OEE", "source": "Manual"}, "reason", "T-PM")
 		result = get_oee("T-OEE", "2026-10-22 08:00:00", "2026-10-22 12:00:00", planned_minutes=240)
 		self.assertAlmostEqual(result["availability"], 100, places=3)
 
@@ -93,7 +91,14 @@ class TestOEEPeriod(IntegrationTestCase):
 		now = now_datetime().replace(microsecond=0)
 		two_hours_ago = add_to_date(now, hours=-2)
 		record_events(
-			[{"machine": "T-OEE", "type": "State", "state": "Running", "timestamp": two_hours_ago.isoformat()}]
+			[
+				{
+					"machine": "T-OEE",
+					"type": "State",
+					"state": "Running",
+					"timestamp": two_hours_ago.isoformat(),
+				}
+			]
 		)
 		self.assertIn("T-OEE", mark_stale_machines_unknown())
 		event = frappe.get_doc(
