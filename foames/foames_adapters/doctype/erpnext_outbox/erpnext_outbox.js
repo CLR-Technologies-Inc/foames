@@ -10,7 +10,9 @@ frappe.ui.form.on("ERPNext Outbox", {
 		}
 		if (!["Posted", "Sending", "Cancelled"].includes(frm.doc.status) && !frm.is_new()) {
 			frm.add_custom_button(__("Cancel Posting"), () => {
-				const message = __("Drop this posting? Later ones in its group are then performed.");
+				const message = __(
+					"Drop this posting? Later ones in its group are then performed."
+				);
 				frappe.confirm(message, () => {
 					frm.call("cancel_posting").then(() => frm.reload_doc());
 				});
