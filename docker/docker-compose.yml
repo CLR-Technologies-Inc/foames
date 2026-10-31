@@ -6,7 +6,9 @@
 #
 # See docs/dev-bench.md for the full workflow.
 
-name: foames-dev
+# bench.sh derives a project name per checkout (COMPOSE_PROJECT_NAME); this is the fallback for
+# plain `docker compose` calls. Two checkouts sharing it would share the containers and volumes.
+name: ${COMPOSE_PROJECT_NAME:-foames-dev}
 
 services:
   mariadb:
@@ -73,7 +75,9 @@ services:
       # The checkout is soft-linked into the bench as apps/foames, so edits on the host are live.
       - ..:/workspace/foames
     ports:
-      - "${BENCH_PORT:-8000}:8000"
+      # Bound to localhost: the site has the documented Administrator/admin login.
+      # Set BENCH_BIND=0.0.0.0 to reach it from another machine.
+      - "${BENCH_BIND:-127.0.0.1}:${BENCH_PORT:-8000}:8000"
     # Keep the container up; bench commands run through `docker compose exec bench ...`.
     command: ["sleep", "infinity"]
     init: true
