@@ -11,7 +11,7 @@ the test site's FoaMES Test Co company.
 import unittest
 
 import frappe
-from frappe.utils import add_to_date, now_datetime
+from frappe.utils import add_to_date, get_datetime, now_datetime
 
 from foames.foames_adapters import get_adapter
 from foames.foames_adapters.doctype.erpnext_outbox.erpnext_outbox import enqueue, process_outbox
@@ -287,3 +287,95 @@ class TestFloor(ERPNextTestCase):
 		findings = running_without_job_card(snapshot)
 		self.assertEqual(len(findings), 1)
 		self.assertEqual(findings[0]["reference_name"], machine.name)
+
+
+class TestJobCardRollUp(ERPNextTestCase):
+	"""A machine assigned to a Job Card: its counts and running time end up on the card."""
+
+	def setUp(self):
+		super().setUp()
+		from foames.foames_mes.doctype.oee_period.test_oee_period import make_machine
+
+		settings = frappe.get_single("ERPNext Adapter Settings")
+		settings.roll_up_counts_to_job_cards = 1
+		settings.save()
+		self.machine = make_machine("FOAMES-TEST-RU", counter_rollover=0)
+		frappe.db.delete("Machine Event", {"machine": self.machine.name})
+
+	def events(self, rows):
+		from foames.foames_mes.api import record_events
+
+		result = record_events([{"machine": self.machine.name, **row} for row in rows], source="Manual")
+		self.assertFalse(result["rejected"], result["rejected"])
+
+	def test_window_rolls_counts_and_run_time_to_the_job_card(self):
+		from foames.foames_adapters.erpnext.rollup import roll_up
+		from foames.foames_mes.api import set_current_job
+
+		wo = self.fixtures.make_work_order(qty=10)
+		job_card = self.fixtures.job_card_for(wo.name)
+		# Well clear of the time logs other tests leave on the same workstation, which would overlap.
+		start = add_to_date(now_datetime(), hours=-26)
+		t = lambda minutes: add_to_date(start, minutes=minutes)  # noqa: E731
+		set_current_job(self.machine.name, get_reference("Job Card", job_card, ADAPTER_KEY), at=t(0))
+		self.events(
+			[
+				{"type": "Count", "counter": "good", "value": 100, "timestamp": t(0)},
+				{"type": "State", "state": "Running", "timestamp": t(5)},
+				{"type": "Count", "counter": "good", "value": 104, "timestamp": t(30)},
+				{"type": "Count", "counter": "scrap", "value": 7, "timestamp": t(30)},
+				{"type": "Count", "counter": "scrap", "value": 8, "timestamp": t(31)},
+				{"type": "State", "state": "Idle", "timestamp": t(40)},
+			]
+		)
+		posting = roll_up(self.machine.name, until=t(60))
+		self.assertTrue(posting)
+		self.assertEqual(self.run_outbox(), 1)
+		record = self.outbox(posting)
+		self.assertEqual(record.status, "Posted", record.last_error)
+		self.assertEqual(record.erp_document, job_card)
+		card = frappe.get_doc("Job Card", job_card)
+		self.assertEqual(len(card.time_logs), 1)
+		self.assertEqual(
+			(get_datetime(card.time_logs[0].from_time), get_datetime(card.time_logs[0].to_time)),
+			(get_datetime(t(5)), get_datetime(t(40))),
+		)
+		self.assertEqual(card.total_completed_qty, 4)
+		self.assertEqual(card.total_time_in_mins, 35)
+		if card.meta.has_field("process_loss_qty"):
+			self.assertEqual(card.process_loss_qty, 1)
+		self.assertIn(rules.marker(record.idempotency_key), card.remarks)
+
+		# The next window starts where this one ended and has nothing to report.
+		self.assertIsNone(roll_up(self.machine.name, until=t(90)))
+		# Ending the job rolls up what came after, up to the moment the job changed.
+		self.events([{"type": "Count", "counter": "good", "value": 106, "timestamp": t(100)}])
+		set_current_job(self.machine.name, None, at=t(120))
+		later = frappe.get_all(
+			"ERPNext Outbox", {"reference_name": self.machine.name, "status": "Queued"}, pluck="name"
+		)
+		self.assertEqual(len(later), 1)
+		payload = self.outbox(later[0]).get_payload()
+		self.assertEqual(
+			(payload["completed_qty"], get_datetime(payload["to_time"])), (2, get_datetime(t(120)))
+		)
+		self.run_outbox()
+		card.reload()
+		self.assertEqual(card.total_completed_qty, 6)
+		self.assertEqual(len(card.time_logs), 2)
+
+	def test_machine_on_a_closed_job_card_is_flagged(self):
+		from foames.foames_adapters.erpnext.rollup import current_job_card_not_open
+		from foames.foames_mes.api import set_current_job
+		from foames.foames_mes.floor import floor_snapshot
+
+		wo = self.fixtures.make_work_order(qty=1)
+		job_card = self.fixtures.job_card_for(wo.name)
+		set_current_job(self.machine.name, get_reference("Job Card", job_card, ADAPTER_KEY))
+		tile = next(m for m in floor_snapshot()["machines"] if m["name"] == self.machine.name)
+		self.assertTrue(tile["current_job"]["open"])
+		self.assertEqual(current_job_card_not_open(floor_snapshot()), [])
+		frappe.delete_doc("Job Card", job_card, force=True)
+		snapshot = floor_snapshot()
+		findings = current_job_card_not_open(snapshot)
+		self.assertEqual([f["reference_name"] for f in findings], [self.machine.name])

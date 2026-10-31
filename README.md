@@ -20,7 +20,7 @@ FoaMES is a single Frappe app that depends on the Frappe framework only. ERP sys
 
 FoaMES records never use Link fields to ERP DocTypes. They store an `External Reference` (ERP system, reference type, external ID) and the matching adapter resolves it. The ERPNext adapter activates only when ERPNext is installed on the same site. Other apps can register more adapters through the `foames_erp_adapters` hook.
 
-The ERPNext adapter resolves references with their details (a Work Order with its operations and required items, a BOM with its items and operations, a Job Card with its time logs), writes to ERPNext through the **ERPNext Outbox** (Stock Entries against a Work Order, Job Card time logs, Work Order stop, resume and close) with idempotency keys, document markers, sequence groups and retries, keeps External References current from ERPNext document events, and puts each machine's open Job Cards on the floor. See [docs/erpnext-adapter.md](docs/erpnext-adapter.md).
+The ERPNext adapter resolves references with their details (a Work Order with its operations and required items, a BOM with its items and operations, a Job Card with its time logs), writes to ERPNext through the **ERPNext Outbox** (Stock Entries against a Work Order, Job Card time logs, Work Order stop, resume and close) with idempotency keys, document markers, sequence groups and retries, keeps External References current from ERPNext document events, puts each machine's open Job Cards on the floor, and rolls each machine's good and scrap counts and running time up to the Job Card it is working on. See [docs/erpnext-adapter.md](docs/erpnext-adapter.md).
 
 The SAP S/4HANA adapter is remote: it resolves references over S/4HANA's released OData APIs, sends postings through an outbox with idempotency keys and retries, and receives IDocs over HTTP. It does not use RFC. Setup and licensing notes are in [docs/s4hana-adapter.md](docs/s4hana-adapter.md).
 
@@ -41,6 +41,7 @@ The full guide, including roles, the scheduler, running the gateways and a smoke
 | Page | Covers |
 | --- | --- |
 | [docs/installation.md](docs/installation.md) | Install, update, roles, scheduler, gateways under supervisor, first configuration, development setup |
+| [docs/dev-bench.md](docs/dev-bench.md) | A Docker dev bench that runs the whole test suite locally, with Frappe v15 or v16 and ERPNext optional |
 | [docs/erpnext-adapter.md](docs/erpnext-adapter.md) | External References, the ERPNext adapter, running without an ERP, writing an adapter |
 | [docs/s4hana-adapter.md](docs/s4hana-adapter.md) | The SAP S/4HANA adapter: setup on both sides, the outbox, inbound IDocs, operation |
 | [docs/machine-data.md](docs/machine-data.md) | The webhook, MQTT, OPC UA and Sparkplug B paths and the event shape |
@@ -61,7 +62,7 @@ cd apps/foames
 pre-commit install
 ```
 
-GitHub Actions runs the tests on Frappe v15 and v16 without an ERP, and on Frappe v16 with ERPNext. It also runs [Frappe Semgrep Rules](https://github.com/frappe/semgrep-rules) and [pip-audit](https://pypi.org/project/pip-audit/) on every pull request.
+GitHub Actions runs the tests on Frappe v15 and v16 without an ERP, and on Frappe v16 with ERPNext. The same matrix runs locally in Docker with the [dev bench](docs/dev-bench.md) (`cd docker && ./bench.sh up && ./bench.sh test`). It also runs [Frappe Semgrep Rules](https://github.com/frappe/semgrep-rules) and [pip-audit](https://pypi.org/project/pip-audit/) on every pull request.
 
 ## Prior art and credits
 

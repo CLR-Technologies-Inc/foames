@@ -78,11 +78,20 @@ doc_events = {
 # foames_machine_event_handlers = ["myapp.floor.on_machine_event"]  # (event, machine) after processing
 # foames_floor_snapshot_extensions = ["myapp.floor.extend_snapshot"]  # (snapshot, since, now) in place
 # foames_suggestion_rules = ["myapp.floor.my_rule"]  # (snapshot) -> list of finding dicts
+# foames_machine_job_changed = ["myapp.floor.on_job_changed"]  # (machine, previous_reference, at)
 #
-# The ERPNext adapter uses the same hooks to put each machine's open Job Cards on the floor.
+# The ERPNext adapter uses the same hooks to put each machine's open Job Cards on the floor and to
+# roll a machine's counts and run time up to the Job Card it is working on.
 
-foames_floor_snapshot_extensions = ["foames.foames_adapters.erpnext.floor.extend_snapshot"]
-foames_suggestion_rules = ["foames.foames_adapters.erpnext.floor.running_without_job_card"]
+foames_floor_snapshot_extensions = [
+	"foames.foames_adapters.erpnext.floor.extend_snapshot",
+	"foames.foames_adapters.erpnext.rollup.mark_current_job_cards",
+]
+foames_suggestion_rules = [
+	"foames.foames_adapters.erpnext.floor.running_without_job_card",
+	"foames.foames_adapters.erpnext.rollup.current_job_card_not_open",
+]
+foames_machine_job_changed = ["foames.foames_adapters.erpnext.rollup.on_job_changed"]
 
 # Process mining
 # --------------
@@ -103,6 +112,8 @@ scheduler_events = {
 	],
 	"cron": {
 		"*/5 * * * *": ["foames.foames_mes.tasks.mark_stale_machines_unknown"],
+		# Rolls machine counts up to ERPNext Job Cards; does nothing unless enabled in ERPNext Adapter Settings.
+		"*/10 * * * *": ["foames.foames_adapters.erpnext.rollup.roll_up_all"],
 	},
 	"hourly": ["foames.foames_mes.tasks.run_suggestion_rules"],
 	"daily": [

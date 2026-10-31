@@ -6,7 +6,7 @@ Thanks for helping build FoaMES. Bug reports, fixes, adapters and documentation 
 
 FoaMES is licensed under the [Apache License 2.0](LICENSE). Before CLR Technologies Inc. ("CLR") can merge your first pull request, you need to agree to a Contributor License Agreement (CLA). You keep the copyright in your work. The CLA gives CLR and everyone who receives FoaMES a copyright license and a patent license for your contribution, on the same terms as the Apache Software Foundation's CLAs.
 
-- **Contributing as an individual:** read the [Individual CLA](cla/ICLA.md).
+- **Contributing as an individual:** read the [Individual CLA](cla/ICLA.md). The copy you sign through CLA Assistant is published at https://gist.github.com/CLRTechDev/b5b61defe307dd1d0f2f3173bb9ef36b.
 - **Contributing for your employer:** your employer signs the [Corporate CLA](cla/CCLA.md) once and lists you on its Schedule A. Send the signed Corporate CLA to dev@clrtechnologies.co.
 
 To sign, open your pull request. The CLA Assistant check posts a comment with a link. Follow it, sign in with GitHub and accept the agreement. Your GitHub account, the date and the agreement version are recorded, the `license/cla` check turns green, and you do not need to sign again for later pull requests. Every author of a commit in the pull request has to sign.

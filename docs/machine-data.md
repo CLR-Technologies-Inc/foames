@@ -36,4 +36,6 @@ After an event is processed, every dotted path registered under the `foames_mach
 foames_machine_event_handlers = ["myapp.floor.on_machine_event"]
 ```
 
+A Machine also carries a **Current Job Reference**, an External Reference of type Job Card for whatever ERP is connected, and **Current Job Since**. Set it on the form or with `foames.foames_mes.api.set_current_job(machine, reference, at=None)` (pass no reference to end the job). Whenever it changes, every dotted path under the `foames_machine_job_changed` hook is called with the Machine, the previous reference and the time of the change. The ERPNext adapter uses this to roll the counts of the job that ended up to its Job Card; see [erpnext-adapter.md](erpnext-adapter.md#rolling-machine-counts-up-to-job-cards).
+
 A machine that stops reporting is marked Unknown after the configured minutes by a scheduled task, so a silent line never looks like a running one.
