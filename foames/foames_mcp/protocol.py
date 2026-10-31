@@ -119,7 +119,8 @@ def _check_type(key: str, value: Any, spec: dict):
 		if not ok:
 			raise InvalidParams(f"argument {key} must be of type {types}")
 	if "enum" in spec and value not in spec["enum"]:
-		raise InvalidParams(f"argument {key} must be one of {', '.join(map(str, spec['enum']))}")
+		allowed = ", ".join(str(option) for option in spec["enum"])
+		raise InvalidParams(f"argument {key} must be one of {allowed}")
 	if isinstance(value, int | float) and not isinstance(value, bool):
 		if "minimum" in spec and value < spec["minimum"]:
 			raise InvalidParams(f"argument {key} must be at least {spec['minimum']}")

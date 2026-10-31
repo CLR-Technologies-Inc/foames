@@ -84,8 +84,7 @@ TOOLS: list[Tool] = [
 	Tool(
 		name="foames_list_machines",
 		title="List machines",
-		description="Machines with their current state, when they last reported, when they last counted a part, "
-		"their ideal cycle time and shift. Needs read on Machine.",
+		description="Machines with their current state, when they last reported, when they last counted a part, their ideal cycle time and shift. Needs read on Machine.",
 		method=f"{READS}.list_machines",
 		input_schema=_schema(
 			{
@@ -99,17 +98,14 @@ TOOLS: list[Tool] = [
 	Tool(
 		name="foames_get_machine",
 		title="Get a machine",
-		description="One machine in detail: its settings, counts over the last 24 hours, the open downtime if any, "
-		"its latest OEE Period and its most recent state changes. Needs read on Machine; the sections the "
-		"user may not read are left out.",
+		description="One machine in detail: its settings, counts over the last 24 hours, the open downtime if any, its latest OEE Period and its most recent state changes. Needs read on Machine; the sections the user may not read are left out.",
 		method=f"{READS}.get_machine",
 		input_schema=_schema({"machine": MACHINE}, ["machine"]),
 	),
 	Tool(
 		name="foames_list_machine_events",
 		title="List machine events",
-		description="Raw machine events (state changes, counter readings with the delta FoaMES computed, "
-		"measurements, alarms, messages), newest first. Needs read on Machine Event.",
+		description="Raw machine events (state changes, counter readings with the delta FoaMES computed, measurements, alarms, messages), newest first. Needs read on Machine Event.",
 		method=f"{READS}.list_machine_events",
 		input_schema=_schema(
 			{
@@ -125,8 +121,7 @@ TOOLS: list[Tool] = [
 	Tool(
 		name="foames_list_downtime",
 		title="List downtime records",
-		description="Downtime Records (open or closed) with reason, start, end and duration, newest first. "
-		"Needs read on Downtime Record.",
+		description="Downtime Records (open or closed) with reason, start, end and duration, newest first. Needs read on Downtime Record.",
 		method=f"{READS}.list_downtime",
 		input_schema=_schema(
 			{
@@ -142,26 +137,21 @@ TOOLS: list[Tool] = [
 	Tool(
 		name="foames_downtime_by_reason",
 		title="Downtime by reason",
-		description="Minutes of downtime per reason for one machine inside a window, counting the part of each "
-		"record that overlaps it; open downtime counts up to the end of the window. Unclassified downtime "
-		"is reported separately. Defaults to the last 24 hours. Needs read on Downtime Record.",
+		description="Minutes of downtime per reason for one machine inside a window, counting the part of each record that overlaps it; open downtime counts up to the end of the window. Unclassified downtime is reported separately. Defaults to the last 24 hours. Needs read on Downtime Record.",
 		method=f"{READS}.downtime_by_reason",
 		input_schema=_schema({"machine": MACHINE, "since": SINCE, "until": UNTIL}, ["machine"]),
 	),
 	Tool(
 		name="foames_list_downtime_reasons",
 		title="List downtime reasons",
-		description="The Downtime Reason codes a site uses, with their category and whether they count as planned "
-		"downtime (excluded from the OEE availability base). Needs read on Downtime Reason.",
+		description="The Downtime Reason codes a site uses, with their category and whether they count as planned downtime (excluded from the OEE availability base). Needs read on Downtime Reason.",
 		method=f"{READS}.list_downtime_reasons",
 	),
 	# OEE -----------------------------------------------------------------------------------
 	Tool(
 		name="foames_get_oee",
 		title="OEE for any window",
-		description="Availability, performance, quality and OEE for one machine over any window, computed now "
-		"from its events and downtime without saving a period, with the time ledger (run, unknown "
-		"minutes, coverage), counts and notes. Needs read on OEE Period.",
+		description="Availability, performance, quality and OEE for one machine over any window, computed now from its events and downtime without saving a period, with the time ledger (run, unknown minutes, coverage), counts and notes. Needs read on OEE Period.",
 		method=f"{OEE}.get_oee",
 		input_schema=_schema(
 			{
@@ -179,8 +169,7 @@ TOOLS: list[Tool] = [
 	Tool(
 		name="foames_list_oee_periods",
 		title="List OEE periods",
-		description="Saved OEE Periods (the scheduler computes one per machine per day), newest first, with the "
-		"full time ledger. Needs read on OEE Period.",
+		description="Saved OEE Periods (the scheduler computes one per machine per day), newest first, with the full time ledger. Needs read on OEE Period.",
 		method=f"{READS}.list_oee_periods",
 		input_schema=_schema(
 			{
@@ -195,18 +184,14 @@ TOOLS: list[Tool] = [
 	Tool(
 		name="foames_get_floor_snapshot",
 		title="Floor snapshot",
-		description="The whole floor as one object: every enabled machine with its state, counts over the window, "
-		"minutes since its last count and latest OEE; downtime per machine with the top reason; ERP "
-		"references that resolved as Missing; open suggestions; and any section another app adds. "
-		"Needs read on Machine.",
+		description="The whole floor as one object: every enabled machine with its state, counts over the window, minutes since its last count and latest OEE; downtime per machine with the top reason; ERP references that resolved as Missing; open suggestions; and any section another app adds. Needs read on Machine.",
 		method=f"{MES_API}.get_floor_snapshot",
 		input_schema=_schema({"days": _i("Window in days (default 1)", minimum=1, maximum=90)}),
 	),
 	Tool(
 		name="foames_list_suggestions",
 		title="List suggestions",
-		description="Agent Suggestions, open ones by default, with category, severity, the agent that raised them "
-		"and what they refer to. Needs read on Agent Suggestion.",
+		description="Agent Suggestions, open ones by default, with category, severity, the agent that raised them and what they refer to. Needs read on Agent Suggestion.",
 		method=f"{READS}.list_suggestions",
 		input_schema=_schema(
 			{
@@ -224,17 +209,14 @@ TOOLS: list[Tool] = [
 	Tool(
 		name="foames_get_suggestion",
 		title="Get a suggestion",
-		description="One Agent Suggestion in full: the suggestion text, its evidence and its resolution. "
-		"Needs read on Agent Suggestion.",
+		description="One Agent Suggestion in full: the suggestion text, its evidence and its resolution. Needs read on Agent Suggestion.",
 		method=f"{READS}.get_suggestion",
 		input_schema=_schema({"name": _s("The suggestion's name, for example SUG-2026-00012")}, ["name"]),
 	),
 	Tool(
 		name="foames_post_suggestion",
 		title="Post a suggestion",
-		description="Raise one Agent Suggestion for people to act on. Give a stable rule_key for a finding so "
-		"the same finding is not raised again while it is open; a resolved suggestion with that key is "
-		"reopened with the new evidence. Returns the suggestion's name. Needs create on Agent Suggestion.",
+		description="Raise one Agent Suggestion for people to act on. Give a stable rule_key for a finding so the same finding is not raised again while it is open; a resolved suggestion with that key is reopened with the new evidence. Returns the suggestion's name. Needs create on Agent Suggestion.",
 		method=f"{MES_API}.post_suggestion",
 		input_schema=_schema(
 			{
@@ -260,9 +242,7 @@ TOOLS: list[Tool] = [
 	Tool(
 		name="foames_run_suggestion_rules",
 		title="Run the suggestion rules",
-		description="Run the built-in rules (silent or stalled machines, dominant downtime reason, missing ERP "
-		"references) and any rule another app registered, now, and return the suggestions created. "
-		"The scheduler runs them hourly. Needs create on Agent Suggestion.",
+		description="Run the built-in rules (silent or stalled machines, dominant downtime reason, missing ERP references) and any rule another app registered, now, and return the suggestions created. The scheduler runs them hourly. Needs create on Agent Suggestion.",
 		method=f"{MES_API}.run_suggestion_rules",
 		input_schema=_schema({"days": _i("Window in days (default 1)", minimum=1, maximum=90)}),
 		read_only=False,
@@ -270,10 +250,7 @@ TOOLS: list[Tool] = [
 	Tool(
 		name="foames_set_current_job",
 		title="Set a machine's current job",
-		description="Tell FoaMES which job a machine is working on, so its counts and run time from that moment "
-		"belong to the job and the ERP adapter can roll up the job that ended. `reference` is the name of "
-		"an External Reference of type Job Card (any ERP); omit it to end the current job. Changes no ERP "
-		"record. Needs write on Machine.",
+		description="Tell FoaMES which job a machine is working on, so its counts and run time from that moment belong to the job and the ERP adapter can roll up the job that ended. `reference` is the name of an External Reference of type Job Card (any ERP); omit it to end the current job. Changes no ERP record. Needs write on Machine.",
 		method=f"{MES_API}.set_current_job",
 		input_schema=_schema(
 			{
@@ -289,25 +266,21 @@ TOOLS: list[Tool] = [
 	Tool(
 		name="foames_mining_summary",
 		title="Event log summary",
-		description="Counts of events, cases, variants and activities in the event log for a window (built on "
-		"the fly from machine states, downtime and every enabled Event Log Source) or for a saved "
-		"Process Event Log. Needs read on Process Event Log.",
+		description="Counts of events, cases, variants and activities in the event log for a window (built on the fly from machine states, downtime and every enabled Event Log Source) or for a saved Process Event Log. Needs read on Process Event Log.",
 		method=f"{MINING}.summary",
 		input_schema=_schema(WINDOW_AND_SOURCES),
 	),
 	Tool(
 		name="foames_mining_events",
 		title="Event log events",
-		description="The events themselves (case, activity, lifecycle, timestamp, resource, objects, attributes). "
-		"Needs read on Process Event Log.",
+		description="The events themselves (case, activity, lifecycle, timestamp, resource, objects, attributes). Needs read on Process Event Log.",
 		method=f"{MINING}.events",
 		input_schema=_schema({**WINDOW_AND_SOURCES, "limit": _i("Maximum events (default 1000)", minimum=1)}),
 	),
 	Tool(
 		name="foames_mining_discover",
 		title="Discover the process",
-		description="Process discovery: the directly-follows graph, the variant table, throughput, activity "
-		"durations and waits, bottlenecks and rework for the log. Needs read on Process Event Log.",
+		description="Process discovery: the directly-follows graph, the variant table, throughput, activity durations and waits, bottlenecks and rework for the log. Needs read on Process Event Log.",
 		method=f"{MINING}.discover",
 		input_schema=_schema(
 			{
@@ -320,10 +293,7 @@ TOOLS: list[Tool] = [
 	Tool(
 		name="foames_mining_conformance",
 		title="Check conformance",
-		description="Replay the log on a reference model and report fitness, deviations per trace and the "
-		"footprint comparison. The model is a DFG object as returned by foames_mining_discover, a list of "
-		"activity names for a strict sequence, or the name of a saved Process Event Log whose discovered "
-		"graph is the reference. Needs read on Process Event Log.",
+		description="Replay the log on a reference model and report fitness, deviations per trace and the footprint comparison. The model is a DFG object as returned by foames_mining_discover, a list of activity names for a strict sequence, or the name of a saved Process Event Log whose discovered graph is the reference. Needs read on Process Event Log.",
 		method=f"{MINING}.check_conformance",
 		input_schema=_schema(
 			{
@@ -340,8 +310,7 @@ TOOLS: list[Tool] = [
 	Tool(
 		name="foames_mining_export",
 		title="Export the event log",
-		description="The log as XES XML or OCEL 2.0 JSON text, for an external process-mining tool. "
-		"Needs read on Process Event Log.",
+		description="The log as XES XML or OCEL 2.0 JSON text, for an external process-mining tool. Needs read on Process Event Log.",
 		method=f"{MINING}.export",
 		input_schema=_schema(
 			{**WINDOW_AND_SOURCES, "fmt": _s("xes (default) or ocel", enum=["xes", "ocel"])}
@@ -359,23 +328,20 @@ TOOLS: list[Tool] = [
 	Tool(
 		name="foames_list_event_log_sources",
 		title="List event log sources",
-		description="The Event Log Sources configured on the site: which DocType each mines and how its case, "
-		"activity, timestamps and resource are mapped. Needs read on Event Log Source.",
+		description="The Event Log Sources configured on the site: which DocType each mines and how its case, activity, timestamps and resource are mapped. Needs read on Event Log Source.",
 		method=f"{READS}.list_event_log_sources",
 	),
 	# ERP references ------------------------------------------------------------------------
 	Tool(
 		name="foames_list_erp_systems",
 		title="List ERP systems",
-		description="The ERP adapters registered on the site (for example ERPNext, S/4HANA), whether each can be "
-		"reached, the default system, and the reference types the kernel understands.",
+		description="The ERP adapters registered on the site (for example ERPNext, S/4HANA), whether each can be reached, the default system, and the reference types the kernel understands.",
 		method=f"{READS}.list_erp_systems",
 	),
 	Tool(
 		name="foames_list_external_references",
 		title="List ERP references",
-		description="External References: the ERP records FoaMES points at (items, work orders, workstations and so "
-		"on), with their resolution status and label. Needs read on External Reference.",
+		description="External References: the ERP records FoaMES points at (items, work orders, workstations and so on), with their resolution status and label. Needs read on External Reference.",
 		method=f"{READS}.list_external_references",
 		input_schema=_schema(
 			{
@@ -389,9 +355,7 @@ TOOLS: list[Tool] = [
 	Tool(
 		name="foames_lookup_erp_record",
 		title="Look up an ERP record",
-		description="Read one record from an ERP through its adapter (ERPNext on the same site, or S/4HANA over "
-		"OData) and return its label and the data the adapter exposes. Reads only; creates no External "
-		"Reference and changes nothing in the ERP. Needs read on External Reference.",
+		description="Read one record from an ERP through its adapter (ERPNext on the same site, or S/4HANA over OData) and return its label and the data the adapter exposes. Reads only; creates no External Reference and changes nothing in the ERP. Needs read on External Reference.",
 		method=f"{READS}.lookup_erp_record",
 		input_schema=_schema(
 			{

@@ -100,12 +100,12 @@ SUGGESTION_FIELDS = [
 ]
 
 
-def _limit(limit) -> int:
+def _limit(limit: int | str | None) -> int:
 	limit = cint(limit) or 100
 	return max(1, min(limit, MAX_LIMIT))
 
 
-def _window(filters: list, field: str, since, until):
+def _window(filters: list, field: str, since: str | None, until: str | None):
 	if since:
 		filters.append([field, ">=", get_datetime(since)])
 	if until:
@@ -117,7 +117,10 @@ def _window(filters: list, field: str, since, until):
 
 @frappe.whitelist()
 def list_machines(
-	status: str | None = None, machine_type: str | None = None, include_disabled=False, limit=100
+	status: str | None = None,
+	machine_type: str | None = None,
+	include_disabled: bool = False,
+	limit: int = 100,
 ) -> list[dict]:
 	filters = []
 	if not cint(include_disabled):
@@ -171,9 +174,9 @@ def get_machine(machine: str) -> dict:
 def list_machine_events(
 	machine: str | None = None,
 	event_type: str | None = None,
-	since=None,
-	until=None,
-	limit=100,
+	since: str | None = None,
+	until: str | None = None,
+	limit: int = 100,
 ) -> list[dict]:
 	filters = []
 	if machine:
@@ -198,9 +201,9 @@ def list_downtime(
 	machine: str | None = None,
 	status: str | None = None,
 	reason: str | None = None,
-	since=None,
-	until=None,
-	limit=100,
+	since: str | None = None,
+	until: str | None = None,
+	limit: int = 100,
 ) -> list[dict]:
 	filters = []
 	if machine:
@@ -220,7 +223,7 @@ def list_downtime(
 
 
 @frappe.whitelist()
-def downtime_by_reason(machine: str, since=None, until=None) -> dict:
+def downtime_by_reason(machine: str, since: str | None = None, until: str | None = None) -> dict:
 	from foames.foames_mes.floor import downtime_by_reason as minutes_by_reason
 
 	frappe.has_permission("Downtime Record", "read", throw=True)
@@ -255,7 +258,9 @@ def list_downtime_reasons() -> list[dict]:
 
 
 @frappe.whitelist()
-def list_oee_periods(machine: str | None = None, since=None, until=None, limit=100) -> list[dict]:
+def list_oee_periods(
+	machine: str | None = None, since: str | None = None, until: str | None = None, limit: int = 100
+) -> list[dict]:
 	filters = []
 	if machine:
 		filters.append(["machine", "=", machine])
@@ -278,7 +283,7 @@ def list_suggestions(
 	category: str | None = None,
 	severity: str | None = None,
 	agent: str | None = None,
-	limit=100,
+	limit: int = 100,
 ) -> list[dict]:
 	filters = []
 	if status and status != "all":
@@ -330,7 +335,10 @@ def list_erp_systems() -> dict:
 
 @frappe.whitelist()
 def list_external_references(
-	erp_system: str | None = None, reference_type: str | None = None, status: str | None = None, limit=100
+	erp_system: str | None = None,
+	reference_type: str | None = None,
+	status: str | None = None,
+	limit: int = 100,
 ) -> list[dict]:
 	filters = []
 	if erp_system:
@@ -369,7 +377,7 @@ def lookup_erp_record(reference_type: str, external_id: str, erp_system: str | N
 
 
 @frappe.whitelist()
-def list_event_logs(status: str | None = None, limit=50) -> list[dict]:
+def list_event_logs(status: str | None = None, limit: int = 50) -> list[dict]:
 	filters = {"status": status} if status else {}
 	return frappe.get_list(
 		"Process Event Log",

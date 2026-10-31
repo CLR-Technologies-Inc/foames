@@ -61,7 +61,8 @@ def execute_tool(tool: Tool, arguments: dict):
 	frappe.is_whitelisted(method)
 	frappe.db.savepoint("foames_mcp_tool")
 	try:
-		return frappe.call(method, **arguments)
+		# The arguments were validated against the tool's schema, whose keys are the method's parameters.
+		return method(**arguments)
 	except REPORTABLE as e:
 		frappe.db.rollback(save_point="foames_mcp_tool")
 		raise ToolError(_message(e)) from e

@@ -96,9 +96,16 @@ class TestMCPEndpoint(IntegrationTestCase):
 		self.assertEqual(len(tools), len(TOOLS))
 
 	def test_every_tool_binds_a_whitelisted_method(self):
+		import inspect
+
 		for tool in TOOLS:
 			method = frappe.get_attr(tool.method)
 			frappe.is_whitelisted(method)  # raises when it is not
+			parameters = inspect.signature(method).parameters
+			for key in tool.input_schema.get("properties", {}):
+				self.assertIn(
+					key, parameters, f"{tool.name} declares {key}, which {tool.method} does not take"
+				)
 
 	def test_machine_reads(self):
 		machines = content(call("foames_list_machines", {"status": "Running"}))
