@@ -5,12 +5,24 @@
 
 ERPNext is optional. Nothing here is imported from ERPNext and no FoaMES DocType links to an
 ERPNext DocType, so FoaMES installs and runs on a plain Frappe site. When ERPNext is installed on
-the same site, references are resolved straight from its tables.
+the same site, references are resolved straight from its tables, postings go through the ERPNext
+Outbox, and ERPNext document events keep External References current.
+
+The package is laid out as:
+
+- `details.py`: what is read for each reference type (Work Order operations, BOM items ...).
+- `postings.py`: the outbox rules (operations, idempotency marker, error classes, retry), Frappe-free.
+- `executor.py`: performs a posting against ERPNext's own whitelisted functions.
+- `sync.py`: ERPNext document events that refresh External References.
+- `floor.py`: Job Cards and Work Orders in the floor snapshot, and a rule built on them.
+- `api.py`: the whitelisted endpoints agents and integrations call.
 """
 
 import frappe
 
 from foames.foames_adapters.base import ERPAdapter, ResolvedReference
+
+ADAPTER_KEY = "ERPNext"
 
 # ERPNext DocType per kernel reference type, and the field used as a human-readable label.
 ERPNEXT_DOCTYPES = {
@@ -28,23 +40,34 @@ ERPNEXT_DOCTYPES = {
 	"Workstation": ("Workstation", "workstation_name"),
 }
 
+# The reverse map, for document events coming from ERPNext.
+REFERENCE_TYPES_BY_DOCTYPE = {
+	doctype: reference_type for reference_type, (doctype, _) in ERPNEXT_DOCTYPES.items()
+}
+
+
+def erpnext_installed() -> bool:
+	return "erpnext" in frappe.get_installed_apps()
+
 
 class ERPNextAdapter(ERPAdapter):
-	key = "ERPNext"
+	key = ADAPTER_KEY
 	label = "ERPNext"
 	reference_map = {reference_type: doctype for reference_type, (doctype, _) in ERPNEXT_DOCTYPES.items()}  # noqa: RUF012
 
 	def is_available(self) -> bool:
-		return "erpnext" in frappe.get_installed_apps()
+		return erpnext_installed()
 
 	def fetch(self, erp_type: str, reference_type: str, external_id: str) -> ResolvedReference | None:
+		from foames.foames_adapters.erpnext.details import get_details
+
 		label_field = ERPNEXT_DOCTYPES[reference_type][1]
-		values = frappe.db.get_value(erp_type, external_id, ["name", label_field], as_dict=True)
-		if not values:
+		data = get_details(erp_type, reference_type, external_id, extra_fields=(label_field,))
+		if data is None:
 			return None
 		return ResolvedReference(
 			reference_type=reference_type,
-			external_id=values.name,
-			label=values.get(label_field) or values.name,
-			data={"doctype": erp_type},
+			external_id=data["name"],
+			label=data.get(label_field) or data["name"],
+			data=data,
 		)
