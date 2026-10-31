@@ -13,10 +13,18 @@ def mark_stale_machines_unknown():
 	"""
 	minutes = frappe.db.get_single_value("Machine Data Settings", "stale_after_minutes") or 15
 	cutoff = add_to_date(now_datetime(), minutes=-minutes)
-	stale = frappe.get_all(
-		"Machine",
-		filters={"status": ("not in", ("Unknown", "Down")), "last_seen": ("<", cutoff), "disabled": 0},
-		fields=["name", "last_seen"],
+	# Plain SQL through the query builder: a machine with no Last Seen at all does not match "<"
+	# (there is nothing to time out), and the value comes back exactly as stored. On Frappe v15,
+	# get_all returned this Datetime column empty for a row its own filter had matched, which
+	# would have stamped the event "now" instead of at last_seen + minutes.
+	machine = frappe.qb.DocType("Machine")
+	stale = (
+		frappe.qb.from_(machine)
+		.select(machine.name, machine.last_seen)
+		.where(
+			machine.status.notin(["Unknown", "Down"]) & (machine.last_seen < cutoff) & (machine.disabled == 0)
+		)
+		.run(as_dict=True)
 	)
 	for m in stale:
 		frappe.get_doc(

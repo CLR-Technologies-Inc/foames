@@ -96,21 +96,19 @@ def roll_up(machine, job_card: str | None = None, until=None, since=None) -> str
 
 	# Query builder rather than a "sum(...)" string: Frappe v16 refuses SQL functions as strings.
 	event = frappe.qb.DocType("Machine Event")
-	totals = {
-		r.counter_name: r.total or 0
-		for r in (
-			frappe.qb.from_(event)
-			.select(event.counter_name, Sum(event.delta).as_("total"))
-			.where(
-				(event.machine == machine.name)
-				& (event.event_type == "Count")
-				& (event.timestamp > start)
-				& (event.timestamp <= end)
-			)
-			.groupby(event.counter_name)
-			.run(as_dict=True)
+	rows = (
+		frappe.qb.from_(event)
+		.select(event.counter_name, Sum(event.delta).as_("total"))
+		.where(
+			(event.machine == machine.name)
+			& (event.event_type == "Count")
+			& (event.timestamp > start)
+			& (event.timestamp <= end)
 		)
-	}
+		.groupby(event.counter_name)
+		.run(as_dict=True)
+	)
+	totals = {r.counter_name: r.total or 0 for r in rows}
 	intervals = running_intervals(
 		state_before(machine.name, start), state_events(machine.name, start, end), start, end
 	)
