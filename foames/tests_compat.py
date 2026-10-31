@@ -21,7 +21,11 @@ class IntegrationTestCase(_IntegrationTestCase):
 		frappe.db.savepoint(self.SAVEPOINT)
 
 	def tearDown(self):
-		frappe.db.rollback(save_point=self.SAVEPOINT)
+		try:
+			frappe.db.rollback(save_point=self.SAVEPOINT)
+		except Exception:
+			# A test that committed (an outbox run does) released the savepoint; roll back what is left.
+			frappe.db.rollback()
 		super().tearDown()
 
 
