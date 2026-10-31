@@ -16,6 +16,7 @@ This module has no Frappe imports; the S4HANA Outbox DocType applies these rules
 import hashlib
 from dataclasses import dataclass
 
+from foames.foames_adapters.s4hana import actions
 from foames.foames_adapters.s4hana.odata import ODataClient, ODataError
 
 MARKER_PREFIX = "FOAMES-"
@@ -72,6 +73,20 @@ OPERATIONS: dict[str, Operation] = {
 }
 
 
+def operation(name: str) -> "Operation | actions.Action":
+	"""The outbox operation of that name: an entity create from OPERATIONS, or a function import
+	from actions.ACTIONS."""
+	if name in OPERATIONS:
+		return OPERATIONS[name]
+	if name in actions.ACTIONS:
+		return actions.ACTIONS[name]
+	raise KeyError(name)
+
+
+def operation_names() -> list[str]:
+	return list(OPERATIONS) + list(actions.ACTIONS)
+
+
 def marker(idempotency_key: str) -> str:
 	"""A 23-character marker, short enough for the 25-character material document header text."""
 	return MARKER_PREFIX + hashlib.sha256(idempotency_key.encode("utf-8")).hexdigest()[:16].upper()
@@ -79,6 +94,8 @@ def marker(idempotency_key: str) -> str:
 
 def prepare(operation: Operation, payload: dict, idempotency_key: str) -> dict:
 	"""The payload as sent: a copy with the marker written into the operation's text field."""
+	if isinstance(operation, actions.Action):
+		return actions.prepare(operation, payload)
 	missing = [name for name in operation.lookup_fields if not payload.get(name)]
 	if missing:
 		raise ValueError(f"{operation.label} needs {', '.join(missing)}")
@@ -110,6 +127,8 @@ class Outcome:
 
 def send(client: ODataClient, operation: Operation, payload: dict, verify_first: bool) -> Outcome:
 	"""Post once. With `verify_first`, look for an earlier posting with the same marker first."""
+	if isinstance(operation, actions.Action):
+		return actions.send(client, operation, payload, verify_first)
 	try:
 		if verify_first:
 			existing = find_existing(client, operation, payload)

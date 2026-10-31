@@ -211,6 +211,21 @@ class AliasBook:
 
 COUNTERS = {"good", "scrap", "count", "total", "parts", "reject", "bad", "ng"}
 
+# Metrics the Sparkplug specification reserves for the protocol itself. They describe the edge node,
+# not a machine, so the convention never turns them into events (an explicit map row still can).
+RESERVED_METRICS = {"bdSeq"}
+RESERVED_PREFIXES = (
+	"Node Control/",
+	"Device Control/",
+	"Properties/",
+	"Node Properties/",
+	"Device Properties/",
+)
+
+
+def is_reserved_metric(name: str) -> bool:
+	return name in RESERVED_METRICS or name.startswith(RESERVED_PREFIXES)
+
 
 def match_row(rows, topic: Topic, metric_name: str):
 	"""The map row whose path names this metric, with or without the group and device."""
@@ -231,10 +246,11 @@ def metric_to_raw(topic: Topic, name: str, metric: Metric, payload: Payload, row
 	if metric.is_null or metric.value is None:
 		return None
 	timestamp_ms = metric.timestamp or payload.timestamp
-	base = {
-		"timestamp": timestamp_ms / 1000.0 if timestamp_ms else None,
-		"id": f"sp:{topic.group}/{topic.edge_node}/{topic.device or ''}:{timestamp_ms}:{name}",
-	}
+	base = {"timestamp": timestamp_ms / 1000.0 if timestamp_ms else None}
+	if timestamp_ms:
+		# Without a timestamp two readings of the same metric would share an id and the second would
+		# be dropped as a duplicate, so the id exists only when the message is timestamped.
+		base["id"] = f"sp:{topic.group}/{topic.edge_node}/{topic.device or ''}:{timestamp_ms}:{name}"
 	row = match_row(rows, topic, name)
 	if row:
 		base["machine"] = row.machine_source_id if hasattr(row, "machine_source_id") else row.machine
@@ -253,6 +269,8 @@ def metric_to_raw(topic: Topic, name: str, metric: Metric, payload: Payload, row
 			base["text"] = str(metric.value)
 		return base
 
+	if is_reserved_metric(name):
+		return None
 	base["machine"] = topic.machine_source_id
 	last = name.rsplit("/", 1)[-1].strip().lower()
 	if last == "state":
@@ -329,7 +347,7 @@ def handle_message(topic_text: str, payload_bytes: bytes, aliases: AliasBook, ro
 			frappe.db.commit()
 		except EventError as e:
 			frappe.logger("foames.sparkplug").warning(f"rejected {topic_text} {raw.get('type')}: {e}")
-		except frappe.DuplicateEntryError:
+		except (frappe.DuplicateEntryError, frappe.UniqueValidationError):
 			frappe.db.rollback()
 		except Exception:
 			frappe.db.rollback()

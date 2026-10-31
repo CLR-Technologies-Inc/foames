@@ -22,11 +22,11 @@ class S4HANAOutbox(Document):
 	"""One posting to S/4HANA, sent by the scheduler and retried until it is posted or fails."""
 
 	def validate(self):
-		if self.operation not in outbox.OPERATIONS:
+		if self.operation not in outbox.operation_names():
 			frappe.throw(_("{0} is not an S/4HANA outbox operation").format(frappe.bold(self.operation)))
 		payload = self.get_payload()
 		try:
-			outbox.prepare(outbox.OPERATIONS[self.operation], payload, self.idempotency_key)
+			outbox.prepare(outbox.operation(self.operation), payload, self.idempotency_key)
 		except ValueError as e:
 			frappe.throw(str(e))
 
@@ -56,7 +56,7 @@ class S4HANAOutbox(Document):
 
 	def attempt(self, client):
 		"""Send once and record the outcome. The caller has claimed the row (status Sending)."""
-		operation = outbox.OPERATIONS[self.operation]
+		operation = outbox.operation(self.operation)
 		payload = outbox.prepare(operation, self.get_payload(), self.idempotency_key)
 		self.sent_payload = json.dumps(payload, indent=1)
 		self.attempts = (self.attempts or 0) + 1
@@ -80,6 +80,8 @@ class S4HANAOutbox(Document):
 				)
 			else:
 				self.next_attempt_at = add_to_date(now_datetime(), seconds=outbox.retry_delay(self.attempts))
+		if self.status == "Failed":
+			self.next_attempt_at = None
 		self.flags.verify_first = None
 		self.save(ignore_permissions=True)
 

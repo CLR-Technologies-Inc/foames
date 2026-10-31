@@ -35,25 +35,28 @@ Keep these whatever you build. A pull request that breaks one will not be merged
 ```
 foames/
   hooks.py                    app hooks: adapters, scheduler events, extension hook names
-  install.py                  creates the four FoaMES roles before DocTypes are synced
+  install.py                  creates the six FoaMES roles before DocTypes are synced
   tests_compat.py             IntegrationTestCase that works on v15 and v16
   foames_kernel/doctype/      External Reference (get_reference, make_reference_key), FoaMES Settings
   foames_mes/
     api.py                    ingest_machine_events, get_floor_snapshot, run_suggestion_rules, post_suggestion
     floor.py                  floor_snapshot, collect_findings
-    oee.py  counters.py  suggestions.py  signing.py     pure logic
+    oee.py  counters.py  suggestions.py  signing.py  kpi.py     pure logic (kpi.py: report roll-ups)
     tasks.py                  scheduler entry points
     gateway/                  mapping.py (normalise_event), mqtt.py, opcua.py, sparkplug.py
     doctype/                  Machine, Machine Event, Downtime Reason, Downtime Record,
                               Machine Data Settings (+ Machine Node Map), OEE Period, Agent Suggestion
     page/floor_view/          the Floor View page
+    report/                   OEE Trend, Downtime Pareto, MTBF and MTTR, Suggestion Status, Process Throughput
+    workspace/  number_card/  dashboard_chart/  foames_mes_dashboard/   role workspaces and dashboards
   foames_adapters/
     __init__.py               get_adapters, get_adapter, get_available_erp_systems
     base.py                   ERPAdapter, ResolvedReference, REFERENCE_TYPES, the error classes
     erpnext.py                ERPNextAdapter
     s4hana/                   adapter.py, entities.py, odata.py, outbox.py, idoc.py, api.py, fake.py
     doctype/                  S4HANA Settings (+ Entity Mapping), S4HANA Outbox, S4HANA Inbound IDoc
-    report/                   S4HANA Outbox Reconciliation
+    report/                   S4HANA Outbox Reconciliation, ERP Outbox Health
+    workspace/  number_card/  dashboard_chart/  foames_adapters_dashboard/   the Integration workspace
   foames_mcp/
     protocol.py               MCP/JSON-RPC server core (pure), tools.py the catalogue (pure)
     api.py                    the Streamable HTTP endpoint; reads.py whitelisted read methods
@@ -126,7 +129,7 @@ The event shape, state aliases and signing scheme are in [docs/machine-data.md](
 
 ```bash
 # pure-logic tests, no site needed
-python -m unittest foames.foames_mes.test_oee_and_rules foames.foames_mes.test_machine_data_logic foames.foames_mes.test_sparkplug
+python -m unittest foames.foames_mes.test_oee_and_rules foames.foames_mes.test_machine_data_logic foames.foames_mes.test_sparkplug foames.foames_mes.test_kpi
 python -m unittest foames.foames_process_mining.test_process_mining_logic foames.foames_mcp.test_mcp_protocol
 
 # everything, on a bench
@@ -134,6 +137,8 @@ bench --site <site> set-config allow_tests true
 bench --site <site> run-tests --app foames
 bench --site <site> run-tests --app foames --module foames.foames_mes.doctype.oee_period.test_oee_period
 ```
+
+Without a bench on the machine, `cd docker && ./bench.sh up && ./bench.sh test` runs the suite in Docker on Frappe v15 or v16, with or without ERPNext; see [docs/dev-bench.md](docs/dev-bench.md).
 
 The S/4HANA tests use `foames/foames_adapters/s4hana/fake.py`, an in-memory stand-in for the OData transport, so no SAP system is needed; they run under `bench run-tests` because the adapters package imports Frappe. CI runs the suite on Frappe v15, v16, and v16 with ERPNext, plus Frappe's semgrep rules and pip-audit.
 

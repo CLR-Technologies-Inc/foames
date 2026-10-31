@@ -160,6 +160,8 @@ class ODataClient:
 				transient=response.status in TRANSIENT_STATUSES or response.status in AUTH_STATUSES,
 			)
 		data = response.json() or {}
+		if not isinstance(data, dict) or not data.get("access_token"):
+			raise ODataError("OAuth token response carries no access_token", status=response.status)
 		self._token = (data["access_token"], time.time() + float(data.get("expires_in") or 300))
 		return self._token[0]
 
@@ -195,7 +197,7 @@ class ODataClient:
 		if response.status == 404:
 			return None
 		if response.status >= 400:
-			raise error_from_response(response)
+			raise error_from_response(response, write=False)
 		data = response.json() or {}
 		return data.get("d", data)
 
@@ -214,7 +216,7 @@ class ODataClient:
 			response = self.send("GET", self.url(service), self.headers({"X-CSRF-Token": "Fetch"}))
 			token = response.header("x-csrf-token")
 			if response.status >= 400 or not token:
-				raise error_from_response(response, "Could not fetch a CSRF token from S/4HANA")
+				raise error_from_response(response, "Could not fetch a CSRF token from S/4HANA", write=False)
 			self._csrf[service] = token
 		return self._csrf[service]
 
@@ -242,8 +244,12 @@ class ODataClient:
 		return data.get("d", data)
 
 
-def error_from_response(response: Response, prefix: str = "S/4HANA rejected the request") -> ODataError:
-	"""Read SAP's error body ({"error": {"code", "message": {"value"}, "innererror": ...}})."""
+def error_from_response(
+	response: Response, prefix: str = "S/4HANA rejected the request", *, write: bool = True
+) -> ODataError:
+	"""Read SAP's error body ({"error": {"code", "message": {"value"}, "innererror": ...}}).
+
+	`write` is False for a read or a token fetch: a server error there cannot have posted anything."""
 	code, message, details = None, "", []
 	try:
 		error = (response.json() or {}).get("error", {})
@@ -260,7 +266,12 @@ def error_from_response(response: Response, prefix: str = "S/4HANA rejected the 
 		text += f": {message}"
 	# A 5xx on a write may come after the posting was committed.
 	return ODataError(
-		text, status=status, code=code, details=details, transient=transient, maybe_applied=status >= 500
+		text,
+		status=status,
+		code=code,
+		details=details,
+		transient=transient,
+		maybe_applied=write and status >= 500,
 	)
 
 

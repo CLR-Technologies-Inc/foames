@@ -54,10 +54,11 @@ class TestOEEPeriod(IntegrationTestCase):
 		result = get_oee("T-OEE", "2026-10-20 08:00:00", "2026-10-20 13:00:00", planned_minutes=300)
 		self.assertAlmostEqual(result["run_minutes"], 210)
 		self.assertAlmostEqual(result["availability"], 210 / 270 * 100, places=3)
-		self.assertAlmostEqual(
-			result["performance"], 200 / 210 * 100, places=3
-		)  # 60 s ideal: 210 units possible, 200 counted
-		self.assertAlmostEqual(result["quality"], 190 / 200 * 100, places=3)
+		# 60 s ideal over 210 run minutes allows 210 pieces; 200 good + 10 scrap were made, so
+		# performance is 100 percent (scrap counts as output; quality is where it is lost).
+		self.assertAlmostEqual(result["performance"], 100.0, places=3)
+		# Quality is good over everything made: 200 good of 210 pieces.
+		self.assertAlmostEqual(result["quality"], 200 / 210 * 100, places=3)
 		self.assertEqual((result["good_count"], result["scrap_count"]), (200, 10))
 		self.assertAlmostEqual(result["unknown_minutes"], 0)
 
@@ -100,10 +101,16 @@ class TestOEEPeriod(IntegrationTestCase):
 				}
 			]
 		)
+		self.assertEqual(frappe.db.get_value("Machine", "T-OEE", "status"), "Running")
+		self.assertEqual(get_datetime(frappe.db.get_value("Machine", "T-OEE", "last_seen")), two_hours_ago)
 		self.assertIn("T-OEE", mark_stale_machines_unknown())
-		event = frappe.get_doc(
-			"Machine Event", {"machine": "T-OEE", "source": "System", "event_type": "State"}
+		events = frappe.get_all(
+			"Machine Event",
+			filters={"machine": "T-OEE", "source": "System", "event_type": "State"},
+			fields=["name", "state", "timestamp"],
 		)
+		self.assertEqual(len(events), 1, events)
+		event = events[0]
 		self.assertEqual(event.state, "Unknown")
 		minutes = frappe.db.get_single_value("Machine Data Settings", "stale_after_minutes") or 15
 		self.assertEqual(get_datetime(event.timestamp), add_to_date(two_hours_ago, minutes=minutes))

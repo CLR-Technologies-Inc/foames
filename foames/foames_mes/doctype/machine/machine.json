@@ -8,6 +8,7 @@
   "code",
   "title",
   "machine_type",
+  "line",
   "cb_head",
   "status",
   "last_seen",
@@ -16,6 +17,10 @@
   "ideal_cycle_seconds",
   "shift_start",
   "scheduled_minutes_per_day",
+  "sb_job",
+  "current_job_reference",
+  "cb_job",
+  "current_job_since",
   "sb_source",
   "source_id",
   "counter_rollover",
@@ -42,6 +47,13 @@
    "fieldname": "machine_type",
    "fieldtype": "Data",
    "label": "Machine Type"
+  },
+  {
+   "fieldname": "line",
+   "fieldtype": "Data",
+   "label": "Line",
+   "in_standard_filter": 1,
+   "description": "Production line or cell this machine belongs to; the OEE, downtime and reliability reports roll machines up by it"
   },
   {
    "fieldname": "cb_head",
@@ -97,6 +109,30 @@
    "description": "Planned production time per day, for the daily OEE period. Ignored without a Shift Start"
   },
   {
+   "fieldname": "sb_job",
+   "fieldtype": "Section Break",
+   "label": "Current Job"
+  },
+  {
+   "fieldname": "current_job_reference",
+   "fieldtype": "Link",
+   "label": "Current Job Reference",
+   "options": "External Reference",
+   "in_standard_filter": 1,
+   "description": "The ERP job this machine is working on, as an External Reference of type Job Card. Counts and run time reported from here on are rolled up to it by the ERP adapter. Clear it when the job is done"
+  },
+  {
+   "fieldname": "cb_job",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "current_job_since",
+   "fieldtype": "Datetime",
+   "label": "Current Job Since",
+   "read_only": 1,
+   "description": "When the current job was set. Counts before this time belong to the previous job"
+  },
+  {
    "fieldname": "sb_source",
    "fieldtype": "Section Break",
    "label": "Machine Data Source"
@@ -133,7 +169,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-29 22:00:00.000000",
+ "modified": "2026-10-31 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES MES",
  "name": "Machine",
@@ -183,6 +219,26 @@
    "email": 1,
    "share": 1,
    "write": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "write": 1
   }
  ],
  "sort_field": "creation",
@@ -191,5 +247,5 @@
  "track_changes": 1,
  "autoname": "field:code",
  "title_field": "title",
- "search_fields": "title,source_id"
+ "search_fields": "title,source_id,line"
 }

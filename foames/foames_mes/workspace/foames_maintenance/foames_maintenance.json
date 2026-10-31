@@ -1,0 +1,251 @@
+{
+ "app": "foames",
+ "charts": [
+  {
+   "chart_name": "MTBF and MTTR by Machine",
+   "label": "MTBF and MTTR by Machine"
+  },
+  {
+   "chart_name": "Downtime Pareto by Reason",
+   "label": "Downtime Pareto by Reason"
+  },
+  {
+   "chart_name": "Downtime Pareto by Machine",
+   "label": "Downtime Pareto by Machine"
+  },
+  {
+   "chart_name": "Downtime Minutes per Day",
+   "label": "Downtime Minutes per Day"
+  },
+  {
+   "chart_name": "Stoppages by Machine",
+   "label": "Stoppages by Machine"
+  },
+  {
+   "chart_name": "Availability Trend by Machine",
+   "label": "Availability Trend by Machine"
+  }
+ ],
+ "content": "[{\"id\": \"V7KCP9iA0M\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Right Now</b></span>\", \"col\": 12}}, {\"id\": \"Gdi9Jky4TL\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Machines Down\", \"col\": 3}}, {\"id\": \"A5tHa26_uu\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Stoppages\", \"col\": 3}}, {\"id\": \"Q2M8zxEvgj\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Unclassified Downtime Last 7 Days\", \"col\": 3}}, {\"id\": \"mrMEFMKLb7\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Downtime Minutes Last 7 Days\", \"col\": 3}}, {\"id\": \"EC6H5xCUJd\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"sKU0iu4uO4\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Reliability</b></span>\", \"col\": 12}}, {\"id\": \"9CL6IxsCfD\", \"type\": \"chart\", \"data\": {\"chart_name\": \"MTBF and MTTR by Machine\", \"col\": 12}}, {\"id\": \"TzWRaruxdm\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Downtime Pareto by Reason\", \"col\": 6}}, {\"id\": \"3QOZ7wg7hr\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Downtime Pareto by Machine\", \"col\": 6}}, {\"id\": \"qCpj_EMb2i\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"ru0B3J2Yr5\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Trend</b></span>\", \"col\": 12}}, {\"id\": \"KGu-79K9Q_\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Downtime Minutes per Day\", \"col\": 6}}, {\"id\": \"ZWXFt8iixF\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Stoppages by Machine\", \"col\": 6}}, {\"id\": \"O-YOjP0wHV\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Availability Trend by Machine\", \"col\": 12}}, {\"id\": \"lnxEe50DbQ\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"kOeIiEB_TZ\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Shortcuts</b></span>\", \"col\": 12}}, {\"id\": \"g4-ZJOwS8S\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Machines Down\", \"col\": 4}}, {\"id\": \"74d-PlyoY-\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Open Stoppages\", \"col\": 4}}, {\"id\": \"R76eFaqrwk\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"MTBF and MTTR\", \"col\": 4}}, {\"id\": \"tz7m4BdNPI\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Downtime Pareto\", \"col\": 4}}, {\"id\": \"5PquhtjUYX\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Downtime Reasons\", \"col\": 4}}, {\"id\": \"UBFfPw9zpP\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Maintenance Dashboard\", \"col\": 4}}, {\"id\": \"9lqdsOoWJr\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"uqyhJIUGyD\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Reports and Masters</b></span>\", \"col\": 12}}, {\"id\": \"IagXiedZhy\", \"type\": \"card\", \"data\": {\"card_name\": \"Reliability\", \"col\": 4}}, {\"id\": \"Ztq4SX5Q8P\", \"type\": \"card\", \"data\": {\"card_name\": \"Downtime\", \"col\": 4}}, {\"id\": \"-OF9GTINwg\", \"type\": \"card\", \"data\": {\"card_name\": \"Machines\", \"col\": 4}}]",
+ "creation": "2026-10-31 12:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "setting",
+ "idx": 0,
+ "indicator_color": "orange",
+ "is_hidden": 0,
+ "label": "FoaMES Maintenance",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Reliability",
+   "link_count": 3,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "MTBF and MTTR",
+   "link_count": 0,
+   "link_to": "MTBF and MTTR",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Downtime Pareto",
+   "link_count": 0,
+   "link_to": "Downtime Pareto",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "OEE Trend",
+   "link_count": 0,
+   "link_to": "OEE Trend",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Downtime",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Downtime Record",
+   "link_count": 0,
+   "link_to": "Downtime Record",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Downtime Reason",
+   "link_count": 0,
+   "link_to": "Downtime Reason",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Machines",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Machine",
+   "link_count": 0,
+   "link_to": "Machine",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Machine Event",
+   "link_count": 0,
+   "link_to": "Machine Event",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Floor View",
+   "link_count": 0,
+   "link_to": "floor-view",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Agent Suggestion",
+   "link_count": 0,
+   "link_to": "Agent Suggestion",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-10-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "FoaMES Maintenance",
+ "number_cards": [
+  {
+   "label": "Machines Down",
+   "number_card_name": "Machines Down"
+  },
+  {
+   "label": "Open Stoppages",
+   "number_card_name": "Open Stoppages"
+  },
+  {
+   "label": "Unclassified Downtime Last 7 Days",
+   "number_card_name": "Unclassified Downtime Last 7 Days"
+  },
+  {
+   "label": "Downtime Minutes Last 7 Days",
+   "number_card_name": "Downtime Minutes Last 7 Days"
+  }
+ ],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "",
+ "roles": [
+  {
+   "role": "FoaMES Maintenance"
+  },
+  {
+   "role": "FoaMES Engineer"
+  }
+ ],
+ "sequence_id": 22.0,
+ "shortcuts": [
+  {
+   "color": "Red",
+   "doc_view": "List",
+   "label": "Machines Down",
+   "link_to": "Machine",
+   "stats_filter": "{\"status\": \"Down\"}",
+   "type": "DocType"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "label": "Open Stoppages",
+   "link_to": "Downtime Record",
+   "stats_filter": "{\"status\": \"Open\"}",
+   "type": "DocType"
+  },
+  {
+   "color": "Blue",
+   "doc_view": "",
+   "label": "MTBF and MTTR",
+   "link_to": "MTBF and MTTR",
+   "report_ref_doctype": "Downtime Record",
+   "type": "Report"
+  },
+  {
+   "color": "Red",
+   "doc_view": "",
+   "label": "Downtime Pareto",
+   "link_to": "Downtime Pareto",
+   "report_ref_doctype": "Downtime Record",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Downtime Reasons",
+   "link_to": "Downtime Reason",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "",
+   "label": "Maintenance Dashboard",
+   "link_to": "FoaMES Maintenance",
+   "type": "Dashboard"
+  }
+ ],
+ "title": "FoaMES Maintenance"
+}

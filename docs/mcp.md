@@ -2,7 +2,7 @@
 
 FoaMES speaks the Model Context Protocol (MCP), so an agent in Claude Desktop, Claude Code, Cursor or any other MCP client can read the plant floor and raise suggestions through tools, with no custom integration. The server exposes the public FoaMES API and nothing more: every tool is one whitelisted method that is already callable at `/api/method/...`, run as the user whose API key the agent holds, with that user's permissions.
 
-The 23 tools cover machines and their state, machine events, downtime, OEE, the floor snapshot, Agent Suggestions, process mining (event logs, discovery, conformance, export) and ERP reference reads through the ERPNext and S/4HANA adapters. Two tools write, and both only create Agent Suggestions: agents suggest, people act.
+The 24 tools cover machines and their state, machine events, downtime, OEE, the floor snapshot, Agent Suggestions, process mining (event logs, discovery, conformance, export) and ERP reference reads through the ERPNext and S/4HANA adapters. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act.
 
 ## Two ways to connect
 
@@ -68,6 +68,7 @@ Permissions are the DocType permissions of the user behind the key, checked by t
 | `foames_get_oee`, `foames_list_oee_periods` | read on OEE Period |
 | `foames_list_suggestions`, `foames_get_suggestion` | read on Agent Suggestion |
 | `foames_post_suggestion`, `foames_run_suggestion_rules` | create on Agent Suggestion (Operator, Engineer) |
+| `foames_set_current_job` | write on Machine (Operator, Engineer) |
 | `foames_mining_*`, `foames_list_event_logs`, `foames_list_event_log_sources` | read on Process Event Log / Event Log Source |
 | `foames_list_erp_systems` | any logged-in user |
 | `foames_list_external_references`, `foames_lookup_erp_record` | read on External Reference (System Manager by default) |
@@ -91,6 +92,7 @@ Permissions are the DocType permissions of the user behind the key, checked by t
 | `foames_get_suggestion(name)` | One suggestion with text, evidence, resolution |
 | `foames_post_suggestion(title, category, suggestion, agent, severity, reference_doctype, reference_name, evidence, rule_key)` | Creates a suggestion; returns its name |
 | `foames_run_suggestion_rules(days)` | Runs the rules now; returns the names created |
+| `foames_set_current_job(machine, reference, at)` | Records the Job Card (an External Reference) a machine is working on, or ends it |
 | `foames_mining_summary(event_log, since, until, sources)` | Event, case, variant and activity counts |
 | `foames_mining_events(..., limit)` | The events |
 | `foames_mining_discover(..., min_edge_count, dot)` | DFG, variants, throughput, durations, bottlenecks, rework |
@@ -110,7 +112,7 @@ Datetimes are in the site's local time, `YYYY-MM-DD HH:MM:SS`; ISO 8601 strings 
 - **Stateless.** The server issues no session id and keeps nothing between messages. Each POST carries one JSON-RPC message and returns one JSON response, or `202 Accepted` for a notification. JSON-RPC batches are not accepted (they left the MCP specification in revision 2025-06-18). A `GET` for the server-to-client stream is refused by the framework (the endpoint accepts POST only), which the specification allows for a server that does not push messages; clients treat it as non-fatal.
 - **Protocol revisions** 2024-11-05, 2025-03-26, 2025-06-18 and 2025-11-25 are negotiated through `initialize`; a client that offers another revision gets 2025-11-25 back.
 - **Errors.** A permission or validation failure in a tool is a tool result with `isError` and the message. Any other exception is logged in the site's Error Log and reported to the agent only by type, so nothing internal leaks. A failing tool's database writes are rolled back.
-- **Writes commit** at the end of the request as for any Frappe API call. The two writing tools create Agent Suggestions only; `foames_post_suggestion` with a `rule_key` that is already open returns the open suggestion instead of creating a second one.
+- **Writes commit** at the end of the request as for any Frappe API call. The writing tools create Agent Suggestions or set a machine's current job; `foames_post_suggestion` with a `rule_key` that is already open returns the open suggestion instead of creating a second one.
 - **Throughput.** The bridge handles messages one at a time; a client that sends a `ping` during a long `foames_mining_discover` gets its answer after it. The HTTP endpoint runs under the site's normal workers.
 
 ## Extending the catalogue

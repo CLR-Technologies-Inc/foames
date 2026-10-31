@@ -23,18 +23,22 @@ bench --site $SITE install-app foames
 
 Installing ERPNext on the same site is independent of FoaMES. Install it before or after; the ERPNext adapter checks for it at run time, not at install time.
 
-Installation creates four roles before the DocTypes are synced:
+Installation creates six roles before the DocTypes are synced:
 
 | Role | Meant for | What it can do |
 | --- | --- | --- |
 | FoaMES Engineer | Process and manufacturing engineers | Full access to Machines, Downtime Reasons, Machine Data Settings, OEE Periods and Agent Suggestions; may post machine events. |
 | FoaMES Operator | Shop-floor users | Create and edit Machines, Downtime Records and Agent Suggestions; create Machine Events (manual entry or unsigned test posts); read Downtime Reasons and OEE Periods. |
 | FoaMES Quality | Quality staff | Edit (not create) Machines, Downtime Records and Agent Suggestions; read Machine Events, Downtime Reasons and OEE Periods. |
+| FoaMES Supervisor | Shift and production supervisors | Read and report on everything in the MES module; edit Machines, create and edit Downtime Records, Downtime Reasons, Agent Suggestions and Process Event Logs. Opens the Supervisor workspace. |
+| FoaMES Maintenance | Maintenance technicians and planners | Read Machines, Machine Events and OEE Periods; create and edit Downtime Records and Downtime Reasons; create and edit Agent Suggestions; create Machine Events. Opens the Maintenance workspace. |
 
 Operators and Quality staff can therefore change a Machine's source id, OEE parameters and disabled flag. If that should be reserved to engineers, tighten the Machine permissions in Role Permissions Manager on the site.
 | FoaMES Integration | Service users for other systems | Creates S/4HANA inbound IDoc and outbox records. Give it to the user whose API key S/4HANA uses. |
 
 System Manager keeps full access to everything, including FoaMES Settings, S4HANA Settings and External References.
+
+Each role has a workspace of its own with the cards, charts and reports for that job; see [dashboards.md](dashboards.md).
 
 ## Update
 
@@ -178,4 +182,4 @@ The modules that hold the arithmetic and parsing (`foames/foames_mes/oee.py`, `c
 python -m unittest foames.foames_mes.test_oee_and_rules foames.foames_mes.test_machine_data_logic foames.foames_mes.test_sparkplug
 ```
 
-The rest of the tests need a site, so run them with `bench run-tests` as above. CI runs the whole suite on Frappe v15, on v16, and on v16 with ERPNext.
+The rest of the tests need a site, so run them with `bench run-tests` as above. CI runs the whole suite on Frappe v15, on v16, and on v16 with ERPNext. Without a bench on the machine, the [Docker dev bench](dev-bench.md) runs the same matrix locally.

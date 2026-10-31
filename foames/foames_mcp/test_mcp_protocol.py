@@ -95,9 +95,11 @@ class TestCatalogue(unittest.TestCase):
 				self.assertIn("description", spec, f"{tool.name}.{key} has no description")
 			self.assertIn("readOnlyHint", mcp["annotations"])
 
-	def test_only_the_suggestion_tools_write(self):
+	def test_only_three_tools_write(self):
 		writers = sorted(tool.name for tool in TOOLS if not tool.read_only)
-		self.assertEqual(writers, ["foames_post_suggestion", "foames_run_suggestion_rules"])
+		self.assertEqual(
+			writers, ["foames_post_suggestion", "foames_run_suggestion_rules", "foames_set_current_job"]
+		)
 		self.assertFalse(any(tool.destructive for tool in TOOLS))
 
 	def test_floor_agent_playbook_names_exist(self):

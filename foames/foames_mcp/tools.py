@@ -10,8 +10,8 @@ the user the API key belongs to.
 
 Tools read the plant (machines, events, downtime, OEE, the floor snapshot, suggestions, process
 mining, ERP references). The only writes are `foames_post_suggestion` and
-`foames_run_suggestion_rules`, which create Agent Suggestions for people to act on. Agents suggest;
-people act.
+`foames_run_suggestion_rules`, which create Agent Suggestions for people to act on, and
+`foames_set_current_job`, which records which job a machine is on. Agents suggest; people act.
 """
 
 from __future__ import annotations
@@ -265,6 +265,24 @@ TOOLS: list[Tool] = [
 		"The scheduler runs them hourly. Needs create on Agent Suggestion.",
 		method=f"{MES_API}.run_suggestion_rules",
 		input_schema=_schema({"days": _i("Window in days (default 1)", minimum=1, maximum=90)}),
+		read_only=False,
+	),
+	Tool(
+		name="foames_set_current_job",
+		title="Set a machine's current job",
+		description="Tell FoaMES which job a machine is working on, so its counts and run time from that moment "
+		"belong to the job and the ERP adapter can roll up the job that ended. `reference` is the name of "
+		"an External Reference of type Job Card (any ERP); omit it to end the current job. Changes no ERP "
+		"record. Needs write on Machine.",
+		method=f"{MES_API}.set_current_job",
+		input_schema=_schema(
+			{
+				"machine": MACHINE,
+				"reference": _s("External Reference name of the Job Card; omit to end the current job"),
+				"at": _s("When the job started or ended (default now; YYYY-MM-DD HH:MM:SS)"),
+			},
+			["machine"],
+		),
 		read_only=False,
 	),
 	# Process mining ------------------------------------------------------------------------

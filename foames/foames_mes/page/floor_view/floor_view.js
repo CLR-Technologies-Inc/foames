@@ -60,6 +60,17 @@ class FloorView {
 				)}">
 					<h4>${frappe.utils.escape_html(m.title || m.name)}</h4>
 					<small>${__(m.status)}${m.last_seen ? " · " + frappe.datetime.prettyDate(m.last_seen) : ""}</small>
+					${
+						m.current_job
+							? `<div>${__("Job")} ${frappe.utils.escape_html(
+									m.current_job.external_id || m.current_job.reference
+							  )}${
+									m.current_job.label
+										? " · " + frappe.utils.escape_html(m.current_job.label)
+										: ""
+							  }</div>`
+							: ""
+					}
 					<div>${
 						m.minutes_since_count == null
 							? __("No counts today")

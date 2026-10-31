@@ -1,0 +1,126 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-31 05:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "postings_section",
+  "enable_postings",
+  "outbox_paused",
+  "column_break_postings",
+  "submit_job_cards_when_complete",
+  "roll_up_counts_to_job_cards",
+  "floor_section",
+  "show_job_cards_on_floor",
+  "column_break_floor",
+  "floor_lookahead_days",
+  "references_section",
+  "refresh_references_daily"
+ ],
+ "fields": [
+  {
+   "fieldname": "postings_section",
+   "fieldtype": "Section Break",
+   "label": "Postings"
+  },
+  {
+   "fieldname": "enable_postings",
+   "fieldtype": "Check",
+   "label": "Enable Postings to ERPNext",
+   "default": "0",
+   "description": "Perform queued ERPNext Outbox postings (Stock Entries, Job Card time logs, Work Order status changes). Off, postings queue up and wait."
+  },
+  {
+   "fieldname": "outbox_paused",
+   "fieldtype": "Check",
+   "label": "Pause the Outbox",
+   "default": "0",
+   "depends_on": "enable_postings",
+   "description": "Keep queuing but perform nothing, for example during a stock reconciliation."
+  },
+  {
+   "fieldname": "column_break_postings",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "submit_job_cards_when_complete",
+   "fieldtype": "Check",
+   "label": "Submit Job Cards When Complete",
+   "default": "0",
+   "description": "Default for time-log postings that do not say: submit the Job Card once its completed quantity reaches the quantity it is for."
+  },
+  {
+   "fieldname": "roll_up_counts_to_job_cards",
+   "fieldtype": "Check",
+   "label": "Roll Up Machine Counts to Job Cards",
+   "default": "0",
+   "depends_on": "enable_postings",
+   "description": "Every few minutes, and whenever a machine's current job changes, queue the machine's good and scrap counts and its running time since the last roll-up as time logs on the Job Card named by the machine's Current Job Reference."
+  },
+  {
+   "fieldname": "floor_section",
+   "fieldtype": "Section Break",
+   "label": "Floor"
+  },
+  {
+   "fieldname": "show_job_cards_on_floor",
+   "fieldtype": "Check",
+   "label": "Show Job Cards on the Floor",
+   "default": "1",
+   "description": "Add the open Job Cards and Work Orders of each machine's workstation to the floor snapshot, and raise a suggestion for a machine running without one."
+  },
+  {
+   "fieldname": "column_break_floor",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "floor_lookahead_days",
+   "fieldtype": "Int",
+   "label": "Look Ahead (days)",
+   "default": "2",
+   "description": "Job Cards expected to start this many days ahead are listed; later ones are left out."
+  },
+  {
+   "fieldname": "references_section",
+   "fieldtype": "Section Break",
+   "label": "References"
+  },
+  {
+   "fieldname": "refresh_references_daily",
+   "fieldtype": "Check",
+   "label": "Refresh Unresolved References Daily",
+   "default": "1",
+   "description": "Look up External References that are Unverified or Missing once a day, in addition to the updates ERPNext document events trigger."
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-10-31 07:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Adapters",
+ "name": "ERPNext Adapter Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "FoaMES Engineer",
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
