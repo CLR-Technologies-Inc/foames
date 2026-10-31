@@ -1,0 +1,83 @@
+# Development bench for FoaMES: Frappe on MariaDB and Redis, with ERPNext optional.
+#
+#   cp .env.example .env          # pick the Frappe branch, Python, Node, MariaDB and ERPNext
+#   ./bench.sh up                 # build the image, start the services, create the bench and the site
+#   ./bench.sh test               # bench run-tests --app foames
+#
+# See docs/dev-bench.md for the full workflow.
+
+name: foames-dev
+
+services:
+  mariadb:
+    image: ${MARIADB_IMAGE:-mariadb:11.8}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 2s
+      retries: 20
+    volumes:
+      - mariadb-data:/var/lib/mysql
+
+  redis-cache:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+
+  redis-queue:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 2s
+      retries: 10
+
+  bench:
+    build:
+      context: .
+      args:
+        PYTHON_VERSION: ${PYTHON_VERSION:-3.12}
+        NODE_VERSION: ${NODE_VERSION:-24}
+    image: foames-dev-bench:py${PYTHON_VERSION:-3.12}-node${NODE_VERSION:-24}
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis-cache:
+        condition: service_healthy
+      redis-queue:
+        condition: service_healthy
+    environment:
+      FRAPPE_BRANCH: ${FRAPPE_BRANCH:-version-16}
+      ERPNEXT_BRANCH: ${ERPNEXT_BRANCH:-}
+      SITE_NAME: ${SITE_NAME:-test_site}
+      DB_HOST: mariadb
+      DB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
+      REDIS_CACHE: redis://redis-cache:6379
+      REDIS_QUEUE: redis://redis-queue:6379
+      # Frappe's test runner reads these, as the GitHub Actions workflow sets them.
+      CI: "Yes"
+      TYPE: server
+    volumes:
+      - bench-data:/home/frappe/benches
+      # The checkout is soft-linked into the bench as apps/foames, so edits on the host are live.
+      - ..:/workspace/foames
+    ports:
+      - "${BENCH_PORT:-8000}:8000"
+    # Keep the container up; bench commands run through `docker compose exec bench ...`.
+    command: ["sleep", "infinity"]
+    init: true
+
+volumes:
+  mariadb-data:
+  bench-data:

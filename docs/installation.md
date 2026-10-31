@@ -178,4 +178,4 @@ The modules that hold the arithmetic and parsing (`foames/foames_mes/oee.py`, `c
 python -m unittest foames.foames_mes.test_oee_and_rules foames.foames_mes.test_machine_data_logic foames.foames_mes.test_sparkplug
 ```
 
-The rest of the tests need a site, so run them with `bench run-tests` as above. CI runs the whole suite on Frappe v15, on v16, and on v16 with ERPNext.
+The rest of the tests need a site, so run them with `bench run-tests` as above. CI runs the whole suite on Frappe v15, on v16, and on v16 with ERPNext. Without a bench on the machine, the [Docker dev bench](dev-bench.md) runs the same matrix locally.
