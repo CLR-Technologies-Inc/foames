@@ -34,6 +34,9 @@ class ERPNextTestCase(IntegrationTestCase):
 		settings = frappe.get_single("ERPNext Adapter Settings")
 		settings.update({"enable_postings": 1, "outbox_paused": 0, "show_job_cards_on_floor": 1})
 		settings.save()
+		# Other test modules switch resolution on save off and the outboxes commit, so the flag can
+		# arrive here set. These tests rely on references resolving when they are created.
+		frappe.db.set_single_value("FoaMES Settings", "skip_resolution_on_save", 0)
 		frappe.db.commit()  # nosemgrep
 
 	def setUp(self):
@@ -142,7 +145,11 @@ class TestJobCardAndStatusPostings(ERPNextTestCase):
 		wo = self.fixtures.make_work_order(qty=2)
 		job_card = self.fixtures.job_card_for(wo.name)
 		self.assertTrue(job_card)
-		start = add_to_date(now_datetime(), minutes=-30)
+		# The outbox commits, so the time logs other tests book on the same workstation stay on the
+		# site. Its production capacity is 1, and ERPNext refuses a time log that overlaps one of
+		# them, so this run sits well before any of those.
+		start = add_to_date(now_datetime(), hours=-48)
+		end = add_to_date(start, minutes=30)
 		postings = [
 			enqueue(
 				"Material Transfer for Manufacture", {"work_order": wo.name}, f"{wo.name}:transfer", wo.name
@@ -152,15 +159,16 @@ class TestJobCardAndStatusPostings(ERPNextTestCase):
 			),
 			enqueue(
 				"Job Card Time Log",
-				{"job_card": job_card, "complete_time": now_datetime(), "completed_qty": 2, "submit": True},
+				{"job_card": job_card, "complete_time": end, "completed_qty": 2, "submit": True},
 				f"{job_card}:complete",
 				wo.name,
 			),
 			enqueue("Manufacture", {"work_order": wo.name, "qty": 2}, f"{wo.name}:manufacture", wo.name),
 		]
-		self.assertEqual(self.run_outbox(), 4)
+		posted = self.run_outbox()
 		for name in postings:
 			self.assertEqual(self.outbox(name).status, "Posted", f"{name}: {self.outbox(name).last_error}")
+		self.assertEqual(posted, 4)
 		card = frappe.get_doc("Job Card", job_card)
 		self.assertEqual(card.total_completed_qty, 2)
 		self.assertEqual(card.docstatus, 1)
@@ -315,7 +323,8 @@ class TestJobCardRollUp(ERPNextTestCase):
 		wo = self.fixtures.make_work_order(qty=10)
 		job_card = self.fixtures.job_card_for(wo.name)
 		# Well clear of the time logs other tests leave on the same workstation, which would overlap.
-		start = add_to_date(now_datetime(), hours=-26)
+		# Whole seconds, because the Job Card stores its time logs without microseconds.
+		start = add_to_date(now_datetime(), hours=-26).replace(microsecond=0)
 		t = lambda minutes: add_to_date(start, minutes=minutes)  # noqa: E731
 		set_current_job(self.machine.name, get_reference("Job Card", job_card, ADAPTER_KEY), at=t(0))
 		self.events(

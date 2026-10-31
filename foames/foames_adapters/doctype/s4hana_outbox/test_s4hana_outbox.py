@@ -51,6 +51,9 @@ class TestS4HANAOutbox(IntegrationTestCase):
 		settings.enabled = 0
 		settings.outbox_paused = 0
 		settings.save()
+		# test_goods_movement_records_external_reference switches this off before the outbox commits;
+		# leave the site as it was for the test modules that run after this one.
+		frappe.db.set_single_value("FoaMES Settings", "skip_resolution_on_save", 0)
 		frappe.db.commit()  # nosemgrep
 
 	def test_enqueue_is_idempotent(self):
