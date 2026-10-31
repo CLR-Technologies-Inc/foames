@@ -1,0 +1,264 @@
+{
+ "app": "foames",
+ "charts": [
+  {
+   "chart_name": "Quality Rate Trend by Machine",
+   "label": "Quality Rate Trend by Machine"
+  },
+  {
+   "chart_name": "Open Suggestions by Category",
+   "label": "Open Suggestions by Category"
+  },
+  {
+   "chart_name": "Suggestion Status by Category",
+   "label": "Suggestion Status by Category"
+  },
+  {
+   "chart_name": "Process Throughput per Day",
+   "label": "Process Throughput per Day"
+  }
+ ],
+ "content": "[{\"id\": \"HpOibO83BY\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>This Week</b></span>\", \"col\": 12}}, {\"id\": \"ADwUdygKis\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Quality Rate Last 7 Days\", \"col\": 3}}, {\"id\": \"nmDrmri3Tg\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Scrap Last 7 Days\", \"col\": 3}}, {\"id\": \"uNTdUqxlx7\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Quality Suggestions\", \"col\": 3}}, {\"id\": \"ys1ZRdKDOX\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Suggestions\", \"col\": 3}}, {\"id\": \"QJAzIMbYNp\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"4fU63bS4nR\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Quality Rate</b></span>\", \"col\": 12}}, {\"id\": \"lvmDsBEx94\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Quality Rate Trend by Machine\", \"col\": 12}}, {\"id\": \"QL2LAe8PIB\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hj_w-OTHOd\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Suggestions and Flow</b></span>\", \"col\": 12}}, {\"id\": \"FAEXTZUPjq\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Open Suggestions by Category\", \"col\": 4}}, {\"id\": \"Qr3iWmZHc6\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Suggestion Status by Category\", \"col\": 8}}, {\"id\": \"o5BEHTXJlb\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Process Throughput per Day\", \"col\": 12}}, {\"id\": \"e0F4Mz4uMI\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"YTR05Z6eP3\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Shortcuts</b></span>\", \"col\": 12}}, {\"id\": \"3Y_M6OKskZ\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Open Quality Suggestions\", \"col\": 4}}, {\"id\": \"RdVkHbV2i5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"OEE Periods\", \"col\": 4}}, {\"id\": \"2K4Oqf_4NZ\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"OEE Trend\", \"col\": 4}}, {\"id\": \"dstnqlhCRX\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Process Event Logs\", \"col\": 4}}, {\"id\": \"YRvvnaiODY\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Process Throughput\", \"col\": 4}}, {\"id\": \"5HpULlgY6A\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Quality Dashboard\", \"col\": 4}}, {\"id\": \"2jzgtSD7SV\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"WUDIn1DyMe\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Reports and Masters</b></span>\", \"col\": 12}}, {\"id\": \"ZvOQCPbDOC\", \"type\": \"card\", \"data\": {\"card_name\": \"Quality\", \"col\": 4}}, {\"id\": \"m3N7V1rt6p\", \"type\": \"card\", \"data\": {\"card_name\": \"Process Mining\", \"col\": 4}}, {\"id\": \"_7NhsIY4TF\", \"type\": \"card\", \"data\": {\"card_name\": \"Floor\", \"col\": 4}}]",
+ "creation": "2026-10-31 12:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "quality",
+ "idx": 0,
+ "indicator_color": "purple",
+ "is_hidden": 0,
+ "label": "FoaMES Quality",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Quality",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "OEE Period",
+   "link_count": 0,
+   "link_to": "OEE Period",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "OEE Trend",
+   "link_count": 0,
+   "link_to": "OEE Trend",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Agent Suggestion",
+   "link_count": 0,
+   "link_to": "Agent Suggestion",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Suggestion Status",
+   "link_count": 0,
+   "link_to": "Suggestion Status",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Process Mining",
+   "link_count": 3,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Process Event Log",
+   "link_count": 0,
+   "link_to": "Process Event Log",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Event Log Source",
+   "link_count": 0,
+   "link_to": "Event Log Source",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Process Throughput",
+   "link_count": 0,
+   "link_to": "Process Throughput",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Floor",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Floor View",
+   "link_count": 0,
+   "link_to": "floor-view",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Machine",
+   "link_count": 0,
+   "link_to": "Machine",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Downtime Record",
+   "link_count": 0,
+   "link_to": "Downtime Record",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Downtime Pareto",
+   "link_count": 0,
+   "link_to": "Downtime Pareto",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-10-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "FoaMES Quality",
+ "number_cards": [
+  {
+   "label": "Quality Rate Last 7 Days",
+   "number_card_name": "Quality Rate Last 7 Days"
+  },
+  {
+   "label": "Scrap Last 7 Days",
+   "number_card_name": "Scrap Last 7 Days"
+  },
+  {
+   "label": "Open Quality Suggestions",
+   "number_card_name": "Open Quality Suggestions"
+  },
+  {
+   "label": "Open Suggestions",
+   "number_card_name": "Open Suggestions"
+  }
+ ],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "",
+ "roles": [
+  {
+   "role": "FoaMES Quality"
+  },
+  {
+   "role": "FoaMES Engineer"
+  }
+ ],
+ "sequence_id": 23.0,
+ "shortcuts": [
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "label": "Open Quality Suggestions",
+   "link_to": "Agent Suggestion",
+   "stats_filter": "{\"status\": \"Open\", \"category\": \"Quality\"}",
+   "type": "DocType"
+  },
+  {
+   "color": "Blue",
+   "doc_view": "List",
+   "label": "OEE Periods",
+   "link_to": "OEE Period",
+   "type": "DocType"
+  },
+  {
+   "color": "Blue",
+   "doc_view": "",
+   "label": "OEE Trend",
+   "link_to": "OEE Trend",
+   "report_ref_doctype": "OEE Period",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Process Event Logs",
+   "link_to": "Process Event Log",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "",
+   "label": "Process Throughput",
+   "link_to": "Process Throughput",
+   "report_ref_doctype": "Process Event Log",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "",
+   "label": "Quality Dashboard",
+   "link_to": "FoaMES Quality",
+   "type": "Dashboard"
+  }
+ ],
+ "title": "FoaMES Quality"
+}

@@ -1,0 +1,23 @@
+{
+ "aggregate_function_based_on": "oee",
+ "color": "#2490EF",
+ "creation": "2026-10-31 12:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "document_type": "OEE Period",
+ "dynamic_filters_json": "[[\"OEE Period\", \"from_time\", \">=\", \"frappe.datetime.add_days(frappe.datetime.get_today(), -7)\"]]",
+ "filters_json": "[]",
+ "function": "Average",
+ "idx": 0,
+ "is_public": 1,
+ "is_standard": 1,
+ "label": "Average OEE (7 Days)",
+ "modified": "2026-10-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "OEE Last 7 Days",
+ "owner": "Administrator",
+ "show_percentage_stats": 0,
+ "stats_time_interval": "Daily",
+ "type": "Document Type"
+}

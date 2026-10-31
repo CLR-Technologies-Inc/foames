@@ -1,0 +1,303 @@
+{
+ "app": "foames",
+ "charts": [
+  {
+   "chart_name": "OEE Trend by Line",
+   "label": "OEE Trend by Line"
+  },
+  {
+   "chart_name": "OEE Trend by Machine",
+   "label": "OEE Trend by Machine"
+  },
+  {
+   "chart_name": "Downtime Pareto by Reason",
+   "label": "Downtime Pareto by Reason"
+  },
+  {
+   "chart_name": "MTBF and MTTR by Machine",
+   "label": "MTBF and MTTR by Machine"
+  },
+  {
+   "chart_name": "Suggestion Status by Category",
+   "label": "Suggestion Status by Category"
+  },
+  {
+   "chart_name": "Process Throughput per Day",
+   "label": "Process Throughput per Day"
+  }
+ ],
+ "content": "[{\"id\": \"u_HJj9KwhM\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>This Week</b></span>\", \"col\": 12}}, {\"id\": \"_LfL0aPoRS\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"OEE Last 7 Days\", \"col\": 3}}, {\"id\": \"o7BlNwk6TQ\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Machines Running\", \"col\": 3}}, {\"id\": \"xG2d9YW9vS\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Stoppages\", \"col\": 3}}, {\"id\": \"-_ezq5y4Ba\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Suggestions\", \"col\": 3}}, {\"id\": \"6FrxPwPpZo\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"bKliWUC342\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>OEE</b></span>\", \"col\": 12}}, {\"id\": \"qdL2dlXMUs\", \"type\": \"chart\", \"data\": {\"chart_name\": \"OEE Trend by Line\", \"col\": 6}}, {\"id\": \"6APqATaeVj\", \"type\": \"chart\", \"data\": {\"chart_name\": \"OEE Trend by Machine\", \"col\": 6}}, {\"id\": \"vjTFcHvd8t\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"PSigi4KIYa\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Losses</b></span>\", \"col\": 12}}, {\"id\": \"DnkxUkcep1\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Downtime Pareto by Reason\", \"col\": 6}}, {\"id\": \"8eFQzyAgYG\", \"type\": \"chart\", \"data\": {\"chart_name\": \"MTBF and MTTR by Machine\", \"col\": 6}}, {\"id\": \"-Vat150DDj\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"VREPrNyKor\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Suggestions and Flow</b></span>\", \"col\": 12}}, {\"id\": \"Mnh-h_Gs9h\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Suggestion Status by Category\", \"col\": 6}}, {\"id\": \"PzEAsPPt2M\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Process Throughput per Day\", \"col\": 6}}, {\"id\": \"adS6rvePrs\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"TVuIlqePNR\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Shortcuts</b></span>\", \"col\": 12}}, {\"id\": \"EU9u2bibIm\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Floor View\", \"col\": 4}}, {\"id\": \"RIer3VLxdN\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"OEE Trend\", \"col\": 4}}, {\"id\": \"u_sF5ofNQB\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Downtime Pareto\", \"col\": 4}}, {\"id\": \"RpumzWFNVS\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"MTBF and MTTR\", \"col\": 4}}, {\"id\": \"5lrWDZJxWJ\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Suggestion Status\", \"col\": 4}}, {\"id\": \"FL653rh9nS\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Plant Dashboard\", \"col\": 4}}, {\"id\": \"2CrevC9Xvy\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"TA4R3USPvX\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Reports and Masters</b></span>\", \"col\": 12}}, {\"id\": \"6hhfAhwyr6\", \"type\": \"card\", \"data\": {\"card_name\": \"Performance\", \"col\": 3}}, {\"id\": \"tvBWFECsbp\", \"type\": \"card\", \"data\": {\"card_name\": \"Downtime\", \"col\": 3}}, {\"id\": \"nlGFEQHHOn\", \"type\": \"card\", \"data\": {\"card_name\": \"Suggestions\", \"col\": 3}}, {\"id\": \"pmJdTw_n5K\", \"type\": \"card\", \"data\": {\"card_name\": \"Floor\", \"col\": 3}}]",
+ "creation": "2026-10-31 12:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "dashboard",
+ "idx": 0,
+ "indicator_color": "blue",
+ "is_hidden": 0,
+ "label": "FoaMES Supervisor",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Performance",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "OEE Period",
+   "link_count": 0,
+   "link_to": "OEE Period",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "OEE Trend",
+   "link_count": 0,
+   "link_to": "OEE Trend",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Process Throughput",
+   "link_count": 0,
+   "link_to": "Process Throughput",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Process Event Log",
+   "link_count": 0,
+   "link_to": "Process Event Log",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Downtime",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Downtime Record",
+   "link_count": 0,
+   "link_to": "Downtime Record",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Downtime Reason",
+   "link_count": 0,
+   "link_to": "Downtime Reason",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Downtime Pareto",
+   "link_count": 0,
+   "link_to": "Downtime Pareto",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "MTBF and MTTR",
+   "link_count": 0,
+   "link_to": "MTBF and MTTR",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Suggestions",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Agent Suggestion",
+   "link_count": 0,
+   "link_to": "Agent Suggestion",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Suggestion Status",
+   "link_count": 0,
+   "link_to": "Suggestion Status",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Floor",
+   "link_count": 3,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Floor View",
+   "link_count": 0,
+   "link_to": "floor-view",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Machine",
+   "link_count": 0,
+   "link_to": "Machine",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Machine Event",
+   "link_count": 0,
+   "link_to": "Machine Event",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-10-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "FoaMES Supervisor",
+ "number_cards": [
+  {
+   "label": "OEE Last 7 Days",
+   "number_card_name": "OEE Last 7 Days"
+  },
+  {
+   "label": "Machines Running",
+   "number_card_name": "Machines Running"
+  },
+  {
+   "label": "Open Stoppages",
+   "number_card_name": "Open Stoppages"
+  },
+  {
+   "label": "Open Suggestions",
+   "number_card_name": "Open Suggestions"
+  }
+ ],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "",
+ "roles": [
+  {
+   "role": "FoaMES Supervisor"
+  },
+  {
+   "role": "FoaMES Engineer"
+  }
+ ],
+ "sequence_id": 21.0,
+ "shortcuts": [
+  {
+   "color": "Blue",
+   "doc_view": "",
+   "label": "Floor View",
+   "link_to": "floor-view",
+   "type": "Page"
+  },
+  {
+   "color": "Blue",
+   "doc_view": "",
+   "label": "OEE Trend",
+   "link_to": "OEE Trend",
+   "report_ref_doctype": "OEE Period",
+   "type": "Report"
+  },
+  {
+   "color": "Red",
+   "doc_view": "",
+   "label": "Downtime Pareto",
+   "link_to": "Downtime Pareto",
+   "report_ref_doctype": "Downtime Record",
+   "type": "Report"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "",
+   "label": "MTBF and MTTR",
+   "link_to": "MTBF and MTTR",
+   "report_ref_doctype": "Downtime Record",
+   "type": "Report"
+  },
+  {
+   "color": "Yellow",
+   "doc_view": "",
+   "label": "Suggestion Status",
+   "link_to": "Suggestion Status",
+   "report_ref_doctype": "Agent Suggestion",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "",
+   "label": "Plant Dashboard",
+   "link_to": "FoaMES Plant",
+   "type": "Dashboard"
+  }
+ ],
+ "title": "FoaMES Supervisor"
+}
