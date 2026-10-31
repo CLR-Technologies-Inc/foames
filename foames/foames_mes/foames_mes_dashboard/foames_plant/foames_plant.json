@@ -1,0 +1,64 @@
+{
+ "cards": [
+  {
+   "card": "Machines Running"
+  },
+  {
+   "card": "Machines Down"
+  },
+  {
+   "card": "Machines Without Signal"
+  },
+  {
+   "card": "Open Stoppages"
+  },
+  {
+   "card": "OEE Last 7 Days"
+  },
+  {
+   "card": "Open Suggestions"
+  }
+ ],
+ "charts": [
+  {
+   "chart": "OEE Trend by Machine",
+   "width": "Full"
+  },
+  {
+   "chart": "OEE Trend by Line",
+   "width": "Half"
+  },
+  {
+   "chart": "Downtime Pareto by Reason",
+   "width": "Half"
+  },
+  {
+   "chart": "MTBF and MTTR by Machine",
+   "width": "Half"
+  },
+  {
+   "chart": "Downtime Minutes per Day",
+   "width": "Half"
+  },
+  {
+   "chart": "Suggestion Status by Category",
+   "width": "Half"
+  },
+  {
+   "chart": "Process Throughput per Day",
+   "width": "Half"
+  }
+ ],
+ "creation": "2026-10-31 12:00:00.000000",
+ "dashboard_name": "FoaMES Plant",
+ "docstatus": 0,
+ "doctype": "Dashboard",
+ "idx": 0,
+ "is_default": 0,
+ "is_standard": 1,
+ "modified": "2026-10-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "FoaMES Plant",
+ "owner": "Administrator"
+}

@@ -48,6 +48,7 @@ The full guide, including roles, the scheduler, running the gateways and a smoke
 | [docs/ignition.md](docs/ignition.md) | Connecting Ignition SCADA |
 | [docs/floor-view.md](docs/floor-view.md) | The Floor View, downtime and Agent Suggestions |
 | [docs/oee.md](docs/oee.md) | How OEE is computed and how to set a machine up for it |
+| [docs/dashboards.md](docs/dashboards.md) | Role workspaces, dashboards, number cards and the script reports (OEE trends, downtime Pareto, MTBF and MTTR, suggestions, outbox health, process throughput) |
 | [AGENTS.md](AGENTS.md) | For coding agents and developers building on FoaMES: invariants, hooks, API, tests |
 | [docs/agents/floor-agent.md](docs/agents/floor-agent.md) | For an agent reading the floor and raising suggestions at run time |
 
