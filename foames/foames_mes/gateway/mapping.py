@@ -71,8 +71,14 @@ def normalise_event(raw: dict, source: str = "Webhook") -> dict:
 			raise EventError("a measurement needs a name")
 		event["value"] = _number(raw.get("value"), "measurement value")
 	elif event_type == "Alarm":
-		event["value"] = _number(raw.get("value") or raw.get("code") or 0, "alarm code")
-		event["text"] = event["text"] or str(raw.get("code") or "")
+		# The code is often text ("E42"). A numeric code or value is kept as the value; otherwise the
+		# alarm is on (1) and the code goes into the text.
+		code = raw.get("code")
+		value = raw.get("value")
+		event["value"] = _number_or_none(value) if value is not None else _number_or_none(code)
+		if event["value"] is None:
+			event["value"] = 1.0
+		event["text"] = event["text"] or (str(code) if code is not None else "")
 	return event
 
 
@@ -147,3 +153,12 @@ def _number(value, label) -> float:
 		return float(value)
 	except (TypeError, ValueError):
 		raise EventError(f"{label} must be a number, got {value!r}")
+
+
+def _number_or_none(value) -> float | None:
+	if isinstance(value, bool):
+		return float(value)
+	try:
+		return float(value)
+	except (TypeError, ValueError):
+		return None

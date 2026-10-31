@@ -22,8 +22,10 @@ class DowntimeRecord(Document):
 			self.duration_minutes = None
 
 	def close(self, at):
+		# Called while a machine event is processed, possibly by the signed webhook (Guest): the
+		# machine state has already moved, so the downtime closes with the same authority.
 		self.end_time = at
-		self.save()
+		self.save(ignore_permissions=True)
 
 
 def open_downtime(machine: str, at) -> str:

@@ -28,7 +28,14 @@ def ingest_machine_events():
 		data = json.loads(body or b"{}")
 	except ValueError:
 		frappe.throw(_("Body must be JSON"))
-	events = data.get("events") if isinstance(data, dict) and "events" in data else [data]
+	if isinstance(data, list):
+		events = data
+	elif isinstance(data, dict) and "events" in data:
+		events = data.get("events")
+	else:
+		events = [data]
+	if not isinstance(events, list):
+		frappe.throw(_("events must be a list"))
 	source = "Webhook" if frappe.session.user == "Guest" else "Manual"
 	return record_events(events, source=source)
 
