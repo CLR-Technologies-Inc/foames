@@ -13,13 +13,14 @@ import json
 
 import frappe
 from frappe import _
+from frappe.utils.password import get_decrypted_password
 
 from foames.foames_mes.doctype.machine.machine import get_machine_by_source
 from foames.foames_mes.gateway.mapping import EventError, normalise_event
 from foames.foames_mes.signing import SIGNATURE_HEADER, TIMESTAMP_HEADER, verify
 
 
-@frappe.whitelist(allow_guest=True, methods=["POST"])
+@frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep
 def ingest_machine_events():
 	body = frappe.request.get_data() if frappe.request else b""
 	if not _authorised(body):
@@ -28,7 +29,14 @@ def ingest_machine_events():
 		data = json.loads(body or b"{}")
 	except ValueError:
 		frappe.throw(_("Body must be JSON"))
-	events = data.get("events") if isinstance(data, dict) and "events" in data else [data]
+	if isinstance(data, list):
+		events = data
+	elif isinstance(data, dict) and "events" in data:
+		events = data.get("events")
+	else:
+		events = [data]
+	if not isinstance(events, list):
+		frappe.throw(_("events must be a list"))
 	source = "Webhook" if frappe.session.user == "Guest" else "Manual"
 	return record_events(events, source=source)
 
@@ -37,7 +45,7 @@ def _authorised(body: bytes) -> bool:
 	roles = set(frappe.get_roles())
 	if frappe.session.user != "Guest" and roles & {"FoaMES Operator", "FoaMES Engineer", "System Manager"}:
 		return True
-	secret = frappe.utils.password.get_decrypted_password(
+	secret = get_decrypted_password(
 		"Machine Data Settings", "Machine Data Settings", "webhook_secret", raise_exception=False
 	)
 	if not secret:
@@ -63,7 +71,7 @@ def record_events(events: list[dict], source: str = "Manual") -> dict:
 
 
 def record_event(raw: dict, source: str = "Manual") -> str:
-	event = normalise_event(raw, source)
+	event = normalise_event(raw, source, tz=site_timezone())
 	machine = get_machine_by_source(event.pop("source_id"))
 	if not machine:
 		raise EventError(f"no enabled machine has source id {raw.get('machine') or raw.get('source_id')!r}")
@@ -73,6 +81,18 @@ def record_event(raw: dict, source: str = "Manual") -> str:
 	)
 	doc.insert(ignore_permissions=True)
 	return doc.name
+
+
+def site_timezone():
+	"""The zone Frappe stores naive datetimes in, so gateway timestamps compare with now_datetime()."""
+	from zoneinfo import ZoneInfo
+
+	from frappe.utils import get_system_timezone
+
+	try:
+		return ZoneInfo(get_system_timezone())
+	except Exception:
+		return None
 
 
 # Current job -------------------------------------------------------------------------------------

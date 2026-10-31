@@ -80,6 +80,8 @@ class S4HANAOutbox(Document):
 				)
 			else:
 				self.next_attempt_at = add_to_date(now_datetime(), seconds=outbox.retry_delay(self.attempts))
+		if self.status == "Failed":
+			self.next_attempt_at = None
 		self.flags.verify_first = None
 		self.save(ignore_permissions=True)
 

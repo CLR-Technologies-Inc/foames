@@ -105,6 +105,11 @@ def receive_raw_material(qty: float):
 	make_stock_entry(item_code=RAW_MATERIAL, qty=qty, to_warehouse=STORES, rate=10, company=COMPANY)
 
 
+# ERPNext refuses a Job Card time log that overlaps another on the same workstation once the
+# workstation's capacity is used up. Tests post logs for the same half hour, so the fixture has room.
+WORKSTATION_CAPACITY = 100
+
+
 def ensure_workstation_and_operation():
 	if not frappe.db.exists("Workstation", WORKSTATION):
 		frappe.get_doc(
@@ -112,10 +117,12 @@ def ensure_workstation_and_operation():
 				"doctype": "Workstation",
 				"workstation_name": WORKSTATION,
 				"hour_rate": 50,
-				"production_capacity": 1,
+				"production_capacity": WORKSTATION_CAPACITY,
 				"working_hours": [{"start_time": "06:00:00", "end_time": "22:00:00", "enabled": 1}],
 			}
 		).insert(ignore_permissions=True)
+	elif frappe.db.get_value("Workstation", WORKSTATION, "production_capacity") != WORKSTATION_CAPACITY:
+		frappe.db.set_value("Workstation", WORKSTATION, "production_capacity", WORKSTATION_CAPACITY)
 	if not frappe.db.exists("Operation", OPERATION):
 		frappe.get_doc({"doctype": "Operation", "name": OPERATION, "workstation": WORKSTATION}).insert(
 			ignore_permissions=True
