@@ -10,6 +10,7 @@
   "outbox_paused",
   "column_break_postings",
   "submit_job_cards_when_complete",
+  "roll_up_counts_to_job_cards",
   "floor_section",
   "show_job_cards_on_floor",
   "column_break_floor",
@@ -50,6 +51,14 @@
    "description": "Default for time-log postings that do not say: submit the Job Card once its completed quantity reaches the quantity it is for."
   },
   {
+   "fieldname": "roll_up_counts_to_job_cards",
+   "fieldtype": "Check",
+   "label": "Roll Up Machine Counts to Job Cards",
+   "default": "0",
+   "depends_on": "enable_postings",
+   "description": "Every few minutes, and whenever a machine's current job changes, queue the machine's good and scrap counts and its running time since the last roll-up as time logs on the Job Card named by the machine's Current Job Reference."
+  },
+  {
    "fieldname": "floor_section",
    "fieldtype": "Section Break",
    "label": "Floor"
@@ -88,7 +97,7 @@
  "index_web_pages_for_search": 0,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-31 05:00:00.000000",
+ "modified": "2026-10-31 07:00:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES Adapters",
  "name": "ERPNext Adapter Settings",

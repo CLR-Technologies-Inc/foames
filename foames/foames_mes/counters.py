@@ -8,6 +8,11 @@ counter. A first reading, a reset, or a reading older than the last one yields z
 rollover is handled only when the machine's rollover value is known. No Frappe dependency.
 """
 
+# Counter names the gateways and machines use for good and scrapped production. Any other counter
+# name is stored and shown but counts towards neither.
+GOOD_COUNTERS = ("good", "count", "total", "parts")
+SCRAP_COUNTERS = ("scrap", "reject", "bad", "ng")
+
 
 def counter_delta(previous: float | None, current: float, rollover: int | float | None = None) -> float:
 	"""Production between two readings of a running counter."""
@@ -24,3 +29,10 @@ def counter_delta(previous: float | None, current: float, rollover: int | float 
 
 def minutes_between(start, end) -> float:
 	return max((end - start).total_seconds() / 60.0, 0.0)
+
+
+def good_and_scrap(totals: dict[str, float]) -> tuple[float, float]:
+	"""Good and scrap production from per-counter totals such as {"good": 120, "scrap": 3}."""
+	good = sum(v or 0 for k, v in totals.items() if k in GOOD_COUNTERS)
+	scrap = sum(v or 0 for k, v in totals.items() if k in SCRAP_COUNTERS)
+	return float(good), float(scrap)
