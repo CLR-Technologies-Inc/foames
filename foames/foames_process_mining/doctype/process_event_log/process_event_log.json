@@ -1,0 +1,198 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-31 05:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "status",
+  "cb_head",
+  "from_time",
+  "to_time",
+  "include_built_in",
+  "sb_sources",
+  "sources",
+  "sb_result",
+  "event_count",
+  "case_count",
+  "variant_count",
+  "cb_result",
+  "activity_count",
+  "extracted_on",
+  "extraction_note",
+  "sb_data",
+  "events_json"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nExtracted\nFailed",
+   "default": "Draft",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "from_time",
+   "fieldtype": "Datetime",
+   "label": "From",
+   "description": "Leave empty for no lower bound."
+  },
+  {
+   "fieldname": "to_time",
+   "fieldtype": "Datetime",
+   "label": "To",
+   "description": "Leave empty for no upper bound."
+  },
+  {
+   "fieldname": "include_built_in",
+   "fieldtype": "Check",
+   "label": "Include built-in machine and downtime events",
+   "default": "1"
+  },
+  {
+   "fieldname": "sb_sources",
+   "fieldtype": "Section Break",
+   "label": "Sources"
+  },
+  {
+   "fieldname": "sources",
+   "fieldtype": "Table",
+   "label": "Event Log Sources",
+   "options": "Process Event Log Source",
+   "description": "Leave empty to use every enabled Event Log Source."
+  },
+  {
+   "fieldname": "sb_result",
+   "fieldtype": "Section Break",
+   "label": "Result"
+  },
+  {
+   "fieldname": "event_count",
+   "fieldtype": "Int",
+   "label": "Events",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "case_count",
+   "fieldtype": "Int",
+   "label": "Cases",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "variant_count",
+   "fieldtype": "Int",
+   "label": "Variants",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_result",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "activity_count",
+   "fieldtype": "Int",
+   "label": "Activities",
+   "read_only": 1
+  },
+  {
+   "fieldname": "extracted_on",
+   "fieldtype": "Datetime",
+   "label": "Extracted On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "extraction_note",
+   "fieldtype": "Small Text",
+   "label": "Note",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_data",
+   "fieldtype": "Section Break",
+   "label": "Events",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "events_json",
+   "fieldtype": "JSON",
+   "label": "Events (JSON)",
+   "read_only": 1,
+   "description": "The extracted events. Export to XES or OCEL from the toolbar for external tools."
+  }
+ ],
+ "links": [],
+ "modified": "2026-10-31 05:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Process Mining",
+ "name": "Process Event Log",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "format:PEL-{YYYY}-{#####}",
+ "naming_rule": "Expression"
+}
