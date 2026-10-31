@@ -56,7 +56,8 @@ def record_events(events: list[dict], source: str = "Manual") -> dict:
 			accepted.append(name)
 		except EventError as e:
 			rejected.append({"event": raw, "reason": str(e)})
-		except frappe.DuplicateEntryError:
+		except (frappe.DuplicateEntryError, frappe.UniqueValidationError):
+			# The event key is a unique column, so Frappe raises UniqueValidationError for a repeat.
 			rejected.append({"event": raw, "reason": "duplicate event id"})
 	return {"accepted": accepted, "rejected": rejected}
 
