@@ -98,6 +98,14 @@ elif tag in ("good", "scrap"):
 
 The event shape is the same as for any other source; see [machine-data.md](machine-data.md).
 
+## Checking that data arrives
+
+1. In FoaMES, open the **Machine Event** list, filter on the machine and sort by timestamp. Events from the Sparkplug and MQTT gateways have source MQTT, OPC UA polls have source OPC UA, and gateway-script posts have source Webhook. **Processed** is ticked once the event has moved the machine's state or produced a delta; a **Processing Note** says why one was not.
+2. A metric that produced no event at all was rejected before it was stored. The gateways log rejections (an unknown machine source id, an unknown state string, a non-numeric count) to the bench logs under `foames.sparkplug`, `foames.mqtt` and `foames.opcua`. The webhook returns them in its response under `rejected`.
+3. The most common cause is the machine lookup: the Sparkplug device id, the MQTT topic segment or the script's `machine` field must equal the Machine's **Source ID** (which defaults to its code), and the Machine must not be disabled.
+4. For Sparkplug, check that a DBIRTH was seen since the gateway started. Metrics published by alias only cannot be decoded until the gateway has seen the birth certificate that names them; forcing a rebirth from Ignition (or restarting the Transmitter) fixes it.
+5. Counts show on the Floor View only after the second reading of a counter, because the first reading sets the baseline.
+
 ## What FoaMES does not do with Ignition
 
 - It does not write tags or send commands. Control stays in Ignition.

@@ -62,6 +62,71 @@ class TestOEEPeriod(IntegrationTestCase):
 		self.assertEqual((result["good_count"], result["scrap_count"]), (200, 10))
 		self.assertAlmostEqual(result["unknown_minutes"], 0)
 
+	def test_manual_downtime_counts_in_the_ledger(self):
+		# The machine reported Running at 08:00 and nothing else; an operator records a 09:00-10:00 stoppage.
+		record_events(
+			[{"machine": "T-OEE", "type": "State", "state": "Running", "timestamp": "2026-10-22T08:00:00"}]
+		)
+		frappe.get_doc(
+			{
+				"doctype": "Downtime Record",
+				"machine": "T-OEE",
+				"start_time": "2026-10-22 09:00:00",
+				"end_time": "2026-10-22 10:00:00",
+				"source": "Manual",
+			}
+		).insert()
+		result = get_oee("T-OEE", "2026-10-22 08:00:00", "2026-10-22 12:00:00", planned_minutes=240)
+		self.assertAlmostEqual(result["run_minutes"], 180)
+		self.assertAlmostEqual(result["availability"], 75, places=3)
+		# With a planned reason the same hour leaves the availability base instead.
+		frappe.db.set_value("Downtime Record", {"machine": "T-OEE", "source": "Manual"}, "reason", "T-PM")
+		result = get_oee("T-OEE", "2026-10-22 08:00:00", "2026-10-22 12:00:00", planned_minutes=240)
+		self.assertAlmostEqual(result["availability"], 100, places=3)
+
+	def test_stale_machine_gets_an_unknown_event_and_loses_run_time(self):
+		from frappe.utils import add_to_date, get_datetime, now_datetime
+
+		from foames.foames_mes.tasks import mark_stale_machines_unknown
+
+		now = now_datetime().replace(microsecond=0)
+		two_hours_ago = add_to_date(now, hours=-2)
+		record_events(
+			[
+				{
+					"machine": "T-OEE",
+					"type": "State",
+					"state": "Running",
+					"timestamp": two_hours_ago.isoformat(),
+				}
+			]
+		)
+		self.assertIn("T-OEE", mark_stale_machines_unknown())
+		event = frappe.get_doc(
+			"Machine Event", {"machine": "T-OEE", "source": "System", "event_type": "State"}
+		)
+		self.assertEqual(event.state, "Unknown")
+		minutes = frappe.db.get_single_value("Machine Data Settings", "stale_after_minutes") or 15
+		self.assertEqual(get_datetime(event.timestamp), add_to_date(two_hours_ago, minutes=minutes))
+		self.assertEqual(frappe.db.get_value("Machine", "T-OEE", "status"), "Unknown")
+		# A machine already Unknown is not marked again.
+		self.assertNotIn("T-OEE", mark_stale_machines_unknown())
+		result = get_oee("T-OEE", two_hours_ago, now, planned_minutes=120)
+		self.assertAlmostEqual(result["run_minutes"], minutes, places=3)
+		self.assertAlmostEqual(result["unknown_minutes"], 120 - minutes, places=3)
+
+	def test_daily_task_waits_for_a_window_to_end(self):
+		from frappe.utils import add_days, getdate, now_datetime
+
+		make_machine("T-NIGHT", scheduled_minutes_per_day=480, shift_start="22:00:00")
+		today = getdate(now_datetime())
+		# Today's night shift ends tomorrow morning: nothing is created for it yet.
+		self.assertFalse(any("T-NIGHT" in n for n in compute_daily_oee(today)))
+		# The default run looks two days back, so the shift that ended yesterday morning is created.
+		created = compute_daily_oee()
+		expected = f"OEE-T-NIGHT-{add_days(today, -2)} 22:00:00"
+		self.assertIn(expected, created)
+
 	def test_daily_task_creates_one_period_per_machine(self):
 		created = compute_daily_oee("2026-10-21")
 		self.assertTrue(any("T-OEE" in n for n in created))

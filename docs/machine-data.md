@@ -1,6 +1,6 @@
 # Machine data: how events reach FoaMES
 
-FoaMES takes machine events four ways. All three end in the same place: a Machine Event record that is processed into machine state, downtime and counter deltas.
+FoaMES takes machine events four ways. All four end in the same place: a Machine Event record that is processed into machine state, downtime and counter deltas.
 
 | Path | How | Needs |
 | --- | --- | --- |
