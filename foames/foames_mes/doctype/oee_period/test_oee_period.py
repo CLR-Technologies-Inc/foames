@@ -101,10 +101,16 @@ class TestOEEPeriod(IntegrationTestCase):
 				}
 			]
 		)
+		self.assertEqual(frappe.db.get_value("Machine", "T-OEE", "status"), "Running")
+		self.assertEqual(get_datetime(frappe.db.get_value("Machine", "T-OEE", "last_seen")), two_hours_ago)
 		self.assertIn("T-OEE", mark_stale_machines_unknown())
-		event = frappe.get_doc(
-			"Machine Event", {"machine": "T-OEE", "source": "System", "event_type": "State"}
+		events = frappe.get_all(
+			"Machine Event",
+			filters={"machine": "T-OEE", "source": "System", "event_type": "State"},
+			fields=["name", "state", "timestamp"],
 		)
+		self.assertEqual(len(events), 1, events)
+		event = events[0]
 		self.assertEqual(event.state, "Unknown")
 		minutes = frappe.db.get_single_value("Machine Data Settings", "stale_after_minutes") or 15
 		self.assertEqual(get_datetime(event.timestamp), add_to_date(two_hours_ago, minutes=minutes))
