@@ -61,7 +61,8 @@ class TestInboundIDocTypes(IntegrationTestCase):
 			("S4HANA", "Item", "FG-1"),
 		)
 		summary = json.loads(doc.summary)
-		self.assertEqual((summary["base_unit"], summary["description"]), ("KG", "Foam"))
+		# The summary carries the first description segment (German comes first in the fixture).
+		self.assertEqual((summary["base_unit"], summary["description"]), ("KG", "Schaum"))
 		self.assertIn("E1MARAM", json.loads(doc.segments))
 
 	def test_batch_master_records_a_batch_reference(self):

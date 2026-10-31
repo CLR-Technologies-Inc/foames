@@ -21,6 +21,8 @@ class TestFoaMESSettings(IntegrationTestCase):
 		settings.default_erp_system = "Not An ERP"
 		with self.assertRaises(frappe.ValidationError):
 			settings.save()
+		# A failed save leaves the document with a new modified time, so load it again.
+		settings.reload()
 		for key in get_adapters():
 			settings.default_erp_system = key
 			settings.save()

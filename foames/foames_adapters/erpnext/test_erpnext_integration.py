@@ -158,9 +158,12 @@ class TestJobCardAndStatusPostings(ERPNextTestCase):
 			),
 			enqueue("Manufacture", {"work_order": wo.name, "qty": 2}, f"{wo.name}:manufacture", wo.name),
 		]
-		self.assertEqual(self.run_outbox(), 4)
+		sent = self.run_outbox()
+		# Check the statuses before the count, so a rejected posting fails with ERPNext's message
+		# rather than with a bare count.
 		for name in postings:
 			self.assertEqual(self.outbox(name).status, "Posted", f"{name}: {self.outbox(name).last_error}")
+		self.assertEqual(sent, 4)
 		card = frappe.get_doc("Job Card", job_card)
 		self.assertEqual(card.total_completed_qty, 2)
 		self.assertEqual(card.docstatus, 1)
