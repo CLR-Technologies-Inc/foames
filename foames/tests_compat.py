@@ -15,6 +15,7 @@ class IntegrationTestCase(_IntegrationTestCase):
 	"""Rolls each test back to a savepoint, so tests in one class do not see each other's records."""
 
 	SAVEPOINT = "foames_test"
+	_singles = None
 
 	def setUp(self):
 		super().setUp()
@@ -32,7 +33,23 @@ class IntegrationTestCase(_IntegrationTestCase):
 			# does this on some sites). Roll the whole transaction back instead: the class setup
 			# committed, so this still leaves only the records the class started with.
 			frappe.db.rollback()
+		self._forget_rolled_back_singles()
 		super().tearDown()
+
+	@classmethod
+	def _forget_rolled_back_singles(cls):
+		"""Frappe caches single values and documents outside the transaction, so after a rollback
+		they still show the writes the test made (the next save then fails with
+		TimestampMismatchError). Drop them for this app's singles."""
+		if cls._singles is None:
+			cls._singles = frappe.get_all(
+				"DocType", {"issingle": 1, "module": ("in", frappe.get_module_list("foames"))}, pluck="name"
+			)
+		value_cache = getattr(frappe.db, "value_cache", None)
+		for doctype in cls._singles:
+			frappe.clear_document_cache(doctype, doctype)
+			if isinstance(value_cache, dict):
+				value_cache.pop(doctype, None)
 
 
 __all__ = ["IntegrationTestCase"]

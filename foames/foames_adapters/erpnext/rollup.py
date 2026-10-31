@@ -21,6 +21,7 @@ from __future__ import annotations
 import json
 
 import frappe
+from frappe.query_builder.functions import Sum
 from frappe.utils import get_datetime, now_datetime
 
 from foames.foames_adapters.erpnext import ADAPTER_KEY, erpnext_installed
@@ -93,20 +94,21 @@ def roll_up(machine, job_card: str | None = None, until=None, since=None) -> str
 	if end <= start:
 		return None
 
-	totals = {
-		r.counter_name: r.total or 0
-		for r in frappe.get_all(
-			"Machine Event",
-			filters=[
-				["machine", "=", machine.name],
-				["event_type", "=", "Count"],
-				["timestamp", ">", start],
-				["timestamp", "<=", end],
-			],
-			fields=["counter_name", "sum(delta) as total"],
-			group_by="counter_name",
+	# Query builder rather than a "sum(...)" string: Frappe v16 refuses SQL functions as strings.
+	event = frappe.qb.DocType("Machine Event")
+	rows = (
+		frappe.qb.from_(event)
+		.select(event.counter_name, Sum(event.delta).as_("total"))
+		.where(
+			(event.machine == machine.name)
+			& (event.event_type == "Count")
+			& (event.timestamp > start)
+			& (event.timestamp <= end)
 		)
-	}
+		.groupby(event.counter_name)
+		.run(as_dict=True)
+	)
+	totals = {r.counter_name: r.total or 0 for r in rows}
 	intervals = running_intervals(
 		state_before(machine.name, start), state_events(machine.name, start, end), start, end
 	)

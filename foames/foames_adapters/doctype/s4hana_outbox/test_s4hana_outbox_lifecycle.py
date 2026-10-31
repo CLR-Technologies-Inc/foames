@@ -25,7 +25,7 @@ from foames.foames_adapters.report.s4hana_outbox_reconciliation.s4hana_outbox_re
 from foames.foames_adapters.s4hana import outbox
 from foames.foames_adapters.s4hana.fake import FakeS4HANA, csrf, ok, sap_error
 from foames.tests_compat import IntegrationTestCase
-from foames.tests_helpers import as_user, make_user
+from foames.tests_helpers import as_user, enforcing_roles, make_user
 
 
 def rejected():
@@ -103,7 +103,7 @@ class TestRequeueAndCancel(OutboxLifecycleTestCase):
 	def test_requeue_and_cancel_are_for_system_managers(self):
 		name = self.queue("perm-1")
 		make_user("foames-outbox-engineer@example.com", "FoaMES Engineer")
-		with as_user("foames-outbox-engineer@example.com"):
+		with as_user("foames-outbox-engineer@example.com"), enforcing_roles():
 			with self.assertRaises(frappe.PermissionError):
 				frappe.get_doc("S4HANA Outbox", name).cancel_posting()
 			with self.assertRaises(frappe.PermissionError):

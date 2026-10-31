@@ -66,9 +66,10 @@ class TestDowntimeByReason(IntegrationTestCase):
 		self.downtime("2026-10-20 15:00:00", None)
 		self.assertEqual(downtime_by_reason("T-FL-DT", self.since, self.until), {"T-FL-JAM": 60})
 
-	def test_downtime_without_a_reason_is_not_attributed(self):
+	def test_downtime_without_a_reason_is_reported_under_none(self):
+		# Unclassified downtime still counts as loss; the floor shows it as such.
 		self.downtime("2026-10-20 09:00:00", "2026-10-20 10:00:00", reason=None)
-		self.assertEqual(downtime_by_reason("T-FL-DT", self.since, self.until), {})
+		self.assertEqual(downtime_by_reason("T-FL-DT", self.since, self.until), {None: 60})
 
 	def test_other_machines_are_ignored(self):
 		make_machine("T-FL-DT-2")

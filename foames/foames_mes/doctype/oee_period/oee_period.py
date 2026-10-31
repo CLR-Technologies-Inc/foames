@@ -118,6 +118,7 @@ def downtime_windows(machine: str, start, end) -> list[tuple]:
 
 
 def counts_in(machine: str, start, end) -> tuple[float, float]:
+	# Query builder rather than a "sum(...)" string: Frappe v16 refuses SQL functions as strings.
 	event = frappe.qb.DocType("Machine Event")
 	rows = (
 		frappe.qb.from_(event)

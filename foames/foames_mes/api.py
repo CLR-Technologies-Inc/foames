@@ -20,7 +20,7 @@ from foames.foames_mes.gateway.mapping import EventError, normalise_event
 from foames.foames_mes.signing import SIGNATURE_HEADER, TIMESTAMP_HEADER, verify
 
 
-@frappe.whitelist(allow_guest=True, methods=["POST"])
+@frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep
 def ingest_machine_events():
 	body = frappe.request.get_data() if frappe.request else b""
 	if not _authorised(body):

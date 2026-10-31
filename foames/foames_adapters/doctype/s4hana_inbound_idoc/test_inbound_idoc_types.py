@@ -53,7 +53,8 @@ class TestInboundIDocTypes(IntegrationTestCase):
 			(doc.status, doc.message_type, doc.idoc_type, doc.sender),
 			("Processed", "MATMAS", "MATMAS05", "S4HCLNT100"),
 		)
-		self.assertEqual(doc.name, "S4HCLNT100-0000000000000777")
+		# The IDoc number is kept without its leading zeros.
+		self.assertEqual((doc.name, doc.idoc_number), ("S4HCLNT100-777", "777"))
 		reference = self.reference_of(name)
 		self.assertEqual(
 			(reference.erp_system, reference.reference_type, reference.external_id),
@@ -127,10 +128,10 @@ class TestReceiveIDocEndpoint(IntegrationTestCase):
 
 	def test_integration_user_posts_idocs(self):
 		result = self.post(MATMAS)
-		self.assertEqual(result, {"received": ["S4HCLNT100-0000000000000777"], "duplicates": []})
+		self.assertEqual(result, {"received": ["S4HCLNT100-777"], "duplicates": []})
 		result = self.post(MATMAS)
-		self.assertEqual(result, {"received": [], "duplicates": ["S4HCLNT100-0000000000000777"]})
-		doc = frappe.get_doc("S4HANA Inbound IDoc", "S4HCLNT100-0000000000000777")
+		self.assertEqual(result, {"received": [], "duplicates": ["S4HCLNT100-777"]})
+		doc = frappe.get_doc("S4HANA Inbound IDoc", "S4HCLNT100-777")
 		self.assertEqual(doc.status, "Processed")
 		self.assertTrue(doc.external_reference)
 

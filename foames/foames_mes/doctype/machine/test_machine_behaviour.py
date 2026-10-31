@@ -157,3 +157,13 @@ class TestStaleMachines(IntegrationTestCase):
 		machine = make_machine("T-STALE-NEVER")
 		machine.db_set("status", "Running", update_modified=False)
 		self.assertNotIn("T-STALE-NEVER", mark_stale_machines_unknown())
+
+
+class TestMachineDefaults(IntegrationTestCase):
+	def test_shift_start_stays_empty_unless_set(self):
+		# Frappe fills an empty Time field with the current time on insert. An empty shift start
+		# means the whole day is scheduled, so the daily OEE window would silently start "now".
+		make_machine("T-DEF-NOSHIFT")
+		self.assertIsNone(frappe.db.get_value("Machine", "T-DEF-NOSHIFT", "shift_start"))
+		make_machine("T-DEF-SHIFT", shift_start="06:00:00")
+		self.assertTrue(frappe.db.get_value("Machine", "T-DEF-SHIFT", "shift_start"))

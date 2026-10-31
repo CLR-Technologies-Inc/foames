@@ -10,7 +10,7 @@ from foames.foames_adapters.s4hana.entities import DEFAULT_ENTITIES
 from foames.foames_adapters.s4hana.fake import FakeS4HANA, csrf, sap_error
 from foames.foames_adapters.s4hana.odata import ODataClient
 from foames.tests_compat import IntegrationTestCase
-from foames.tests_helpers import as_user, make_user
+from foames.tests_helpers import as_user, enforcing_roles, make_user
 
 
 class TestS4HANASettingsConnection(IntegrationTestCase):
@@ -145,5 +145,6 @@ class TestConnectionCheck(IntegrationTestCase):
 
 	def test_only_system_managers_may_test(self):
 		make_user("foames-s4-engineer@example.com", "FoaMES Engineer")
-		with as_user("foames-s4-engineer@example.com"), self.assertRaises(frappe.PermissionError):
-			self.settings.test_connection()
+		with as_user("foames-s4-engineer@example.com"), enforcing_roles():
+			with self.assertRaises(frappe.PermissionError):
+				self.settings.test_connection()

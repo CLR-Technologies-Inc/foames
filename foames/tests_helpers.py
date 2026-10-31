@@ -45,11 +45,30 @@ def make_user(email, *roles):
 def as_user(email):
 	"""Run the block as another user, then return to Administrator."""
 	previous = frappe.session.user
-	frappe.set_user(email)
+	frappe.set_user(email)  # nosemgrep
 	try:
 		yield
 	finally:
-		frappe.set_user(previous)
+		frappe.set_user(previous)  # nosemgrep
+
+
+@contextmanager
+def enforcing_roles():
+	"""Run the block with frappe.only_for() checking roles.
+
+	Frappe skips that check while it runs tests, so a test of a role-guarded method has to switch
+	the test flag off around the call."""
+	flag = frappe.flags.in_test
+	module_flag = getattr(frappe, "in_test", None)
+	frappe.flags.in_test = False
+	if module_flag is not None:
+		frappe.in_test = False
+	try:
+		yield
+	finally:
+		frappe.flags.in_test = flag
+		if module_flag is not None:
+			frappe.in_test = module_flag
 
 
 @contextmanager

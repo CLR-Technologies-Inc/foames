@@ -147,7 +147,9 @@ class TestRecordEvents(IntegrationTestCase):
 		self.assertTrue(any("no enabled machine" in r for r in reasons))
 		self.assertTrue(any("must be an object" in r for r in reasons))
 		self.assertTrue(any("unknown machine state" in r for r in reasons))
-		self.assertEqual(result["rejected"][3]["event"], "not an object")
+		# Rejections keep the order of the batch.
+		self.assertEqual(result["rejected"][2]["event"], "not an object")
+		self.assertEqual(result["rejected"][3]["event"]["state"], "purple")
 
 	def test_empty_and_none_batches(self):
 		self.assertEqual(record_events([]), {"accepted": [], "rejected": []})

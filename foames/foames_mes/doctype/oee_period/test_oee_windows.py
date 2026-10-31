@@ -45,7 +45,8 @@ class TestOEEPeriodValidation(IntegrationTestCase):
 
 	def test_ideal_cycle_defaults_to_the_machine(self):
 		self.assertEqual(period().insert().ideal_cycle_seconds, 30)
-		self.assertEqual(period(ideal_cycle_seconds=45).insert().ideal_cycle_seconds, 45)
+		later = period(start=f"{DAY} 09:00:00", end=f"{DAY} 10:00:00", ideal_cycle_seconds=45)
+		self.assertEqual(later.insert().ideal_cycle_seconds, 45)
 
 	def test_period_without_any_signal_is_all_unknown(self):
 		doc = period().insert()
