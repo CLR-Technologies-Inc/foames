@@ -64,7 +64,11 @@ class FloorView {
 						m.current_job
 							? `<div>${__("Job")} ${frappe.utils.escape_html(
 									m.current_job.external_id || m.current_job.reference
-								)}${m.current_job.label ? " · " + frappe.utils.escape_html(m.current_job.label) : ""}</div>`
+							  )}${
+									m.current_job.label
+										? " · " + frappe.utils.escape_html(m.current_job.label)
+										: ""
+							  }</div>`
 							: ""
 					}
 					<div>${
