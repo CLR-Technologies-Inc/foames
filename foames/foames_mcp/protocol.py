@@ -84,7 +84,8 @@ JSON_TYPES = {
 
 def validate_arguments(schema: dict, arguments: Any) -> dict:
 	"""Check `arguments` against a tool's (deliberately simple) JSON schema: required keys, no
-	unknown keys, the declared `type` of each property and its `enum`. Returns the arguments."""
+	unknown keys, the declared `type` of each property, its `enum` and its numeric `minimum` and
+	`maximum`. Returns the arguments."""
 	if arguments is None:
 		arguments = {}
 	if not isinstance(arguments, dict):
@@ -119,6 +120,11 @@ def _check_type(key: str, value: Any, spec: dict):
 			raise InvalidParams(f"argument {key} must be of type {types}")
 	if "enum" in spec and value not in spec["enum"]:
 		raise InvalidParams(f"argument {key} must be one of {', '.join(map(str, spec['enum']))}")
+	if isinstance(value, int | float) and not isinstance(value, bool):
+		if "minimum" in spec and value < spec["minimum"]:
+			raise InvalidParams(f"argument {key} must be at least {spec['minimum']}")
+		if "maximum" in spec and value > spec["maximum"]:
+			raise InvalidParams(f"argument {key} must be at most {spec['maximum']}")
 
 
 def format_result(value: Any) -> dict:

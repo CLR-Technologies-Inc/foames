@@ -137,6 +137,16 @@ class TestValidateArguments(unittest.TestCase):
 		)
 		self.assertEqual(validate_arguments(schema, None), {})
 
+	def test_numeric_bounds(self):
+		schema = TOOLS_BY_NAME["foames_get_floor_snapshot"].input_schema
+		self.assertEqual(validate_arguments(schema, {"days": 90}), {"days": 90})
+		with self.assertRaisesRegex(InvalidParams, "at most 90"):
+			validate_arguments(schema, {"days": 1000000})
+		with self.assertRaisesRegex(InvalidParams, "at least 1"):
+			validate_arguments(schema, {"days": 0})
+		with self.assertRaisesRegex(InvalidParams, "at least 1"):
+			validate_arguments(TOOLS_BY_NAME["foames_list_machines"].input_schema, {"limit": -5})
+
 	def test_union_types(self):
 		schema = TOOLS_BY_NAME["foames_mining_conformance"].input_schema
 		for model in ({"edges": []}, ["Setup", "Running"], "PEL-2026-00001"):
@@ -304,6 +314,12 @@ class TestBridge(unittest.TestCase):
 		path, headers, _ = self.site.requests[-1]
 		self.assertEqual(path, bridge.DEFAULT_PATH)
 		self.assertEqual(headers["Authorization"], "token key:secret")
+
+	def test_errors_with_a_null_id_are_forwarded(self):
+		b = self.make_bridge()
+		response = json.loads(b.forward("[]"))
+		self.assertEqual(response["error"]["code"], INVALID_REQUEST)
+		self.assertIsNone(response["id"])
 
 	def test_notifications_get_no_reply(self):
 		b = self.make_bridge()

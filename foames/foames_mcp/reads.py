@@ -226,7 +226,7 @@ def downtime_by_reason(machine: str, since=None, until=None) -> dict:
 	since = get_datetime(since) if since else add_days(until, -1)
 	if until <= since:
 		frappe.throw(_("The window must end after it starts"))
-	minutes = minutes_by_reason(machine, since, until)
+	minutes = minutes_by_reason(machine, since, until, ignore_permissions=False)
 	classified = {reason: round(value, 2) for reason, value in minutes.items() if reason}
 	return {
 		"machine": machine,

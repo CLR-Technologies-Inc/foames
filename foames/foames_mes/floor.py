@@ -83,11 +83,16 @@ def floor_snapshot(days: int = 1) -> dict:
 	return snapshot
 
 
-def downtime_by_reason(machine: str, since, until) -> dict[str | None, float]:
+def downtime_by_reason(
+	machine: str, since, until, ignore_permissions: bool = True
+) -> dict[str | None, float]:
 	"""Minutes of downtime per reason inside [since, until), counting the part of each record that
 	overlaps the window. Open downtime counts up to `until`. Downtime with no reason assigned yet is
-	returned under the key None, so shares are computed over all downtime, not only the classified part."""
-	rows = frappe.get_all(
+	returned under the key None, so shares are computed over all downtime, not only the classified part.
+
+	The snapshot and the rules read every record. A read on behalf of a user (the MCP tools) passes
+	`ignore_permissions=False`, so that user's role and user permissions filter the records."""
+	rows = frappe.get_list(
 		"Downtime Record",
 		filters=[
 			["machine", "=", machine],
@@ -95,6 +100,7 @@ def downtime_by_reason(machine: str, since, until) -> dict[str | None, float]:
 		],
 		or_filters=[["end_time", "is", "not set"], ["end_time", ">=", since]],
 		fields=["reason", "start_time", "end_time"],
+		ignore_permissions=ignore_permissions,
 	)
 	minutes: dict[str, float] = {}
 	for r in rows:

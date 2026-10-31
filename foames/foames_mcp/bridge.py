@@ -75,8 +75,10 @@ class Bridge:
 			return self._failure(
 				request_id, UPSTREAM_ERROR, f"FoaMES returned HTTP {status}: {_frappe_message(body)}"
 			)
-		if status == 202 or not body or request_id is None:
-			return None  # a notification, or nothing to write back
+		# The site answers a notification with 202 and no body. Anything else is written back, including
+		# an error with a null id for a message the site could not read as a request.
+		if status == 202 or not body:
+			return None
 		return body.decode("utf-8", errors="replace").strip() or None
 
 	def post(self, data: bytes) -> tuple[int, bytes]:
