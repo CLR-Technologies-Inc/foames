@@ -45,6 +45,15 @@ class TestEventLog(unittest.TestCase):
 		log = EventLog([Event("A", "x", datetime(2026, 1, 1, 12)), Event("A", "y", T0)])
 		self.assertEqual(len(log), 2)
 
+	def test_mixed_timezones_still_yield_durations(self):
+		# A naive Frappe timestamp next to an aware imported one must not break the arithmetic.
+		log = EventLog(
+			[Event("A", "x", datetime(2026, 10, 20, 8, 0)), Event("A", "y", T0 + timedelta(minutes=5))]
+		)
+		dfg = discovery.discover_dfg(log)
+		self.assertEqual(dfg.edge_stats(("x", "y"))["median_seconds"], 300)
+		self.assertEqual(discovery.throughput(log)["max_seconds"], 300)
+
 	def test_variants_count_cases(self):
 		variants = sample_log().variants()
 		self.assertEqual(variants[("Setup", "Run", "Inspect", "Pack")], ["WO-1", "WO-2"])
@@ -81,6 +90,18 @@ class TestXES(unittest.TestCase):
 		self.assertEqual(run.objects, {"machine": ["press-1"]})
 		self.assertEqual(run.timestamp, T0)
 
+	def test_attribute_types_and_object_ids_survive(self):
+		event = Event(
+			"c",
+			"a",
+			T0,
+			attributes={"n": 3, "x": 1.5, "ok": True, "when": T0, "s": "t"},
+			objects={"lot": ["Lot, 1"]},
+		)
+		back = from_xes(to_xes(EventLog([event]))).events[0]
+		self.assertEqual(back.attributes, {"n": 3, "x": 1.5, "ok": True, "when": T0, "s": "t"})
+		self.assertEqual(back.objects, {"lot": ["Lot, 1"]})
+
 	def test_reads_logs_from_other_tools(self):
 		xml = """<?xml version="1.0"?><log xes.version="1.0"><trace><string key="concept:name" value="c1"/>
 		<event><string key="concept:name" value="a"/><date key="time:timestamp" value="2026-01-01T00:00:00.000+00:00"/></event>
@@ -115,6 +136,16 @@ class TestOCEL(unittest.TestCase):
 		run = back.events[0]
 		self.assertEqual((run.case_id, run.resource, run.attributes["good"]), ("WO-1", "press-1", 10))
 		self.assertEqual(sorted(run.objects["lot"]), ["L1", "L2"])
+
+	def test_object_ids_are_unique_across_types(self):
+		# The work order is both the case and a work_order object: two objects, two ids.
+		log = EventLog([Event("WO-1", "Run", T0, objects={"work_order": ["WO-1"], "lot": ["L1"]})])
+		ocel = to_ocel(log)
+		ids = [o["id"] for o in ocel["objects"]]
+		self.assertEqual(len(ids), len(set(ids)))
+		self.assertIn("work_order:WO-1", ids)
+		back = from_ocel(ocel).events[0]
+		self.assertEqual((back.case_id, back.objects["work_order"]), ("WO-1", ["WO-1"]))
 
 	def test_flatten_on_another_object_type(self):
 		log = EventLog([Event("WO-1", "Run", T0, objects={"lot": ["L1", "L2"]})])
@@ -155,6 +186,9 @@ class TestDiscovery(unittest.TestCase):
 		stats = discovery.throughput(sample_log())
 		self.assertEqual(stats["cases"], 4)
 		self.assertEqual(stats["max_seconds"], 3600)
+		self.assertGreater(stats["cases_per_day"], 0)
+		# One instant is no observed span, so no rate is invented from it.
+		self.assertIsNone(discovery.throughput(EventLog([Event("c", "a", T0)]))["cases_per_day"])
 
 	def test_service_and_waiting_times_from_lifecycle_pairs(self):
 		events = [
@@ -168,6 +202,24 @@ class TestDiscovery(unittest.TestCase):
 		self.assertEqual(stats["Run"]["median_service_seconds"], 1800)
 		self.assertEqual(stats["Run"]["median_waiting_seconds"], 600)
 		self.assertEqual(discovery.bottlenecks(EventLog(events))[0]["activity"], "Run")
+
+	def test_bottleneck_total_uses_waiting_samples_only(self):
+		# Setup is first in two cases (no wait) and waits once in a third; total waiting is that one wait.
+		events = []
+		for case in ("a", "b"):
+			events += [
+				Event(case, "Setup", T0, lifecycle=START),
+				Event(case, "Setup", T0 + timedelta(minutes=5)),
+			]
+		events += [
+			Event("c", "Run", T0),
+			Event("c", "Setup", T0 + timedelta(minutes=10), lifecycle=START),
+			Event("c", "Setup", T0 + timedelta(minutes=15)),
+		]
+		stats = discovery.activity_durations(EventLog(events))
+		self.assertEqual((stats["Setup"]["count"], stats["Setup"]["waiting_count"]), (3, 1))
+		top = discovery.bottlenecks(EventLog(events))[0]
+		self.assertEqual((top["activity"], top["total_waiting_seconds"], top["count"]), ("Setup", 600, 1))
 
 	def test_rework_detects_repeats(self):
 		self.assertEqual(discovery.rework(sample_log()), {"Inspect": 1})

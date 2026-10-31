@@ -37,8 +37,11 @@ class ProcessEventLog(Document):
 				built_in=bool(self.include_built_in),
 			)
 		except Exception:
+			# Not re-raised: an exception would roll the request back and lose the Failed state.
+			frappe.log_error(title=f"Process Event Log {self.name}", message=frappe.get_traceback())
 			self.db_set({"status": "Failed", "extraction_note": frappe.get_traceback()[-500:]})
-			raise
+			frappe.msgprint(_("Extraction failed; see the note and the Error Log"), indicator="red")
+			return {"status": "Failed", "error": frappe.get_traceback().strip().splitlines()[-1]}
 		summary = log.summary()
 		self.events_json = json.dumps(log.to_dicts(), default=str)
 		self.event_count = summary["events"]

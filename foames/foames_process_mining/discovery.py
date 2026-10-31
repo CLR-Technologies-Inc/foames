@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from statistics import mean, median
 
-from foames.foames_process_mining.eventlog import COMPLETE, START, Event, EventLog
+from foames.foames_process_mining.eventlog import COMPLETE, START, Event, EventLog, seconds_between
 
 Edge = tuple[str, str]
 
@@ -125,7 +125,7 @@ def discover_dfg(log: EventLog, lifecycle: str | None = COMPLETE) -> DirectlyFol
 		for previous, current in itertools.pairwise(steps):
 			edge = (previous.activity, current.activity)
 			dfg.edges[edge] += 1
-			dfg.durations[edge].append((current.timestamp - previous.timestamp).total_seconds())
+			dfg.durations[edge].append(seconds_between(previous.timestamp, current.timestamp))
 	return dfg
 
 
@@ -157,14 +157,15 @@ def throughput(log: EventLog) -> dict:
 	"""Case-level cycle time statistics, in seconds, and cases completed per day over the span."""
 	durations = list(case_durations(log).values())
 	span = log.span()
-	days = max((span[1] - span[0]).total_seconds() / 86400, 1 / 86400) if span else 0
+	# A rate needs an observed span; a log whose events share one timestamp has none.
+	days = seconds_between(span[0], span[1]) / 86400 if span else 0
 	return {
 		"cases": len(durations),
 		"mean_seconds": mean(durations) if durations else None,
 		"median_seconds": median(durations) if durations else None,
 		"min_seconds": min(durations) if durations else None,
 		"max_seconds": max(durations) if durations else None,
-		"cases_per_day": (len(durations) / days) if days else None,
+		"cases_per_day": (len(durations) / days) if days > 0 else None,
 	}
 
 
@@ -182,18 +183,19 @@ def activity_durations(log: EventLog) -> dict[str, dict]:
 			if event.lifecycle == START:
 				open_starts[event.activity] = event.timestamp
 				if last_complete is not None:
-					waiting[event.activity].append((event.timestamp - last_complete).total_seconds())
+					waiting[event.activity].append(seconds_between(last_complete, event.timestamp))
 			elif event.lifecycle == COMPLETE:
 				started = open_starts.pop(event.activity, None)
 				if started is not None:
-					service[event.activity].append((event.timestamp - started).total_seconds())
+					service[event.activity].append(seconds_between(started, event.timestamp))
 				elif last_complete is not None:
-					waiting[event.activity].append((event.timestamp - last_complete).total_seconds())
+					waiting[event.activity].append(seconds_between(last_complete, event.timestamp))
 				last_complete = event.timestamp
 	activities = set(service) | set(waiting)
 	return {
 		activity: {
 			"count": len(service.get(activity) or waiting.get(activity) or []),
+			"waiting_count": len(waiting.get(activity) or []),
 			"median_service_seconds": median(service[activity]) if service.get(activity) else None,
 			"mean_service_seconds": mean(service[activity]) if service.get(activity) else None,
 			"median_waiting_seconds": median(waiting[activity]) if waiting.get(activity) else None,
@@ -213,9 +215,9 @@ def bottlenecks(log: EventLog, limit: int = 3) -> list[dict]:
 		ranked.append(
 			{
 				"activity": activity,
-				"total_waiting_seconds": row["mean_waiting_seconds"] * row["count"],
+				"total_waiting_seconds": row["mean_waiting_seconds"] * row["waiting_count"],
 				"median_waiting_seconds": row["median_waiting_seconds"],
-				"count": row["count"],
+				"count": row["waiting_count"],
 			}
 		)
 	ranked.sort(key=lambda r: -r["total_waiting_seconds"])
@@ -248,7 +250,7 @@ def format_duration(seconds: float) -> str:
 
 
 def _case_duration(events: list[Event]) -> float:
-	return (events[-1].timestamp - events[0].timestamp).total_seconds() if events else 0.0
+	return seconds_between(events[0].timestamp, events[-1].timestamp) if events else 0.0
 
 
 def _dot_id(activity: str) -> str:

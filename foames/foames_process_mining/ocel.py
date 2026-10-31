@@ -24,7 +24,18 @@ def to_ocel(log: EventLog, case_object_type: str = CASE_OBJECT_TYPE) -> dict:
 	object_types: dict[str, dict] = {}
 	event_types: dict[str, dict] = {}
 	objects: dict[tuple[str, str], dict] = {}
+	taken: dict[str, str] = {}  # OCEL object id -> type, since ids are unique across types
 	events = []
+
+	def unique_id(object_type: str, raw_id: str) -> str:
+		# The first type to use an id keeps it; a later type with the same id is qualified, so a
+		# work order that is both the case and a work_order object stays two distinct objects.
+		owner = taken.setdefault(raw_id, object_type)
+		if owner == object_type:
+			return raw_id
+		qualified = f"{object_type}:{raw_id}"
+		taken.setdefault(qualified, object_type)
+		return qualified
 
 	for index, event in enumerate(log, start=1):
 		touched = {case_object_type: [event.case_id]}
@@ -33,11 +44,10 @@ def to_ocel(log: EventLog, case_object_type: str = CASE_OBJECT_TYPE) -> dict:
 		relationships = []
 		for object_type, ids in touched.items():
 			object_types.setdefault(object_type, {"name": object_type, "attributes": []})
-			for object_id in dict.fromkeys(ids):
-				objects.setdefault(
-					(object_type, object_id), {"id": object_id, "type": object_type, "attributes": []}
-				)
-				relationships.append({"objectId": object_id, "qualifier": object_type})
+			for raw_id in dict.fromkeys(ids):
+				oid = unique_id(object_type, raw_id)
+				objects.setdefault((object_type, raw_id), {"id": oid, "type": object_type, "attributes": []})
+				relationships.append({"objectId": oid, "qualifier": object_type})
 		activity_type = event_types.setdefault(event.activity, {"name": event.activity, "attributes": []})
 		attributes = [{"name": "lifecycle", "value": event.lifecycle or COMPLETE}]
 		if event.resource:
@@ -85,7 +95,7 @@ def from_ocel(data: dict | str | bytes, case_object_type: str = CASE_OBJECT_TYPE
 		objects: dict[str, list[str]] = {}
 		for rel in raw.get("relationships", []):
 			object_type = type_of.get(rel["objectId"], rel.get("qualifier", "object"))
-			objects.setdefault(object_type, []).append(rel["objectId"])
+			objects.setdefault(object_type, []).append(rel["objectId"].removeprefix(f"{object_type}:"))
 		cases = objects.pop(case_object_type, None) or [raw["id"]]
 		for case_id in cases:
 			events.append(

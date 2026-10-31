@@ -59,8 +59,8 @@ def build_event_log(
 def machine_state_events(since: datetime | None, until: datetime | None) -> Iterator[Event]:
 	"""One trace per machine per calendar day; each State event is an activity named by the
 	state it entered. Alarms are their own activity. The machine is an OCEL object."""
-	filters = {"event_type": ("in", ("State", "Alarm")), "processed": 1}
-	_add_window(filters, "timestamp", since, until)
+	filters = [["event_type", "in", ("State", "Alarm")], ["processed", "=", 1]]
+	filters += _window_filters("timestamp", since, until)
 	rows = frappe.get_all(
 		"Machine Event",
 		filters,
@@ -85,12 +85,13 @@ def machine_state_events(since: datetime | None, until: datetime | None) -> Iter
 def downtime_events(since: datetime | None, until: datetime | None) -> Iterator[Event]:
 	"""Each Downtime Record is a case: Down (start) and, when closed, Down (complete) with the
 	reason as an attribute. Lets downtime be mined for duration by reason and by machine."""
-	filters = {}
-	_add_window(filters, "start_time", since, until)
+	# A downtime that overlaps the window is kept whole, so its duration can still be measured.
+	filters, or_filters = _overlap_filters("start_time", "end_time", since, until)
 	rows = frappe.get_all(
 		"Downtime Record",
 		filters,
 		["name", "machine", "reason", "status", "start_time", "end_time", "source"],
+		or_filters=or_filters,
 		order_by="start_time asc",
 	)
 	for row in rows:
@@ -113,10 +114,16 @@ def extract_from_mapping(mapping: dict, since: datetime | None, until: datetime 
 	end_timestamp_field (optional; makes start/complete pairs), resource_field (optional),
 	filters (JSON dict or list), attribute_fields (comma-separated), object_fields (comma-separated
 	`type=field` or `field`).
+
+	The query runs with the current user's permissions (frappe.get_list), so a source can only
+	yield records and fields that user may read. With an end field, a record whose activity
+	overlaps the window is kept whole, start and complete, so durations stay measurable.
 	"""
 	doctype = mapping["source_doctype"]
 	if not frappe.db.exists("DocType", doctype):
 		return
+	if not frappe.has_permission(doctype, "read"):
+		raise frappe.PermissionError(frappe._("Not permitted to read {0}").format(doctype))
 	meta = frappe.get_meta(doctype)
 	fields = {"name", mapping["case_field"], mapping["timestamp_field"]}
 	for key in ("activity_field", "end_timestamp_field", "resource_field"):
@@ -132,16 +139,26 @@ def extract_from_mapping(mapping: dict, since: datetime | None, until: datetime 
 		raise frappe.ValidationError(f"{doctype} has no field {', '.join(unknown)}")
 
 	filters = _parse_filters(mapping.get("filters"))
-	window = {}
-	_add_window(window, mapping["timestamp_field"], since, until)
 	if isinstance(filters, dict):
-		filters.update(window)
+		filters = [[doctype, key, "=", value] for key, value in filters.items()]
 	else:
-		filters = list(filters) + [
-			[doctype, k, *v] if isinstance(v, tuple) else [doctype, k, "=", v] for k, v in window.items()
-		]
+		filters = list(filters)
+	or_filters = []
+	if mapping.get("end_timestamp_field"):
+		window, or_filters = _overlap_filters(
+			mapping["timestamp_field"], mapping["end_timestamp_field"], since, until
+		)
+		filters += window
+	else:
+		filters += _window_filters(mapping["timestamp_field"], since, until)
 
-	rows = frappe.get_all(doctype, filters, list(fields), order_by=f"`{mapping['timestamp_field']}` asc")
+	rows = frappe.get_list(
+		doctype,
+		filters=filters,
+		or_filters=or_filters,
+		fields=list(fields),
+		order_by=f"`{mapping['timestamp_field']}` asc",
+	)
 	for row in rows:
 		case_id = row.get(mapping["case_field"])
 		started = row.get(mapping["timestamp_field"])
@@ -183,13 +200,25 @@ def _window(since, until) -> tuple[datetime | None, datetime | None]:
 	return since, until
 
 
-def _add_window(filters: dict, fieldname: str, since, until):
-	if since and until:
-		filters[fieldname] = ("between", (since, until))
-	elif since:
-		filters[fieldname] = (">=", since)
-	elif until:
-		filters[fieldname] = ("<", until)
+def _window_filters(fieldname: str, since, until) -> list[list]:
+	"""since <= field < until: the upper bound is exclusive, so adjacent windows never share an event."""
+	filters = []
+	if since:
+		filters.append([fieldname, ">=", since])
+	if until:
+		filters.append([fieldname, "<", until])
+	return filters
+
+
+def _overlap_filters(start_field: str, end_field: str, since, until) -> tuple[list[list], list[list]]:
+	"""(filters, or_filters) for records whose [start, end] overlaps the window; an open record with
+	no end yet counts as ongoing."""
+	filters, or_filters = [], []
+	if until:
+		filters.append([start_field, "<", until])
+	if since:
+		or_filters = [[end_field, ">=", since], [end_field, "is", "not set"]]
+	return filters, or_filters
 
 
 def _split(text) -> list[str]:

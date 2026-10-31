@@ -18,6 +18,10 @@ class IntegrationTestCase(_IntegrationTestCase):
 
 	def setUp(self):
 		super().setUp()
+		# InnoDB only joins the transaction on the first statement that touches a table. Right after
+		# the class setup's commit, a bare SAVEPOINT would be taken outside it and ROLLBACK TO would
+		# fail with error 1305, so read a row first.
+		frappe.db.sql("select name from `tabDocType` limit 1")
 		frappe.db.savepoint(self.SAVEPOINT)
 
 	def tearDown(self):

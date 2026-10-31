@@ -157,6 +157,12 @@ def _to_utc(value: datetime) -> datetime:
 	return value.astimezone(timezone.utc)
 
 
+def seconds_between(earlier: datetime, later: datetime) -> float:
+	"""Seconds from one timestamp to another, whether or not they carry a timezone. A naive
+	timestamp is read as UTC, the same reading the log's ordering uses."""
+	return (_to_utc(later) - _to_utc(earlier)).total_seconds()
+
+
 def event_to_dict(event: Event) -> dict:
 	row = {
 		"case_id": event.case_id,

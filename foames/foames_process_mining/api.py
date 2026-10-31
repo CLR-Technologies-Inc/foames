@@ -15,7 +15,7 @@ import frappe
 from frappe import _
 
 from foames.foames_process_mining import conformance, discovery
-from foames.foames_process_mining.eventlog import EventLog
+from foames.foames_process_mining.eventlog import EventLog, event_to_dict
 from foames.foames_process_mining.extractors import build_event_log
 from foames.foames_process_mining.ocel import to_ocel_json
 from foames.foames_process_mining.xes import to_xes
@@ -45,8 +45,10 @@ def summary(event_log: str | None = None, since=None, until=None, sources=None) 
 def events(
 	event_log: str | None = None, since=None, until=None, sources=None, limit: int = 1000
 ) -> list[dict]:
-	rows = _log(event_log, since, until, sources).to_dicts()
-	return rows[: int(limit)] if limit else rows
+	events = _log(event_log, since, until, sources).events
+	if limit:
+		events = events[: int(limit)]
+	return [event_to_dict(e) for e in events]
 
 
 @frappe.whitelist()

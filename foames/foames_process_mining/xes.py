@@ -11,6 +11,7 @@ that use different attribute keys for the case id.
 
 from __future__ import annotations
 
+import json
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 
@@ -57,7 +58,8 @@ def to_xes(log: EventLog) -> str:
 			for key, value in event.attributes.items():
 				_typed_attribute(element, str(key), value)
 			for object_type, ids in event.objects.items():
-				_attribute(element, "string", f"foames:object:{object_type}", ",".join(ids))
+				# A JSON list, so an id that contains a comma survives the round trip.
+				_attribute(element, "string", f"foames:object:{object_type}", json.dumps(list(ids)))
 
 	ET.indent(root)
 	return '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding="unicode")
@@ -84,9 +86,9 @@ def from_xes(text: str | bytes, name: str = "") -> EventLog:
 				elif key == "org:resource":
 					resource = value
 				elif key and key.startswith("foames:object:"):
-					objects[key.removeprefix("foames:object:")] = [v for v in (value or "").split(",") if v]
+					objects[key.removeprefix("foames:object:")] = _object_ids(value)
 				elif key:
-					attributes[key] = value
+					attributes[key] = _typed_value(_local_name(child.tag), value)
 			if activity and timestamp:
 				events.append(
 					Event(case_id, activity, timestamp, resource, lifecycle or COMPLETE, attributes, objects)
@@ -115,6 +117,38 @@ def _iso(value: datetime) -> str:
 	if value.tzinfo is None:
 		value = value.replace(tzinfo=timezone.utc)
 	return value.isoformat()
+
+
+def _object_ids(value: str | None) -> list[str]:
+	text = value or ""
+	if text.startswith("["):
+		try:
+			return [str(v) for v in json.loads(text)]
+		except ValueError:
+			pass
+	return [v for v in text.split(",") if v]  # logs written before the JSON encoding
+
+
+def _typed_value(kind: str, value: str | None):
+	"""The Python value of an XES attribute from its element type."""
+	if value is None:
+		return None
+	try:
+		if kind == "int":
+			return int(value)
+		if kind == "float":
+			return float(value)
+		if kind == "boolean":
+			return value.strip().lower() == "true"
+		if kind == "date":
+			return parse_timestamp(value)
+	except ValueError:
+		return value
+	return value
+
+
+def _local_name(tag: str) -> str:
+	return tag[tag.index("}") + 1 :] if tag.startswith("{") else tag
 
 
 def _namespace(root) -> str:
