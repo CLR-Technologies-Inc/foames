@@ -1,0 +1,209 @@
+{
+ "app": "foames",
+ "charts": [
+  {
+   "chart_name": "Downtime Pareto by Reason",
+   "label": "Downtime Pareto by Reason"
+  },
+  {
+   "chart_name": "Downtime Minutes per Day",
+   "label": "Downtime Minutes per Day"
+  }
+ ],
+ "content": "[{\"id\": \"tWyGnEOgX3\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Right Now</b></span>\", \"col\": 12}}, {\"id\": \"WLrfKl93xN\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Machines Running\", \"col\": 3}}, {\"id\": \"gBOFIDyPxJ\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Machines Down\", \"col\": 3}}, {\"id\": \"qceyhpQ5iJ\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Machines Without Signal\", \"col\": 3}}, {\"id\": \"mf923VpOzJ\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Stoppages\", \"col\": 3}}, {\"id\": \"fKI9DOJGKd\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"Ajq6TYaQsm\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Shortcuts</b></span>\", \"col\": 12}}, {\"id\": \"pUHQSmoJM0\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Floor View\", \"col\": 4}}, {\"id\": \"EDda7WXKe3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Record a Stoppage\", \"col\": 4}}, {\"id\": \"oMYfWqrn2N\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Open Stoppages\", \"col\": 4}}, {\"id\": \"TMzWW0N0WF\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Unclassified Stoppages\", \"col\": 4}}, {\"id\": \"r1sTX1wz9o\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Machines\", \"col\": 4}}, {\"id\": \"J2vgMWx6Ou\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Open Suggestions\", \"col\": 4}}, {\"id\": \"MtfjjJRmU4\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"PJVqRInKws\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Downtime</b></span>\", \"col\": 12}}, {\"id\": \"A9Jrqy7Z_9\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Downtime Pareto by Reason\", \"col\": 6}}, {\"id\": \"i1EmvTs6rh\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Downtime Minutes per Day\", \"col\": 6}}, {\"id\": \"_Lpa_kjoGj\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"zUQuQwO191\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Masters and Reports</b></span>\", \"col\": 12}}, {\"id\": \"NgwkaMESdc\", \"type\": \"card\", \"data\": {\"card_name\": \"Floor\", \"col\": 4}}, {\"id\": \"XNpiXydI_5\", \"type\": \"card\", \"data\": {\"card_name\": \"Downtime\", \"col\": 4}}, {\"id\": \"r67asUl4vo\", \"type\": \"card\", \"data\": {\"card_name\": \"Reports\", \"col\": 4}}]",
+ "creation": "2026-10-31 12:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "tool",
+ "idx": 0,
+ "indicator_color": "green",
+ "is_hidden": 0,
+ "label": "FoaMES Operator",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Floor",
+   "link_count": 3,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Floor View",
+   "link_count": 0,
+   "link_to": "floor-view",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Machine",
+   "link_count": 0,
+   "link_to": "Machine",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Machine Event",
+   "link_count": 0,
+   "link_to": "Machine Event",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Downtime",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Downtime Record",
+   "link_count": 0,
+   "link_to": "Downtime Record",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Downtime Reason",
+   "link_count": 0,
+   "link_to": "Downtime Reason",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Reports",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Downtime Pareto",
+   "link_count": 0,
+   "link_to": "Downtime Pareto",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "OEE Trend",
+   "link_count": 0,
+   "link_to": "OEE Trend",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-10-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "FoaMES Operator",
+ "number_cards": [
+  {
+   "label": "Machines Running",
+   "number_card_name": "Machines Running"
+  },
+  {
+   "label": "Machines Down",
+   "number_card_name": "Machines Down"
+  },
+  {
+   "label": "Machines Without Signal",
+   "number_card_name": "Machines Without Signal"
+  },
+  {
+   "label": "Open Stoppages",
+   "number_card_name": "Open Stoppages"
+  }
+ ],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "",
+ "roles": [
+  {
+   "role": "FoaMES Operator"
+  }
+ ],
+ "sequence_id": 20.0,
+ "shortcuts": [
+  {
+   "color": "Blue",
+   "doc_view": "",
+   "label": "Floor View",
+   "link_to": "floor-view",
+   "type": "Page"
+  },
+  {
+   "color": "Red",
+   "doc_view": "New",
+   "label": "Record a Stoppage",
+   "link_to": "Downtime Record",
+   "type": "DocType"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "label": "Open Stoppages",
+   "link_to": "Downtime Record",
+   "stats_filter": "{\"status\": \"Open\"}",
+   "type": "DocType"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "label": "Unclassified Stoppages",
+   "link_to": "Downtime Record",
+   "stats_filter": "{\"reason\": [\"is\", \"not set\"]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Machines",
+   "link_to": "Machine",
+   "type": "DocType"
+  },
+  {
+   "color": "Yellow",
+   "doc_view": "List",
+   "label": "Open Suggestions",
+   "link_to": "Agent Suggestion",
+   "stats_filter": "{\"status\": \"Open\"}",
+   "type": "DocType"
+  }
+ ],
+ "title": "FoaMES Operator"
+}

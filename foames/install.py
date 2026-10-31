@@ -3,7 +3,14 @@
 
 import frappe
 
-ROLES = ("FoaMES Engineer", "FoaMES Operator", "FoaMES Quality", "FoaMES Integration")
+ROLES = (
+	"FoaMES Engineer",
+	"FoaMES Operator",
+	"FoaMES Supervisor",
+	"FoaMES Maintenance",
+	"FoaMES Quality",
+	"FoaMES Integration",
+)
 
 
 def before_install():

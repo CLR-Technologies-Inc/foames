@@ -19,6 +19,7 @@ Start with [installation.md](installation.md), then the pages for the parts you 
 | --- | --- |
 | [floor-view.md](floor-view.md) | The Floor View page, machine states, the downtime workflow, Agent Suggestions and the built-in rules, the floor snapshot |
 | [oee.md](oee.md) | How OEE is computed, setting a machine up for it, the daily OEE Period, OEE on demand, a worked example |
+| [dashboards.md](dashboards.md) | The role workspaces, number cards, dashboard charts and the six script reports: OEE by machine and line, downtime Pareto, MTBF and MTTR, suggestion status, outbox health, process throughput |
 
 ## For agents and integrators
 

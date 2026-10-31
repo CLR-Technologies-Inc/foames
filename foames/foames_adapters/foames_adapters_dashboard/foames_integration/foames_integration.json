@@ -1,0 +1,52 @@
+{
+ "cards": [
+  {
+   "card": "ERPNext Postings Failed"
+  },
+  {
+   "card": "ERPNext Postings Waiting"
+  },
+  {
+   "card": "S4HANA Postings Failed"
+  },
+  {
+   "card": "S4HANA Postings Waiting"
+  },
+  {
+   "card": "S4HANA IDocs Failed"
+  },
+  {
+   "card": "Missing External References"
+  }
+ ],
+ "charts": [
+  {
+   "chart": "ERP Outbox Health by Adapter",
+   "width": "Full"
+  },
+  {
+   "chart": "ERPNext Postings per Day",
+   "width": "Half"
+  },
+  {
+   "chart": "S4HANA Postings per Day",
+   "width": "Half"
+  },
+  {
+   "chart": "Inbound IDocs per Day",
+   "width": "Half"
+  }
+ ],
+ "creation": "2026-10-31 12:00:00.000000",
+ "dashboard_name": "FoaMES Integration",
+ "docstatus": 0,
+ "doctype": "Dashboard",
+ "idx": 0,
+ "is_default": 0,
+ "is_standard": 1,
+ "modified": "2026-10-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Adapters",
+ "name": "FoaMES Integration",
+ "owner": "Administrator"
+}

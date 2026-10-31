@@ -1,0 +1,54 @@
+{
+ "cards": [
+  {
+   "card": "Machines Down"
+  },
+  {
+   "card": "Open Stoppages"
+  },
+  {
+   "card": "Unclassified Downtime Last 7 Days"
+  },
+  {
+   "card": "Downtime Minutes Last 7 Days"
+  }
+ ],
+ "charts": [
+  {
+   "chart": "MTBF and MTTR by Machine",
+   "width": "Full"
+  },
+  {
+   "chart": "Downtime Pareto by Reason",
+   "width": "Half"
+  },
+  {
+   "chart": "Downtime Pareto by Machine",
+   "width": "Half"
+  },
+  {
+   "chart": "Downtime Minutes per Day",
+   "width": "Half"
+  },
+  {
+   "chart": "Stoppages by Machine",
+   "width": "Half"
+  },
+  {
+   "chart": "Availability Trend by Machine",
+   "width": "Full"
+  }
+ ],
+ "creation": "2026-10-31 12:00:00.000000",
+ "dashboard_name": "FoaMES Maintenance",
+ "docstatus": 0,
+ "doctype": "Dashboard",
+ "idx": 0,
+ "is_default": 0,
+ "is_standard": 1,
+ "modified": "2026-10-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "FoaMES Maintenance",
+ "owner": "Administrator"
+}

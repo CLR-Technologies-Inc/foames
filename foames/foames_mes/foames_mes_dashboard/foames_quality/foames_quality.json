@@ -1,0 +1,46 @@
+{
+ "cards": [
+  {
+   "card": "Quality Rate Last 7 Days"
+  },
+  {
+   "card": "Scrap Last 7 Days"
+  },
+  {
+   "card": "Open Quality Suggestions"
+  },
+  {
+   "card": "Open Suggestions"
+  }
+ ],
+ "charts": [
+  {
+   "chart": "Quality Rate Trend by Machine",
+   "width": "Full"
+  },
+  {
+   "chart": "Open Suggestions by Category",
+   "width": "Half"
+  },
+  {
+   "chart": "Suggestion Status by Category",
+   "width": "Half"
+  },
+  {
+   "chart": "Process Throughput per Day",
+   "width": "Full"
+  }
+ ],
+ "creation": "2026-10-31 12:00:00.000000",
+ "dashboard_name": "FoaMES Quality",
+ "docstatus": 0,
+ "doctype": "Dashboard",
+ "idx": 0,
+ "is_default": 0,
+ "is_standard": 1,
+ "modified": "2026-10-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "FoaMES Quality",
+ "owner": "Administrator"
+}
