@@ -157,3 +157,9 @@ Each handler is called with the inbound record, the parsed IDoc and its summary.
 SAP certification is not required for the adapter to work. A customer may ask for SAP Integration and
 Certification Center (ICC) certification during procurement; it applies to a specific adapter
 version.
+
+## Further reading
+
+- [s4hana-setup.md](s4hana-setup.md): users, communication arrangements, OAuth, service checks.
+- [s4hana-postings.md](s4hana-postings.md): confirmations, goods movements, cancellations and
+  reversals, order, routing and BOM reads, and the HTTP endpoints for screens and agents.
