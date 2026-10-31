@@ -21,7 +21,13 @@ class IntegrationTestCase(_IntegrationTestCase):
 		frappe.db.savepoint(self.SAVEPOINT)
 
 	def tearDown(self):
-		frappe.db.rollback(save_point=self.SAVEPOINT)
+		try:
+			frappe.db.rollback(save_point=self.SAVEPOINT)
+		except Exception:
+			# The savepoint is gone when the connection's transaction ended under the test (Frappe v15
+			# does this on some sites). Roll the whole transaction back instead: the class setup
+			# committed, so this still leaves only the records the class started with.
+			frappe.db.rollback()
 		super().tearDown()
 
 

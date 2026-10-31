@@ -1,6 +1,8 @@
 # Copyright (c) 2026, CLR Technologies Inc. and contributors
 # For license information, please see license.txt
 
+import json
+
 import frappe
 
 from foames.foames_mes.api import record_events
@@ -31,13 +33,13 @@ class TestEventLogSource(IntegrationTestCase):
 		source = frappe.get_doc(
 			{
 				"doctype": "Event Log Source",
-				"source_name": "T Counts",
+				"source_name": "T Counts " + self.machine,
 				"source_doctype": "Machine Event",
 				"case_field": "machine",
 				"activity_field": "counter_name",
 				"timestamp_field": "timestamp",
 				"resource_field": "source",
-				"filters": '{"event_type": "Count"}',
+				"filters": json.dumps({"event_type": "Count", "machine": self.machine}),
 				"attribute_fields": "delta",
 				"object_fields": "machine",
 			}
@@ -58,7 +60,7 @@ class TestEventLogSource(IntegrationTestCase):
 		source = frappe.get_doc(
 			{
 				"doctype": "Event Log Source",
-				"source_name": "T Absent",
+				"source_name": "T Absent " + self.machine,
 				"source_doctype": "Not Installed Here",
 				"case_field": "a",
 				"fixed_activity": "x",
@@ -73,7 +75,7 @@ class TestEventLogSource(IntegrationTestCase):
 			frappe.get_doc(
 				{
 					"doctype": "Event Log Source",
-					"source_name": "T Bad",
+					"source_name": "T Bad " + self.machine,
 					"source_doctype": "Machine Event",
 					"case_field": "machine",
 					"fixed_activity": "x",
@@ -86,7 +88,7 @@ class TestEventLogSource(IntegrationTestCase):
 			frappe.get_doc(
 				{
 					"doctype": "Event Log Source",
-					"source_name": "T No Activity",
+					"source_name": "T No Activity " + self.machine,
 					"source_doctype": "Machine Event",
 					"case_field": "machine",
 					"timestamp_field": "timestamp",
