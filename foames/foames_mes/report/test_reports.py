@@ -127,6 +127,9 @@ class TestReports(IntegrationTestCase):
 			shift_start="06:00:00",
 		).name
 		self.other = make_machine("T-RPT-B", line=self.line, ideal_cycle_seconds=30).name
+		# Frappe fills an empty Time field with the current time on insert, so a machine that is
+		# meant to run around the clock has to have its Shift Start cleared explicitly.
+		frappe.db.set_value("Machine", self.other, "shift_start", None)
 		make_reason("T-JAM", title="Jam", category="Breakdown")
 		make_reason("T-CHG", title="Changeover", category="Changeover", counts_as_planned=1)
 		d = self.day
