@@ -21,14 +21,14 @@ from foames.foames_process_mining.ocel import to_ocel_json
 from foames.foames_process_mining.xes import to_xes
 
 
-def _log(event_log: str | None, since, until, sources) -> EventLog:
+def _log(event_log: str | None, since: str | None, until: str | None, sources: str | list | None) -> EventLog:
 	frappe.has_permission("Process Event Log", "read", throw=True)
 	if event_log:
 		return frappe.get_doc("Process Event Log", event_log).load()
 	return build_event_log(since, until, _list(sources))
 
 
-def _list(value):
+def _list(value: str | list | None) -> list | None:
 	if isinstance(value, str):
 		value = (
 			json.loads(value) if value.startswith("[") else [v.strip() for v in value.split(",") if v.strip()]
@@ -37,7 +37,12 @@ def _list(value):
 
 
 @frappe.whitelist()
-def summary(event_log: str | None = None, since=None, until=None, sources=None) -> dict:
+def summary(
+	event_log: str | None = None,
+	since: str | None = None,
+	until: str | None = None,
+	sources: str | list | None = None,
+) -> dict:
 	return _log(event_log, since, until, sources).summary()
 
 
@@ -79,7 +84,12 @@ def discover(
 
 @frappe.whitelist()
 def check_conformance(
-	model, event_log: str | None = None, since=None, until=None, sources=None, include_traces: bool = True
+	model: str | dict | list,
+	event_log: str | None = None,
+	since: str | None = None,
+	until: str | None = None,
+	sources: str | list | None = None,
+	include_traces: bool = True,
 ) -> dict:
 	"""Replay the log on a reference model.
 
@@ -95,7 +105,7 @@ def check_conformance(
 	}
 
 
-def _model(model) -> discovery.DirectlyFollowsGraph:
+def _model(model: str | dict | list) -> discovery.DirectlyFollowsGraph:
 	if isinstance(model, str):
 		text = model.strip()
 		if text.startswith(("{", "[")):
@@ -111,7 +121,13 @@ def _model(model) -> discovery.DirectlyFollowsGraph:
 
 
 @frappe.whitelist()
-def export(event_log: str | None = None, since=None, until=None, sources=None, fmt: str = "xes") -> str:
+def export(
+	event_log: str | None = None,
+	since: str | None = None,
+	until: str | None = None,
+	sources: str | list | None = None,
+	fmt: str = "xes",
+) -> str:
 	"""The log as XES XML or OCEL 2.0 JSON text, for any external process-mining tool."""
 	log = _log(event_log, since, until, sources)
 	fmt = (fmt or "xes").lower()
