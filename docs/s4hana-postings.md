@@ -176,7 +176,8 @@ all seven values.
 Every function below is whitelisted under `foames.foames_adapters.s4hana.api` and callable as
 `/api/method/foames.foames_adapters.s4hana.api.<name>`. Reads need one of the FoaMES roles
 (Operator, Engineer, Quality, Integration) or System Manager. Postings need create permission on
-S4HANA Outbox; the posting itself is made later by the scheduler with the adapter's credentials.
+S4HANA Outbox and are POST requests; the posting itself is made later by the scheduler with the
+adapter's credentials.
 Every posting takes an `idempotency_key` that names the business event; repeating the call returns
 the same outbox record.
 

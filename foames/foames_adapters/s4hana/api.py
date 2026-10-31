@@ -39,9 +39,10 @@ def receive_idoc():
 # ---------------------------------------------------------------
 #
 # Reads need the FoaMES Operator, Engineer, Quality or Integration role (or System Manager) and an
-# enabled adapter. Queuing a posting needs create permission on S4HANA Outbox; the scheduler then
-# sends it with the adapter's own S/4HANA credentials, so nothing is posted synchronously and a
-# repeated call with the same idempotency key returns the same outbox record.
+# enabled adapter. Queuing a posting needs create permission on S4HANA Outbox and a POST request
+# (Frappe commits writes made in a POST, not in a GET); the scheduler then sends it with the
+# adapter's own S/4HANA credentials, so nothing is posted synchronously and a repeated call with
+# the same idempotency key returns the same outbox record.
 
 import json as _json
 
@@ -229,7 +230,7 @@ def get_work_centers(plant: str) -> list[dict]:
 # Postings, through the outbox
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def confirm_order(
 	order: str,
 	operation: str,
@@ -291,7 +292,7 @@ def confirm_order(
 	return _enqueue(op, payload, idempotency_key, str(order), reference_doctype, reference_name)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def post_goods_receipt(
 	order: str,
 	material: str,
@@ -336,7 +337,7 @@ def post_goods_receipt(
 	)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def post_goods_issue(
 	order: str,
 	components,
@@ -363,7 +364,7 @@ def post_goods_issue(
 	)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def post_transfer(
 	material: str,
 	plant: str,
@@ -409,7 +410,7 @@ def post_transfer(
 	)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def post_scrap(
 	material: str,
 	plant: str,
@@ -445,7 +446,7 @@ def post_scrap(
 	)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def cancel_confirmation(
 	confirmation_group: str,
 	confirmation_count: str,
@@ -464,7 +465,7 @@ def cancel_confirmation(
 	return _enqueue(operation, payload, idempotency_key, sequence_group, reference_doctype, reference_name)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def reverse_material_document(
 	year: str,
 	document: str,
