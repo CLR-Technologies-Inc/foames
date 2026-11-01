@@ -92,8 +92,8 @@ def build_timestamp() -> str:
 
 
 def load_json(path: Path) -> dict:
-	with open(path, encoding="utf-8") as handle:
-		return json.load(handle)
+	# A build-time CLI reading paths its own operator passes; not reachable from a Frappe site.
+	return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
 def compute_scopes(
