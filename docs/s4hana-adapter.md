@@ -8,6 +8,7 @@ runs on its own server, so the adapter works over HTTP:
 | FoaMES reads S/4HANA | Resolve External References (Item, Batch, Work Order, Stock Movement, plus any type you map) | Released OData V2 APIs |
 | FoaMES writes S/4HANA | Production or process order confirmations, goods movements | OData create calls through the **S4HANA Outbox** |
 | S/4HANA pushes to FoaMES | Order (LOIPRO), material (MATMAS) and batch (BATMAS) downloads, or any other IDoc | IDoc XML over an HTTP port |
+| Machines report to S/4HANA | Each machine's good and scrap counts and running time, as partial confirmations of the order operation it is working on | The roll-up below, through the **S4HANA Outbox** |
 
 The adapter does not use RFC, the SAP NetWeaver RFC SDK or PyRFC, and no SAP code or API metadata is
 included in this repository.
@@ -25,6 +26,7 @@ The short version; each step is detailed below.
 | 5. Tick **Enabled**; set **Default ERP System** to `S4HANA` in FoaMES Settings if S/4HANA is the main ERP | FoaMES | New references resolve against S/4HANA |
 | 6. For inbound IDocs: a FoaMES user with the **FoaMES Integration** role and an API key; RFC destination (SM59), XML HTTP port (WE21), partner profile (WE20) | Both | A test IDoc shows up as an S4HANA Inbound IDoc with status Processed |
 | 7. Make sure the scheduler is enabled on the site | FoaMES | `bench --site <site> scheduler status` says enabled; queued postings move to Posted |
+| 8. Optional: tick **Roll Up Machine Counts to Confirmations**, set the Confirmation Unit, give machines an order operation as Current Job Reference | FoaMES | A running machine's counts show up as queued Production Order Confirmations |
 
 Postings are sent by the scheduler, so nothing leaves FoaMES until step 7 is in place, and **Pause Outbox** in S4HANA Settings holds them at any time.
 
@@ -136,6 +138,46 @@ Requeue and Cancel Posting are limited to System Managers. Requeue first puts th
 - Reference lookups that fail because S/4HANA is unreachable leave the External Reference Unverified rather than blocking a save. Resolve them later from the form or by saving again.
 - Rotate the communication user's password in S/4HANA and in S4HANA Settings together. A 401 or 403 is treated as temporary on both paths: reference lookups leave the reference Unverified to resolve later, and outbox postings go to **Retry** with the usual backoff, so nothing is failed or held as long as the credentials are fixed within the retry window (12 attempts, up to 6 hours apart).
 - The Digital Access point above applies to every Posted row: it is a document created in S/4HANA by a third-party system.
+
+## Rolling machine counts up to confirmations
+
+With **Roll Up Machine Counts to Confirmations** ticked in S4HANA Settings, the counts the machines
+report reach S/4HANA without anyone typing them in. A machine works on an order operation by having
+it as its **Current Job Reference**: an External Reference of type Job Card whose External ID is
+`ORDER|OPERATION`, for example `1000123|0010`, or `ORDER|SEQUENCE|OPERATION` for an operation in an
+alternative or parallel sequence. Set it from the Machine form, or call
+`foames.foames_mes.api.set_current_job` from a screen, a scanner or an agent. Unless a site maps Job
+Card to its own entity in **Entity Mappings**, the adapter resolves it from the order's operations
+(`API_PRODUCTION_ORDER_2_SRV`, or `API_PROCESS_ORDER_2_SRV` with **Jobs Are Process Orders**), so the
+reference shows the operation text and an operation the order does not have is marked Missing. A
+machine on a Missing operation rolls nothing up; one that is still Unverified because S/4HANA was
+unreachable does.
+
+Every ten minutes, and at the moment a machine's job changes, the adapter takes the window since the
+last roll-up of that machine and operation and queues one partial confirmation for it:
+
+| Confirmation field | From |
+| --- | --- |
+| `ConfirmationYieldQuantity` | The good counters' deltas in the window (`good`, `count`, `total`, `parts`) |
+| `ConfirmationScrapQuantity` | The scrap counters' deltas (`scrap`, `reject`, ...) |
+| `ConfirmationUnit` | **Confirmation Unit**; counts are sent as they are, so it must be the unit the machine counts in |
+| `OpConfirmedWorkQuantity<n>` | The machine's Running time, in **Machine Time Unit**, when **Machine Time Activity Position** is 1 to 6 (2 in SAP's default standard value key SAP1) |
+| Execution start and end, posting date | The window |
+| `APIConfHasNoGoodsMovements` | Set when **Confirm Without Goods Movements** is ticked; otherwise the order's backflush and automatic goods receipt settings apply |
+
+A roll-up never sends the final-confirmation flag: S/4HANA finishes the operation by its own rules
+when the confirmed quantity reaches the operation quantity, or a person confirms it finished. A
+window with no counts (and no machine time to report) queues nothing. Counter rules are the core's:
+a first reading, a reset or an out-of-order reading adds nothing.
+
+All roll-ups of one order share the order number as sequence group and carry an idempotency key per
+machine, operation and window end, so they are sent in order, never twice, and a rejected one holds
+the rest of its order. An Agent Suggestion is raised for a machine whose
+roll-up S/4HANA refused (a locked order, a closed period, a unit the operation does not accept);
+fix the cause, then requeue the posting, or cancel it. Cancelling drops that window's production for
+good: the next window starts where the cancelled one ended. Where the previous window ended is read
+back from the outbox, so nothing about S/4HANA is stored on the Machine, and a machine is rolled up by
+one worker at a time, so the scheduler and a job change never cut overlapping windows.
 
 ## Inbound IDocs
 
