@@ -1,0 +1,149 @@
+{
+	"_comment": "Facts the dependency scanner cannot see. build_sbom.py merges them into every FoaMES SBOM. Keep each entry true to the code it names; review this file when the code it points at changes.",
+	"optional": ["paho-mqtt", "asyncua"],
+	"components": [
+		{
+			"bom-ref": "pkg:github/frappe/erpnext",
+			"type": "application",
+			"name": "erpnext",
+			"group": "frappe",
+			"description": "Optional. The ERPNext adapter activates only when ERPNext is installed on the same site; FoaMES never imports it otherwise.",
+			"scope": "optional",
+			"licenses": [{"license": {"id": "GPL-3.0-only"}}],
+			"purl": "pkg:github/frappe/erpnext",
+			"externalReferences": [{"type": "vcs", "url": "https://github.com/frappe/erpnext"}]
+		}
+	],
+	"cryptographic_assets": [
+		{
+			"bom-ref": "crypto:algorithm:hmac-sha256",
+			"type": "cryptographic-asset",
+			"name": "HMAC-SHA256",
+			"description": "Signs and verifies machine events posted to the webhook: hex HMAC-SHA256 over '<timestamp>.<body>' with the shared secret from Machine Data Settings, checked with a constant-time compare and a replay window.",
+			"cryptoProperties": {
+				"assetType": "algorithm",
+				"oid": "1.2.840.113549.2.9",
+				"algorithmProperties": {
+					"algorithmFamily": "HMAC",
+					"primitive": "mac",
+					"parameterSetIdentifier": "256",
+					"executionEnvironment": "software-plain-ram",
+					"implementationPlatform": "generic",
+					"cryptoFunctions": ["tag", "verify"]
+				}
+			},
+			"properties": [
+				{"name": "foames:crypto:sourceLocation", "value": "foames/foames_mes/signing.py"},
+				{"name": "foames:crypto:implementation", "value": "Python standard library hmac and hashlib"}
+			]
+		},
+		{
+			"bom-ref": "crypto:algorithm:sha-256",
+			"type": "cryptographic-asset",
+			"name": "SHA-256",
+			"description": "Derives identifiers, not secrets: External Reference keys and the document markers that make ERPNext and S/4HANA postings idempotent. Also the hash inside HMAC-SHA256.",
+			"cryptoProperties": {
+				"assetType": "algorithm",
+				"oid": "2.16.840.1.101.3.4.2.1",
+				"algorithmProperties": {
+					"algorithmFamily": "SHA-2",
+					"primitive": "hash",
+					"parameterSetIdentifier": "256",
+					"executionEnvironment": "software-plain-ram",
+					"implementationPlatform": "generic",
+					"cryptoFunctions": ["digest"]
+				}
+			},
+			"properties": [
+				{"name": "foames:crypto:sourceLocation", "value": "foames/foames_kernel/doctype/external_reference/external_reference.py"},
+				{"name": "foames:crypto:sourceLocation", "value": "foames/foames_adapters/s4hana/outbox.py"},
+				{"name": "foames:crypto:sourceLocation", "value": "foames/foames_adapters/erpnext/postings.py"},
+				{"name": "foames:crypto:implementation", "value": "Python standard library hashlib"}
+			]
+		},
+		{
+			"bom-ref": "crypto:protocol:tls",
+			"type": "cryptographic-asset",
+			"name": "TLS",
+			"description": "Transport security for S/4HANA OData and IDoc calls (Python ssl default context, optional custom CA file) and for MQTT and Sparkplug B when MQTT TLS is switched on in Machine Data Settings. The version and cipher suites are whatever the host's OpenSSL negotiates; FoaMES does not pin them.",
+			"cryptoProperties": {
+				"assetType": "protocol",
+				"protocolProperties": {
+					"type": "tls"
+				}
+			},
+			"properties": [
+				{"name": "foames:crypto:sourceLocation", "value": "foames/foames_adapters/s4hana/odata.py"},
+				{"name": "foames:crypto:sourceLocation", "value": "foames/foames_mes/gateway/mqtt.py"},
+				{"name": "foames:crypto:sourceLocation", "value": "foames/foames_mes/gateway/sparkplug.py"},
+				{"name": "foames:crypto:implementation", "value": "Python ssl (OpenSSL of the host)"}
+			]
+		},
+		{
+			"bom-ref": "crypto:material:webhook-secret",
+			"type": "cryptographic-asset",
+			"name": "Machine event webhook secret",
+			"description": "The shared HMAC key for the machine event webhook. Stored in a Password field of Machine Data Settings and read with get_password; never logged.",
+			"cryptoProperties": {
+				"assetType": "related-crypto-material",
+				"relatedCryptoMaterialProperties": {
+					"type": "secret-key"
+				}
+			}
+		},
+		{
+			"bom-ref": "crypto:material:erp-credentials",
+			"type": "cryptographic-asset",
+			"name": "ERP and broker credentials",
+			"description": "S/4HANA Basic or OAuth 2.0 client credentials, the MQTT broker password and the OPC UA user password. Stored in Password fields of S4HANA Settings and Machine Data Settings; never in code, hooks or site config.",
+			"cryptoProperties": {
+				"assetType": "related-crypto-material",
+				"relatedCryptoMaterialProperties": {
+					"type": "credential"
+				}
+			}
+		}
+	],
+	"services": [
+		{
+			"bom-ref": "service:machine-event-webhook",
+			"name": "FoaMES machine event webhook",
+			"description": "Inbound. PLC gateways and IoT bridges POST machine events here. Requests must carry X-FoaMES-Timestamp and an X-FoaMES-Signature HMAC-SHA256.",
+			"endpoints": ["https://foames.example/api/method/foames.foames_mes.api.ingest_machine_events"],
+			"authenticated": true,
+			"x-trust-boundary": true,
+			"data": [{"flow": "inbound", "classification": "machine-operational"}],
+			"externalReferences": [{"type": "documentation", "url": "https://github.com/CLR-Technologies-Inc/foames/blob/main/docs/machine-data.md"}]
+		},
+		{
+			"bom-ref": "service:mqtt-broker",
+			"name": "MQTT broker (plain MQTT and Sparkplug B)",
+			"description": "Outbound subscription from the MQTT and Sparkplug B gateways. Read-only: FoaMES never publishes commands. TLS is optional and off unless configured.",
+			"endpoints": ["mqtt://broker.example:1883", "mqtts://broker.example:8883"],
+			"authenticated": true,
+			"x-trust-boundary": true,
+			"data": [{"flow": "inbound", "classification": "machine-operational"}],
+			"externalReferences": [{"type": "documentation", "url": "https://github.com/CLR-Technologies-Inc/foames/blob/main/docs/machine-data.md"}]
+		},
+		{
+			"bom-ref": "service:opcua-server",
+			"name": "OPC UA server",
+			"description": "Outbound polling of mapped nodes by the OPC UA gateway, with an optional user name and password. Read-only. No OPC UA message security policy is configured by FoaMES today, so the session is unsigned and unencrypted unless the network provides protection.",
+			"endpoints": ["opc.tcp://opcua.example:4840"],
+			"authenticated": true,
+			"x-trust-boundary": true,
+			"data": [{"flow": "inbound", "classification": "machine-operational"}],
+			"externalReferences": [{"type": "documentation", "url": "https://github.com/CLR-Technologies-Inc/foames/blob/main/docs/machine-data.md"}]
+		},
+		{
+			"bom-ref": "service:sap-s4hana",
+			"name": "SAP S/4HANA (released OData APIs and IDoc over HTTP)",
+			"description": "Optional. The S/4HANA adapter reads master and order data over OData, sends postings through the outbox, and receives IDocs over HTTP. No RFC.",
+			"endpoints": ["https://s4hana.example/sap/opu/odata/sap/"],
+			"authenticated": true,
+			"x-trust-boundary": true,
+			"data": [{"flow": "bi-directional", "classification": "business-transactional"}],
+			"externalReferences": [{"type": "documentation", "url": "https://github.com/CLR-Technologies-Inc/foames/blob/main/docs/s4hana-adapter.md"}]
+		}
+	]
+}
