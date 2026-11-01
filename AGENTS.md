@@ -114,6 +114,8 @@ The event shape, state aliases and signing scheme are in [docs/machine-data.md](
 
 **Add a scheduled job.** Register it in `scheduler_events` in `hooks.py` and make it idempotent, as `compute_daily_oee` is (it skips a period that already exists).
 
+**Add cryptography, a secret or a connected service.** Update `sbom/curated.json` in the same pull request: it feeds the cryptography bill of materials and the `services` list of the published CycloneDX SBOM, which the dependency scan cannot see. See [docs/sbom.md](docs/sbom.md#keeping-it-true).
+
 ## Testing
 
 ```bash
@@ -128,7 +130,7 @@ bench --site <site> run-tests --app foames --module foames.foames_mes.doctype.oe
 
 Without a bench on the machine, `cd docker && ./bench.sh up && ./bench.sh test` runs the suite in Docker on Frappe v15 or v16, with or without ERPNext; see [docs/dev-bench.md](docs/dev-bench.md).
 
-The S/4HANA tests use `foames/foames_adapters/s4hana/fake.py`, an in-memory stand-in for the OData transport, so no SAP system is needed; they run under `bench run-tests` because the adapters package imports Frappe. CI runs the suite on Frappe v15, v16, and v16 with ERPNext, plus Frappe's semgrep rules and pip-audit.
+The S/4HANA tests use `foames/foames_adapters/s4hana/fake.py`, an in-memory stand-in for the OData transport, so no SAP system is needed; they run under `bench run-tests` because the adapters package imports Frappe. CI runs the suite on Frappe v15, v16, and v16 with ERPNext, plus Frappe's semgrep rules and pip-audit. The SBOM workflow runs `python -m unittest discover -s sbom` and builds and validates the CycloneDX 1.7 SBOM on each Frappe line.
 
 ## Conventions
 

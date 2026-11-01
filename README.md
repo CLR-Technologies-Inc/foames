@@ -49,6 +49,7 @@ The full guide, including roles, the scheduler, running the gateways and a smoke
 | [docs/floor-view.md](docs/floor-view.md) | The Floor View, downtime and Agent Suggestions |
 | [docs/oee.md](docs/oee.md) | How OEE is computed and how to set a machine up for it |
 | [docs/dashboards.md](docs/dashboards.md) | Role workspaces, dashboards, number cards and the script reports (OEE trends, downtime Pareto, MTBF and MTTR, suggestions, outbox health, process throughput) |
+| [docs/sbom.md](docs/sbom.md) | The CycloneDX 1.7 SBOM and cryptography bill of materials published with every release |
 | [AGENTS.md](AGENTS.md) | For coding agents and developers building on FoaMES: invariants, hooks, API, tests |
 | [docs/agents/floor-agent.md](docs/agents/floor-agent.md) | For an agent reading the floor and raising suggestions at run time |
 
@@ -63,7 +64,7 @@ cd apps/foames
 pre-commit install
 ```
 
-GitHub Actions runs the tests on Frappe v15 and v16 without an ERP, and on Frappe v16 with ERPNext. The same matrix runs locally in Docker with the [dev bench](docs/dev-bench.md) (`cd docker && ./bench.sh up && ./bench.sh test`). It also runs [Frappe Semgrep Rules](https://github.com/frappe/semgrep-rules) and [pip-audit](https://pypi.org/project/pip-audit/) on every pull request.
+GitHub Actions runs the tests on Frappe v15 and v16 without an ERP, and on Frappe v16 with ERPNext. The same matrix runs locally in Docker with the [dev bench](docs/dev-bench.md) (`cd docker && ./bench.sh up && ./bench.sh test`). It also runs [Frappe Semgrep Rules](https://github.com/frappe/semgrep-rules) and [pip-audit](https://pypi.org/project/pip-audit/) on every pull request, and builds a [CycloneDX 1.7 SBOM](docs/sbom.md) for each Frappe line that is attached to every release.
 
 ## Prior art and credits
 
