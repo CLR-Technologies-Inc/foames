@@ -164,12 +164,41 @@ class TestConfirmationRollUp(IntegrationTestCase):
 		)
 		process_outbox(transport=locked)
 		self.assertEqual(self.outbox(name).status, "Failed")
-		snapshot = {
-			"machines": [{"name": self.machine.name, "current_job": {"external_id": f"{ORDER}|{OPERATION}"}}]
-		}
+		# The machine has left the job: the confirmation that closed it can be the one that failed.
+		snapshot = {"machines": [{"name": self.machine.name, "current_job": None}]}
 		findings = confirmation_rejected(snapshot)
 		self.assertEqual([f["reference_name"] for f in findings], [name])
 		self.assertIn("Order is locked", findings[0]["suggestion"])
+
+	def test_a_cancelled_window_is_not_rolled_up_again(self):
+		from foames.foames_adapters.s4hana.rollup import roll_up
+		from foames.foames_mes.api import set_current_job
+
+		start = add_to_date(now_datetime().replace(microsecond=0), hours=-5)
+		t = lambda minutes: add_to_date(start, minutes=minutes)  # noqa: E731
+		set_current_job(self.machine.name, self.operation_reference(), at=t(0))
+		self.events(
+			[
+				{"type": "Count", "counter": "good", "value": 10, "timestamp": t(1)},
+				{"type": "Count", "counter": "good", "value": 15, "timestamp": t(10)},
+			]
+		)
+		first = roll_up(self.machine.name, until=t(20))
+		frappe.db.set_value("S4HANA Outbox", first, "status", "Cancelled")
+		self.events([{"type": "Count", "counter": "good", "value": 18, "timestamp": t(30)}])
+		second = roll_up(self.machine.name, until=t(40))
+		# Only what came after the cancelled window: its 5 stay dropped.
+		self.assertEqual(self.outbox(second).get_payload()["ConfirmationYieldQuantity"], "3")
+
+	def test_an_operation_known_to_be_missing_is_not_rolled_up(self):
+		from foames.foames_adapters.s4hana.rollup import job_for_reference
+
+		reference = self.operation_reference()
+		self.assertEqual(job_for_reference(reference), (ORDER, OPERATION, "0"))
+		frappe.db.set_value("External Reference", reference, "status", "Missing")
+		self.assertIsNone(job_for_reference(reference))
+		frappe.db.set_value("External Reference", reference, "status", "Unverified")
+		self.assertEqual(job_for_reference(reference), (ORDER, OPERATION, "0"))
 
 	def test_settings_need_a_unit_and_a_valid_position(self):
 		settings = frappe.get_single("S4HANA Settings")

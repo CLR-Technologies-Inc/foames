@@ -4,7 +4,8 @@
 """The S/4HANA adapter registered through the `foames_erp_adapters` hook.
 
 A Job Card has no single S/4HANA record, so unless a site maps it in S4HANA Settings it resolves
-as an order operation: `ORDER|OPERATION`, read from the order's operations. That is what a machine's
+as an order operation: `ORDER|OPERATION` (or `ORDER|SEQUENCE|OPERATION` outside the standard
+sequence), read from the order's operations. That is what a machine's
 current job names when its counts roll up to S/4HANA confirmations (see `rollup.py`).
 """
 
@@ -73,10 +74,10 @@ class S4HANAAdapter(ERPAdapter):
 	def fetch_operation(self, external_id: str) -> ResolvedReference | None:
 		"""An order operation (`ORDER|OPERATION`) as a Job Card, with what a roll-up needs to know."""
 		from foames.foames_adapters.s4hana import orders
-		from foames.foames_adapters.s4hana.production import parse_job
+		from foames.foames_adapters.s4hana.production import job_id, normal_sequence, parse_job
 
 		try:
-			order, operation = parse_job(external_id)
+			order, operation, sequence = parse_job(external_id)
 		except ValueError:
 			return None
 		settings = self.settings
@@ -94,7 +95,9 @@ class S4HANAAdapter(ERPAdapter):
 			(
 				op
 				for op in found["operations"]
-				if same_operation(op["operation"], operation) and not op["suboperation"]
+				if same_operation(op["operation"], operation)
+				and normal_sequence(op["sequence"]) == sequence
+				and not op["suboperation"]
 			),
 			None,
 		)
@@ -103,11 +106,12 @@ class S4HANAAdapter(ERPAdapter):
 		text = step["text"] or step["work_center"] or found["material"]
 		return ResolvedReference(
 			reference_type=JOB_CARD,
-			external_id=f"{found['order'] or order}|{step['operation']}",
+			external_id=job_id(found["order"] or order, step["operation"], step["sequence"]),
 			label=f"{found['order'] or order} {step['operation']}: {text}",
 			data={
 				"order": found["order"] or order,
 				"operation": step["operation"],
+				"sequence": sequence,
 				"work_center": step["work_center"],
 				"plant": step["plant"] or found["plant"],
 				"unit": step["unit"] or found["unit"],

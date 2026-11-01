@@ -6,7 +6,9 @@ and the partial confirmation that reports it. No Frappe dependency; `rollup.py` 
 and run stretches it has read and queues what it returns.
 
 A machine's current job names the operation as `ORDER|OPERATION` (for example `1000123|0010`), the
-same order number and operation number a person types into a confirmation in S/4HANA.
+same order number and operation number a person types into a confirmation in S/4HANA. An operation
+in an alternative or parallel sequence is `ORDER|SEQUENCE|OPERATION`; without one it is in the
+standard sequence 0.
 """
 
 from __future__ import annotations
@@ -38,15 +40,32 @@ class RollUpOptions:
 		return confirmations.PROCESS if self.process_order else confirmations.PRODUCTION
 
 
-def parse_job(external_id: str) -> tuple[str, str]:
-	"""`(order, operation)` out of an `ORDER|OPERATION` external ID."""
+STANDARD_SEQUENCE = "0"
+
+
+def parse_job(external_id: str) -> tuple[str, str, str]:
+	"""`(order, operation, sequence)` out of `ORDER|OPERATION` or `ORDER|SEQUENCE|OPERATION`."""
 	parts = [part.strip() for part in (external_id or "").split(KEY_SEPARATOR)]
-	if len(parts) != 2 or not all(parts):
+	if len(parts) not in (2, 3) or not all(parts):
 		raise ValueError(
 			f"{external_id!r} is not an order operation; write it as ORDER{KEY_SEPARATOR}OPERATION, "
-			f"for example 1000123{KEY_SEPARATOR}0010"
+			f"for example 1000123{KEY_SEPARATOR}0010, or ORDER{KEY_SEPARATOR}SEQUENCE{KEY_SEPARATOR}OPERATION"
 		)
-	return parts[0], parts[1]
+	if len(parts) == 2:
+		return parts[0], parts[1], STANDARD_SEQUENCE
+	return parts[0], parts[2], normal_sequence(parts[1])
+
+
+def normal_sequence(sequence) -> str:
+	"""Sequences compare without leading zeros, and an empty one is the standard sequence."""
+	return str(sequence or "").strip().lstrip("0") or STANDARD_SEQUENCE
+
+
+def job_id(order: str, operation: str, sequence: str = STANDARD_SEQUENCE) -> str:
+	"""The external ID of an order operation, the inverse of `parse_job`."""
+	if normal_sequence(sequence) == STANDARD_SEQUENCE:
+		return f"{order}{KEY_SEPARATOR}{operation}"
+	return f"{order}{KEY_SEPARATOR}{sequence}{KEY_SEPARATOR}{operation}"
 
 
 def activity_quantity(minutes: float, unit: str) -> float:
@@ -67,6 +86,7 @@ def confirmation_payload(
 	totals: dict[str, float],
 	intervals: list[tuple[datetime, datetime]],
 	options: RollUpOptions,
+	sequence: str = STANDARD_SEQUENCE,
 ) -> dict | None:
 	"""The partial confirmation for a window, or None when the window has nothing to report.
 
@@ -96,6 +116,7 @@ def confirmation_payload(
 		yield_quantity=good if good > 0 else None,
 		unit=options.unit if good > 0 or scrap > 0 else "",
 		scrap_quantity=scrap if scrap > 0 else None,
+		sequence=normal_sequence(sequence),
 		posting_date=end,
 		activities=activities or None,
 		times=confirmations.ExecutionTimes(start=start, end=end),
@@ -112,6 +133,9 @@ def window_end(payload: dict) -> datetime | None:
 	return datetime.combine(day, moment) if moment else datetime(day.year, day.month, day.day)
 
 
-def window_key(order: str, operation: str, machine: str, end: datetime) -> str:
+def window_key(
+	order: str, operation: str, machine: str, end: datetime, sequence: str = STANDARD_SEQUENCE
+) -> str:
 	"""Idempotency key of a window: a window that ends at the same moment is the same window."""
-	return f"{order}{KEY_SEPARATOR}{operation}:{machine}:confirm:{end.isoformat(sep=' ', timespec='seconds')}"
+	job = job_id(order, operation, sequence)
+	return f"{job}:{machine}:confirm:{end.isoformat(sep=' ', timespec='seconds')}"

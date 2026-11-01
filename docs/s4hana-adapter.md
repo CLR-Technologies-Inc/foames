@@ -144,11 +144,14 @@ Requeue and Cancel Posting are limited to System Managers. Requeue first puts th
 With **Roll Up Machine Counts to Confirmations** ticked in S4HANA Settings, the counts the machines
 report reach S/4HANA without anyone typing them in. A machine works on an order operation by having
 it as its **Current Job Reference**: an External Reference of type Job Card whose External ID is
-`ORDER|OPERATION`, for example `1000123|0010`. Set it from the Machine form, or call
+`ORDER|OPERATION`, for example `1000123|0010`, or `ORDER|SEQUENCE|OPERATION` for an operation in an
+alternative or parallel sequence. Set it from the Machine form, or call
 `foames.foames_mes.api.set_current_job` from a screen, a scanner or an agent. Unless a site maps Job
 Card to its own entity in **Entity Mappings**, the adapter resolves it from the order's operations
 (`API_PRODUCTION_ORDER_2_SRV`, or `API_PROCESS_ORDER_2_SRV` with **Jobs Are Process Orders**), so the
-reference shows the operation text and an operation the order does not have is marked Missing.
+reference shows the operation text and an operation the order does not have is marked Missing. A
+machine on a Missing operation rolls nothing up; one that is still Unverified because S/4HANA was
+unreachable does.
 
 Every ten minutes, and at the moment a machine's job changes, the adapter takes the window since the
 last roll-up of that machine and operation and queues one partial confirmation for it:
@@ -171,8 +174,10 @@ All roll-ups of one order share the order number as sequence group and carry an 
 machine, operation and window end, so they are sent in order, never twice, and a rejected one holds
 the rest of its order. An Agent Suggestion is raised for a machine whose
 roll-up S/4HANA refused (a locked order, a closed period, a unit the operation does not accept);
-fix the cause, then requeue the posting, or cancel it. Where the previous window ended is read back
-from the outbox, so nothing about S/4HANA is stored on the Machine.
+fix the cause, then requeue the posting, or cancel it. Cancelling drops that window's production for
+good: the next window starts where the cancelled one ended. Where the previous window ended is read
+back from the outbox, so nothing about S/4HANA is stored on the Machine, and a machine is rolled up by
+one worker at a time, so the scheduler and a job change never cut overlapping windows.
 
 ## Inbound IDocs
 

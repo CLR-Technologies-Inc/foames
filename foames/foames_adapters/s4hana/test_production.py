@@ -12,6 +12,7 @@ from foames.foames_adapters.s4hana.production import (
 	RollUpOptions,
 	activity_quantity,
 	confirmation_payload,
+	job_id,
 	parse_job,
 	window_end,
 	window_key,
@@ -26,11 +27,17 @@ def at(minutes: int) -> datetime:
 
 class TestParseJob(unittest.TestCase):
 	def test_order_and_operation(self):
-		self.assertEqual(parse_job("1000123|0010"), ("1000123", "0010"))
-		self.assertEqual(parse_job(" 1000123 | 0010 "), ("1000123", "0010"))
+		self.assertEqual(parse_job("1000123|0010"), ("1000123", "0010", "0"))
+		self.assertEqual(parse_job(" 1000123 | 0010 "), ("1000123", "0010", "0"))
+
+	def test_sequence(self):
+		self.assertEqual(parse_job("1000123|000001|0010"), ("1000123", "0010", "1"))
+		self.assertEqual(parse_job("1000123|000000|0010"), ("1000123", "0010", "0"))
+		self.assertEqual(job_id("1000123", "0010", "000000"), "1000123|0010")
+		self.assertEqual(job_id("1000123", "0010", "1"), "1000123|1|0010")
 
 	def test_anything_else_is_refused(self):
-		for value in ("1000123", "1000123|", "|0010", "1000123|0|0010", "", None):
+		for value in ("1000123", "1000123|", "|0010", "1000123||0010", "1|2|3|4", "", None):
 			with self.assertRaises(ValueError, msg=value):
 				parse_job(value)
 
@@ -82,6 +89,13 @@ class TestConfirmationPayload(unittest.TestCase):
 		# Run time without counts is still confirmed when it goes into an activity, with no unit.
 		self.assertNotIn("ConfirmationUnit", hours)
 
+	def test_sequence_is_sent(self):
+		self.assertEqual(self.payload({"good": 1}, [])["Sequence"], "0")
+		payload = confirmation_payload(
+			"1000123", "0010", at(0), at(30), {"good": 1}, [], RollUpOptions("PC"), "000001"
+		)
+		self.assertEqual(payload["Sequence"], "1")
+
 	def test_options(self):
 		payload = self.payload({"good": 1}, [], no_goods_movements=True)
 		self.assertIs(payload["APIConfHasNoGoodsMovements"], True)
@@ -108,6 +122,9 @@ class TestWindow(unittest.TestCase):
 	def test_window_key_names_the_window(self):
 		self.assertEqual(
 			window_key("1000123", "0010", "M1", at(30)), "1000123|0010:M1:confirm:2026-10-31 08:30:00"
+		)
+		self.assertEqual(
+			window_key("1000123", "0010", "M1", at(30), "1"), "1000123|1|0010:M1:confirm:2026-10-31 08:30:00"
 		)
 
 

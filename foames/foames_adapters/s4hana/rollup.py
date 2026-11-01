@@ -23,6 +23,7 @@ from __future__ import annotations
 import json
 
 import frappe
+from frappe.query_builder import Order
 from frappe.utils import get_datetime, now_datetime
 
 from foames.foames_adapters.erpnext.production import running_intervals
@@ -30,8 +31,10 @@ from foames.foames_adapters.machine_window import counter_totals, state_before, 
 from foames.foames_adapters.s4hana import confirmations
 from foames.foames_adapters.s4hana.adapter import ADAPTER_KEY, JOB_CARD
 from foames.foames_adapters.s4hana.production import (
+	STANDARD_SEQUENCE,
 	RollUpOptions,
 	confirmation_payload,
+	normal_sequence,
 	parse_job,
 	window_end,
 	window_key,
@@ -62,14 +65,19 @@ def options_from_settings(s=None) -> RollUpOptions:
 	)
 
 
-def job_for_reference(reference: str | None) -> tuple[str, str] | None:
-	"""The (order, operation) an External Reference points at, or None for any other reference."""
+def job_for_reference(reference: str | None) -> tuple[str, str, str] | None:
+	"""The (order, operation, sequence) an External Reference points at, or None for any other
+	reference. An operation S/4HANA already said does not exist is None too: its confirmations would
+	only fail and hold the rest of the order. An Unverified one (S/4HANA was unreachable) is used."""
 	if not reference:
 		return None
 	row = frappe.db.get_value(
-		"External Reference", reference, ["erp_system", "reference_type", "external_id"], as_dict=True
+		"External Reference",
+		reference,
+		["erp_system", "reference_type", "external_id", "status"],
+		as_dict=True,
 	)
-	if not row or row.erp_system != ADAPTER_KEY or row.reference_type != JOB_CARD:
+	if not row or row.erp_system != ADAPTER_KEY or row.reference_type != JOB_CARD or row.status == "Missing":
 		return None
 	try:
 		return parse_job(row.external_id)
@@ -77,33 +85,41 @@ def job_for_reference(reference: str | None) -> tuple[str, str] | None:
 		return None
 
 
-def last_window_end(machine: str, order: str, operation: str):
-	"""Where the previous roll-up of this machine and operation stopped, whatever its status."""
-	rows = frappe.get_all(
-		"S4HANA Outbox",
-		filters={
-			"operation": ("in", OPERATIONS),
-			"reference_doctype": "Machine",
-			"reference_name": machine,
-			"status": ("!=", "Cancelled"),
-		},
-		fields=["payload"],
-		order_by="creation desc",
-		limit_page_length=20,
+def last_window_end(machine: str, order: str, operation: str, sequence: str = STANDARD_SEQUENCE):
+	"""Where the previous roll-up of this machine and operation stopped, whatever its status. A
+	cancelled window counts too: cancelling drops its production, it does not hand it to the next
+	window. The read locks the rows, so it sees a window another worker has just committed."""
+	outbox = frappe.qb.DocType("S4HANA Outbox")
+	rows = (
+		frappe.qb.from_(outbox)
+		.select(outbox.payload)
+		.where(
+			outbox.operation.isin(OPERATIONS)
+			& (outbox.reference_doctype == "Machine")
+			& (outbox.reference_name == machine)
+		)
+		.orderby(outbox.creation, order=Order.desc)
+		.limit(20)
+		.for_update()
+		.run(as_dict=True)
 	)
 	for row in rows:
 		try:
 			payload = json.loads(row.payload or "{}")
 		except ValueError:
 			continue
-		if payload.get("OrderID") == order and payload.get("OrderOperation") == operation:
+		if (
+			payload.get("OrderID") == order
+			and payload.get("OrderOperation") == operation
+			and normal_sequence(payload.get("Sequence")) == sequence
+		):
 			end = window_end(payload)
 			if end:
 				return end
 	return None
 
 
-def roll_up(machine, job: tuple[str, str] | None = None, until=None, since=None) -> str | None:
+def roll_up(machine, job: tuple[str, str, str] | None = None, until=None, since=None) -> str | None:
 	"""Queue the production of one machine since its last roll-up. Returns the outbox name, or
 	None when there was nothing to roll up.
 
@@ -117,8 +133,13 @@ def roll_up(machine, job: tuple[str, str] | None = None, until=None, since=None)
 		since = since or machine.current_job_since
 	if not job:
 		return None
-	order, operation = job
-	start = last_window_end(machine.name, order, operation) or (get_datetime(since) if since else None)
+	order, operation, sequence = job
+	# One roll-up per machine at a time: the scheduler and a job change must not both cut a window
+	# from the same checkpoint. A job change already holds this lock through the Machine's save.
+	frappe.db.get_value("Machine", machine.name, "name", for_update=True)
+	start = last_window_end(machine.name, order, operation, sequence) or (
+		get_datetime(since) if since else None
+	)
 	if not start:
 		return None
 	# Execution times reach S/4HANA in whole seconds, so windows are cut on whole seconds too.
@@ -132,7 +153,7 @@ def roll_up(machine, job: tuple[str, str] | None = None, until=None, since=None)
 		state_before(machine.name, start), state_events(machine.name, start, end), start, end
 	)
 	options = options_from_settings()
-	payload = confirmation_payload(order, operation, start, end, totals, intervals, options)
+	payload = confirmation_payload(order, operation, start, end, totals, intervals, options, sequence)
 	if payload is None:
 		return None
 	from foames.foames_adapters.doctype.s4hana_outbox.s4hana_outbox import enqueue
@@ -140,7 +161,7 @@ def roll_up(machine, job: tuple[str, str] | None = None, until=None, since=None)
 	return enqueue(
 		options.operation,
 		payload,
-		window_key(order, operation, machine.name, end),
+		window_key(order, operation, machine.name, end, sequence),
 		sequence_group=order,
 		reference_doctype="Machine",
 		reference_name=machine.name,
@@ -182,10 +203,11 @@ def on_job_changed(machine, previous_reference: str | None, at):
 def confirmation_rejected(snapshot: dict) -> list[dict]:
 	"""Registered under `foames_suggestion_rules`: a machine whose roll-up confirmations S/4HANA
 	rejected. Until the failed one is fixed and requeued, or cancelled, every later confirmation of
-	the order waits behind it, so the counts never reach S/4HANA."""
+	the order waits behind it, so the counts never reach S/4HANA. A machine that has since left the
+	job is included: the confirmation that closed its job can be the one that failed."""
 	if not rollup_enabled():
 		return []
-	machines = [m["name"] for m in snapshot.get("machines", []) if m.get("current_job")]
+	machines = [m["name"] for m in snapshot.get("machines", [])]
 	if not machines:
 		return []
 	failed = frappe.get_all(

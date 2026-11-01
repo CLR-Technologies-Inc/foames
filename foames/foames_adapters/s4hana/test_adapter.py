@@ -220,6 +220,31 @@ class TestResolve(unittest.TestCase):
 		self.assertIsNone(adapter(empty).resolve("Job Card", "1000123"))
 		self.assertEqual(empty.requests, [])
 
+	def test_job_card_in_another_sequence(self):
+		order = {
+			"ManufacturingOrder": "1000123",
+			"to_ProductionOrderOperation": {
+				"results": [
+					{
+						"ManufacturingOrderSequence": "0",
+						"ManufacturingOrderOperation": "0010",
+						"WorkCenter": "A",
+					},
+					{
+						"ManufacturingOrderSequence": "1",
+						"ManufacturingOrderOperation": "0010",
+						"WorkCenter": "B",
+					},
+				]
+			},
+		}
+		fake = FakeS4HANA().on("GET", "A_ProductionOrder_2", ok(order))
+		standard = adapter(fake).resolve("Job Card", "1000123|0010")
+		alternative = adapter(fake).resolve("Job Card", "1000123|000001|0010")
+		self.assertEqual((standard.external_id, standard.data["work_center"]), ("1000123|0010", "A"))
+		self.assertEqual((alternative.external_id, alternative.data["work_center"]), ("1000123|1|0010", "B"))
+		self.assertIsNone(adapter(fake).resolve("Job Card", "1000123|2|0010"))
+
 	def test_job_card_on_process_orders_and_errors(self):
 		settings = Settings(enabled=1, base_url="https://s4", language="EN", confirm_process_orders=1)
 		fake = FakeS4HANA().on(
