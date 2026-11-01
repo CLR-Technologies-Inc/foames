@@ -22,7 +22,7 @@ There is one SBOM per supported Frappe line, because FoaMES runs on whichever Fr
 | `components` (libraries) | Frappe and every Python package it pulls in, plus `paho-mqtt` and `asyncua` and theirs, with versions, licenses, package URLs and the dependency graph | `cyclonedx-py` |
 | `components` (ERPNext) | ERPNext as an optional application: the ERPNext adapter activates only when ERPNext is on the same site | maintainers (`sbom/curated.json`) |
 | `components` (cryptographic assets) | A cryptography bill of materials (CBOM): every algorithm, protocol and kind of secret FoaMES uses, with the source file that uses it | maintainers (`sbom/curated.json`) |
-| `services` | The services FoaMES exposes or connects to: the signed machine-event webhook, the MQTT broker, OPC UA servers, SAP S/4HANA | maintainers (`sbom/curated.json`) |
+| `services` | The endpoints FoaMES exposes (the machine-event webhook, the S/4HANA IDoc receiver), listed under `provides` in the dependency graph, and the services it connects to (the MQTT broker, OPC UA servers, SAP S/4HANA OData, the OAuth 2.0 token endpoint), listed under `dependsOn`, each with its trust boundary and data flow | maintainers (`sbom/curated.json`) |
 | `citations` | Which tool or which people asserted each of the parts above (new in 1.7) | |
 | `metadata.distributionConstraints` | `TLP:CLEAR`: the document may be shared without restriction, since FoaMES is public (new in 1.7) | |
 
@@ -49,6 +49,7 @@ The CBOM uses the 1.7 `algorithmFamily` names, so tools can group and audit them
 | TLS | S/4HANA OData and IDoc calls, and MQTT or Sparkplug B when MQTT TLS is on. Version and ciphers come from the host's OpenSSL | `s4hana/odata.py`, `gateway/mqtt.py`, `gateway/sparkplug.py` |
 | Webhook secret (secret key) | The shared HMAC key, in a Password field of Machine Data Settings | |
 | ERP and broker credentials | S/4HANA Basic or OAuth 2.0 client credentials, MQTT and OPC UA passwords, in Password fields | |
+| S/4HANA OAuth bearer token (token) | The access token from the OAuth 2.0 token endpoint, held in memory only | `s4hana/odata.py` |
 
 FoaMES uses no asymmetric algorithms or elliptic curves of its own, so it has no post-quantum migration work beyond what TLS on the host provides.
 

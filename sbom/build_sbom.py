@@ -166,6 +166,7 @@ def build_bom(
 	known_refs = {c["bom-ref"] for c in env_components if "bom-ref" in c}
 
 	frappe = by_name.get("frappe")
+	synthetic_refs = set()
 	if frappe is None:
 		# Scanned without Frappe installed: still record that FoaMES needs it.
 		frappe = {
@@ -177,6 +178,7 @@ def build_bom(
 		}
 		env_components.append(frappe)
 		known_refs.add(frappe["bom-ref"])
+		synthetic_refs.add(frappe["bom-ref"])
 	else:
 		frappe["type"] = "framework"
 
@@ -188,7 +190,10 @@ def build_bom(
 
 	curated_components = [copy.deepcopy(c) for c in curated.get("components") or []]
 	crypto = [copy.deepcopy(c) for c in curated.get("cryptographic_assets") or []]
-	services = [copy.deepcopy(s) for s in curated.get("services") or []]
+	# Services FoaMES exposes are provided by it; services it calls are dependencies.
+	provided = [copy.deepcopy(s) for s in curated.get("provided_services") or []]
+	external = [copy.deepcopy(s) for s in curated.get("external_services") or []]
+	services = provided + external
 
 	all_component_refs = [c["bom-ref"] for c in env_components if "bom-ref" in c]
 	scopes = compute_scopes(graph, [frappe["bom-ref"]], optional_refs, all_component_refs)
@@ -226,9 +231,12 @@ def build_bom(
 	root_depends = [frappe["bom-ref"], *optional_refs]
 	root_depends += [c["bom-ref"] for c in curated_components]
 	root_depends += [c["bom-ref"] for c in crypto]
-	root_depends += [s["bom-ref"] for s in services]
+	root_depends += [s["bom-ref"] for s in external]
 
-	dependencies = [{"ref": ROOT_REF, "dependsOn": sorted(set(root_depends))}]
+	root_dependency = {"ref": ROOT_REF, "dependsOn": sorted(set(root_depends))}
+	if provided:
+		root_dependency["provides"] = sorted(s["bom-ref"] for s in provided)
+	dependencies = [root_dependency]
 	for ref in sorted(known_refs):
 		dependencies.append(
 			{"ref": ref, "dependsOn": sorted({d for d in graph.get(ref, []) if d in known_refs})}
@@ -241,49 +249,69 @@ def build_bom(
 
 	tools, scanner_ref = collect_tools(env_bom, app_version)
 
+	components = (
+		sorted(env_components, key=lambda c: normalise_name(c.get("name"))) + curated_components + crypto
+	)
+	scanned_refs = known_refs - synthetic_refs
+	curated_refs = {c["bom-ref"] for c in curated_components + crypto}
+
+	def pointers(refs: set[str]) -> list[str]:
+		return [f"/components/{i}" for i, c in enumerate(components) if c.get("bom-ref") in refs]
+
 	citations = [
 		{
 			"bom-ref": "citation:subject",
 			"pointers": ["/metadata/component"],
 			"attributedTo": TOOL_REF,
 			"timestamp": timestamp,
-			"note": "Built from pyproject.toml, foames/__init__.py and the git commit.",
-		},
-		{
-			"bom-ref": "citation:scopes",
-			"expressions": ["$.components[?@.scope]"],
-			"attributedTo": TOOL_REF,
-			"timestamp": timestamp,
-			"note": "Scope derived from reachability in the dependency graph rooted at FoaMES.",
-		},
-		{
-			"bom-ref": "citation:curated",
-			"expressions": ["$.components[?@.type == 'cryptographic-asset' || @.type == 'application']"],
-			"attributedTo": SUPPLIER_REF,
-			"timestamp": timestamp,
-			"note": "Curated by the FoaMES maintainers from a review of the source; see sbom/curated.json.",
-		},
-		{
-			"bom-ref": "citation:services",
-			"pointers": ["/services"],
-			"attributedTo": SUPPLIER_REF,
-			"timestamp": timestamp,
-			"note": "Connected services, curated by the FoaMES maintainers; see sbom/curated.json.",
-		},
+			"note": "Built from foames/__init__.py, the git commit and the builder's own constants.",
+		}
 	]
-	if scanner_ref:
-		citations.insert(
-			1,
+	if scanner_ref and scanned_refs:
+		citations.append(
 			{
 				"bom-ref": "citation:inventory",
-				"expressions": ["$.components[?@.type == 'library' || @.type == 'framework']"],
+				"pointers": pointers(scanned_refs),
 				"attributedTo": scanner_ref,
 				"timestamp": timestamp,
-				"note": "Python packages, versions, licenses and the dependency graph, as installed in the scan environment.",
-			},
+				"note": "Python packages, versions, licenses and the dependency graph, as installed in the scan environment. Each scope was then derived by foames-sbom-builder from reachability in the graph rooted at FoaMES.",
+			}
+		)
+	if synthetic_refs:
+		citations.append(
+			{
+				"bom-ref": "citation:fallback",
+				"pointers": pointers(synthetic_refs),
+				"attributedTo": TOOL_REF,
+				"timestamp": timestamp,
+				"note": "Not found in the scan; declared by the builder because FoaMES cannot run without it.",
+			}
+		)
+	if curated_refs:
+		citations.append(
+			{
+				"bom-ref": "citation:curated",
+				"pointers": pointers(curated_refs),
+				"attributedTo": SUPPLIER_REF,
+				"timestamp": timestamp,
+				"note": "Curated by the FoaMES maintainers from a review of the source; see sbom/curated.json.",
+			}
+		)
+	if services:
+		citations.append(
+			{
+				"bom-ref": "citation:services",
+				"pointers": ["/services"],
+				"attributedTo": SUPPLIER_REF,
+				"timestamp": timestamp,
+				"note": "Services FoaMES exposes or connects to, curated by the FoaMES maintainers; see sbom/curated.json.",
+			}
 		)
 
-	seed = f"{REPO_URL}@{commit or app_version}#{frappe_line or ''}"
+	# The identity covers the resolved inventory, so a rebuild of the same commit that resolves
+	# different versions (Frappe branches and gateway packages float) gets its own serial number.
+	inventory = sorted(f"{c.get('bom-ref')}|{c.get('version', '')}" for c in env_components)
+	seed = "#".join([f"{REPO_URL}@{commit or app_version}", frappe_line or "", *inventory])
 	return {
 		"$schema": SCHEMA_URL,
 		"bomFormat": "CycloneDX",
@@ -298,9 +326,7 @@ def build_bom(
 			"component": root,
 			"distributionConstraints": {"tlp": "CLEAR"},
 		},
-		"components": sorted(env_components, key=lambda c: normalise_name(c.get("name")))
-		+ curated_components
-		+ crypto,
+		"components": components,
 		"services": services,
 		"dependencies": dependencies,
 		"citations": citations,

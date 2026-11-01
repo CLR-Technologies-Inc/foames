@@ -101,6 +101,25 @@ class TestBuildSbom(unittest.TestCase):
 			self.assertIn(ref, root["dependsOn"])
 		self.assertNotIn("pip==25.0", root["dependsOn"])
 
+	def test_exposed_services_are_provided_not_depended_on(self):
+		root = next(d for d in build()["dependencies"] if d["ref"] == "foames")
+		for ref in ("service:machine-event-webhook", "service:s4hana-idoc-receiver"):
+			self.assertIn(ref, root["provides"])
+			self.assertNotIn(ref, root["dependsOn"])
+		self.assertIn("service:oauth-token-endpoint", root["dependsOn"])
+
+	def test_machine_data_flows_out_of_the_broker_and_opcua_server(self):
+		services = {s["bom-ref"]: s for s in build()["services"]}
+		for ref in ("service:mqtt-broker", "service:opcua-server"):
+			self.assertEqual(services[ref]["data"][0]["flow"], "outbound")
+			self.assertNotIn("authenticated", services[ref])  # depends on configuration
+		self.assertEqual(services["service:machine-event-webhook"]["data"][0]["flow"], "inbound")
+
+	def test_a_different_resolution_gets_a_new_serial_number(self):
+		changed = json.loads(json.dumps(ENV_BOM))
+		changed["components"][1]["version"] = "2.32.1"
+		self.assertNotEqual(build()["serialNumber"], build(changed)["serialNumber"])
+
 	def test_every_reference_resolves(self):
 		bom = build()
 		refs = {c["bom-ref"] for c in bom["components"]}
@@ -109,7 +128,7 @@ class TestBuildSbom(unittest.TestCase):
 		refs |= {bom["metadata"]["component"]["bom-ref"], bom["metadata"]["supplier"]["bom-ref"]}
 		for dependency in bom["dependencies"]:
 			self.assertIn(dependency["ref"], refs)
-			for target in dependency.get("dependsOn", []):
+			for target in dependency.get("dependsOn", []) + dependency.get("provides", []):
 				self.assertIn(target, refs)
 		for citation in bom["citations"]:
 			self.assertIn(citation["attributedTo"], refs)
@@ -128,12 +147,18 @@ class TestBuildSbom(unittest.TestCase):
 		bom = build()
 		inventory = next(c for c in bom["citations"] if c["bom-ref"] == "citation:inventory")
 		self.assertEqual(inventory["attributedTo"], "tool:cyclonedx-py")
+		cited = [bom["components"][int(p.rsplit("/", 1)[1])]["name"] for p in inventory["pointers"]]
+		self.assertEqual(sorted(cited), sorted(c["name"] for c in ENV_BOM["components"]))
 
 	def test_without_a_scan_frappe_is_still_declared(self):
 		bom = build({})
 		names = {c["name"]: c for c in bom["components"]}
 		self.assertEqual(names["frappe"]["scope"], "required")
-		self.assertNotIn("citation:inventory", {c["bom-ref"] for c in bom["citations"]})
+		citations = {c["bom-ref"]: c for c in bom["citations"]}
+		self.assertNotIn("citation:inventory", citations)
+		index = next(i for i, c in enumerate(bom["components"]) if c["name"] == "frappe")
+		self.assertEqual(citations["citation:fallback"]["pointers"], [f"/components/{index}"])
+		self.assertEqual(citations["citation:fallback"]["attributedTo"], build_sbom.TOOL_REF)
 
 	def test_crypto_assets_use_1_7_algorithm_families(self):
 		crypto = [c for c in build()["components"] if c["type"] == "cryptographic-asset"]
