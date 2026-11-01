@@ -1,12 +1,18 @@
 # Copyright (c) 2026, CLR Technologies Inc. and contributors
 # For license information, please see license.txt
 
-"""The S/4HANA adapter registered through the `foames_erp_adapters` hook."""
+"""The S/4HANA adapter registered through the `foames_erp_adapters` hook.
+
+A Job Card has no single S/4HANA record, so unless a site maps it in S4HANA Settings it resolves
+as an order operation: `ORDER|OPERATION`, read from the order's operations. That is what a machine's
+current job names when its counts roll up to S/4HANA confirmations (see `rollup.py`).
+"""
 
 from foames.foames_adapters.base import AdapterError, AdapterUnavailable, ERPAdapter, ResolvedReference
 from foames.foames_adapters.s4hana.odata import ODataError
 
 ADAPTER_KEY = "S4HANA"
+JOB_CARD = "Job Card"
 
 
 class S4HANAAdapter(ERPAdapter):
@@ -28,9 +34,11 @@ class S4HANAAdapter(ERPAdapter):
 
 	@property
 	def reference_map(self) -> dict[str, str]:
-		return {
+		mapped = {
 			reference_type: spec.entity_set for reference_type, spec in self.settings.entity_specs().items()
 		}
+		mapped.setdefault(JOB_CARD, "Order Operation")
+		return mapped
 
 	def is_available(self) -> bool:
 		settings = self.settings
@@ -38,7 +46,10 @@ class S4HANAAdapter(ERPAdapter):
 
 	def fetch(self, erp_type: str, reference_type: str, external_id: str) -> ResolvedReference | None:
 		settings = self.settings
-		spec = settings.entity_specs()[reference_type]
+		specs = settings.entity_specs()
+		if reference_type == JOB_CARD and JOB_CARD not in specs:
+			return self.fetch_operation(external_id)
+		spec = specs[reference_type]
 		try:
 			keys = spec.keys_for(external_id)
 		except ValueError:
@@ -49,9 +60,7 @@ class S4HANAAdapter(ERPAdapter):
 				spec.service, spec.entity_set, keys, spec.query()
 			)
 		except ODataError as e:
-			if e.transient or e.status in (401, 403):
-				raise AdapterUnavailable(f"{self.label}: {e}")
-			raise AdapterError(f"{self.label}: {e}")
+			raise self.adapter_error(e)
 		if not entity:
 			return None
 		return ResolvedReference(
@@ -60,3 +69,59 @@ class S4HANAAdapter(ERPAdapter):
 			label=spec.label_for(entity, settings.language or "EN"),
 			data={"service": spec.service, "entity_set": spec.entity_set, "keys": keys},
 		)
+
+	def fetch_operation(self, external_id: str) -> ResolvedReference | None:
+		"""An order operation (`ORDER|OPERATION`) as a Job Card, with what a roll-up needs to know."""
+		from foames.foames_adapters.s4hana import orders
+		from foames.foames_adapters.s4hana.production import parse_job
+
+		try:
+			order, operation = parse_job(external_id)
+		except ValueError:
+			return None
+		settings = self.settings
+		try:
+			found = orders.production_order(
+				settings.client(self._transport),
+				order,
+				process_order=bool(getattr(settings, "confirm_process_orders", 0)),
+			)
+		except ODataError as e:
+			raise self.adapter_error(e)
+		if not found:
+			return None
+		step = next(
+			(
+				op
+				for op in found["operations"]
+				if same_operation(op["operation"], operation) and not op["suboperation"]
+			),
+			None,
+		)
+		if not step:
+			return None
+		text = step["text"] or step["work_center"] or found["material"]
+		return ResolvedReference(
+			reference_type=JOB_CARD,
+			external_id=f"{found['order'] or order}|{step['operation']}",
+			label=f"{found['order'] or order} {step['operation']}: {text}",
+			data={
+				"order": found["order"] or order,
+				"operation": step["operation"],
+				"work_center": step["work_center"],
+				"plant": step["plant"] or found["plant"],
+				"unit": step["unit"] or found["unit"],
+				"quantity": str(step["quantity"]),
+				"confirmed_yield": str(step["confirmed_yield"]),
+			},
+		)
+
+	def adapter_error(self, error: ODataError) -> AdapterError:
+		if error.transient or error.status in (401, 403):
+			return AdapterUnavailable(f"{self.label}: {error}")
+		return AdapterError(f"{self.label}: {error}")
+
+
+def same_operation(a, b) -> bool:
+	"""Operation numbers compare without their leading zeros: `10` and `0010` are one operation."""
+	return (str(a or "").lstrip("0") or "0") == (str(b or "").lstrip("0") or "0")

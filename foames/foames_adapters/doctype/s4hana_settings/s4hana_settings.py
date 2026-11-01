@@ -5,6 +5,7 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 
+from foames.foames_adapters.s4hana.confirmations import MAX_ACTIVITIES
 from foames.foames_adapters.s4hana.entities import DEFAULT_ENTITIES, EntitySpec, spec_from_override
 from foames.foames_adapters.s4hana.odata import Connection, ODataClient, ODataError
 
@@ -22,6 +23,16 @@ class S4HANASettings(Document):
 				spec_from_override(row.as_dict())
 			except ValueError as e:
 				frappe.throw(_("Row {0}: {1}").format(row.idx, e))
+		self.validate_rollup()
+
+	def validate_rollup(self):
+		if not self.roll_up_counts_to_confirmations:
+			return
+		if not (self.confirmation_unit or "").strip():
+			frappe.throw(_("Set the Confirmation Unit the machine counts are confirmed in"))
+		position = int(self.machine_time_activity_position or 0)
+		if not 0 <= position <= MAX_ACTIVITIES:
+			frappe.throw(_("Machine Time Activity Position must be between 0 and {0}").format(MAX_ACTIVITIES))
 
 	def connection(self) -> Connection:
 		return Connection(

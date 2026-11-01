@@ -25,7 +25,15 @@
   "mapping_section",
   "entity_mappings",
   "outbox_section",
-  "outbox_paused"
+  "outbox_paused",
+  "rollup_section",
+  "roll_up_counts_to_confirmations",
+  "confirmation_unit",
+  "confirm_process_orders",
+  "column_break_rollup",
+  "machine_time_activity_position",
+  "machine_time_unit",
+  "confirm_without_goods_movements"
  ],
  "fields": [
   {
@@ -153,12 +161,68 @@
    "label": "Pause Outbox",
    "default": "0",
    "description": "Postings keep queuing but are not sent until this is cleared."
+  },
+  {
+   "fieldname": "rollup_section",
+   "fieldtype": "Section Break",
+   "label": "Machine Roll-Up"
+  },
+  {
+   "fieldname": "roll_up_counts_to_confirmations",
+   "fieldtype": "Check",
+   "label": "Roll Up Machine Counts to Confirmations",
+   "default": "0",
+   "description": "Every few minutes, and whenever a machine's current job changes, queue the machine's good and scrap counts since the last roll-up as a partial confirmation of the order operation named by its Current Job Reference (a Job Card written ORDER|OPERATION)."
+  },
+  {
+   "fieldname": "confirmation_unit",
+   "fieldtype": "Data",
+   "label": "Confirmation Unit",
+   "depends_on": "roll_up_counts_to_confirmations",
+   "mandatory_depends_on": "roll_up_counts_to_confirmations",
+   "description": "Unit of the confirmed yield and scrap, in S/4HANA's code, for example PC or KG. Machine counts are sent in this unit as they are."
+  },
+  {
+   "fieldname": "confirm_process_orders",
+   "fieldtype": "Check",
+   "label": "Jobs Are Process Orders",
+   "default": "0",
+   "depends_on": "roll_up_counts_to_confirmations",
+   "description": "Confirm process order phases (API_PROC_ORDER_CONFIRMATION_2_SRV) instead of production order operations."
+  },
+  {
+   "fieldname": "column_break_rollup",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "machine_time_activity_position",
+   "fieldtype": "Int",
+   "label": "Machine Time Activity Position",
+   "default": "0",
+   "depends_on": "roll_up_counts_to_confirmations",
+   "description": "Position of machine time in the operation's standard value key (2 in SAP's default key SAP1). The machine's running time is confirmed in that activity. 0 sends no activity."
+  },
+  {
+   "fieldname": "machine_time_unit",
+   "fieldtype": "Select",
+   "label": "Machine Time Unit",
+   "options": "MIN\nH",
+   "default": "MIN",
+   "depends_on": "eval:doc.roll_up_counts_to_confirmations && doc.machine_time_activity_position"
+  },
+  {
+   "fieldname": "confirm_without_goods_movements",
+   "fieldtype": "Check",
+   "label": "Confirm Without Goods Movements",
+   "default": "0",
+   "depends_on": "roll_up_counts_to_confirmations",
+   "description": "Stop S/4HANA from backflushing components and receiving the product with each roll-up confirmation. Off, the order's own settings decide."
   }
  ],
  "index_web_pages_for_search": 0,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-30 03:00:00.000000",
+ "modified": "2026-11-01 03:30:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES Adapters",
  "name": "S4HANA Settings",

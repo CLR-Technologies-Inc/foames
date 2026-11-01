@@ -4,9 +4,10 @@
 """Which S/4HANA OData entity each kernel reference type resolves to.
 
 Only reference types with a well-known released API get a default. The others (Unit of Measure,
-Operation, Location, Serial Number, Job Card) differ between releases and editions, or have no
-single S/4HANA record, so a site maps them in S4HANA Settings after checking the system's
-$metadata. A site can also override any default.
+Operation, Location, Serial Number) differ between releases and editions, or have no single S/4HANA
+record, so a site maps them in S4HANA Settings after checking the system's $metadata. Job Card has
+no entity default either: unless mapped, the adapter resolves it as an order operation
+(`ORDER|OPERATION`). A site can also override any default.
 
 Composite keys are written into External Reference's single `external_id` as the key values joined
 by `|`, in `key_fields` order. Keys with a default may be left out: a Batch without a plant is
