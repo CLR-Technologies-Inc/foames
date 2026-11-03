@@ -87,7 +87,8 @@ class MaintenanceWorkOrder(Document):
 			record = frappe.get_doc("Downtime Record", existing)
 			if not record.reason:
 				record.reason = reason
-			record.notes = "\n".join(filter(None, [record.notes, _("Maintenance {0}").format(self.name)]))
+			note = _("Maintenance {0}").format(self.name)
+			record.notes = f"{record.notes}\n{note}" if record.notes else note
 			record.save(ignore_permissions=True)
 		else:
 			record = frappe.get_doc(
