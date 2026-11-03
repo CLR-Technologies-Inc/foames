@@ -160,6 +160,18 @@ def collect_findings(snapshot: dict) -> list[dict]:
 	from foames.foames_mes.suggestions import all_rules
 
 	findings = all_rules(snapshot)
+	findings.extend(_spc_findings())
 	for rule in frappe.get_hooks("foames_suggestion_rules") or []:
 		findings.extend(frappe.get_attr(rule)(snapshot))
 	return findings
+
+
+def _spc_findings() -> list[dict]:
+	"""Control chart signals on recent Measurement events; a failure here never stops the other rules."""
+	from foames.foames_mes.spc_monitor import spc_findings
+
+	try:
+		return spc_findings()
+	except Exception:
+		frappe.log_error(title="FoaMES SPC rules", message=frappe.get_traceback())
+		return []

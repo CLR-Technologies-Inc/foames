@@ -48,6 +48,7 @@ The full guide, including roles, the scheduler, running the gateways and a smoke
 | [docs/ignition.md](docs/ignition.md) | Connecting Ignition SCADA |
 | [docs/floor-view.md](docs/floor-view.md) | The Floor View, downtime and Agent Suggestions |
 | [docs/oee.md](docs/oee.md) | How OEE is computed and how to set a machine up for it |
+| [docs/spc.md](docs/spc.md) | Control charts (I-MR, X-bar R) and Nelson / Western Electric run rules on machine measurements |
 | [docs/dashboards.md](docs/dashboards.md) | Role workspaces, dashboards, number cards and the script reports (OEE trends, downtime Pareto, MTBF and MTTR, suggestions, outbox health, process throughput) |
 | [AGENTS.md](AGENTS.md) | For coding agents and developers building on FoaMES: invariants, hooks, API, tests |
 | [docs/agents/floor-agent.md](docs/agents/floor-agent.md) | For an agent reading the floor and raising suggestions at run time |
@@ -88,8 +89,9 @@ Events arrive through a signed webhook, an MQTT gateway, a Sparkplug B gateway o
 | OEE Period | MES | OEE for a machine over a period from its events, downtime and counts. Planned downtime is excluded from availability; time without a machine signal is counted as loss, never as run time. One period per machine per day is computed by the scheduler over the machine's scheduled shift. |
 | Floor View (page) | MES | Live tiles per machine with state, counts and OEE, plus open suggestions. |
 | Agent Suggestion | MES | A finding raised by the built-in rules or by an external agent, with evidence, for a person to accept or dismiss. |
+| SPC Control Chart (report) | MES | I-MR or X-bar R chart of a machine measurement with Nelson or Western Electric run rules; signals on recent readings become Quality suggestions. |
 
-The OEE arithmetic and the suggestion rules have no Frappe dependency (`foames/foames_mes/oee.py`, `suggestions.py`). The counter-delta, owed-count and coverage ideas follow public MES practice, including the FactorySemantics MES design notes. See [docs/agents/floor-agent.md](docs/agents/floor-agent.md) for the agent API and the hooks that add snapshot sections and rules.
+The OEE arithmetic and the suggestion rules have no Frappe dependency (`foames/foames_mes/oee.py`, `suggestions.py`, `spc.py`). The counter-delta, owed-count and coverage ideas follow public MES practice, including the FactorySemantics MES design notes. See [docs/agents/floor-agent.md](docs/agents/floor-agent.md) for the agent API and the hooks that add snapshot sections and rules.
 
 ## Process mining
 
