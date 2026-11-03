@@ -26,7 +26,7 @@
    "label": "Availability Trend by Machine"
   }
  ],
- "content": "[{\"id\": \"V7KCP9iA0M\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Right Now</b></span>\", \"col\": 12}}, {\"id\": \"Gdi9Jky4TL\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Machines Down\", \"col\": 3}}, {\"id\": \"A5tHa26_uu\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Stoppages\", \"col\": 3}}, {\"id\": \"Q2M8zxEvgj\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Unclassified Downtime Last 7 Days\", \"col\": 3}}, {\"id\": \"mrMEFMKLb7\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Downtime Minutes Last 7 Days\", \"col\": 3}}, {\"id\": \"EC6H5xCUJd\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"sKU0iu4uO4\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Reliability</b></span>\", \"col\": 12}}, {\"id\": \"9CL6IxsCfD\", \"type\": \"chart\", \"data\": {\"chart_name\": \"MTBF and MTTR by Machine\", \"col\": 12}}, {\"id\": \"TzWRaruxdm\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Downtime Pareto by Reason\", \"col\": 6}}, {\"id\": \"3QOZ7wg7hr\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Downtime Pareto by Machine\", \"col\": 6}}, {\"id\": \"qCpj_EMb2i\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"ru0B3J2Yr5\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Trend</b></span>\", \"col\": 12}}, {\"id\": \"KGu-79K9Q_\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Downtime Minutes per Day\", \"col\": 6}}, {\"id\": \"ZWXFt8iixF\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Stoppages by Machine\", \"col\": 6}}, {\"id\": \"O-YOjP0wHV\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Availability Trend by Machine\", \"col\": 12}}, {\"id\": \"lnxEe50DbQ\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"kOeIiEB_TZ\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Shortcuts</b></span>\", \"col\": 12}}, {\"id\": \"g4-ZJOwS8S\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Machines Down\", \"col\": 4}}, {\"id\": \"74d-PlyoY-\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Open Stoppages\", \"col\": 4}}, {\"id\": \"R76eFaqrwk\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"MTBF and MTTR\", \"col\": 4}}, {\"id\": \"tz7m4BdNPI\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Downtime Pareto\", \"col\": 4}}, {\"id\": \"5PquhtjUYX\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Downtime Reasons\", \"col\": 4}}, {\"id\": \"UBFfPw9zpP\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Maintenance Dashboard\", \"col\": 4}}, {\"id\": \"9lqdsOoWJr\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"uqyhJIUGyD\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Reports and Masters</b></span>\", \"col\": 12}}, {\"id\": \"IagXiedZhy\", \"type\": \"card\", \"data\": {\"card_name\": \"Reliability\", \"col\": 4}}, {\"id\": \"Ztq4SX5Q8P\", \"type\": \"card\", \"data\": {\"card_name\": \"Downtime\", \"col\": 4}}, {\"id\": \"-OF9GTINwg\", \"type\": \"card\", \"data\": {\"card_name\": \"Machines\", \"col\": 4}}]",
+ "content": "[{\"id\": \"V7KCP9iA0M\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Right Now</b></span>\", \"col\": 12}}, {\"id\": \"Gdi9Jky4TL\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Machines Down\", \"col\": 3}}, {\"id\": \"A5tHa26_uu\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Stoppages\", \"col\": 3}}, {\"id\": \"Q2M8zxEvgj\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Unclassified Downtime Last 7 Days\", \"col\": 3}}, {\"id\": \"mrMEFMKLb7\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Downtime Minutes Last 7 Days\", \"col\": 3}}, {\"id\": \"EC6H5xCUJd\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"pmHdr0001A\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Preventive Maintenance</b></span>\", \"col\": 12}}, {\"id\": \"pmCard001A\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Maintenance Overdue\", \"col\": 4}}, {\"id\": \"pmCard002A\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Maintenance Due\", \"col\": 4}}, {\"id\": \"pmCard003A\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Maintenance Work Orders\", \"col\": 4}}, {\"id\": \"pmSpacer1A\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"sKU0iu4uO4\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Reliability</b></span>\", \"col\": 12}}, {\"id\": \"9CL6IxsCfD\", \"type\": \"chart\", \"data\": {\"chart_name\": \"MTBF and MTTR by Machine\", \"col\": 12}}, {\"id\": \"TzWRaruxdm\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Downtime Pareto by Reason\", \"col\": 6}}, {\"id\": \"3QOZ7wg7hr\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Downtime Pareto by Machine\", \"col\": 6}}, {\"id\": \"qCpj_EMb2i\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"ru0B3J2Yr5\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Trend</b></span>\", \"col\": 12}}, {\"id\": \"KGu-79K9Q_\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Downtime Minutes per Day\", \"col\": 6}}, {\"id\": \"ZWXFt8iixF\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Stoppages by Machine\", \"col\": 6}}, {\"id\": \"O-YOjP0wHV\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Availability Trend by Machine\", \"col\": 12}}, {\"id\": \"lnxEe50DbQ\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"kOeIiEB_TZ\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Shortcuts</b></span>\", \"col\": 12}}, {\"id\": \"pmShort01A\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Maintenance Due List\", \"col\": 4}}, {\"id\": \"pmShort02A\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Open Maintenance Work Orders\", \"col\": 4}}, {\"id\": \"pmShort03A\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Maintenance Plans\", \"col\": 4}}, {\"id\": \"g4-ZJOwS8S\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Machines Down\", \"col\": 4}}, {\"id\": \"74d-PlyoY-\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Open Stoppages\", \"col\": 4}}, {\"id\": \"R76eFaqrwk\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"MTBF and MTTR\", \"col\": 4}}, {\"id\": \"tz7m4BdNPI\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Downtime Pareto\", \"col\": 4}}, {\"id\": \"5PquhtjUYX\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Downtime Reasons\", \"col\": 4}}, {\"id\": \"UBFfPw9zpP\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Maintenance Dashboard\", \"col\": 4}}, {\"id\": \"9lqdsOoWJr\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"uqyhJIUGyD\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Reports and Masters</b></span>\", \"col\": 12}}, {\"id\": \"pmCardBrkA\", \"type\": \"card\", \"data\": {\"card_name\": \"Preventive Maintenance\", \"col\": 4}}, {\"id\": \"IagXiedZhy\", \"type\": \"card\", \"data\": {\"card_name\": \"Reliability\", \"col\": 4}}, {\"id\": \"Ztq4SX5Q8P\", \"type\": \"card\", \"data\": {\"card_name\": \"Downtime\", \"col\": 4}}, {\"id\": \"-OF9GTINwg\", \"type\": \"card\", \"data\": {\"card_name\": \"Machines\", \"col\": 4}}]",
  "creation": "2026-10-31 12:00:00.000000",
  "custom_blocks": [],
  "docstatus": 0,
@@ -39,6 +39,47 @@
  "is_hidden": 0,
  "label": "FoaMES Maintenance",
  "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Preventive Maintenance",
+   "link_count": 3,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Maintenance Due List",
+   "link_count": 0,
+   "link_to": "Maintenance Due List",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Maintenance Plan",
+   "link_count": 0,
+   "link_to": "Maintenance Plan",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Maintenance Work Order",
+   "link_count": 0,
+   "link_to": "Maintenance Work Order",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
   {
    "hidden": 0,
    "is_query_report": 0,
@@ -163,11 +204,23 @@
    "type": "Link"
   }
  ],
- "modified": "2026-10-31 12:00:00.000000",
+ "modified": "2026-11-03 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES MES",
  "name": "FoaMES Maintenance",
  "number_cards": [
+  {
+   "label": "Maintenance Overdue",
+   "number_card_name": "Maintenance Overdue"
+  },
+  {
+   "label": "Maintenance Due",
+   "number_card_name": "Maintenance Due"
+  },
+  {
+   "label": "Open Maintenance Work Orders",
+   "number_card_name": "Open Maintenance Work Orders"
+  },
   {
    "label": "Machines Down",
    "number_card_name": "Machines Down"
@@ -200,6 +253,29 @@
  ],
  "sequence_id": 22.0,
  "shortcuts": [
+  {
+   "color": "Red",
+   "doc_view": "",
+   "label": "Maintenance Due List",
+   "link_to": "Maintenance Due List",
+   "report_ref_doctype": "Maintenance Plan",
+   "type": "Report"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "label": "Open Maintenance Work Orders",
+   "link_to": "Maintenance Work Order",
+   "stats_filter": "{\"status\": [\"in\", [\"Open\", \"In Progress\"]]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Blue",
+   "doc_view": "List",
+   "label": "Maintenance Plans",
+   "link_to": "Maintenance Plan",
+   "type": "DocType"
+  },
   {
    "color": "Red",
    "doc_view": "List",

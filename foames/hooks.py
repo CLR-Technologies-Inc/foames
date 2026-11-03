@@ -115,7 +115,11 @@ scheduler_events = {
 		# Rolls machine counts up to ERPNext Job Cards; does nothing unless enabled in ERPNext Adapter Settings.
 		"*/10 * * * *": ["foames.foames_adapters.erpnext.rollup.roll_up_all"],
 	},
-	"hourly": ["foames.foames_mes.tasks.run_suggestion_rules"],
+	"hourly": [
+		"foames.foames_mes.tasks.run_suggestion_rules",
+		# Reads every Maintenance Plan's meter and raises suggestions for plans coming due.
+		"foames.foames_mes.tasks.check_maintenance_plans",
+	],
 	"daily": [
 		"foames.foames_mes.tasks.compute_daily_oee",
 		# Looks up External References that are still Unverified or Missing in their ERP.
