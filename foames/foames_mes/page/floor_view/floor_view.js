@@ -71,6 +71,7 @@ class FloorView {
 							  }</div>`
 							: ""
 					}
+					${m.shift ? `<div>${__("Shift")} ${frappe.utils.escape_html(m.shift.name)}</div>` : ""}
 					<div>${
 						m.minutes_since_count == null
 							? __("No counts today")

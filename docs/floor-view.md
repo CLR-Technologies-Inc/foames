@@ -84,6 +84,7 @@ Everything the page shows comes from one call, `foames.foames_mes.api.get_floor_
     {"name": "press-1", "title": "Press 1", "status": "Running", "last_seen": "2026-10-30 14:01:58",
      "machine_type": "Press", "ideal_cycle_seconds": 2.0, "minutes_since_count": 0.4,
      "counts": {"good": 9000, "scrap": 300},
+     "shift": {"name": "Early", "start": "2026-10-30 06:00:00", "end": "2026-10-30 14:00:00"},
      "oee_today": {"oee": 69.0, "availability": 79.3, "performance": 89.9, "quality": 96.8}}
   ],
   "downtime_by_machine": [

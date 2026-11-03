@@ -17,6 +17,7 @@
   "ideal_cycle_seconds",
   "shift_start",
   "scheduled_minutes_per_day",
+  "shift_pattern",
   "sb_job",
   "current_job_reference",
   "cb_job",
@@ -109,6 +110,13 @@
    "description": "Planned production time per day, for the daily OEE period. Ignored without a Shift Start"
   },
   {
+   "fieldname": "shift_pattern",
+   "fieldtype": "Link",
+   "label": "Shift Pattern",
+   "options": "Shift Pattern",
+   "description": "When set, the daily OEE task creates one period per shift of this pattern, and Shift Start and Scheduled Minutes Per Day are ignored"
+  },
+  {
    "fieldname": "sb_job",
    "fieldtype": "Section Break",
    "label": "Current Job"
@@ -169,7 +177,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-31 12:00:00.000000",
+ "modified": "2026-11-03 20:30:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES MES",
  "name": "Machine",

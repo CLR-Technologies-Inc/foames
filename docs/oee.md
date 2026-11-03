@@ -59,7 +59,8 @@ On the **Machine** record:
 | Field | Why it matters |
 | --- | --- |
 | **Ideal Cycle Time (s)** | Seconds per unit at rated speed. Without it, performance is reported as 100 % and flagged in the notes. |
-| **Shift Start** and **Scheduled Minutes Per Day** | Define the daily OEE window. With a shift start of 06:00 and 480 minutes, the daily period runs 06:00 to 14:00 and nothing outside it is counted. Leave Shift Start empty to measure the whole day against 1440 planned minutes. |
+| **Shift Pattern** | A shared shift calendar (see [Shift patterns](#shift-patterns)). When set, the daily task creates one period per shift, and Shift Start and Scheduled Minutes Per Day are ignored. |
+| **Shift Start** and **Scheduled Minutes Per Day** | For a machine without a Shift Pattern, define its single daily OEE window. With a shift start of 06:00 and 480 minutes, the daily period runs 06:00 to 14:00 and nothing outside it is counted. Leave Shift Start empty to measure the whole day against 1440 planned minutes. |
 | **Counter Rollover** | The value at which the machine's counter wraps to zero, so a wrap is counted as production rather than as a reset. Leave 0 for a counter that never wraps. |
 | **Source ID** | Must match what the gateway sends; otherwise the events are rejected and the machine has no history. |
 
@@ -67,9 +68,31 @@ On **Downtime Reasons**, tick **Counts As Planned Downtime** for the reasons tha
 
 In **Machine Data Settings**, **Mark Machine Unknown After** decides how quickly a silent machine stops being counted as whatever it last reported. The default is 15 minutes, checked every 5 minutes by the scheduler.
 
+## Shift patterns
+
+A **Shift Pattern** is a shift calendar that any number of machines share. It holds:
+
+| Part | What it holds |
+| --- | --- |
+| **Shifts** | One row per shift: a name (`Early`, `Late`, `Night`), a start time, a length in minutes, and the weekdays it runs on (Monday to Friday by default). |
+| **Non-Working Days** | Dates on which no shift starts: plant holidays, shutdowns, stocktakes. |
+
+A shift belongs to the day it starts on. A `Night` shift from 22:00 for 480 minutes that runs on Monday ends on Tuesday at 06:00, is Monday's shift, and a non-working day on Monday cancels it. Shifts in a pattern must not overlap, including a Sunday night shift that runs into Monday morning, and each lasts more than 0 and at most 1440 minutes. A gap between shifts is simply unscheduled time: it belongs to no period and counts against nothing.
+
+With a pattern set on a machine:
+
+- the daily task creates one OEE Period per shift that starts on the day, with the shift's name in the period's **Shift** field and the shift's length as planned minutes; no period is created on a weekday the shift does not run or on a non-working day;
+- the OEE Trend report filters by shift and groups by it (**Group By: Shift**), so the three shifts of a plant can be compared on the same time-weighted basis as lines;
+- the MTBF and MTTR report counts only time inside the pattern's shifts as operating time;
+- the Floor View shows the running shift on each machine's tile, and the floor snapshot carries it as `shift` (`{"name", "start", "end"}`, or `null` off shift or without a pattern).
+
+Scheduled breaks inside a shift are not part of the pattern. Record them as Downtime Records with a reason that **Counts As Planned Downtime**, so they leave the availability base the same way a planned changeover does.
+
+Changing a pattern affects only the periods created after the change. Periods are found by machine and window, so if a machine moves from a single daily window to a pattern, the days that already have a period keep it and the pattern's periods start from the next run; delete the old periods of a day and run `compute_daily_oee` for it to recompute that day by shift.
+
 ## The daily OEE Period
 
-Once a day the scheduler creates one **OEE Period** per enabled machine for the previous day, over the machine's scheduled window. Its name is `OEE-<machine>-<from time>`. A period is not created twice for the same machine and window, so re-running the job is harmless.
+Once a day the scheduler creates one **OEE Period** per enabled machine and production window for the previous day: one per shift for a machine with a Shift Pattern, otherwise one over the machine's scheduled window. Its name is `OEE-<machine>-<from time>`. A period is not created twice for the same machine and window, so re-running the job is harmless.
 
 The job looks at the previous two days and never computes a window that has not ended. A shift that crosses midnight (for example a Shift Start of 22:00 with 480 minutes) is therefore skipped by the run just after its date and created by the next day's run, once it is over.
 

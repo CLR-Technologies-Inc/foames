@@ -17,6 +17,8 @@ from frappe.query_builder.functions import Sum
 from frappe.utils import add_days, get_datetime, now_datetime
 
 from foames.foames_mes.counters import minutes_between
+from foames.foames_mes.doctype.shift_pattern.shift_pattern import load_pattern
+from foames.foames_mes.shifts import window_at
 
 
 def floor_snapshot(days: int = 1) -> dict:
@@ -35,6 +37,7 @@ def floor_snapshot(days: int = 1) -> dict:
 			"ideal_cycle_seconds",
 			"current_job_reference",
 			"current_job_since",
+			"shift_pattern",
 		],
 		order_by="name",
 	)
@@ -44,6 +47,7 @@ def floor_snapshot(days: int = 1) -> dict:
 		if m["current_job"]:
 			m["current_job"]["since"] = m.current_job_since
 		m.pop("current_job_since")
+		m["shift"] = current_shift(m.pop("shift_pattern"), now)
 		# Measured from the machine's latest count ever (kept on the Machine by event processing), not
 		# only inside the window, so a machine that counted yesterday and reports Running without
 		# counting today is still caught by the rules.
@@ -97,6 +101,18 @@ def floor_snapshot(days: int = 1) -> dict:
 	for extension in frappe.get_hooks("foames_floor_snapshot_extensions") or []:
 		frappe.get_attr(extension)(snapshot, since, now)
 	return snapshot
+
+
+def current_shift(pattern: str | None, now) -> dict | None:
+	"""{name, start, end} of the pattern's shift running at `now`, or None when the machine has no
+	pattern or is off shift."""
+	if not pattern:
+		return None
+	shifts, holidays = load_pattern(pattern)
+	window = window_at(now, shifts, holidays)
+	if not window:
+		return None
+	return {"name": window.shift, "start": window.start, "end": window.end}
 
 
 def current_jobs(references: list[str]) -> dict[str, dict]:

@@ -13,9 +13,9 @@ outside the shift does not lower MTBF.
 
 import frappe
 from frappe import _
-from frappe.utils import add_days, get_datetime, getdate
+from frappe.utils import get_datetime
 
-from foames.foames_mes.doctype.oee_period.oee_period import scheduled_window
+from foames.foames_mes.doctype.oee_period.oee_period import operating_windows
 from foames.foames_mes.kpi import clip_minutes, reliability
 from foames.foames_mes.report.utils import chart_of, date_window, machines_in_scope, summary_item
 
@@ -100,22 +100,6 @@ def execute(filters=None):
 			summary_item(_("Inherent Availability"), fleet["availability"], "Percent"),
 		],
 	)
-
-
-def operating_windows(machine, start, end) -> list[tuple]:
-	"""The machine's scheduled window on each day of [start, end), clipped to the report window.
-	A machine without a schedule is on the clock around it."""
-	windows = []
-	day = getdate(start)
-	while get_datetime(f"{day} 00:00:00") < end:
-		w_start, w_end, _minutes = scheduled_window(
-			day, machine.get("shift_start"), machine.get("scheduled_minutes_per_day")
-		)
-		w_start, w_end = max(w_start, start), min(w_end, end)
-		if w_end > w_start:
-			windows.append((w_start, w_end))
-		day = add_days(day, 1)
-	return windows
 
 
 def get_columns():
