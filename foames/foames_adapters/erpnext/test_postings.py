@@ -137,6 +137,28 @@ class TestFinishedGoodIdentity(unittest.TestCase):
 	def prepare(self, operation, payload):
 		return postings.prepare(postings.OPERATIONS[operation], payload)
 
+	def test_time_log_operators_take_any_shape(self):
+		base = {"job_card": "PO-JOB00001", "start_time": "2026-10-31 08:00:00"}
+		rows = [{"employee": "HR-EMP-00001"}, {"employee": "HR-EMP-00002"}]
+		self.assertEqual(self.prepare("Job Card Time Log", {**base, "employees": rows})["employees"], rows)
+		self.assertEqual(
+			self.prepare("Job Card Time Log", {**base, "employees": ["HR-EMP-00001", "HR-EMP-00002"]})[
+				"employees"
+			],
+			rows,
+		)
+		self.assertEqual(
+			self.prepare("Job Card Time Log", {**base, "employees": "HR-EMP-00001, HR-EMP-00002"})[
+				"employees"
+			],
+			rows,
+		)
+		self.assertNotIn("employees", self.prepare("Job Card Time Log", {**base, "employees": None}))
+		with self.assertRaises(ValueError):
+			self.prepare("Job Card Time Log", {**base, "employees": [{"name": "x"}]})
+		with self.assertRaises(ValueError):
+			self.prepare("Job Card Time Log", {**base, "employees": 7})
+
 	def test_manufacture_batch_and_serial_numbers(self):
 		base = {"work_order": "MFG-WO-1"}
 		self.assertEqual(

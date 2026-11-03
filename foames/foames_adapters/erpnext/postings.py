@@ -199,6 +199,10 @@ def prepare(operation: Operation, payload: dict) -> dict:
 			raise ValueError("serial_nos must name one serial number per unit of qty")
 	elif "serial_nos" in prepared:
 		del prepared["serial_nos"]
+	if prepared.get("employees") not in (None, ""):
+		prepared["employees"] = employee_rows(prepared["employees"])
+	elif "employees" in prepared:
+		del prepared["employees"]
 	if "batch_no" in prepared:
 		prepared["batch_no"] = str(prepared["batch_no"] or "").strip()
 		if not prepared["batch_no"]:
@@ -225,6 +229,26 @@ def prepare(operation: Operation, payload: dict) -> dict:
 	if operation.label == "Downtime Entry" and str(prepared["from_time"]) >= str(prepared["to_time"]):
 		raise ValueError("Downtime Entry needs from_time before to_time")
 	return prepared
+
+
+def employee_rows(value) -> list[dict]:
+	"""The operators of a time log in the shape ERPNext's `make_time_log` takes: a list of
+	`{"employee": <Employee>}` rows, from that, from a list of Employee ids, or from text separated
+	by commas or newlines."""
+	if isinstance(value, str):
+		value = [part.strip() for part in value.replace(",", "\n").split("\n") if part.strip()]
+	if not isinstance(value, (list, tuple)) or not value:
+		raise ValueError("employees must be a list of Employee ids")
+	rows = []
+	for entry in value:
+		if isinstance(entry, dict):
+			employee = str(entry.get("employee") or "").strip()
+		else:
+			employee = str(entry or "").strip()
+		if not employee:
+			raise ValueError("employees must be a list of Employee ids")
+		rows.append({"employee": employee})
+	return rows
 
 
 def serial_number_list(value) -> list[str]:
