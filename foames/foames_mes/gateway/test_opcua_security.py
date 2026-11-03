@@ -74,12 +74,13 @@ class TestOPCUASecurity(IntegrationTestCase):
 		self.server = attach("server-cert.der", private=False)
 
 	def secured(self, **values):
-		return settings(
-			opcua_security_mode="SignAndEncrypt",
-			opcua_client_certificate=self.cert.file_url,
-			opcua_private_key=self.key.file_url,
-			**values,
-		)
+		base = {
+			"opcua_security_mode": "SignAndEncrypt",
+			"opcua_client_certificate": self.cert.file_url,
+			"opcua_private_key": self.key.file_url,
+		}
+		base.update(values)
+		return settings(**base)
 
 	def test_mode_none_needs_no_certificate(self):
 		self.assertIsNone(opcua.security_config(settings()))
