@@ -54,6 +54,9 @@ _erpnext_reference_sync = {
 }
 
 doc_events = {
+	# A closed Downtime Record becomes an ERPNext Downtime Entry when the adapter is told to post them.
+	"Downtime Record": {"on_update": "foames.foames_adapters.erpnext.downtime.on_update"},
+} | {
 	doctype: _erpnext_reference_sync
 	for doctype in (
 		"Item",
@@ -79,9 +82,11 @@ doc_events = {
 # foames_floor_snapshot_extensions = ["myapp.floor.extend_snapshot"]  # (snapshot, since, now) in place
 # foames_suggestion_rules = ["myapp.floor.my_rule"]  # (snapshot) -> list of finding dicts
 # foames_machine_job_changed = ["myapp.floor.on_job_changed"]  # (machine, previous_reference, at)
+# foames_machine_state_changed = ["myapp.floor.on_state_changed"]  # (machine, previous_state, state, at)
 #
-# The ERPNext adapter uses the same hooks to put each machine's open Job Cards on the floor and to
-# roll a machine's counts and run time up to the Job Card it is working on.
+# The ERPNext adapter uses the same hooks to put each machine's open Job Cards on the floor, to
+# roll a machine's counts and run time up to the Job Card it is working on, and to mirror each
+# machine's state onto its ERPNext Workstation.
 
 foames_floor_snapshot_extensions = [
 	"foames.foames_adapters.erpnext.floor.extend_snapshot",
@@ -92,6 +97,7 @@ foames_suggestion_rules = [
 	"foames.foames_adapters.erpnext.rollup.current_job_card_not_open",
 ]
 foames_machine_job_changed = ["foames.foames_adapters.erpnext.rollup.on_job_changed"]
+foames_machine_state_changed = ["foames.foames_adapters.erpnext.workstation.on_state_changed"]
 
 # Process mining
 # --------------

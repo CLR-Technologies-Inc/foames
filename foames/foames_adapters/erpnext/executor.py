@@ -47,6 +47,10 @@ def execute(operation: Operation, payload: dict, marker: str) -> Result:
 		return post_job_card_production_log(payload, marker)
 	if operation.label == "Work Order Status":
 		return set_work_order_status(payload)
+	if operation.label == "Workstation Status":
+		return set_workstation_status(payload)
+	if operation.label == "Downtime Entry":
+		return post_downtime_entry(payload, marker)
 	raise ValueError(f"No executor for {operation.label}")
 
 
@@ -62,6 +66,10 @@ def find_existing(operation: Operation, payload: dict, marker: str) -> Result | 
 		remarks = frappe.db.get_value("Job Card", payload["job_card"], "remarks") or ""
 		if marker in remarks:
 			return Result("Job Card", payload["job_card"], {"found_by": "marker"}, existing=True)
+	elif operation.label == "Downtime Entry":
+		name = frappe.db.get_value("Downtime Entry", {"remarks": ("like", f"%{marker}%")}, "name")
+		if name:
+			return Result("Downtime Entry", name, {"found_by": "marker"}, existing=True)
 	return None
 
 
@@ -273,3 +281,65 @@ def set_work_order_status(payload: dict) -> Result:
 	else:
 		frappe.get_attr(f"{WORK_ORDER_API}.stop_unstop")(name, status)
 	return Result("Work Order", name, {"status": frappe.db.get_value("Work Order", name, "status")})
+
+
+def set_workstation_status(payload: dict) -> Result:
+	"""Show a machine's state on its ERPNext Workstation (the status the Plant Floor page shows).
+	Already showing it counts as done; a disabled Workstation stays Off, as ERPNext keeps it."""
+	name = payload["workstation"]
+	status = payload["status"]
+	current = frappe.db.get_value("Workstation", name, ["status", "disabled"], as_dict=True)
+	if not current:
+		frappe.throw(_("Workstation {0} does not exist").format(name), frappe.DoesNotExistError)
+	if cint(current.disabled):
+		return Result("Workstation", name, {"status": current.status, "disabled": True}, existing=True)
+	if current.status == status:
+		return Result("Workstation", name, {"status": status}, existing=True)
+	frappe.db.set_value("Workstation", name, "status", status)
+	return Result("Workstation", name, {"status": status, "previous_status": current.status})
+
+
+def post_downtime_entry(payload: dict, marker: str) -> Result:
+	"""Create the ERPNext Downtime Entry for a stretch of downtime on a Workstation, or bring the
+	one an earlier posting created for the same FoaMES Downtime Record up to date (its reason or
+	notes may have been filled in after it closed). ERPNext requires an operator and validates
+	that entries on a Workstation do not overlap."""
+	from foames.foames_adapters.erpnext.postings import downtime_marker, stop_reason_for
+
+	operator = payload.get("operator")
+	if not operator:
+		frappe.throw(
+			_(
+				"Downtime Entry needs an operator: ERPNext requires one on every entry. Set Downtime "
+				"Operator in ERPNext Adapter Settings or pass operator in the payload."
+			)
+		)
+	options = tuple(
+		o for o in (frappe.get_meta("Downtime Entry").get_options("stop_reason") or "").split("\n") if o
+	)
+	stop_reason = payload.get("stop_reason")
+	if stop_reason not in options:
+		stop_reason = stop_reason_for(stop_reason, None, options)
+	markers = [marker]
+	record = payload.get("downtime_record")
+	existing = None
+	if record:
+		stable = downtime_marker(record)
+		markers.insert(0, stable)
+		existing = frappe.db.get_value("Downtime Entry", {"remarks": ("like", f"%{stable}%")}, "name")
+	remarks = " ".join([*markers, (payload.get("remarks") or "").strip()]).strip()
+	values = {
+		"workstation": payload["workstation"],
+		"from_time": get_datetime(payload["from_time"]),
+		"to_time": get_datetime(payload["to_time"]),
+		"operator": operator,
+		"stop_reason": stop_reason,
+		"remarks": remarks,
+	}
+	if existing:
+		doc = frappe.get_doc("Downtime Entry", existing)
+		doc.update(values)
+		doc.save()
+		return Result("Downtime Entry", doc.name, {"downtime": doc.downtime, "updated": True})
+	doc = frappe.get_doc({"doctype": "Downtime Entry", **values}).insert()
+	return Result("Downtime Entry", doc.name, {"downtime": doc.downtime, "stop_reason": stop_reason})
