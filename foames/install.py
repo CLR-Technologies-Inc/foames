@@ -28,4 +28,3 @@ def after_install():
 	from foames.foames_mes.doctype.andon_call_type.andon_call_type import create_default_call_types
 
 	create_default_call_types()
-	frappe.db.commit()

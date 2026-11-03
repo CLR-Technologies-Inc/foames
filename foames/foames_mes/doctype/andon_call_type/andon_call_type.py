@@ -14,7 +14,7 @@ class AndonCallType(Document):
 			self.title = self.code
 		for field in ("acknowledge_within_minutes", "resolve_within_minutes"):
 			if (self.get(field) or 0) < 0:
-				frappe.throw(_("{0} cannot be negative").format(self.meta.get_label(field)))
+				frappe.throw(_("{0} cannot be negative").format(_(self.meta.get_label(field))))
 
 
 def create_default_call_types():
