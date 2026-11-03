@@ -61,7 +61,8 @@ def execute(filters=None):
 
 
 def summarise(calls) -> dict:
-	response = [c.response_minutes for c in calls if c.response_minutes is not None]
+	# A Float column stores an unanswered call's response as 0, so only answered calls count.
+	response = [c.response_minutes or 0 for c in calls if c.acknowledged_at or c.status == "Resolved"]
 	resolution = [
 		c.resolution_minutes for c in calls if c.status == "Resolved" and c.resolution_minutes is not None
 	]
@@ -97,6 +98,7 @@ def get_calls(machine_names, start, end, call_type=None):
 			"machine",
 			"call_type",
 			"status",
+			"acknowledged_at",
 			"response_minutes",
 			"resolution_minutes",
 			"ack_escalated",
