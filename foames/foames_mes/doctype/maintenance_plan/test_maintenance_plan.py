@@ -73,7 +73,7 @@ class TestMaintenancePlan(IntegrationTestCase):
 				{"machine": "T-PM", "type": "State", "state": "Idle", "timestamp": f"{DAY}T12:00:00"},
 			]
 		)
-		plan = make_plan(trigger_type="Run Hours", interval=4, last_done_on=at("07:00:00"))
+		plan = make_plan(trigger_type="Run Hours", interval=3.8, last_done_on=at("07:00:00"))
 		meter = plan.measure(at("13:00:00"))
 		self.assertAlmostEqual(meter["used"], 3.5, places=6)
 		self.assertEqual(meter["status"], "Due Soon")
