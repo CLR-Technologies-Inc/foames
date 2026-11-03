@@ -128,7 +128,11 @@ class TestSpcMonitor(IntegrationTestCase):
 
 	def test_control_chart_endpoint(self):
 		data = get_control_chart(
-			MACHINE, "temperature", from_date=add_to_date(NOW, days=-2), to_date=NOW, baseline_points=30
+			MACHINE,
+			"temperature",
+			from_date=str(add_to_date(NOW, days=-2)),
+			to_date=str(NOW),
+			baseline_points=30,
 		)
 		self.assertEqual(data["chart"], "I")
 		self.assertEqual(data["readings"], 31)
@@ -137,7 +141,11 @@ class TestSpcMonitor(IntegrationTestCase):
 		self.assertIn("N1", {s["rule"] for s in data["signals"] if s["index"] == 30})
 		self.assertEqual(data["secondary"]["chart"], "MR")
 		xr = get_control_chart(
-			MACHINE, "temperature", from_date=add_to_date(NOW, days=-2), to_date=NOW, chart="X-bar R"
+			MACHINE,
+			"temperature",
+			from_date=str(add_to_date(NOW, days=-2)),
+			to_date=str(NOW),
+			chart="X-bar R",
 		)
 		self.assertEqual(xr["chart"], "Xbar")
 		self.assertEqual(len(xr["points"]), 6)

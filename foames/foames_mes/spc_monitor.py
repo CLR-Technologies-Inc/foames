@@ -125,8 +125,8 @@ def _resolved_since_signal(finding: dict) -> bool:
 def get_control_chart(
 	machine: str,
 	measurement: str,
-	from_date=None,
-	to_date=None,
+	from_date: str | None = None,
+	to_date: str | None = None,
 	chart: str = "I-MR",
 	subgroup_size: int = spc.DEFAULT_SUBGROUP_SIZE,
 	baseline_points: int = 0,
@@ -151,8 +151,8 @@ def get_control_chart(
 def chart_data(
 	machine,
 	measurement,
-	from_date=None,
-	to_date=None,
+	from_date: str | None = None,
+	to_date: str | None = None,
 	chart="I-MR",
 	subgroup_size=spc.DEFAULT_SUBGROUP_SIZE,
 	baseline_points=0,
