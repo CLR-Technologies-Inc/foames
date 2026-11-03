@@ -20,6 +20,9 @@ frappe.pages["floor-view"].on_page_load = function (wrapper) {
 			});
 		});
 	}
+	if (frappe.model.can_create("Andon Call")) {
+		page.set_primary_action(__("Call for Help"), () => raise_andon_dialog(view));
+	}
 	view.refresh();
 	view.timer = setInterval(() => view.refresh(), 30000);
 	$(wrapper).on("remove", () => clearInterval(view.timer));
@@ -41,6 +44,9 @@ class FloorView {
 			.foames-floor h3 { margin: 18px 0 8px; }
 			.foames-floor .sug { border-left: 4px solid #999; padding: 6px 10px; margin-bottom: 6px; background: var(--card-bg); }
 			.foames-floor .sug.Critical { border-color: #c62828; } .foames-floor .sug.Warning { border-color: #f9a825; }
+			.foames-floor .andon { margin-top: 6px; padding: 2px 8px; border-radius: 4px; background: #fff; color: #222; font-weight: 600; display: inline-block; }
+			.foames-floor .andon.Open { animation: foames-andon 1s step-start infinite; }
+			@keyframes foames-andon { 50% { background: #ffeb3b; } }
 		</style>`);
 	}
 
@@ -72,6 +78,7 @@ class FloorView {
 							: ""
 					}
 					${m.shift ? `<div>${__("Shift")} ${frappe.utils.escape_html(m.shift.name)}</div>` : ""}
+					${(m.andon || []).map((c) => andon_badge(c)).join("")}
 					<div>${
 						m.minutes_since_count == null
 							? __("No counts today")
@@ -109,4 +116,52 @@ class FloorView {
 				frappe.set_route("Form", "Machine", $(e.currentTarget).data("machine"))
 			);
 	}
+}
+
+function andon_badge(call) {
+	const minutes = Math.round(call.minutes_open || 0);
+	return `<div class="andon ${call.status}" title="${frappe.utils.escape_html(call.note || "")}">
+		${__("Andon")}: ${frappe.utils.escape_html(call.call_type)} · ${__(call.status)} · ${minutes} min
+	</div>`;
+}
+
+function raise_andon_dialog(view) {
+	const dialog = new frappe.ui.Dialog({
+		title: __("Call for Help"),
+		fields: [
+			{
+				fieldname: "machine",
+				label: __("Machine"),
+				fieldtype: "Link",
+				options: "Machine",
+				reqd: 1,
+			},
+			{
+				fieldname: "call_type",
+				label: __("Call Type"),
+				fieldtype: "Link",
+				options: "Andon Call Type",
+				reqd: 1,
+				get_query: () => ({ filters: { disabled: 0 } }),
+			},
+			{ fieldname: "note", label: __("Note"), fieldtype: "Small Text" },
+		],
+		primary_action_label: __("Raise"),
+		primary_action(values) {
+			frappe
+				.call({
+					method: "foames.foames_mes.doctype.andon_call.andon_call.raise_andon",
+					args: values,
+				})
+				.then((r) => {
+					dialog.hide();
+					frappe.show_alert({
+						message: __("Andon call {0} raised", [r.message.name]),
+						indicator: "orange",
+					});
+					view.refresh();
+				});
+		},
+	});
+	dialog.show();
 }

@@ -69,6 +69,8 @@ The scheduler runs the rules every hour over the last day. The **Run suggestion 
 | Dominant downtime reason | One reason is half or more of a machine's downtime over the window, counting downtime that has no reason yet in the total | Downtime, Info |
 | Missing ERP references | Any External Reference has resolved as Missing | ERP, Warning (one suggestion listing them) |
 
+Andon calls that miss their targets are escalated by their own five-minute task rather than by the hourly rules, and once per call and target; see [andon.md](andon.md#escalation). The **Call for Help** button on the Floor View raises an andon call, and open calls show on their machine's tile.
+
 The count-based rules measure from the machine's last count ever, so a machine that counted yesterday and runs without counting today is caught; a machine that has never counted at all, for example a new machine whose counter signal was never wired, shows on the Floor View as "No counts today" instead. They use the machine's last-seen time in their rule key, so a machine that goes quiet again after a fix raises a fresh suggestion. The downtime rule keys on machine, reason and the dated window, so it raises at most once per day per reason; a suggestion that was accepted, dismissed or done is reopened only when the finding recurs under the same key.
 
 Other apps register further rules through the `foames_suggestion_rules` hook, and external agents post their own suggestions through the API. Both are described in [agents/floor-agent.md](agents/floor-agent.md).
@@ -85,6 +87,7 @@ Everything the page shows comes from one call, `foames.foames_mes.api.get_floor_
      "machine_type": "Press", "ideal_cycle_seconds": 2.0, "minutes_since_count": 0.4,
      "counts": {"good": 9000, "scrap": 300},
      "shift": {"name": "Early", "start": "2026-10-30 06:00:00", "end": "2026-10-30 14:00:00"},
+     "andon": [{"name": "ANDON-2026-00012", "call_type": "Material", "status": "Open", "minutes_open": 3.5}],
      "oee_today": {"oee": 69.0, "availability": 79.3, "performance": 89.9, "quality": 96.8}}
   ],
   "downtime_by_machine": [

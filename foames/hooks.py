@@ -111,7 +111,11 @@ scheduler_events = {
 		"foames.foames_adapters.doctype.erpnext_outbox.erpnext_outbox.process_outbox",
 	],
 	"cron": {
-		"*/5 * * * *": ["foames.foames_mes.tasks.mark_stale_machines_unknown"],
+		"*/5 * * * *": [
+			"foames.foames_mes.tasks.mark_stale_machines_unknown",
+			# Raises an Agent Suggestion for each Andon Call that misses its call type's targets.
+			"foames.foames_mes.doctype.andon_call.andon_call.escalate_andon_calls",
+		],
 		# Rolls machine counts up to ERPNext Job Cards; does nothing unless enabled in ERPNext Adapter Settings.
 		"*/10 * * * *": ["foames.foames_adapters.erpnext.rollup.roll_up_all"],
 	},
