@@ -11,6 +11,7 @@ FoaMES is an ERP-agnostic manufacturing execution system built as a single Frapp
 | FoaMES Kernel | `foames/foames_kernel` | `External Reference`, `FoaMES Settings` |
 | FoaMES MES | `foames/foames_mes` | Machine, Machine Event, Downtime Reason and Record, Machine Data Settings, OEE Period, Agent Suggestion, the Floor View page, the gateways, the API |
 | FoaMES Adapters | `foames/foames_adapters` | The adapter contract, the ERPNext adapter, the S/4HANA adapter with its Settings, Outbox, Inbound IDoc and reconciliation report |
+| FoaMES Process Mining | `foames/foames_process_mining` | Event Log Source, Process Event Log, the event extractors, the XES and OCEL exports, discovery and conformance analysis, and their API |
 
 Frappe v15 and v16 are both supported; Python 3.10 or later. License: Apache-2.0, copyright CLR Technologies Inc. Contributions need the CLA described in [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -24,7 +25,7 @@ Keep these whatever you build. A pull request that breaks one will not be merged
 4. **Unknown time is loss.** The OEE ledger is built from state events with Downtime Records overlaid, and an Unknown state is never run time. A machine that stops reporting gets an Unknown state event from the scheduler's staleness check (source System), and the Sparkplug gateway writes one at once on NDEATH or DDEATH. Do not add code that infers output or run time from the absence of events.
 5. **Agents suggest; people act.** Anything an agent or a rule finds becomes an `Agent Suggestion` with evidence. FoaMES does not write tags, send commands to SCADA, change machine state on its own, or post to an ERP without an explicit, idempotent posting a person configured.
 6. **Postings to an ERP are idempotent and sequenced.** The S/4HANA outbox is the model: an idempotency key per business event, a marker written into the created document, a check before resending after an unclear answer, exponential backoff, strict order within a sequence group. Follow it for any new write path.
-7. **Pure logic stays pure.** `oee.py`, `counters.py`, `suggestions.py`, `signing.py`, `gateway/mapping.py`, `gateway/sparkplug.py` and `s4hana/outbox.py`, `odata.py`, `idoc.py`, `entities.py` import nothing from Frappe. Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
+7. **Pure logic stays pure.** `oee.py`, `counters.py`, `suggestions.py`, `signing.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, `s4hana/outbox.py`, `odata.py`, `idoc.py`, `entities.py` and the process-mining core `eventlog.py`, `xes.py`, `ocel.py`, `discovery.py`, `conformance.py` import nothing from Frappe. Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
 8. **Secrets live in Password fields** of a Settings DocType (`Machine Data Settings`, `S4HANA Settings`), read with `get_password`. Never in code, hooks or site config, never logged.
 9. **Both Frappe versions.** Use `foames.tests_compat.IntegrationTestCase` for site tests. Avoid APIs that exist in only one of v15 and v16.
 
@@ -55,6 +56,12 @@ foames/
     doctype/                  S4HANA Settings (+ Entity Mapping), S4HANA Outbox, S4HANA Inbound IDoc
     report/                   S4HANA Outbox Reconciliation, ERP Outbox Health
     workspace/  number_card/  dashboard_chart/  foames_adapters_dashboard/   the Integration workspace
+  foames_process_mining/
+    eventlog.py  xes.py  ocel.py  discovery.py  conformance.py   pure logic: the event log, the XES and
+                              OCEL 2.0 formats, directly-follows discovery and performance, conformance
+    extractors.py             build_event_log, the built-in machine-state and downtime extractors, field maps
+    api.py                    summary, events, discover, check_conformance, export
+    doctype/                  Event Log Source, Process Event Log (+ Process Event Log Source)
 docs/                         human-facing guides; docs/agents/ holds run-time agent playbooks
 cla/                          the Individual and Corporate CLAs
 ```
@@ -72,6 +79,7 @@ All of them are Frappe hooks: another app lists dotted paths in its own `hooks.p
 | `foames_floor_snapshot_extensions` | `(snapshot: dict, since, now)`, mutate in place | Add a section to the floor snapshot, so the page, the rules and external agents see it |
 | `foames_suggestion_rules` | `(snapshot: dict) -> list[dict]` | Add rules; each finding dict needs `rule_key`, `title`, `category`, `suggestion`, `severity`, optional `reference_doctype`, `reference_name`, `evidence` |
 | `foames_s4hana_idoc_handlers` | dict of message type to handler list; handler gets `(inbound_doc, idoc, summary)` | Process an IDoc beyond recording its External Reference |
+| `foames_process_event_extractors` | `(since, until)`, returns an iterable of `foames.foames_process_mining.eventlog.Event` | Add your own records to the process-mining event log |
 
 Code entry points you call rather than hook:
 
@@ -83,6 +91,8 @@ Code entry points you call rather than hook:
 | `foames.foames_mes.doctype.agent_suggestion.agent_suggestion.raise_suggestions(findings, agent)` | Insert findings, skipping open duplicates and reopening resolved ones |
 | `foames.foames_adapters.doctype.s4hana_outbox.s4hana_outbox.enqueue(operation, payload, idempotency_key, sequence_group=None, ...)` | Queue a posting to S/4HANA |
 | `foames.foames_mes.oee.compute_oee(ledger, good, scrap, ideal_cycle_seconds)` and `ledger_from_states(intervals, planned_minutes)` | OEE arithmetic without a site |
+| `foames.foames_process_mining.extractors.build_event_log(since, until, sources=None)` | An `EventLog` from the built-in extractors, the enabled Event Log Sources and the hook extractors |
+| `foames.foames_process_mining.discovery.discover_dfg(log)` and `conformance.check_conformance(log, model)` | Process-mining analysis without a site |
 
 ## HTTP API surface
 
@@ -97,10 +107,11 @@ Whitelisted methods, called as `/api/method/<dotted path>`. Authentication is Fr
 | `foames.foames_mes.doctype.oee_period.oee_period.get_oee` | GET | read on OEE Period | OEE for any window without saving a period |
 | `foames.foames_adapters.get_available_erp_systems` | GET | logged in | Registered adapters and their availability |
 | `foames.foames_adapters.s4hana.api.receive_idoc` | POST | create on S4HANA Inbound IDoc (FoaMES Integration role) | S/4HANA's XML HTTP port posts IDocs here |
+| `foames.foames_process_mining.api.summary`, `events`, `discover`, `check_conformance`, `export` | GET | read on Process Event Log | Process mining over a saved `event_log` or a log built from `since`, `until` and `sources`; `discover` takes `dot=1`, `check_conformance` takes `model`, `export` takes `fmt=xes` or `ocel` |
 
-Document methods callable with `frm.call` or `run_doc_method`: `External Reference.resolve`, `S4HANA Settings.test_connection`, `S4HANA Outbox.requeue`, `S4HANA Outbox.cancel_posting`.
+Document methods callable with `frm.call` or `run_doc_method`: `External Reference.resolve`, `S4HANA Settings.test_connection`, `S4HANA Outbox.requeue`, `S4HANA Outbox.cancel_posting`, `Event Log Source.preview`, `Process Event Log.extract`, `discover`, `check_against`, `export_file`.
 
-The event shape, state aliases and signing scheme are in [docs/machine-data.md](docs/machine-data.md). For an MCP server, wrap `get_floor_snapshot`, `post_suggestion` and `get_oee`; suggested tool names are in [docs/agents/floor-agent.md](docs/agents/floor-agent.md).
+The event shape, state aliases and signing scheme are in [docs/machine-data.md](docs/machine-data.md); the event log, its sources and the analyses are in [docs/process-mining.md](docs/process-mining.md). For an MCP server, wrap `get_floor_snapshot`, `post_suggestion` and `get_oee`, and the process-mining methods if the agent should read event logs; suggested tool names are in [docs/agents/floor-agent.md](docs/agents/floor-agent.md).
 
 ## Common tasks
 
@@ -112,13 +123,15 @@ The event shape, state aliases and signing scheme are in [docs/machine-data.md](
 
 **Change OEE or the rules.** Edit the pure module and its unit test first (`test_oee_and_rules.py`), then the DocType or task that calls it. Keep the time ledger exhaustive: every planned minute lands in exactly one bucket, and the gap goes to unknown.
 
+**Mine records from another DocType or app.** For a DocType on the site, create an Event Log Source with a field map (case, activity, timestamp, optional end timestamp, resource, filters, object fields) and check it with **Preview events**; the DocType is named as text and the source is skipped when it is not installed. For records your app builds itself, register a `foames_process_event_extractors` hook that yields `Event` objects. New analyses go in the pure modules with a test in `test_process_mining_logic.py`, and are exposed through `api.py` or a Process Event Log method.
+
 **Add a scheduled job.** Register it in `scheduler_events` in `hooks.py` and make it idempotent, as `compute_daily_oee` is (it skips a period that already exists).
 
 ## Testing
 
 ```bash
 # pure-logic tests, no site needed
-python -m unittest foames.foames_mes.test_oee_and_rules foames.foames_mes.test_machine_data_logic foames.foames_mes.test_sparkplug foames.foames_mes.test_kpi
+python -m unittest foames.foames_mes.test_oee_and_rules foames.foames_mes.test_machine_data_logic foames.foames_mes.test_sparkplug foames.foames_mes.test_kpi foames.foames_process_mining.test_process_mining_logic
 
 # everything, on a bench
 bench --site <site> set-config allow_tests true
