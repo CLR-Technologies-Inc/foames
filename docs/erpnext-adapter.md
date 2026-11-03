@@ -158,7 +158,7 @@ status; `get_posting(name)` reports progress.
 | Operation | Payload | What ERPNext does |
 | --- | --- | --- |
 | `Material Transfer for Manufacture` | `work_order`, optional `qty`, `posting_date`, `posting_time`, `remarks`, `submit` | Builds the Stock Entry the Work Order form's **Start** button builds (source warehouse to WIP), inserts and submits it |
-| `Manufacture` | same | The **Finish** entry: consumes from WIP and receives the finished good, updating the Work Order's produced quantity and status |
+| `Manufacture` | same, plus optional `batch_no` and `serial_nos` for the finished good | The **Finish** entry: consumes from WIP and receives the finished good, updating the Work Order's produced quantity and status. With `batch_no` the finished good goes into that batch (created for the item if it does not exist yet); with `serial_nos` (a list, or text separated by commas or newlines, one per unit) it gets those serial numbers (created by ERPNext on submit). The response's `finished_good` reports the item, batch and serial numbers ERPNext recorded, including a batch ERPNext generated itself, and FoaMES gets an External Reference for each of them |
 | `Material Consumption for Manufacture` | same | Consumes materials without receiving finished goods (needs **Allow Continuous Material Consumption** in Manufacturing Settings) |
 | `Job Card Time Log` | `job_card`, `start_time` and/or `complete_time`, optional `completed_qty`, `employees`, `submit` | `start_time` opens a time log row and `complete_time` closes the open one, both through `make_time_log`, which validates the operation sequence and updates the Job Card's status; a posting with both times is applied as a start followed by a completion, and a completion with no open row is rejected. The Job Card's totals are recomputed, and with `submit` (or the settings default) it is submitted once its completed quantity reaches its for quantity |
 | `Job Card Production Log` | `job_card`, `from_time`, `to_time`, optional `completed_qty`, `process_loss_qty`, `run_intervals` (list of `[from, to]`), `remarks`, `submit` | Appends one time log per run interval (or one for the whole window) with `completed_qty` on the last, adds `process_loss_qty` to the Job Card's process loss (recent versions derive the field on save as planned minus completed minus pending, so the posting sets the pending quantity to carry the loss; the scrap is also written into the remarks), and saves through the Job Card's own validation (overlaps, totals); a Job Card that is no longer a draft rejects it; with `submit` (or the settings default) the Job Card is submitted once completed plus loss reaches its for quantity |
@@ -168,6 +168,15 @@ status; `get_posting(name)` reports progress.
 
 `qty` defaults to the Work Order's remaining quantity, as it does in the form. `submit` defaults
 to true for Stock Entries; pass `false` to leave a draft for review.
+
+**Traceability.** A floor system usually knows the batch or the serial numbers it just made
+(from a printer, a scanner or the recipe). Passing them on the `Manufacture` posting puts them on
+the ERPNext Stock Entry's finished-good row through ERPNext's own serial and batch fields, so the
+stock ledger, the Batch and the Serial No records carry the floor's identifiers and not generated
+ones. A batch of another item is refused. Whether the numbers came from the posting or from
+ERPNext's own series, the posting's response names them under `finished_good`, and each gets an
+External Reference (type Batch or Serial Number) so quality records, process events and agents can
+point at them from then on.
 
 #### Idempotency, order and errors
 
