@@ -5,7 +5,7 @@ import json
 import unittest
 from datetime import datetime
 
-from foames.foames_mes.counters import counter_delta
+from foames.foames_mes.counters import counter_delta, is_resource_counter, resource_totals
 from foames.foames_mes.gateway.mapping import (
 	EventError,
 	mqtt_message_to_raw,
@@ -31,6 +31,20 @@ class TestCounterDelta(unittest.TestCase):
 
 	def test_out_of_order_reading_is_zero(self):
 		self.assertEqual(counter_delta(512, 500), 0)
+
+
+class TestResourceCounters(unittest.TestCase):
+	def test_names_match_exactly_or_with_a_unit_suffix(self):
+		self.assertTrue(is_resource_counter("energy"))
+		self.assertTrue(is_resource_counter("energy_kwh"))
+		self.assertTrue(is_resource_counter("Water_m3"))
+		self.assertFalse(is_resource_counter("good"))
+		self.assertFalse(is_resource_counter("energetic"))
+		self.assertFalse(is_resource_counter(None))
+
+	def test_resource_totals_leave_production_out(self):
+		totals = {"good": 120, "scrap": 3, "energy_kwh": 42.5, "feed_kg": None}
+		self.assertEqual(resource_totals(totals), {"energy_kwh": 42.5, "feed_kg": 0.0})
 
 
 class TestSigning(unittest.TestCase):

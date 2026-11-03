@@ -110,6 +110,8 @@ The event shape, state aliases and signing scheme are in [docs/machine-data.md](
 
 **Add a reference type to an adapter.** For ERPNext, add a row to `ERPNEXT_DOCTYPES` in `erpnext.py` (kernel type, DocType, label field). For S/4HANA, map it in S4HANA Settings at run time, or add a default `EntitySpec` to `s4hana/entities.py` with its service, entity set, key fields and label. Adding a *new* kernel reference type means extending `REFERENCE_TYPES` in `base.py` and the Select options on External Reference and S4HANA Entity Mapping together.
 
+**Turn a published method into a change.** Follow [docs/agents/research-to-code.md](docs/agents/research-to-code.md): triage the paper against the invariants before reading it in depth, map its inputs to what FoaMES records, pick one landing zone, and write the test from the paper's own example first. Most papers end as a no-go with one metric or loss category carried over.
+
 **Change OEE or the rules.** Edit the pure module and its unit test first (`test_oee_and_rules.py`), then the DocType or task that calls it. Keep the time ledger exhaustive: every planned minute lands in exactly one bucket, and the gap goes to unknown.
 
 **Add a scheduled job.** Register it in `scheduler_events` in `hooks.py` and make it idempotent, as `compute_daily_oee` is (it skips a period that already exists).

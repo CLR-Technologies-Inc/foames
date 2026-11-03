@@ -68,6 +68,9 @@ The scheduler runs the rules every hour over the last day. The **Run suggestion 
 | Running without counting | A machine has counted before, reports Running, and has not counted for 30 minutes or more | Downtime, Warning |
 | Dominant downtime reason | One reason is half or more of a machine's downtime over the window, counting downtime that has no reason yet in the total | Downtime, Info |
 | Missing ERP references | Any External Reference has resolved as Missing | ERP, Warning (one suggestion listing them) |
+| Consumption with no output | A metered input counter (energy, water, gas, feed, steam, air, fuel, or one of these with a unit suffix such as `energy_kwh`) advanced over the window and the machine counted no good or scrap production | Yield, Warning (one per machine, resource and day) |
+
+The consumption rule is for electrified and continuous units, whose cost is what they consume per unit made: a reactor held at power through a feed stop, a furnace kept hot with no orders. The time is usually booked as Idle already; the suggestion puts the consumption number on it so someone can decide whether the unit should be powered down or put in standby. If the unit was in fact producing, the finding means the production counter is not reaching FoaMES.
 
 The count-based rules measure from the machine's last count ever, so a machine that counted yesterday and runs without counting today is caught; a machine that has never counted at all, for example a new machine whose counter signal was never wired, shows on the Floor View as "No counts today" instead. They use the machine's last-seen time in their rule key, so a machine that goes quiet again after a fix raises a fresh suggestion. The downtime rule keys on machine, reason and the dated window, so it raises at most once per day per reason; a suggestion that was accepted, dismissed or done is reopened only when the finding recurs under the same key.
 

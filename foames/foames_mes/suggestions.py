@@ -11,13 +11,20 @@ their own suggestions through the API, and other apps register more rules throug
 
 from __future__ import annotations
 
+from foames.foames_mes.counters import good_and_scrap, resource_totals
+
 SILENT_AFTER_MINUTES = 30
 TOP_DOWNTIME_SHARE = 0.5
 
 
 def all_rules(snapshot: dict) -> list[dict]:
 	out = []
-	for rule in (silent_machines, dominant_downtime_reason, unresolved_erp_references):
+	for rule in (
+		silent_machines,
+		dominant_downtime_reason,
+		unresolved_erp_references,
+		resource_without_output,
+	):
 		out.extend(rule(snapshot))
 	return out
 
@@ -102,3 +109,45 @@ def unresolved_erp_references(snapshot: dict) -> list[dict]:
 			"evidence": {"missing": [r["name"] for r in missing]},
 		}
 	]
+
+
+def resource_without_output(snapshot: dict) -> list[dict]:
+	"""Machines whose metered inputs (energy, water, feed) advanced over the window while their
+	production counters did not.
+
+	Electrified and continuous processes are judged by consumption per unit of product, and the
+	worst case of that ratio is a unit that draws its full load while making nothing: a plasma or
+	electrolysis reactor held at power during a feed stop, a furnace kept hot through a shift with
+	no orders. The time may well be booked as Idle or Down already; this rule puts a number on what
+	the idle time cost. One finding per machine and resource per day.
+	"""
+	out = []
+	date = str(snapshot.get("as_of") or "")[:10]
+	for m in snapshot.get("machines", []):
+		counts = m.get("counts") or {}
+		good, scrap = good_and_scrap(counts)
+		if good + scrap > 0:
+			continue
+		for name, used in resource_totals(counts).items():
+			if used <= 0:
+				continue
+			out.append(
+				{
+					"rule_key": f"resource-idle:{m['name']}:{name}:{date}",
+					"category": "Yield",
+					"severity": "Warning",
+					"title": f"{m['name']} consumed {used:g} {name} with no output",
+					"suggestion": f"Over the window {m['name']} metered {used:g} on counter {name} and counted no production. If the machine was idle or down, that consumption is pure loss: look at whether it can be powered down or put in standby when there is no feed or no order. If it was producing, the production counter is not reaching FoaMES.",
+					"reference_doctype": "Machine",
+					"reference_name": m["name"],
+					"evidence": {
+						"counter": name,
+						"consumed": used,
+						"good": good,
+						"scrap": scrap,
+						"status": m.get("status"),
+						"as_of": str(snapshot.get("as_of") or ""),
+					},
+				}
+			)
+	return out

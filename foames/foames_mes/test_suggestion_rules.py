@@ -10,6 +10,7 @@ from foames.foames_mes.suggestions import (
 	TOP_DOWNTIME_SHARE,
 	all_rules,
 	dominant_downtime_reason,
+	resource_without_output,
 	silent_machines,
 	unresolved_erp_references,
 )
@@ -128,6 +129,45 @@ class TestUnresolvedERPReferences(unittest.TestCase):
 		self.assertIn("15 ERP references", finding["title"])
 
 
+class TestResourceWithoutOutput(unittest.TestCase):
+	def snapshot(self, counts, status="Idle"):
+		return {
+			"as_of": "2026-10-30 14:02:11",
+			"machines": [{"name": "reactor-1", "status": status, "counts": counts}],
+		}
+
+	def test_consumption_with_no_production_is_a_finding(self):
+		findings = resource_without_output(self.snapshot({"energy_kwh": 36.0, "good": 0}))
+		self.assertEqual(len(findings), 1)
+		f = findings[0]
+		self.assertEqual(f["rule_key"], "resource-idle:reactor-1:energy_kwh:2026-10-30")
+		self.assertEqual(f["category"], "Yield")
+		self.assertEqual(f["severity"], "Warning")
+		self.assertEqual(f["reference_name"], "reactor-1")
+		self.assertEqual(f["evidence"]["consumed"], 36.0)
+		self.assertEqual(f["evidence"]["good"], 0.0)
+		self.assertIn("36 energy_kwh", f["title"])
+
+	def test_any_production_silences_it(self):
+		self.assertEqual(resource_without_output(self.snapshot({"energy_kwh": 36.0, "good": 1})), [])
+		self.assertEqual(resource_without_output(self.snapshot({"energy_kwh": 36.0, "scrap": 1})), [])
+
+	def test_zero_consumption_or_no_resource_counter_is_nothing(self):
+		self.assertEqual(resource_without_output(self.snapshot({"energy_kwh": 0})), [])
+		self.assertEqual(resource_without_output(self.snapshot({"cycles": 40})), [])
+		self.assertEqual(resource_without_output(self.snapshot({})), [])
+		self.assertEqual(resource_without_output({"machines": [{"name": "m"}]}), [])
+
+	def test_one_finding_per_resource(self):
+		keys = [
+			f["rule_key"] for f in resource_without_output(self.snapshot({"energy_kwh": 5, "water_m3": 2}))
+		]
+		self.assertEqual(
+			keys,
+			["resource-idle:reactor-1:energy_kwh:2026-10-30", "resource-idle:reactor-1:water_m3:2026-10-30"],
+		)
+
+
 class TestAllRules(unittest.TestCase):
 	def test_combines_every_rule_in_order(self):
 		snap = {
@@ -139,8 +179,18 @@ class TestAllRules(unittest.TestCase):
 				{"name": "R", "reference_type": "Batch", "external_id": "B", "status": "Missing"}
 			],
 		}
+		snap["machines"][0]["counts"] = {"energy_kwh": 12}
+		snap["as_of"] = "2026-10-30 09:00:00"
 		keys = [f["rule_key"] for f in all_rules(snap)]
-		self.assertEqual(keys, ["silent:M1:2026-10-30 08:00:00", "downtime:M1:X:p", "erp-missing:1:R"])
+		self.assertEqual(
+			keys,
+			[
+				"silent:M1:2026-10-30 08:00:00",
+				"downtime:M1:X:p",
+				"erp-missing:1:R",
+				"resource-idle:M1:energy_kwh:2026-10-30",
+			],
+		)
 
 	def test_every_finding_has_the_fields_the_doctype_needs(self):
 		snap = {
