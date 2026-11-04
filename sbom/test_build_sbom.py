@@ -133,6 +133,18 @@ class TestBuildSbom(unittest.TestCase):
 		for citation in bom["citations"]:
 			self.assertIn(citation["attributedTo"], refs)
 			self.assertEqual(len([k for k in ("pointers", "expressions") if k in citation]), 1)
+		# CBOM cross-references: cipher suites, pinned material and key algorithms name real assets.
+		for component in bom["components"]:
+			props = component.get("cryptoProperties") or {}
+			protocol = props.get("protocolProperties") or {}
+			for suite in protocol.get("cipherSuites", []):
+				for ref in suite["algorithms"]:
+					self.assertIn(ref, refs, suite["name"])
+			for ref in protocol.get("cryptoRefArray", []):
+				self.assertIn(ref, refs)
+			material = props.get("relatedCryptoMaterialProperties") or {}
+			if "algorithmRef" in material:
+				self.assertIn(material["algorithmRef"], refs)
 
 	def test_bom_refs_are_unique(self):
 		bom = build()
@@ -167,7 +179,42 @@ class TestBuildSbom(unittest.TestCase):
 			for c in crypto
 			if c["cryptoProperties"]["assetType"] == "algorithm"
 		}
-		self.assertEqual(families, {"HMAC-SHA256": "HMAC", "SHA-256": "SHA-2"})
+		self.assertEqual(
+			families,
+			{
+				"HMAC-SHA256": "HMAC",
+				"SHA-256": "SHA-2",
+				"RSA-OAEP (SHA-1)": "RSA",
+				"RSA-OAEP (SHA-256)": "RSA",
+				"RSA PKCS#1 v1.5 with SHA-256": "RSA",
+				"RSA-PSS with SHA-256": "RSA",
+				"AES-256-CBC": "AES",
+				"AES-128-CBC": "AES",
+				"P_SHA256 key derivation": "HMAC",
+			},
+		)
+
+	def test_opcua_secure_channel_lists_the_offered_policies(self):
+		bom = build()
+		channel = next(c for c in bom["components"] if c["bom-ref"] == "crypto:protocol:opcua-secure-channel")
+		suites = {s["name"]: s for s in channel["cryptoProperties"]["protocolProperties"]["cipherSuites"]}
+		self.assertEqual(set(suites), {"Basic256Sha256", "Aes128_Sha256_RsaOaep", "Aes256_Sha256_RsaPss"})
+		for name, suite in suites.items():
+			self.assertEqual(suite["identifiers"], [f"http://opcfoundation.org/UA/SecurityPolicy#{name}"])
+			self.assertIn("crypto:algorithm:hmac-sha256", suite["algorithms"])
+			self.assertIn("crypto:algorithm:p-sha256", suite["algorithms"])
+		self.assertIn("crypto:algorithm:rsa-pss-sha256", suites["Aes256_Sha256_RsaPss"]["algorithms"])
+		self.assertIn("crypto:algorithm:aes-128-cbc", suites["Aes128_Sha256_RsaOaep"]["algorithms"])
+		self.assertIn("crypto:algorithm:rsa-pkcs1v15-sha256", suites["Basic256Sha256"]["algorithms"])
+		# The policies in the CBOM are exactly the ones the gateway offers.
+		gateway = (build_sbom.REPO_ROOT / "foames/foames_mes/gateway/opcua.py").read_text(encoding="utf-8")
+		for name in suites:
+			self.assertIn(f'"{name}"', gateway)
+		self.assertNotIn("Basic128Rsa15", str(suites))
+		# The OPC UA service entry describes the configurable security, not a missing one.
+		service = next(s for s in bom["services"] if s["bom-ref"] == "service:opcua-server")
+		self.assertIn("SignAndEncrypt", service["description"])
+		self.assertNotIn("No OPC UA message security", service["description"])
 
 	def test_curated_source_locations_exist(self):
 		curated = build_sbom.load_json(build_sbom.HERE / "curated.json")

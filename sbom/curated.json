@@ -33,7 +33,7 @@
 			"bom-ref": "crypto:algorithm:hmac-sha256",
 			"type": "cryptographic-asset",
 			"name": "HMAC-SHA256",
-			"description": "Signs and verifies machine events posted to the webhook: hex HMAC-SHA256 over '<timestamp>.<body>' with the shared secret from Machine Data Settings, checked with a constant-time compare and a replay window.",
+			"description": "Signs and verifies machine events posted to the webhook: hex HMAC-SHA256 over '<timestamp>.<body>' with the shared secret from Machine Data Settings, checked with a constant-time compare and a replay window. Also the symmetric signature of every OPC UA message under the three security policies the OPC UA gateway offers, with a 256-bit key derived for each secure channel.",
 			"cryptoProperties": {
 				"assetType": "algorithm",
 				"oid": "1.2.840.113549.2.9",
@@ -55,8 +55,16 @@
 					"value": "foames/foames_mes/signing.py"
 				},
 				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_mes/gateway/opcua.py"
+				},
+				{
 					"name": "foames:crypto:implementation",
-					"value": "Python standard library hmac and hashlib"
+					"value": "Python standard library hmac and hashlib (webhook)"
+				},
+				{
+					"name": "foames:crypto:implementation",
+					"value": "asyncua security_policies on the cryptography package (OpenSSL of the host); FoaMES selects the policy and supplies the certificate, key and mode (OPC UA)"
 				}
 			]
 		},
@@ -64,7 +72,7 @@
 			"bom-ref": "crypto:algorithm:sha-256",
 			"type": "cryptographic-asset",
 			"name": "SHA-256",
-			"description": "Derives identifiers, not secrets: External Reference keys and the document markers that make ERPNext and S/4HANA postings idempotent. Also the hash inside HMAC-SHA256.",
+			"description": "Derives identifiers, not secrets: External Reference keys and the document markers that make ERPNext and S/4HANA postings idempotent. Also the hash inside HMAC-SHA256, inside the RSA signatures and the OPC UA key derivation, and the certificate signature hash the OPC UA policies require.",
 			"cryptoProperties": {
 				"assetType": "algorithm",
 				"oid": "2.16.840.1.101.3.4.2.1",
@@ -99,6 +107,220 @@
 			]
 		},
 		{
+			"bom-ref": "crypto:algorithm:rsa-oaep-sha1",
+			"type": "cryptographic-asset",
+			"name": "RSA-OAEP (SHA-1)",
+			"description": "Asymmetric encryption of the OPC UA OpenSecureChannel handshake (nonces and the material the session keys are derived from) under the server's certificate, and of the user password token when the server's token policy asks for it. OAEP with SHA-1 and MGF1-SHA1, as the Basic256Sha256 and Aes128_Sha256_RsaOaep profiles of OPC UA Part 7 fix it; the hash is a padding parameter here, not a collision-resistant primitive. RSA keys of 2048 to 4096 bits.",
+			"cryptoProperties": {
+				"assetType": "algorithm",
+				"algorithmProperties": {
+					"algorithmFamily": "RSA",
+					"primitive": "pke",
+					"parameterSetIdentifier": "2048-4096",
+					"padding": "oaep",
+					"executionEnvironment": "software-plain-ram",
+					"implementationPlatform": "generic",
+					"cryptoFunctions": [
+						"encrypt",
+						"decrypt"
+					]
+				}
+			},
+			"properties": [
+				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_mes/gateway/opcua.py"
+				},
+				{
+					"name": "foames:crypto:implementation",
+					"value": "asyncua security_policies on the cryptography package (OpenSSL of the host); FoaMES selects the policy and supplies the certificate, key and mode"
+				}
+			]
+		},
+		{
+			"bom-ref": "crypto:algorithm:rsa-oaep-sha256",
+			"type": "cryptographic-asset",
+			"name": "RSA-OAEP (SHA-256)",
+			"description": "The same handshake encryption under the Aes256_Sha256_RsaPss profile: OAEP with SHA-256 and MGF1-SHA256. RSA keys of 2048 to 4096 bits.",
+			"cryptoProperties": {
+				"assetType": "algorithm",
+				"algorithmProperties": {
+					"algorithmFamily": "RSA",
+					"primitive": "pke",
+					"parameterSetIdentifier": "2048-4096",
+					"padding": "oaep",
+					"executionEnvironment": "software-plain-ram",
+					"implementationPlatform": "generic",
+					"cryptoFunctions": [
+						"encrypt",
+						"decrypt"
+					]
+				}
+			},
+			"properties": [
+				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_mes/gateway/opcua.py"
+				},
+				{
+					"name": "foames:crypto:implementation",
+					"value": "asyncua security_policies on the cryptography package (OpenSSL of the host); FoaMES selects the policy and supplies the certificate, key and mode"
+				}
+			]
+		},
+		{
+			"bom-ref": "crypto:algorithm:rsa-pkcs1v15-sha256",
+			"type": "cryptographic-asset",
+			"name": "RSA PKCS#1 v1.5 with SHA-256",
+			"description": "Asymmetric signature of the OPC UA OpenSecureChannel messages with the gateway's private key, and verification of the server's, under Basic256Sha256 and Aes128_Sha256_RsaOaep. Also the signature algorithm the OPC UA profiles require on the application instance certificates themselves (sha256WithRSAEncryption).",
+			"cryptoProperties": {
+				"assetType": "algorithm",
+				"algorithmProperties": {
+					"algorithmFamily": "RSA",
+					"primitive": "signature",
+					"parameterSetIdentifier": "2048-4096",
+					"padding": "pkcs1v15",
+					"executionEnvironment": "software-plain-ram",
+					"implementationPlatform": "generic",
+					"cryptoFunctions": [
+						"sign",
+						"verify"
+					]
+				}
+			},
+			"properties": [
+				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_mes/gateway/opcua.py"
+				},
+				{
+					"name": "foames:crypto:implementation",
+					"value": "asyncua security_policies on the cryptography package (OpenSSL of the host); FoaMES selects the policy and supplies the certificate, key and mode"
+				}
+			]
+		},
+		{
+			"bom-ref": "crypto:algorithm:rsa-pss-sha256",
+			"type": "cryptographic-asset",
+			"name": "RSA-PSS with SHA-256",
+			"description": "Asymmetric signature of the OPC UA OpenSecureChannel messages under Aes256_Sha256_RsaPss: PSS with SHA-256, MGF1-SHA256 and a 32-byte salt. RSA keys of 2048 to 4096 bits.",
+			"cryptoProperties": {
+				"assetType": "algorithm",
+				"algorithmProperties": {
+					"algorithmFamily": "RSA",
+					"primitive": "signature",
+					"parameterSetIdentifier": "2048-4096",
+					"executionEnvironment": "software-plain-ram",
+					"implementationPlatform": "generic",
+					"cryptoFunctions": [
+						"sign",
+						"verify"
+					]
+				}
+			},
+			"properties": [
+				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_mes/gateway/opcua.py"
+				},
+				{
+					"name": "foames:crypto:implementation",
+					"value": "asyncua security_policies on the cryptography package (OpenSSL of the host); FoaMES selects the policy and supplies the certificate, key and mode"
+				}
+			]
+		},
+		{
+			"bom-ref": "crypto:algorithm:aes-256-cbc",
+			"type": "cryptographic-asset",
+			"name": "AES-256-CBC",
+			"description": "Symmetric encryption of OPC UA messages after the handshake, under Basic256Sha256 and Aes256_Sha256_RsaPss, with a key and IV derived for each secure channel. Used only in mode SignAndEncrypt; mode Sign signs without encrypting.",
+			"cryptoProperties": {
+				"assetType": "algorithm",
+				"algorithmProperties": {
+					"algorithmFamily": "AES",
+					"primitive": "block-cipher",
+					"parameterSetIdentifier": "256",
+					"mode": "cbc",
+					"executionEnvironment": "software-plain-ram",
+					"implementationPlatform": "generic",
+					"cryptoFunctions": [
+						"encrypt",
+						"decrypt"
+					]
+				}
+			},
+			"properties": [
+				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_mes/gateway/opcua.py"
+				},
+				{
+					"name": "foames:crypto:implementation",
+					"value": "asyncua security_policies on the cryptography package (OpenSSL of the host); FoaMES selects the policy and supplies the certificate, key and mode"
+				}
+			]
+		},
+		{
+			"bom-ref": "crypto:algorithm:aes-128-cbc",
+			"type": "cryptographic-asset",
+			"name": "AES-128-CBC",
+			"description": "Symmetric encryption of OPC UA messages under Aes128_Sha256_RsaOaep, with a key and IV derived for each secure channel. Used only in mode SignAndEncrypt.",
+			"cryptoProperties": {
+				"assetType": "algorithm",
+				"algorithmProperties": {
+					"algorithmFamily": "AES",
+					"primitive": "block-cipher",
+					"parameterSetIdentifier": "128",
+					"mode": "cbc",
+					"executionEnvironment": "software-plain-ram",
+					"implementationPlatform": "generic",
+					"cryptoFunctions": [
+						"encrypt",
+						"decrypt"
+					]
+				}
+			},
+			"properties": [
+				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_mes/gateway/opcua.py"
+				},
+				{
+					"name": "foames:crypto:implementation",
+					"value": "asyncua security_policies on the cryptography package (OpenSSL of the host); FoaMES selects the policy and supplies the certificate, key and mode"
+				}
+			]
+		},
+		{
+			"bom-ref": "crypto:algorithm:p-sha256",
+			"type": "cryptographic-asset",
+			"name": "P_SHA256 key derivation",
+			"description": "Derives the signing key, encryption key and IV of each OPC UA secure channel from the client and server nonces exchanged in the handshake: the HMAC-SHA256 pseudo-random function of WS-SecureConversation that all three offered policies use.",
+			"cryptoProperties": {
+				"assetType": "algorithm",
+				"algorithmProperties": {
+					"algorithmFamily": "HMAC",
+					"primitive": "kdf",
+					"parameterSetIdentifier": "256",
+					"executionEnvironment": "software-plain-ram",
+					"implementationPlatform": "generic",
+					"cryptoFunctions": [
+						"keyderive"
+					]
+				}
+			},
+			"properties": [
+				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_mes/gateway/opcua.py"
+				},
+				{
+					"name": "foames:crypto:implementation",
+					"value": "asyncua security_policies on the cryptography package (OpenSSL of the host); FoaMES selects the policy and supplies the certificate, key and mode"
+				}
+			]
+		},
+		{
 			"bom-ref": "crypto:protocol:tls",
 			"type": "cryptographic-asset",
 			"name": "TLS",
@@ -129,6 +351,114 @@
 			]
 		},
 		{
+			"bom-ref": "crypto:protocol:opcua-secure-channel",
+			"type": "cryptographic-asset",
+			"name": "OPC UA secure channel",
+			"description": "Message security between the OPC UA gateway and the OPC UA server (OPC UA Part 4 and Part 6 secure conversation, opc.tcp). Off by default: Machine Data Settings chooses mode None, Sign or SignAndEncrypt and one of three security policies. With mode None nothing is signed or encrypted, and the gateway logs a warning at every start. Sign authenticates every message; SignAndEncrypt also encrypts them. The policy decides the algorithms, listed as cipher suites below with their OPC UA policy URIs. The deprecated Basic128Rsa15 and Basic256 policies are not offered. The server's certificate is taken from its endpoint unless a Server Certificate is attached, which pins it.",
+			"cryptoProperties": {
+				"assetType": "protocol",
+				"protocolProperties": {
+					"type": "other",
+					"cipherSuites": [
+						{
+							"name": "Basic256Sha256",
+							"algorithms": [
+								"crypto:algorithm:rsa-oaep-sha1",
+								"crypto:algorithm:rsa-pkcs1v15-sha256",
+								"crypto:algorithm:aes-256-cbc",
+								"crypto:algorithm:hmac-sha256",
+								"crypto:algorithm:p-sha256"
+							],
+							"identifiers": [
+								"http://opcfoundation.org/UA/SecurityPolicy#Basic256Sha256"
+							]
+						},
+						{
+							"name": "Aes128_Sha256_RsaOaep",
+							"algorithms": [
+								"crypto:algorithm:rsa-oaep-sha1",
+								"crypto:algorithm:rsa-pkcs1v15-sha256",
+								"crypto:algorithm:aes-128-cbc",
+								"crypto:algorithm:hmac-sha256",
+								"crypto:algorithm:p-sha256"
+							],
+							"identifiers": [
+								"http://opcfoundation.org/UA/SecurityPolicy#Aes128_Sha256_RsaOaep"
+							]
+						},
+						{
+							"name": "Aes256_Sha256_RsaPss",
+							"algorithms": [
+								"crypto:algorithm:rsa-oaep-sha256",
+								"crypto:algorithm:rsa-pss-sha256",
+								"crypto:algorithm:aes-256-cbc",
+								"crypto:algorithm:hmac-sha256",
+								"crypto:algorithm:p-sha256"
+							],
+							"identifiers": [
+								"http://opcfoundation.org/UA/SecurityPolicy#Aes256_Sha256_RsaPss"
+							]
+						}
+					],
+					"cryptoRefArray": [
+						"crypto:certificate:opcua-client",
+						"crypto:material:opcua-client-private-key",
+						"crypto:certificate:opcua-server"
+					]
+				}
+			},
+			"properties": [
+				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_mes/gateway/opcua.py"
+				},
+				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_mes/doctype/machine_data_settings/machine_data_settings.py"
+				},
+				{
+					"name": "foames:crypto:implementation",
+					"value": "asyncua security_policies on the cryptography package (OpenSSL of the host); FoaMES selects the policy and supplies the certificate, key and mode"
+				}
+			]
+		},
+		{
+			"bom-ref": "crypto:certificate:opcua-client",
+			"type": "cryptographic-asset",
+			"name": "OPC UA gateway application instance certificate",
+			"description": "The X.509 certificate the OPC UA gateway presents to the server in modes Sign and SignAndEncrypt, attached to Machine Data Settings as DER or PEM and read from disk when the gateway starts. Its subjectAltName URI must equal the Client Application URI. Subject, issuer and validity are set by the plant that issues it, so they are not recorded here; docs/machine-data.md shows a self-signed RSA-2048 certificate signed with sha256WithRSAEncryption.",
+			"cryptoProperties": {
+				"assetType": "certificate",
+				"certificateProperties": {
+					"certificateFormat": "X.509"
+				}
+			},
+			"properties": [
+				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_mes/gateway/opcua.py"
+				}
+			]
+		},
+		{
+			"bom-ref": "crypto:certificate:opcua-server",
+			"type": "cryptographic-asset",
+			"name": "OPC UA server certificate (pinned)",
+			"description": "Optional. The OPC UA server's own X.509 certificate, attached to Machine Data Settings. When it is attached the gateway encrypts the handshake to this certificate instead of the one the server offers, so a substituted server at the same address cannot complete the channel. Without it the certificate the server presents in its endpoint description is used.",
+			"cryptoProperties": {
+				"assetType": "certificate",
+				"certificateProperties": {
+					"certificateFormat": "X.509"
+				}
+			},
+			"properties": [
+				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_mes/gateway/opcua.py"
+				}
+			]
+		},
+		{
 			"bom-ref": "crypto:material:webhook-secret",
 			"type": "cryptographic-asset",
 			"name": "Machine event webhook secret",
@@ -137,6 +467,37 @@
 				"assetType": "related-crypto-material",
 				"relatedCryptoMaterialProperties": {
 					"type": "secret-key"
+				}
+			}
+		},
+		{
+			"bom-ref": "crypto:material:opcua-client-private-key",
+			"type": "cryptographic-asset",
+			"name": "OPC UA gateway private key",
+			"description": "The RSA private key of the gateway certificate, 2048 to 4096 bits, attached to Machine Data Settings as a PEM or DER file. Saving the settings is refused unless the file is a private Frappe File, so it is never served without a session. Read from disk by the gateway at start; never logged.",
+			"cryptoProperties": {
+				"assetType": "related-crypto-material",
+				"relatedCryptoMaterialProperties": {
+					"type": "private-key",
+					"algorithmRef": "crypto:algorithm:rsa-pkcs1v15-sha256"
+				}
+			},
+			"properties": [
+				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_mes/gateway/opcua.py"
+				}
+			]
+		},
+		{
+			"bom-ref": "crypto:material:opcua-private-key-passphrase",
+			"type": "cryptographic-asset",
+			"name": "OPC UA private key passphrase",
+			"description": "The passphrase of the gateway private key when the key file is encrypted. Stored in a Password field of Machine Data Settings and read with get_password; never logged.",
+			"cryptoProperties": {
+				"assetType": "related-crypto-material",
+				"relatedCryptoMaterialProperties": {
+					"type": "password"
 				}
 			}
 		},
@@ -243,7 +604,7 @@
 		{
 			"bom-ref": "service:opcua-server",
 			"name": "OPC UA server",
-			"description": "FoaMES polls mapped nodes from the OPC UA gateway. Read-only. It connects anonymously unless a user name and password are configured. No OPC UA message security policy is configured by FoaMES today, so the session is unsigned and unencrypted unless the network provides protection.",
+			"description": "FoaMES polls mapped nodes from the OPC UA gateway. Read-only. It connects anonymously unless a user name and password are configured. Message security follows Machine Data Settings: mode None (the default) leaves the session unsigned and unencrypted, so it belongs on a protected OT network segment; Sign or SignAndEncrypt with Basic256Sha256, Aes128_Sha256_RsaOaep or Aes256_Sha256_RsaPss authenticates the gateway with its X.509 certificate and signs, or signs and encrypts, every message. See the OPC UA secure channel protocol asset in the CBOM.",
 			"endpoints": [
 				"opc.tcp://opcua.example:4840"
 			],
