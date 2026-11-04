@@ -203,9 +203,10 @@ class TestBuildSbom(unittest.TestCase):
 			self.assertEqual(suite["identifiers"], [f"http://opcfoundation.org/UA/SecurityPolicy#{name}"])
 			self.assertIn("crypto:algorithm:hmac-sha256", suite["algorithms"])
 			self.assertIn("crypto:algorithm:p-sha256", suite["algorithms"])
+			# Every policy keeps RSA PKCS#1 v1.5 with SHA-256 as its certificate signature algorithm.
+			self.assertIn("crypto:algorithm:rsa-pkcs1v15-sha256", suite["algorithms"])
 		self.assertIn("crypto:algorithm:rsa-pss-sha256", suites["Aes256_Sha256_RsaPss"]["algorithms"])
 		self.assertIn("crypto:algorithm:aes-128-cbc", suites["Aes128_Sha256_RsaOaep"]["algorithms"])
-		self.assertIn("crypto:algorithm:rsa-pkcs1v15-sha256", suites["Basic256Sha256"]["algorithms"])
 		# The policies in the CBOM are exactly the ones the gateway offers.
 		gateway = (build_sbom.REPO_ROOT / "foames/foames_mes/gateway/opcua.py").read_text(encoding="utf-8")
 		for name in suites:

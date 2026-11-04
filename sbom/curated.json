@@ -203,7 +203,7 @@
 			"bom-ref": "crypto:algorithm:rsa-pss-sha256",
 			"type": "cryptographic-asset",
 			"name": "RSA-PSS with SHA-256",
-			"description": "Asymmetric signature of the OPC UA OpenSecureChannel messages under Aes256_Sha256_RsaPss: PSS with SHA-256, MGF1-SHA256 and a 32-byte salt. RSA keys of 2048 to 4096 bits.",
+			"description": "Asymmetric signature of the OPC UA OpenSecureChannel messages under Aes256_Sha256_RsaPss: PSS with SHA-256, MGF1-SHA256 and a 32-byte salt. RSA keys of 2048 to 4096 bits. The certificates themselves stay signed with RSA PKCS#1 v1.5 and SHA-256 under this policy too, so that asset is part of its cipher suite as well.",
 			"cryptoProperties": {
 				"assetType": "algorithm",
 				"algorithmProperties": {
@@ -391,6 +391,7 @@
 							"algorithms": [
 								"crypto:algorithm:rsa-oaep-sha256",
 								"crypto:algorithm:rsa-pss-sha256",
+								"crypto:algorithm:rsa-pkcs1v15-sha256",
 								"crypto:algorithm:aes-256-cbc",
 								"crypto:algorithm:hmac-sha256",
 								"crypto:algorithm:p-sha256"
