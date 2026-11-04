@@ -39,7 +39,7 @@ def _certificates(file_url):
 	try:
 		return load_certificates(Path(path).read_bytes())
 	except (OSError, ValueError) as e:
-		frappe.throw(_("{0} could not be read as a certificate: {1}").format(file_url, e))
+		frappe.throw(_("{0} could not be read as a certificate: {1}").format(file_url, str(e)))
 
 
 def build(now: dt.datetime | None = None) -> dict:

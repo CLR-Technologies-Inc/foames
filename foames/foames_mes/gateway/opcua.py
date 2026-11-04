@@ -112,7 +112,9 @@ def check_trusted_certificates(path: str) -> int:
 	except ImportError:
 		return -1  # cryptography is not installed here; the gateway host checks the bundle at start
 	except (OSError, ValueError) as e:
-		frappe.throw(_("Trusted Certificates could not be read as PEM or DER certificates: {0}").format(e))
+		frappe.throw(
+			_("Trusted Certificates could not be read as PEM or DER certificates: {0}").format(str(e))
+		)
 	if not certificates:
 		frappe.throw(_("Trusted Certificates holds no certificate"))
 	return len(certificates)
