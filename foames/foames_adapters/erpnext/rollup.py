@@ -21,11 +21,11 @@ from __future__ import annotations
 import json
 
 import frappe
-from frappe.query_builder.functions import Sum
 from frappe.utils import get_datetime, now_datetime
 
 from foames.foames_adapters.erpnext import ADAPTER_KEY, erpnext_installed
 from foames.foames_adapters.erpnext.production import production_payload, running_intervals, window_key
+from foames.foames_adapters.machine_window import counter_totals, state_before, state_events
 
 OPERATION = "Job Card Production Log"
 
@@ -94,21 +94,7 @@ def roll_up(machine, job_card: str | None = None, until=None, since=None) -> str
 	if end <= start:
 		return None
 
-	# Query builder rather than a "sum(...)" string: Frappe v16 refuses SQL functions as strings.
-	event = frappe.qb.DocType("Machine Event")
-	rows = (
-		frappe.qb.from_(event)
-		.select(event.counter_name, Sum(event.delta).as_("total"))
-		.where(
-			(event.machine == machine.name)
-			& (event.event_type == "Count")
-			& (event.timestamp > start)
-			& (event.timestamp <= end)
-		)
-		.groupby(event.counter_name)
-		.run(as_dict=True)
-	)
-	totals = {r.counter_name: r.total or 0 for r in rows}
+	totals = counter_totals(machine.name, start, end)
 	intervals = running_intervals(
 		state_before(machine.name, start), state_events(machine.name, start, end), start, end
 	)
@@ -125,34 +111,6 @@ def roll_up(machine, job_card: str | None = None, until=None, since=None) -> str
 		reference_doctype="Machine",
 		reference_name=machine.name,
 	)
-
-
-def state_before(machine: str, at) -> str | None:
-	row = frappe.get_all(
-		"Machine Event",
-		filters={"machine": machine, "event_type": ("in", ("State", "Alarm")), "timestamp": ("<=", at)},
-		fields=["state", "event_type"],
-		order_by="timestamp desc, creation desc",
-		limit_page_length=1,
-	)
-	if not row:
-		return None
-	return "Down" if row[0].event_type == "Alarm" else row[0].state
-
-
-def state_events(machine: str, start, end) -> list[tuple]:
-	rows = frappe.get_all(
-		"Machine Event",
-		filters=[
-			["machine", "=", machine],
-			["event_type", "in", ("State", "Alarm")],
-			["timestamp", ">", start],
-			["timestamp", "<", end],
-		],
-		fields=["timestamp", "state", "event_type"],
-		order_by="timestamp asc, creation asc",
-	)
-	return [(get_datetime(r.timestamp), "Down" if r.event_type == "Alarm" else r.state) for r in rows]
 
 
 def roll_up_all() -> list[str]:
