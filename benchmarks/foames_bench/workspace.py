@@ -65,8 +65,10 @@ def collect(workspace: Path) -> dict:
 	"""What the agent changed since the task started: the patch and the touched paths. Agents that
 	commit and agents that leave changes in the working tree are treated alike."""
 	_git(workspace, "add", "-A")
-	patch = _git(workspace, "diff", "--cached", "task-start", "--", ".", ":(exclude)*.pyc")
-	names = _git(workspace, "diff", "--cached", "--name-status", "task-start").splitlines()
+	# .foames-bench holds the harness's own files (prompt, Frappe stub, grading staging).
+	paths = ["--", ".", ":(exclude)*.pyc", ":(exclude).foames-bench"]
+	patch = _git(workspace, "diff", "--cached", "task-start", *paths)
+	names = _git(workspace, "diff", "--cached", "--name-status", "task-start", *paths).splitlines()
 	changed = []
 	for line in names:
 		parts = line.split("\t")

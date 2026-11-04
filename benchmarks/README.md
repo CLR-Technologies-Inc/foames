@@ -4,7 +4,8 @@ A small, reproducible benchmark of how well coding agents use and develop FoaMES
 
 It is written for senior design teams, master's students and PhD researchers who build on FoaMES and want evidence, not opinions, about which agent to trust with which part of the work.
 
-- **Standard library only.** Python 3.10 or later. No Frappe site, no database, no Docker needed for the six pure-Python tasks.
+- **Standard library only.** Python 3.10 or later. No Frappe site and no database for the six pure-Python tasks.
+- **Sandboxed.** Agents run where they can see their workspace and nothing of the benchmark: in a Docker container, or on Linux in a private mount namespace. See [Sandbox](#sandbox).
 - **Any agent.** Claude Code, Codex CLI, Gemini CLI, OpenCode, Aider, or your own script. An agent is a command line in [agents.json](agents.json).
 - **Outside the app.** Nothing here is imported by the `foames` app, and nothing here runs in CI.
 
@@ -25,7 +26,8 @@ The editable install matters: the tasks live next to the package, not inside it.
 ```bash
 foames-bench list                       # the tasks
 foames-bench validate                   # reference solutions pass, a no-op fails: the grader works
-foames-bench agents                     # which agent CLIs are installed here
+docker build -t foames-bench-agent sandbox   # the agent sandbox image (from benchmarks/)
+foames-bench agents                     # which agent CLIs and sandboxes are available here
 foames-bench estimate --agents 4 --tasks 6 --reps 2 --per-run 1.00
 foames-bench run --agents claude-code-baseline opencode-local --reps 2 --cap-usd 25
 foames-bench report runs/<run id>
@@ -41,7 +43,26 @@ foames-bench prepare --task oee-unknown-time --dest /tmp/ws    # writes /tmp/oee
 foames-bench grade --task oee-unknown-time --workspace /tmp/ws --seconds 412 --cost-usd 0.38
 ```
 
-**Run agents in a container or VM.** The configurations in `agents.json` switch the agents' permission prompts off so they can work unattended (`--dangerously-skip-permissions`, `--full-auto`, `--yolo`, `--yes-always`). Do not run them on a machine whose files matter. Check each command against your installed version once before a paid run, because the CLIs change their flags.
+## Sandbox
+
+`foames-bench run` puts every command agent, and every test that imports its code, in a sandbox. The configurations in `agents.json` switch the agents' permission prompts off so they can work unattended (`--dangerously-skip-permissions`, `--full-auto`, `--yolo`, `--yes-always`), so the sandbox is what stops an agent from reading the hidden tests and the reference solutions, or from touching the rest of your machine.
+
+| `--sandbox` | What the agent sees | Needs |
+| --- | --- | --- |
+| `docker` | Only its workspace, at `/workspace`, in a container built from [sandbox/Dockerfile](sandbox/Dockerfile). Runs as your user. Network `bridge` by default (`--sandbox-network none` for local models on a socket you mount, or a custom network). | Docker on Linux, macOS or Windows, and the image: `docker build -t foames-bench-agent sandbox` |
+| `unshare` | Your machine, except that the whole `benchmarks/` folder is replaced by an empty one, the FoaMES checkout is read-only, and the agent has its own process namespace. Your home directory and network stay, so CLI logins work. | Linux with unprivileged user namespaces and util-linux `unshare` |
+| `auto` (default) | `docker` when the daemon answers and the image exists, else `unshare`, else the run stops and says what to do. It never falls back to no sandbox. | |
+| `none` | Everything. Only for trying an agent out: the run is recorded as `none` and the report says not to publish it. | |
+
+Docker is the one to use for results you publish. In the container an agent has only the environment variables it needs: the API keys and proxy settings in `DEFAULT_PASSTHROUGH` ([sandbox.py](foames_bench/sandbox.py)) when they are set, plus any an agent lists. An agent CLI must be in the image (`foames-bench agents` and `run` check). The image installs Claude Code, Codex CLI, Gemini CLI and OpenCode from npm; choose others, or pin versions, with `--build-arg NPM_AGENTS=...` and `--build-arg PIP_AGENTS="aider-chat"`, and record the image digest with your results. Per-agent options go in `agents.json`:
+
+```json
+"sandbox": {"env": ["MY_PROVIDER_KEY"], "mounts": ["~/.config/opencode:/tmp/.config/opencode:rw"], "network": "host"}
+```
+
+An agent that logs in through a browser rather than an API key needs its login folder mounted (`:rw`, since the CLI refreshes tokens), or use `unshare`. A model served by Ollama on the host is at `http://host.docker.internal:11434` from the container on macOS and Windows; on Linux use `"network": "host"`.
+
+Isolation is one of two defences. The runner also hashes the task folder, the harness and the pristine regression tests before and after each run, and fails a run that changed them. Do not run agents on a machine whose files matter even so, and check each agent command against your installed version once before a paid run, because the CLIs change their flags.
 
 ## The tasks
 
@@ -54,7 +75,7 @@ foames-bench grade --task oee-unknown-time --workspace /tmp/ws --seconds 412 --c
 | `erp-retry-after` | high | Honour S/4HANA throttling, and find why a confirmation was posted twice | Retry-After parsing and backoff; no duplicate posting after a 504; idempotency rules intact |
 | `process-spec-network-loss` | high | Turn an incomplete plant request into a specification with executable acceptance criteria | A written rubric; the acceptance tests must pass now and must catch three planted regressions |
 
-The tasks use only public FoaMES code and invented data. Each one lives in [tasks/](tasks/) with its prompt, an optional setup that plants the defect, hidden tests, and a reference solution. Hidden tests and reference solutions are never copied into the agent's workspace, and a run that edits them fails, but the standard runner does not stop an agent from reading outside its workspace: isolate agents in a container for results you publish. They are public in this repository, though, so a model trained on it may have seen them; see [docs/methodology.md](docs/methodology.md#contamination).
+The tasks use only public FoaMES code and invented data. Each one lives in [tasks/](tasks/) with its prompt, an optional setup that plants the defect, hidden tests, and a reference solution. Hidden tests and reference solutions are never copied into the agent's workspace, the [sandbox](#sandbox) keeps the agent from reading them elsewhere, and a run that edits them fails. They are public in this repository, though, so a model trained on it may have seen them; see [docs/methodology.md](docs/methodology.md#contamination).
 
 ## Scoring
 
@@ -80,8 +101,9 @@ Four agents, six tasks and two repetitions are 48 runs. At an assumed $1 a run t
 
 ```
 benchmarks/
-  agents.json              agent command lines, usage parsers, prices
-  foames_bench/            the harness (cli, runner, workspace, agents, grading, scoring, usage, report, recommend)
+  agents.json              agent command lines, usage parsers, prices, sandbox options
+  sandbox/Dockerfile       the image agents run in with --sandbox docker
+  foames_bench/            the harness (cli, runner, workspace, sandbox, agents, grading, scoring, usage, report, recommend)
     stubs/frappe/          a stand-in so FoaMES's pure modules import without a bench
     inspect_eval.py        optional Inspect AI front end (experimental)
   tasks/<id>/              task.json, prompt.md, setup.py, reference.py, hidden/

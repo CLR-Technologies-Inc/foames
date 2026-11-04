@@ -10,11 +10,12 @@ The first is answered by success rate and correctness, the second by cost per su
 
 ## One run
 
-1. **Workspace.** The FoaMES checkout is copied without `.git`, without `benchmarks/` and without caches. The task's setup runs (for a bug task it plants the defect), and the copy is committed as a fresh one-commit repository tagged `task-start`. The agent cannot read the defect back from history, and the hidden tests and reference solution are not in its workspace. The standard runner does not sandbox the agent, though: an agent process can walk out of its workspace and read or edit the checkout. The runner hashes the task folder, the harness and the pristine regression tests before and after each run and fails a run that changed them, but it cannot detect reading. For results you publish, run each agent in a container or VM that mounts only its workspace (the Inspect AI front end with a Docker sandbox is one way).
-2. **Agent.** The agent's command runs in the workspace with the prompt (the task's `prompt.md` followed by [tasks/_common.md](../tasks/_common.md)). It is stopped after three times the task's time budget.
-3. **Change.** Everything the agent changed, committed or not, is taken as one patch against `task-start`.
-4. **Grading.** The hidden tests run in a separate process with the workspace first on the import path, so they test the agent's code. The repository's own tests for the area run too, taken from the **pristine** checkout so that an agent cannot pass them by editing them. The agent's own new tests run, and the change is checked for scope (files outside `allowed_paths`) and purity (a pure module that starts importing Frappe).
-5. **Usage.** Tokens, turns and cost come from the agent's own output (see [usage.py](../foames_bench/usage.py)). A dollar figure the agent printed is "reported"; one priced from tokens with `agents.json` prices is "estimated"; a local model is "local" at $0; anything else is "unknown" and that run is left out of cost-per-success.
+1. **Workspace.** The FoaMES checkout is copied without `.git`, without `benchmarks/` and without caches. The task's setup runs (for a bug task it plants the defect), and the copy is committed as a fresh one-commit repository tagged `task-start`. The agent cannot read the defect back from history, and the hidden tests and reference solution are not in its workspace.
+2. **Sandbox.** The agent runs in a sandbox that shows it the workspace and nothing of the benchmark: a Docker container that mounts only the workspace, or on Linux a private mount and PID namespace that hides `benchmarks/` and makes the checkout read-only (see the [README](../README.md#sandbox)). The run records which one it used; a run with `--sandbox none` could read the hidden tests and is not a result to publish. As a second check the runner hashes the task folder, the harness and the pristine regression tests before and after each run, and fails a run that changed them.
+3. **Agent.** The agent's command runs in the workspace with the prompt (the task's `prompt.md` followed by [tasks/_common.md](../tasks/_common.md)). It is stopped after three times the task's time budget.
+4. **Change.** Everything the agent changed, committed or not, is taken as one patch against `task-start`.
+5. **Grading.** The hidden tests are copied into the workspace (under `.foames-bench/grade/`, removed afterwards and never part of the patch) only after the agent has stopped, and run in the same sandbox with the workspace first on the import path, because they import the agent's code. The repository's own tests for the area run too, taken from the **pristine** checkout so that an agent cannot pass them by editing them. The agent's own new tests run, and the change is checked for scope (files outside `allowed_paths`) and purity (a pure module that starts importing Frappe).
+6. **Usage.** Tokens, turns and cost come from the agent's own output (see [usage.py](../foames_bench/usage.py)). A dollar figure the agent printed is "reported"; one priced from tokens with `agents.json` prices is "estimated"; a local model is "local" at $0; anything else is "unknown" and that run is left out of cost-per-success.
 
 ## Scores
 
@@ -39,6 +40,7 @@ The invariant gate follows AGENTS.md: "A pull request that breaks one will not b
 | Regressions | `graded.regression` | Did it break existing behaviour? |
 | Wall-clock time | `seconds` | How quickly? |
 | Tokens and dollars | `usage` | What did it cost, and how sure is that figure? |
+| Isolation | `sandbox` | Could the agent see the answers? |
 | Human intervention | none by design | The prompt forbids questions; a run that stalls waiting for input times out. |
 | Reproducibility | `reproducible_tasks` in the summary | Does it succeed again? |
 

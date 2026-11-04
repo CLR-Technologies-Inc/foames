@@ -37,3 +37,4 @@ tasks/<id>/
 - **Planted defects must not be visible in history.** Put them in `setup.py`; the workspace is committed after setup, so `git log` shows a single commit.
 - **Validate.** `foames-bench validate --tasks <id>` must show the reference passing and the no-op failing. If the no-op passes, the hidden tests do not test the task.
 - **Hidden tests find the workspace** in `FOAMES_BENCH_WORKSPACE` and the Frappe stub in `FOAMES_BENCH_STUBS` when they need to run something there.
+- **Tests run inside the sandbox.** Before grading, each test file is copied into the workspace with what it may read from its own folder: data files, helpers named `_*.py` or `test_*.py`, and `test_data/`, `fixtures/` or `data/` folders. A test that reads anything else of the benchmark finds nothing there. Run `python -m unittest tests.test_harness.TestSandbox` after changing a task.

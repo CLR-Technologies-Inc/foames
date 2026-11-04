@@ -1,5 +1,5 @@
 {
- "_about": "Agent configurations. Each command runs in the task workspace. {prompt}, {prompt_file}, {workspace} and {model} are filled in; with \"stdin\": true the prompt is also piped in. CLI flags change between releases: run each command by hand once and adjust before a paid run. The agents run with permission prompts off so they can work unattended, so run them inside a container or VM, never on a machine whose files matter.",
+ "_about": "Agent configurations. Each command runs in the task workspace. {prompt}, {prompt_file}, {workspace} and {model} are filled in; with \"stdin\": true the prompt is also piped in. CLI flags change between releases: run each command by hand once and adjust before a paid run. The agents run with permission prompts off so they can work unattended; `foames-bench run` puts them in a sandbox (--sandbox, README.md#sandbox). An optional \"sandbox\" object sets Docker options per agent: image, network, env (more variable names to pass in) and mounts (\"host:target\" read-only, \"host:target:rw\").",
  "agents": [
   {"name": "reference", "kind": "reference", "notes": "Applies the task's reference solution. Validates tasks and the grader."},
   {"name": "noop", "kind": "noop", "notes": "Changes nothing. Every real agent must beat it."},

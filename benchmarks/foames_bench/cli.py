@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from foames_bench import agents as agents_mod
-from foames_bench import grading, recommend, report, runner, scoring, workspace
+from foames_bench import grading, recommend, report, runner, sandbox, scoring, workspace
 from foames_bench import tasks as tasks_mod
 from foames_bench.paths import BENCH_ROOT, repo_root
 
@@ -30,6 +30,10 @@ def cmd_agents(opts):
 		print(
 			f"{a.name:<22} {a.tier or '-':<9} {a.harness or a.kind:<12} {a.model or '-':<28} {'ready' if ok else 'missing'}: {where}"
 		)
+	print("\nSandboxes (an agent in Docker needs its CLI in the image, not on this machine):")
+	for box in (sandbox.DockerSandbox(), sandbox.UnshareSandbox(repo_root(None))):
+		ok, why = box.available()
+		print(f"  {box.name:<9} {'ready' if ok else 'unavailable'}: {why}")
 
 
 def _out_dir(opts) -> Path:
@@ -48,13 +52,26 @@ def cmd_run(opts):
 	if missing:
 		raise SystemExit(f"unknown agent(s): {', '.join(missing)}; see `foames-bench agents`")
 	chosen = [available[n] for n in names]
+	boxes = {}
 	for a in chosen:
-		ok, where = a.available()
+		if a.kind != "command":
+			continue
+		try:
+			box = sandbox.make(opts.sandbox, repo, a, opts.sandbox_image, opts.sandbox_network)
+		except sandbox.SandboxUnavailable as e:
+			raise SystemExit(str(e)) from None
+		# In a container the agent's CLI must be in the image, not on this machine.
+		exe = a.command[0] if a.command else ""
+		ok, where = box.has_command(exe) if isinstance(box, sandbox.DockerSandbox) else a.available()
 		if not ok:
 			raise SystemExit(f"agent {a.name} is not runnable here: {where}")
+		boxes[a.name] = box
+		print(f"{a.name}: sandbox {box.name} ({box.available()[1]})")
 	out = _out_dir(opts)
 	print(f"FoaMES checkout: {repo}\nResults: {out}\n")
-	runner.run(tasks, chosen, repo, out, opts.reps, opts.keep_workspaces, opts.cap_usd, log=_print)
+	runner.run(
+		tasks, chosen, repo, out, opts.reps, opts.keep_workspaces, opts.cap_usd, log=_print, sandboxes=boxes
+	)
 	summary = report.write(out)
 	print("\n" + report.markdown(summary))
 
@@ -100,7 +117,8 @@ def cmd_grade(opts):
 	task = tasks_mod.select([opts.task])[0]
 	ws = Path(opts.workspace).resolve()
 	change = workspace.collect(ws)
-	graded = grading.grade(task, ws, repo, change)
+	box = sandbox.make(opts.sandbox, repo, image=opts.sandbox_image, network=opts.sandbox_network)
+	graded = grading.grade(task, ws, repo, change, sandbox=box)
 	scores = scoring.score(task, graded, opts.seconds or 0.0, opts.cost_usd)
 	print(
 		json.dumps(
@@ -157,6 +175,20 @@ def cmd_estimate(opts):
 	print("Local runs of open-weight models cost electricity and time, not tokens. Use --cap-usd on `run`.")
 
 
+def _sandbox_args(s, default: str):
+	s.add_argument(
+		"--sandbox",
+		choices=["auto", "docker", "unshare", "none"],
+		default=default,
+		help=f"where command agents and the tests that import their code run (default: {default}); "
+		"see foames_bench/sandbox.py",
+	)
+	s.add_argument("--sandbox-image", default=None, help=f"Docker image (default: {sandbox.DEFAULT_IMAGE})")
+	s.add_argument(
+		"--sandbox-network", default=None, help="Docker network (default: bridge; none for local models)"
+	)
+
+
 def build_parser() -> argparse.ArgumentParser:
 	p = argparse.ArgumentParser(prog="foames-bench", description=__doc__)
 	p.add_argument(
@@ -187,6 +219,7 @@ def build_parser() -> argparse.ArgumentParser:
 			s.add_argument(
 				"--cap-usd", type=float, default=None, help="stop starting runs once this much is spent"
 			)
+			_sandbox_args(s, "auto")
 		s.set_defaults(fn=fn)
 
 	s = sub.add_parser("report", help="summarise a run directory")
@@ -206,6 +239,7 @@ def build_parser() -> argparse.ArgumentParser:
 	s.add_argument("--seconds", type=float, default=None, help="wall time the agent took, for efficiency")
 	s.add_argument("--cost-usd", type=float, default=None)
 	s.add_argument("--full", action="store_true", help="include every test result")
+	_sandbox_args(s, "none")
 	s.set_defaults(fn=cmd_grade)
 
 	s = sub.add_parser("recommend", help="model tier for a TRL and process complexity")

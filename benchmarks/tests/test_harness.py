@@ -9,8 +9,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from foames_bench import agents, recommend, report, runner, scoring, tasks, usage
-from foames_bench.paths import repo_root
+from foames_bench import agents, recommend, report, runner, sandbox, scoring, tasks, usage
+from foames_bench.paths import BENCH_ROOT, repo_root
 
 
 class TestUsageParsers(unittest.TestCase):
@@ -164,10 +164,6 @@ class TestEndToEnd(unittest.TestCase):
 		self.assertLess(row["scores"]["process"], 0.9)
 
 
-if __name__ == "__main__":
-	unittest.main()
-
-
 class TestReviewFixes(unittest.TestCase):
 	def test_failing_subtests_are_recorded(self):
 		from foames_bench import grading
@@ -211,3 +207,120 @@ class TestReviewFixes(unittest.TestCase):
 			target.write_text(original, encoding="utf-8")
 		self.assertFalse(row["scores"]["success"])
 		self.assertTrue(row["scores"]["tampered"])
+
+
+# The agent fixes the counter bug and reports what else it could reach.
+PROBE = """
+import json, pathlib, sys
+hidden, config, repo_file = sys.argv[1:4]
+p = pathlib.Path("foames/foames_mes/counters.py")
+p.write_text(p.read_text().replace("return float(current)", "return 0.0"))
+def readable(path):
+	try:
+		return bool(pathlib.Path(path).read_text())
+	except OSError:
+		return False
+def writable(path):
+	try:
+		with open(path, "a"):
+			return True
+	except OSError:
+		return False
+pathlib.Path("probe.json").write_text(json.dumps({
+	"hidden": readable(hidden), "config": readable(config), "repo_write": writable(repo_file),
+}))
+"""
+
+
+class TestSandbox(unittest.TestCase):
+	def probe(self, box):
+		task = tasks.select(["counter-reset"])[0]
+		hidden = task.path / "hidden" / "test_invariants.py"
+		repo_file = repo_root() / "foames" / "hooks.py"
+		python = box.python if box is not None else sys.executable
+		agent = agents.Agent(
+			name="probe",
+			command=[
+				python,
+				"-c",
+				PROBE,
+				str(hidden),
+				str(BENCH_ROOT / "agents.json"),
+				str(repo_file),
+			],
+		)
+		before = repo_file.read_bytes()
+		with tempfile.TemporaryDirectory() as tmp:
+			row = runner.run_one(
+				task, agent, repo_root(), Path(tmp) / "rep-1", keep_workspace=True, sandbox=box
+			)
+			seen = json.loads((Path(tmp) / "rep-1" / "workspace" / "probe.json").read_text())
+		self.assertEqual(repo_file.read_bytes(), before)
+		return row, seen
+
+	def test_unshare_hides_the_benchmark(self):
+		box = sandbox.UnshareSandbox(repo_root())
+		ok, why = box.available()
+		if not ok:
+			self.skipTest(why)
+		row, seen = self.probe(box)
+		self.assertEqual(seen, {"hidden": False, "config": False, "repo_write": False})
+		self.assertEqual(row["sandbox"], "unshare")
+		# The hidden tests still ran, inside the sandbox, against the agent's fix.
+		self.assertTrue(row["scores"]["success"], row["scores"])
+		self.assertGreater(len(row["graded"]["hidden"]["invariant"]["tests"]), 1)
+
+	def test_docker_hides_the_benchmark(self):
+		"""Needs a Docker daemon and an image with python3; FOAMES_BENCH_TEST_IMAGE names another one."""
+		import os
+
+		image = os.environ.get("FOAMES_BENCH_TEST_IMAGE", sandbox.DEFAULT_IMAGE)
+		box = sandbox.DockerSandbox(image=image, network="none")
+		ok, why = box.available()
+		if not ok:
+			self.skipTest(why)
+		row, seen = self.probe(box)
+		self.assertEqual(seen, {"hidden": False, "config": False, "repo_write": False})
+		self.assertEqual(row["sandbox"], "docker")
+		self.assertTrue(row["scores"]["success"], row["scores"])
+
+	def test_without_a_sandbox_the_answers_are_readable(self):
+		row, seen = self.probe(None)
+		self.assertTrue(seen["hidden"])
+		self.assertEqual(row["sandbox"], "none")
+
+	def test_docker_command_line(self):
+		box = sandbox.DockerSandbox(
+			image="img", network="none", passthrough=["MY_KEY"], mounts=["~/.cfg:/tmp/.cfg:rw"]
+		)
+		ws = Path("/tmp/ws")
+		argv, _ = box.wrap(
+			["agent", box.inside(ws, ws / "a" / "p.md")],
+			ws,
+			{"MY_KEY": "secret", "OTHER": "x", "FOAMES_BENCH_STUBS": "/workspace/s"},
+			forward=("FOAMES_BENCH_STUBS",),
+		)
+		joined = " ".join(argv)
+		self.assertIn("-v /tmp/ws:/workspace", joined)
+		self.assertIn("--network none", joined)
+		self.assertIn(f"{Path('~/.cfg').expanduser()}:/tmp/.cfg:rw", joined)
+		# A key is named, so its value stays out of the command line; a harness variable is set.
+		self.assertIn("-e MY_KEY", joined)
+		self.assertNotIn("secret", joined)
+		self.assertNotIn("OTHER", joined)
+		self.assertIn("FOAMES_BENCH_STUBS=/workspace/s", joined)
+		self.assertEqual(argv[-3:], ["img", "agent", "/workspace/a/p.md"])
+		box._name = None
+
+	def test_auto_refuses_to_fall_back_to_no_sandbox(self):
+		original = (sandbox.DockerSandbox.available, sandbox.UnshareSandbox.available)
+		sandbox.DockerSandbox.available = sandbox.UnshareSandbox.available = lambda self: (False, "off")
+		try:
+			with self.assertRaises(sandbox.SandboxUnavailable):
+				sandbox.make("auto", repo_root())
+		finally:
+			sandbox.DockerSandbox.available, sandbox.UnshareSandbox.available = original
+
+
+if __name__ == "__main__":
+	unittest.main()

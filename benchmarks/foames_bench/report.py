@@ -70,7 +70,12 @@ def summarise(rows: list[dict]) -> dict:
 		by_agent[r["agent"]].append(r)
 	return {
 		"by_agent": {
-			a: {"model": rs[0]["model"], "tier": rs[0]["agent_tier"], **_summarise(rs)}
+			a: {
+				"model": rs[0]["model"],
+				"tier": rs[0]["agent_tier"],
+				"sandbox": ", ".join(sorted({r.get("sandbox", "unrecorded") for r in rs})),
+				**_summarise(rs),
+			}
 			for a, rs in by_agent.items()
 		},
 		"by_agent_task": [
@@ -90,13 +95,13 @@ def _money(v):
 
 def markdown(summary: dict) -> str:
 	lines = [
-		"| Agent | Model | Tier | Runs | Success | First try | Quality | Composite | Mean time | Cost | Cost per success |",
-		"| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+		"| Agent | Model | Tier | Sandbox | Runs | Success | First try | Quality | Composite | Mean time | Cost | Cost per success |",
+		"| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
 	]
 	ranked = sorted(summary["by_agent"].items(), key=lambda kv: -(kv[1]["quality"] or 0))
 	for agent, s in ranked:
 		lines.append(
-			f"| {agent} | {s['model'] or '-'} | {s['tier'] or '-'} | {s['runs']} | {s['success_rate']:.0%} {_ci(s)} | "
+			f"| {agent} | {s['model'] or '-'} | {s['tier'] or '-'} | {s['sandbox']} | {s['runs']} | {s['success_rate']:.0%} {_ci(s)} | "
 			f"{s['first_attempt_success']:.0%} | {s['quality']:.2f} | {s['composite']:.2f} | {s['mean_seconds']:.0f} s | "
 			f"{_money(s['total_cost_usd'])} | {_money(s['cost_per_success_usd'])} |"
 		)
@@ -110,6 +115,8 @@ def markdown(summary: dict) -> str:
 			f"| {s['agent']} | {s['task']} | {s['runs']} | {s['success_rate']:.0%} | {s['quality']:.2f} | "
 			f"{s['correctness']:.2f} | {s['process']:.2f} | {s['mean_seconds']:.0f} s | {_money(s['total_cost_usd'])} |"
 		)
+	if any("none" in s["sandbox"].split(", ") for s in summary["by_agent"].values()):
+		lines += ["", "Runs with sandbox `none` could read the hidden tests. Do not publish them as results."]
 	return "\n".join(lines) + "\n"
 
 
