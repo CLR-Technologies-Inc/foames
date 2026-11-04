@@ -57,6 +57,15 @@ STOP_REASON_BY_CATEGORY = {
 	"Breakdown": "Machine malfunction",
 	"Planned": "Unplanned machine maintenance",
 }
+# The documents a Quality Inspection from the floor can be about, and the inspection type each
+# gets unless the payload says otherwise (a Job Card is inspected in process, a Manufacture entry
+# as the finished good comes in).
+INSPECTION_REFERENCE_TYPES = ("Job Card", "Stock Entry")
+INSPECTION_TYPES = ("Incoming", "Outgoing", "In Process")
+INSPECTION_TYPE_BY_REFERENCE = {"Job Card": "In Process", "Stock Entry": "Incoming"}
+READING_STATUSES = ("Accepted", "Rejected")
+# ERPNext's Quality Inspection Reading has ten numeric reading columns.
+MAX_READINGS_PER_SPECIFICATION = 10
 
 
 @dataclass(frozen=True)
@@ -133,6 +142,22 @@ OPERATIONS: dict[str, Operation] = {
 		required=("workstation", "from_time", "to_time"),
 		optional=("operator", "stop_reason", "remarks", "downtime_record"),
 		doctype="Downtime Entry",
+	),
+	"Quality Inspection": Operation(
+		label="Quality Inspection",
+		required=("reference_type", "reference_name", "readings"),
+		optional=(
+			"item_code",
+			"inspection_type",
+			"sample_size",
+			"inspected_by",
+			"template",
+			"batch_no",
+			"serial_no",
+			"remarks",
+			"submit",
+		),
+		doctype="Quality Inspection",
 	),
 }
 
@@ -232,7 +257,88 @@ def prepare(operation: Operation, payload: dict) -> dict:
 		raise ValueError(f"Workstation Status must be one of {', '.join(WORKSTATION_STATUSES)}")
 	if operation.label == "Downtime Entry" and str(prepared["from_time"]) >= str(prepared["to_time"]):
 		raise ValueError("Downtime Entry needs from_time before to_time")
+	if operation.label == "Quality Inspection":
+		if prepared["reference_type"] not in INSPECTION_REFERENCE_TYPES:
+			raise ValueError(
+				f"Quality Inspection reference_type must be one of {', '.join(INSPECTION_REFERENCE_TYPES)}"
+			)
+		inspection_type = (
+			prepared.get("inspection_type") or INSPECTION_TYPE_BY_REFERENCE[prepared["reference_type"]]
+		)
+		if inspection_type not in INSPECTION_TYPES:
+			raise ValueError(f"inspection_type must be one of {', '.join(INSPECTION_TYPES)}")
+		prepared["inspection_type"] = inspection_type
+		prepared["readings"] = inspection_readings(prepared["readings"])
+		if prepared.get("sample_size") not in (None, ""):
+			try:
+				prepared["sample_size"] = float(prepared["sample_size"])
+			except (TypeError, ValueError):
+				raise ValueError("sample_size must be a number")
+			if prepared["sample_size"] <= 0:
+				raise ValueError("sample_size must be greater than zero")
+		elif "sample_size" in prepared:
+			del prepared["sample_size"]
 	return prepared
+
+
+def inspection_readings(value) -> list[dict]:
+	"""The readings of a Quality Inspection in one shape: a list of
+	`{"specification": <Quality Inspection Parameter>, "values": [numbers]}` for a numeric
+	parameter (up to ten, the columns ERPNext has) or `{"specification": ..., "value": "text"}`
+	for a non-numeric one, each optionally with `min_value`/`max_value` (acceptance limits for a
+	parameter the template does not set them for) or a `status` (Accepted or Rejected, which makes
+	the reading a manual one). `values` may also be given as a single number under `value`."""
+	if not isinstance(value, (list, tuple)) or not value:
+		raise ValueError("readings must be a list of {specification, values} objects")
+	readings = []
+	for entry in value:
+		if not isinstance(entry, dict):
+			raise ValueError("readings must be a list of {specification, values} objects")
+		unknown = set(entry) - {"specification", "values", "value", "min_value", "max_value", "status"}
+		if unknown:
+			raise ValueError(f"reading does not understand {', '.join(sorted(unknown))}")
+		specification = str(entry.get("specification") or "").strip()
+		if not specification:
+			raise ValueError("every reading needs a specification")
+		reading: dict = {"specification": specification}
+		values = entry.get("values")
+		single = entry.get("value")
+		if values is None and isinstance(single, (int, float)) and not isinstance(single, bool):
+			values = [single]
+		if values is not None:
+			if not isinstance(values, (list, tuple)) or not values:
+				raise ValueError(f"reading {specification}: values must be a non-empty list of numbers")
+			if len(values) > MAX_READINGS_PER_SPECIFICATION:
+				raise ValueError(
+					f"reading {specification}: at most {MAX_READINGS_PER_SPECIFICATION} values per specification"
+				)
+			numbers = []
+			for v in values:
+				if isinstance(v, bool) or v is None:
+					raise ValueError(f"reading {specification}: values must be numbers")
+				try:
+					numbers.append(float(v))
+				except (TypeError, ValueError):
+					raise ValueError(f"reading {specification}: values must be numbers")
+			reading["values"] = numbers
+		elif single not in (None, ""):
+			reading["value"] = str(single).strip()
+		else:
+			raise ValueError(f"reading {specification} needs values (numbers) or a value (text)")
+		for bound in ("min_value", "max_value"):
+			if entry.get(bound) not in (None, ""):
+				try:
+					reading[bound] = float(entry[bound])
+				except (TypeError, ValueError):
+					raise ValueError(f"reading {specification}: {bound} must be a number")
+		if "min_value" in reading and "max_value" in reading and reading["min_value"] > reading["max_value"]:
+			raise ValueError(f"reading {specification}: min_value is above max_value")
+		if entry.get("status") not in (None, ""):
+			if entry["status"] not in READING_STATUSES:
+				raise ValueError(f"reading {specification}: status must be Accepted or Rejected")
+			reading["status"] = entry["status"]
+		readings.append(reading)
+	return readings
 
 
 def employee_rows(value) -> list[dict]:

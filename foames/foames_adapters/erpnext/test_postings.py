@@ -14,7 +14,15 @@ class TestOperations(unittest.TestCase):
 	def test_every_operation_names_an_erpnext_doctype(self):
 		for op in postings.OPERATIONS.values():
 			self.assertIn(
-				op.doctype, ("Stock Entry", "Job Card", "Work Order", "Workstation", "Downtime Entry")
+				op.doctype,
+				(
+					"Stock Entry",
+					"Job Card",
+					"Work Order",
+					"Workstation",
+					"Downtime Entry",
+					"Quality Inspection",
+				),
 			)
 			self.assertTrue(op.required)
 
@@ -115,6 +123,63 @@ class TestPrepare(unittest.TestCase):
 			self.prepare("Workstation Status", {"workstation": "WS-1", "status": "Running"})
 		with self.assertRaises(ValueError):
 			self.prepare("Workstation Status", {"workstation": "WS-1"})
+
+	def test_quality_inspection_readings(self):
+		base = {"reference_type": "Job Card", "reference_name": "PO-JOB00001"}
+		prepared = self.prepare(
+			"Quality Inspection",
+			{
+				**base,
+				"readings": [
+					{"specification": " Length ", "values": [10.1, "9.9", 10]},
+					{"specification": "Colour", "value": "Blue"},
+					{"specification": "Weight", "value": 250, "min_value": "240", "max_value": 260},
+					{"specification": "Finish", "value": "Matt", "status": "Rejected"},
+				],
+			},
+		)
+		self.assertEqual(prepared["inspection_type"], "In Process")
+		self.assertEqual(
+			prepared["readings"],
+			[
+				{"specification": "Length", "values": [10.1, 9.9, 10.0]},
+				{"specification": "Colour", "value": "Blue"},
+				{"specification": "Weight", "values": [250.0], "min_value": 240.0, "max_value": 260.0},
+				{"specification": "Finish", "value": "Matt", "status": "Rejected"},
+			],
+		)
+		# A Stock Entry is inspected as the finished good comes in, unless told otherwise.
+		stock = {**base, "reference_type": "Stock Entry", "readings": [{"specification": "L", "values": [1]}]}
+		self.assertEqual(self.prepare("Quality Inspection", stock)["inspection_type"], "Incoming")
+		self.assertEqual(
+			self.prepare("Quality Inspection", {**stock, "inspection_type": "Outgoing"})["inspection_type"],
+			"Outgoing",
+		)
+		self.assertEqual(
+			self.prepare("Quality Inspection", {**stock, "sample_size": "3"})["sample_size"], 3.0
+		)
+		bad = [
+			{**base, "readings": []},
+			{**base, "readings": [{"values": [1]}]},
+			{**base, "readings": [{"specification": "L"}]},
+			{**base, "readings": [{"specification": "L", "values": []}]},
+			{**base, "readings": [{"specification": "L", "values": ["ten"]}]},
+			{**base, "readings": [{"specification": "L", "values": [1, None]}]},
+			{**base, "readings": [{"specification": "L", "values": list(range(11))}]},
+			{**base, "readings": [{"specification": "L", "values": [1], "min_value": 5, "max_value": 4}]},
+			{**base, "readings": [{"specification": "L", "values": [1], "status": "Maybe"}]},
+			{**base, "readings": [{"specification": "L", "values": [1], "note": "x"}]},
+			{**base, "readings": [{"specification": "L", "values": [1]}], "inspection_type": "Final"},
+			{**base, "readings": [{"specification": "L", "values": [1]}], "sample_size": 0},
+			{
+				**base,
+				"reference_type": "Purchase Receipt",
+				"readings": [{"specification": "L", "values": [1]}],
+			},
+		]
+		for payload in bad:
+			with self.assertRaises(ValueError, msg=payload):
+				self.prepare("Quality Inspection", payload)
 
 	def test_downtime_entry_needs_a_window(self):
 		base = {"workstation": "WS-1", "from_time": "2026-10-31 08:00:00", "to_time": "2026-10-31 08:30:00"}

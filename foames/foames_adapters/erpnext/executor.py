@@ -51,6 +51,8 @@ def execute(operation: Operation, payload: dict, marker: str) -> Result:
 		return set_workstation_status(payload)
 	if operation.label == "Downtime Entry":
 		return post_downtime_entry(payload, marker)
+	if operation.label == "Quality Inspection":
+		return post_quality_inspection(payload, marker)
 	raise ValueError(f"No executor for {operation.label}")
 
 
@@ -77,6 +79,15 @@ def find_existing(operation: Operation, payload: dict, marker: str) -> Result | 
 		name = frappe.db.get_value("Downtime Entry", {"remarks": ("like", f"%{marker}%")}, "name")
 		if name:
 			return Result("Downtime Entry", name, {"found_by": "marker"}, existing=True)
+	elif operation.label == "Quality Inspection":
+		name = frappe.db.get_value(
+			"Quality Inspection", {"remarks": ("like", f"{marker}%"), "docstatus": ("<", 2)}, "name"
+		)
+		if name:
+			doc = frappe.get_doc("Quality Inspection", name)
+			return Result(
+				"Quality Inspection", name, {"found_by": "marker", **inspection_outcome(doc)}, existing=True
+			)
 	return None
 
 
@@ -429,3 +440,138 @@ def post_downtime_entry(payload: dict, marker: str) -> Result:
 		return Result("Downtime Entry", doc.name, {"downtime": doc.downtime, "updated": True})
 	doc = frappe.get_doc({"doctype": "Downtime Entry", **values}).insert()
 	return Result("Downtime Entry", doc.name, {"downtime": doc.downtime, "stop_reason": stop_reason})
+
+
+def post_quality_inspection(payload: dict, marker: str) -> Result:
+	"""Create an ERPNext Quality Inspection for a Job Card (in process) or a Stock Entry (the
+	finished good coming in) from the readings the floor took, judged by ERPNext's own acceptance
+	criteria: each reading takes its limits or formula from the Quality Inspection Template the Job
+	Card's operation, the BOM or the item names, and ERPNext sets the reading's and the
+	inspection's status on save. A reading for a parameter the template does not cover needs its
+	own `min_value`/`max_value` or a `status`, so nothing is judged against limits that were never
+	set. Submitting (the default) links the inspection to the Job Card or the Stock Entry row, which
+	is what ERPNext checks when the Job Card is completed."""
+	reference_type, reference_name = payload["reference_type"], payload["reference_name"]
+	reference = frappe.get_doc(reference_type, reference_name)
+	item_code, bom_no, template = inspection_subject(reference, payload.get("item_code"))
+	template = payload.get("template") or template
+	if not item_code:
+		frappe.throw(_("{0} {1} has no item to inspect").format(_(reference_type), reference_name))
+	criteria = template_criteria(template)
+	for reading in payload["readings"]:
+		if not frappe.db.exists("Quality Inspection Parameter", reading["specification"]):
+			frappe.throw(
+				_(
+					"There is no Quality Inspection Parameter {0}. Create it in ERPNext, or name an existing one."
+				).format(reading["specification"])
+			)
+		if (
+			reading["specification"] not in criteria
+			and "status" not in reading
+			and not ("min_value" in reading and "max_value" in reading)
+		):
+			frappe.throw(
+				_(
+					"Reading {0} is not in template {1}: give it min_value and max_value, or a status, so it is "
+					"not judged against limits that were never set."
+				).format(reading["specification"], template or _("(none)"))
+			)
+
+	doc = frappe.new_doc("Quality Inspection")
+	doc.update(
+		{
+			"inspection_type": payload["inspection_type"],
+			"reference_type": reference_type,
+			"reference_name": reference_name,
+			"item_code": item_code,
+			"bom_no": bom_no,
+			"quality_inspection_template": template,
+			"sample_size": payload.get("sample_size")
+			or max(len(r.get("values") or [1]) for r in payload["readings"]),
+			"inspected_by": payload.get("inspected_by") or frappe.session.user,
+			"batch_no": payload.get("batch_no"),
+			"item_serial_no": payload.get("serial_no"),
+			"remarks": f"{marker} {payload.get('remarks') or ''}".strip(),
+		}
+	)
+	for reading in payload["readings"]:
+		row = doc.append("readings", {"specification": reading["specification"]})
+		if reading["specification"] in criteria:
+			row.update(criteria[reading["specification"]])
+		else:
+			row.numeric = int("values" in reading)
+		for bound in ("min_value", "max_value"):
+			if bound in reading:
+				row.set(bound, reading[bound])
+		if "values" in reading:
+			row.numeric = 1
+			for index, value in enumerate(reading["values"], start=1):
+				row.set(f"reading_{index}", plain_number(value))
+		else:
+			row.reading_value = reading["value"]
+		if "status" in reading:
+			row.manual_inspection = 1
+			row.status = reading["status"]
+	doc.insert()
+	if payload.get("submit", True):
+		doc.submit()
+	return Result("Quality Inspection", doc.name, inspection_outcome(doc))
+
+
+def plain_number(value: float) -> str:
+	"""A reading as ERPNext's number parser reads it: plain decimal digits with a point, no
+	exponent and no trailing zeros (`10.1`, `250`, `0.005`)."""
+	text = f"{float(value):.10f}".rstrip("0").rstrip(".")
+	return text or "0"
+
+
+def inspection_subject(reference, item_code: str | None) -> tuple[str | None, str | None, str | None]:
+	"""(item, BOM, template) for the document a Quality Inspection is about: a Job Card inspects
+	its production item against its operation's template, a Stock Entry its finished item (or the
+	one named) against the BOM's template, falling back to the item's own template."""
+	if reference.doctype == "Job Card":
+		item = item_code or reference.production_item
+		bom = reference.get("bom_no")
+		template = reference.get("quality_inspection_template")
+	else:
+		row = finished_item_row(reference) or (reference.items[0] if reference.items else None)
+		item = item_code or (row.item_code if row else None)
+		bom = reference.get("bom_no")
+		template = None
+	if not template and bom:
+		template = frappe.db.get_value("BOM", bom, "quality_inspection_template")
+	if not template and item:
+		template = frappe.db.get_value("Item", item, "quality_inspection_template")
+	return item, bom, template
+
+
+def template_criteria(template: str | None) -> dict[str, dict]:
+	"""The acceptance criteria of a Quality Inspection Template by parameter, as ERPNext's own
+	reader returns them (numeric flag, limits, formula, expected value)."""
+	if not template:
+		return {}
+	get_template_details = frappe.get_attr(
+		"erpnext.stock.doctype.quality_inspection_template.quality_inspection_template.get_template_details"
+	)
+	return {row["specification"]: dict(row) for row in get_template_details(template)}
+
+
+def inspection_outcome(doc) -> dict:
+	return {
+		"status": doc.status,
+		"docstatus": doc.docstatus,
+		"reference_type": doc.reference_type,
+		"reference_name": doc.reference_name,
+		"item_code": doc.item_code,
+		"readings": [
+			{
+				"specification": row.specification,
+				"status": row.status,
+				"values": [
+					row.get(f"reading_{i}") for i in range(1, 11) if row.get(f"reading_{i}") not in (None, "")
+				],
+				"value": row.reading_value,
+			}
+			for row in doc.readings
+		],
+	}
