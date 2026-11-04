@@ -1,0 +1,13 @@
+{
+ "id": "spc-ewma-chart",
+ "title": "Add an EWMA chart for small process shifts",
+ "tier": "pure",
+ "complexity": "medium",
+ "trl_bands": ["1-3", "4-6", "7-9"],
+ "dimension": "Statistical method; correct signals and false positives; invariant 7 (pure logic stays pure)",
+ "hidden": {"functional": ["test_functional.py"], "invariant": ["test_invariants.py"]},
+ "regression": ["foames/foames_mes/test_spc.py"],
+ "allowed_paths": ["foames/foames_mes/spc.py", "foames/foames_mes/test_*.py"],
+ "deliverables": [],
+ "budget": {"usd": 1.0, "seconds": 900}
+}

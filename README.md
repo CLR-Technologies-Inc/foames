@@ -63,6 +63,7 @@ The full guide, including roles, the scheduler, running the gateways and a smoke
 | [AGENTS.md](AGENTS.md) | For coding agents and developers building on FoaMES: invariants, hooks, API, tests |
 | [docs/agents/floor-agent.md](docs/agents/floor-agent.md) | For an agent reading the floor and raising suggestions at run time |
 | [docs/agents/research-to-code.md](docs/agents/research-to-code.md) | For an agent or developer turning a published method into a FoaMES change |
+| [benchmarks/README.md](benchmarks/README.md) | A benchmark of coding agents on FoaMES tasks, with model recommendations by TRL and process complexity |
 
 ## Contributing
 

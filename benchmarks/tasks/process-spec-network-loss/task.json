@@ -1,0 +1,14 @@
+{
+ "id": "process-spec-network-loss",
+ "title": "Specify performance reconstruction after network loss",
+ "tier": "pure",
+ "complexity": "high",
+ "trl_bands": ["1-3", "4-6", "7-9"],
+ "dimension": "Process-development quality: ambiguity, invariants, risks, traceable and executable acceptance criteria",
+ "hidden": {"invariant": ["test_invariants.py"]},
+ "regression": ["foames/foames_mes/test_machine_data_logic.py", "foames/foames_mes/test_oee_ledger.py"],
+ "allowed_paths": ["PLAN.md", "acceptance/*"],
+ "deliverables": ["PLAN.md"],
+ "rubric": "rubric.json",
+ "budget": {"usd": 2.0, "seconds": 1500}
+}

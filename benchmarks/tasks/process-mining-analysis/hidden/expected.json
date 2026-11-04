@@ -1,0 +1,25 @@
+{
+ "cases": 60,
+ "variants": 8,
+ "top_variant": {
+  "activities": [
+   "Cut",
+   "Weld",
+   "Inspect",
+   "Paint",
+   "Pack"
+  ],
+  "cases": 29
+ },
+ "median_cycle_time_minutes": 191.5,
+ "rework_cases": {
+  "Inspect": 21,
+  "Rework Weld": 3
+ },
+ "bottleneck": "Inspect",
+ "incomplete_cases": [
+  "WO-0017",
+  "WO-0033",
+  "WO-0052"
+ ]
+}
