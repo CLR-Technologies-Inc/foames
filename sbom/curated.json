@@ -64,7 +64,7 @@
 			"bom-ref": "crypto:algorithm:sha-256",
 			"type": "cryptographic-asset",
 			"name": "SHA-256",
-			"description": "Derives identifiers, not secrets: External Reference keys and the document markers that make ERPNext, S/4HANA and Insights Hub postings idempotent. Also the hash inside HMAC-SHA256.",
+			"description": "Derives identifiers, not secrets: External Reference keys and the document markers that make ERPNext, S/4HANA, Insights Hub and other MES postings idempotent. Also the hash inside HMAC-SHA256.",
 			"cryptoProperties": {
 				"assetType": "algorithm",
 				"oid": "2.16.840.1.101.3.4.2.1",
@@ -97,6 +97,10 @@
 					"value": "foames/foames_adapters/insights_hub/outbox.py"
 				},
 				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_adapters/mes/outbox.py"
+				},
+				{
 					"name": "foames:crypto:implementation",
 					"value": "Python standard library hashlib"
 				}
@@ -106,7 +110,7 @@
 			"bom-ref": "crypto:protocol:tls",
 			"type": "cryptographic-asset",
 			"name": "TLS",
-			"description": "Transport security for S/4HANA OData and IDoc calls and for Insights Hub REST calls (Python ssl default context, optional custom CA file) and for MQTT and Sparkplug B when MQTT TLS is switched on in Machine Data Settings. The version and cipher suites are whatever the host's OpenSSL negotiates; FoaMES does not pin them.",
+			"description": "Transport security for S/4HANA OData and IDoc calls for Insights Hub REST calls and for the other MES adapters' REST calls (Python ssl default context, optional custom CA file) and for MQTT and Sparkplug B when MQTT TLS is switched on in Machine Data Settings. The version and cipher suites are whatever the host's OpenSSL negotiates; FoaMES does not pin them.",
 			"cryptoProperties": {
 				"assetType": "protocol",
 				"protocolProperties": {
@@ -121,6 +125,10 @@
 				{
 					"name": "foames:crypto:sourceLocation",
 					"value": "foames/foames_adapters/insights_hub/rest.py"
+				},
+				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_adapters/mes/rest.py"
 				},
 				{
 					"name": "foames:crypto:sourceLocation",
@@ -152,7 +160,7 @@
 			"bom-ref": "crypto:material:erp-credentials",
 			"type": "cryptographic-asset",
 			"name": "ERP and broker credentials",
-			"description": "S/4HANA Basic credentials or OAuth 2.0 client ID and secret, the Insights Hub client ID and secret, the MQTT broker password and the OPC UA user password. Stored in Password fields of S4HANA Settings, Insights Hub Settings and Machine Data Settings; never in code, hooks or site config.",
+			"description": "S/4HANA Basic credentials or OAuth 2.0 client ID and secret, the Insights Hub client ID and secret, each MES Connection's password, bearer token, API key or client secret, the MQTT broker password and the OPC UA user password. Stored in Password fields of S4HANA Settings, Insights Hub Settings, MES Connection and Machine Data Settings; never in code, hooks or site config.",
 			"cryptoProperties": {
 				"assetType": "related-crypto-material",
 				"relatedCryptoMaterialProperties": {
@@ -193,6 +201,24 @@
 				{
 					"name": "foames:crypto:sourceLocation",
 					"value": "foames/foames_adapters/insights_hub/rest.py"
+				}
+			]
+		},
+		{
+			"bom-ref": "crypto:material:mes-bearer-token",
+			"type": "cryptographic-asset",
+			"name": "MES OAuth bearer token",
+			"description": "The access token an MES Connection with OAuth 2.0 client credentials receives from the system's token endpoint (SAP XSUAA, Proficy UAA, AVEVA Connect). Held in memory by the REST client for its lifetime and sent as a bearer credential; never stored or logged.",
+			"cryptoProperties": {
+				"assetType": "related-crypto-material",
+				"relatedCryptoMaterialProperties": {
+					"type": "token"
+				}
+			},
+			"properties": [
+				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_adapters/mes/rest.py"
 				}
 			]
 		}
@@ -351,6 +377,31 @@
 				{
 					"type": "documentation",
 					"url": "https://github.com/CLR-Technologies-Inc/foames/blob/main/docs/insights-hub-adapter.md"
+				}
+			]
+		},
+		{
+			"bom-ref": "service:other-mes-rest-apis",
+			"name": "Other MES and MOM systems' REST APIs",
+			"description": "Optional, one connection per system. The MES profiles (Rockwell Plex and FactoryTalk ProductionCentre, SAP Digital Manufacturing, DELMIA Apriso, AVEVA MES, Critical Manufacturing, Tulip, Aegis FactoryLogix, K\u00f6rber PAS-X, Proficy) resolve mapped references and send outbox writes over HTTPS with Basic, bearer token, API key header or OAuth 2.0 client credentials authentication, as each MES Connection is configured. Endpoints are per installation; the examples are the vendors' public gateways.",
+			"endpoints": [
+				"https://connect.plex.com/",
+				"https://api.eu10.dmc.cloud.sap/",
+				"https://instance.tulip.co/api/v3/",
+				"https://mes.example/"
+			],
+			"authenticated": true,
+			"x-trust-boundary": true,
+			"data": [
+				{
+					"flow": "bi-directional",
+					"classification": "business-transactional"
+				}
+			],
+			"externalReferences": [
+				{
+					"type": "documentation",
+					"url": "https://github.com/CLR-Technologies-Inc/foames/blob/main/docs/mes-adapters.md"
 				}
 			]
 		}

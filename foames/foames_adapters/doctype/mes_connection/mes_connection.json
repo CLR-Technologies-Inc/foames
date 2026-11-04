@@ -1,0 +1,264 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-04 14:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "adapter",
+  "enabled",
+  "column_break_head",
+  "documentation_url",
+  "connection_section",
+  "base_url",
+  "site",
+  "test_path",
+  "column_break_connection",
+  "timeout",
+  "ca_bundle",
+  "extra_headers",
+  "auth_section",
+  "auth_method",
+  "username",
+  "password",
+  "token",
+  "api_key",
+  "api_key_header",
+  "column_break_auth",
+  "token_url",
+  "client_id",
+  "client_secret",
+  "scope",
+  "mapping_section",
+  "entity_mappings",
+  "outbox_section",
+  "outbox_paused",
+  "notes_section",
+  "profile_notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "adapter",
+   "fieldtype": "Select",
+   "label": "Adapter",
+   "options": "PLEX\nFTPC\nSAP_DMC\nAPRISO\nAVEVA_MES\nCMF_MES\nTULIP\nFACTORYLOGIX\nPASX\nPROFICY",
+   "reqd": 1,
+   "set_only_once": 1,
+   "in_list_view": 1,
+   "description": "The MES this connection reaches. One connection per adapter; the record is named after the key, which is also the ERP System on External References."
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "0",
+   "in_list_view": 1,
+   "description": "Turns on reference resolution and the outbox for this system."
+  },
+  {
+   "fieldname": "column_break_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "documentation_url",
+   "fieldtype": "Data",
+   "label": "API Documentation",
+   "options": "URL",
+   "read_only": 1
+  },
+  {
+   "fieldname": "connection_section",
+   "fieldtype": "Section Break",
+   "label": "Connection"
+  },
+  {
+   "fieldname": "base_url",
+   "fieldtype": "Data",
+   "label": "Base URL",
+   "options": "URL",
+   "in_list_view": 1,
+   "mandatory_depends_on": "enabled",
+   "description": "Scheme and host of the API, with any fixed prefix every path shares. Resource paths in Entity Mappings are relative to it."
+  },
+  {
+   "fieldname": "site",
+   "fieldtype": "Data",
+   "label": "Site / Plant / Tenant",
+   "description": "Available as {site} in paths, query values and headers. Plex: the customer id (PCN). SAP Digital Manufacturing: the plant."
+  },
+  {
+   "fieldname": "test_path",
+   "fieldtype": "Data",
+   "label": "Test Path",
+   "description": "A read the connection test calls, relative to the Base URL (for example a small collection). Empty calls the Base URL itself."
+  },
+  {
+   "fieldname": "column_break_connection",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "timeout",
+   "fieldtype": "Int",
+   "label": "Timeout (seconds)",
+   "default": "30"
+  },
+  {
+   "fieldname": "ca_bundle",
+   "fieldtype": "Data",
+   "label": "CA Bundle Path",
+   "description": "Path on this server to a PEM file, when the system uses a certificate from a private CA."
+  },
+  {
+   "fieldname": "extra_headers",
+   "fieldtype": "Small Text",
+   "label": "Extra Headers",
+   "description": "One Name: value per line, sent on every call. {site} is filled in. The profile's own headers (for example Plex's customer header) are added automatically."
+  },
+  {
+   "fieldname": "auth_section",
+   "fieldtype": "Section Break",
+   "label": "Authentication"
+  },
+  {
+   "fieldname": "auth_method",
+   "fieldtype": "Select",
+   "label": "Method",
+   "options": "None\nBasic\nBearer Token\nAPI Key Header\nOAuth 2.0 Client Credentials",
+   "default": "Basic",
+   "reqd": 1
+  },
+  {
+   "fieldname": "username",
+   "fieldtype": "Data",
+   "label": "Username",
+   "depends_on": "eval:doc.auth_method==\"Basic\""
+  },
+  {
+   "fieldname": "password",
+   "fieldtype": "Password",
+   "label": "Password",
+   "depends_on": "eval:doc.auth_method==\"Basic\""
+  },
+  {
+   "fieldname": "token",
+   "fieldtype": "Password",
+   "label": "Token",
+   "depends_on": "eval:doc.auth_method==\"Bearer Token\"",
+   "description": "A long-lived token issued by the system, sent as Authorization: Bearer."
+  },
+  {
+   "fieldname": "api_key",
+   "fieldtype": "Password",
+   "label": "API Key",
+   "depends_on": "eval:doc.auth_method==\"API Key Header\""
+  },
+  {
+   "fieldname": "api_key_header",
+   "fieldtype": "Data",
+   "label": "API Key Header",
+   "depends_on": "eval:doc.auth_method==\"API Key Header\"",
+   "description": "The header the key is sent in. Filled from the profile when empty."
+  },
+  {
+   "fieldname": "column_break_auth",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "token_url",
+   "fieldtype": "Data",
+   "label": "Token URL",
+   "depends_on": "eval:doc.auth_method==\"OAuth 2.0 Client Credentials\""
+  },
+  {
+   "fieldname": "client_id",
+   "fieldtype": "Data",
+   "label": "Client ID",
+   "depends_on": "eval:doc.auth_method==\"OAuth 2.0 Client Credentials\""
+  },
+  {
+   "fieldname": "client_secret",
+   "fieldtype": "Password",
+   "label": "Client Secret",
+   "depends_on": "eval:doc.auth_method==\"OAuth 2.0 Client Credentials\""
+  },
+  {
+   "fieldname": "scope",
+   "fieldtype": "Data",
+   "label": "Scope",
+   "depends_on": "eval:doc.auth_method==\"OAuth 2.0 Client Credentials\""
+  },
+  {
+   "fieldname": "mapping_section",
+   "fieldtype": "Section Break",
+   "label": "Entity Mappings",
+   "description": "Which resource each reference type resolves against. A profile may ship defaults (SAP Digital Manufacturing does); a row here overrides a default or adds a type. Take paths, parameters and fields from the system's API documentation."
+  },
+  {
+   "fieldname": "entity_mappings",
+   "fieldtype": "Table",
+   "label": "Entity Mappings",
+   "options": "MES Entity Mapping"
+  },
+  {
+   "fieldname": "outbox_section",
+   "fieldtype": "Section Break",
+   "label": "Outbox"
+  },
+  {
+   "fieldname": "outbox_paused",
+   "fieldtype": "Check",
+   "label": "Pause Outbox",
+   "default": "0",
+   "description": "Postings keep queuing but are not sent until this is cleared."
+  },
+  {
+   "fieldname": "notes_section",
+   "fieldtype": "Section Break",
+   "label": "About This System"
+  },
+  {
+   "fieldname": "profile_notes",
+   "fieldtype": "Small Text",
+   "label": "Notes",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-04 14:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Adapters",
+ "name": "MES Connection",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "field:adapter",
+ "naming_rule": "By fieldname",
+ "title_field": "adapter",
+ "track_changes": 1,
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1
+  },
+  {
+   "role": "FoaMES Integration",
+   "read": 1,
+   "report": 1
+  }
+ ]
+}

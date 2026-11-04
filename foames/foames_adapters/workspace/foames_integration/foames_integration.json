@@ -20,9 +20,13 @@
   {
    "chart_name": "Insights Hub Postings per Day",
    "label": "Insights Hub Postings per Day"
+  },
+  {
+   "chart_name": "MES Postings per Day",
+   "label": "MES Postings per Day"
   }
  ],
- "content": "[{\"id\": \"QELAGJDDzA\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Postings</b></span>\", \"col\": 12}}, {\"id\": \"Q-RP9k_Ale\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"ERPNext Postings Failed\", \"col\": 4}}, {\"id\": \"YJ-qcKyzNi\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"ERPNext Postings Waiting\", \"col\": 4}}, {\"id\": \"kf41ZLVmRU\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"S4HANA Postings Failed\", \"col\": 4}}, {\"id\": \"452EtTB3fd\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"S4HANA Postings Waiting\", \"col\": 4}}, {\"id\": \"v6ADrZ_IfX\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"S4HANA IDocs Failed\", \"col\": 4}}, {\"id\": \"IHcardFail1\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Insights Hub Postings Failed\", \"col\": 4}}, {\"id\": \"IHcardWait1\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Insights Hub Postings Waiting\", \"col\": 4}}, {\"id\": \"unnBcGHeQM\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Missing External References\", \"col\": 4}}, {\"id\": \"U8MdskIV2z\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"EFjBNnENE5\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Health</b></span>\", \"col\": 12}}, {\"id\": \"3zdwKDQ2OF\", \"type\": \"chart\", \"data\": {\"chart_name\": \"ERP Outbox Health by Adapter\", \"col\": 12}}, {\"id\": \"VWiorpv47E\", \"type\": \"chart\", \"data\": {\"chart_name\": \"ERPNext Postings per Day\", \"col\": 6}}, {\"id\": \"G8NyWjEaoq\", \"type\": \"chart\", \"data\": {\"chart_name\": \"S4HANA Postings per Day\", \"col\": 6}}, {\"id\": \"qm7y4RaQVV\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Inbound IDocs per Day\", \"col\": 6}}, {\"id\": \"IHchartDay1\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Insights Hub Postings per Day\", \"col\": 6}}, {\"id\": \"RazKHSEB8W\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"VYo5M2Yo6j\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Shortcuts</b></span>\", \"col\": 12}}, {\"id\": \"NRVCfVPGh5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"ERP Outbox Health\", \"col\": 4}}, {\"id\": \"CmQ5PciuGH\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"ERPNext Outbox\", \"col\": 4}}, {\"id\": \"i5lkfWMTZa\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"S/4HANA Outbox\", \"col\": 4}}, {\"id\": \"ma6Ko_hH3a\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"S/4HANA Reconciliation\", \"col\": 4}}, {\"id\": \"IHshortcut1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Insights Hub Outbox\", \"col\": 4}}, {\"id\": \"z-0EEXiR93\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Missing References\", \"col\": 4}}, {\"id\": \"STG4X1geB8\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Integration Dashboard\", \"col\": 4}}, {\"id\": \"1_M2BpyZC1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"Aqhmm-vQCc\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Settings and Records</b></span>\", \"col\": 12}}, {\"id\": \"fRUhYQt4ic\", \"type\": \"card\", \"data\": {\"card_name\": \"ERPNext\", \"col\": 4}}, {\"id\": \"WlDBYM3rq8\", \"type\": \"card\", \"data\": {\"card_name\": \"S/4HANA\", \"col\": 4}}, {\"id\": \"IHcardLinks\", \"type\": \"card\", \"data\": {\"card_name\": \"Insights Hub\", \"col\": 4}}, {\"id\": \"satEONSYxQ\", \"type\": \"card\", \"data\": {\"card_name\": \"Core\", \"col\": 4}}]",
+ "content": "[{\"id\": \"QELAGJDDzA\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Postings</b></span>\", \"col\": 12}}, {\"id\": \"Q-RP9k_Ale\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"ERPNext Postings Failed\", \"col\": 4}}, {\"id\": \"YJ-qcKyzNi\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"ERPNext Postings Waiting\", \"col\": 4}}, {\"id\": \"kf41ZLVmRU\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"S4HANA Postings Failed\", \"col\": 4}}, {\"id\": \"452EtTB3fd\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"S4HANA Postings Waiting\", \"col\": 4}}, {\"id\": \"v6ADrZ_IfX\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"S4HANA IDocs Failed\", \"col\": 4}}, {\"id\": \"IHcardFail1\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Insights Hub Postings Failed\", \"col\": 4}}, {\"id\": \"IHcardWait1\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Insights Hub Postings Waiting\", \"col\": 4}}, {\"id\": \"MEScardFail\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"MES Postings Failed\", \"col\": 4}}, {\"id\": \"MEScardWait\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"MES Postings Waiting\", \"col\": 4}}, {\"id\": \"unnBcGHeQM\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Missing External References\", \"col\": 4}}, {\"id\": \"U8MdskIV2z\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"EFjBNnENE5\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Health</b></span>\", \"col\": 12}}, {\"id\": \"3zdwKDQ2OF\", \"type\": \"chart\", \"data\": {\"chart_name\": \"ERP Outbox Health by Adapter\", \"col\": 12}}, {\"id\": \"VWiorpv47E\", \"type\": \"chart\", \"data\": {\"chart_name\": \"ERPNext Postings per Day\", \"col\": 6}}, {\"id\": \"G8NyWjEaoq\", \"type\": \"chart\", \"data\": {\"chart_name\": \"S4HANA Postings per Day\", \"col\": 6}}, {\"id\": \"qm7y4RaQVV\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Inbound IDocs per Day\", \"col\": 6}}, {\"id\": \"IHchartDay1\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Insights Hub Postings per Day\", \"col\": 6}}, {\"id\": \"MESchartDay\", \"type\": \"chart\", \"data\": {\"chart_name\": \"MES Postings per Day\", \"col\": 6}}, {\"id\": \"RazKHSEB8W\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"VYo5M2Yo6j\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Shortcuts</b></span>\", \"col\": 12}}, {\"id\": \"NRVCfVPGh5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"ERP Outbox Health\", \"col\": 4}}, {\"id\": \"CmQ5PciuGH\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"ERPNext Outbox\", \"col\": 4}}, {\"id\": \"i5lkfWMTZa\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"S/4HANA Outbox\", \"col\": 4}}, {\"id\": \"ma6Ko_hH3a\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"S/4HANA Reconciliation\", \"col\": 4}}, {\"id\": \"IHshortcut1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Insights Hub Outbox\", \"col\": 4}}, {\"id\": \"MESshortcut\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"MES Outbox\", \"col\": 4}}, {\"id\": \"z-0EEXiR93\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Missing References\", \"col\": 4}}, {\"id\": \"STG4X1geB8\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Integration Dashboard\", \"col\": 4}}, {\"id\": \"1_M2BpyZC1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"Aqhmm-vQCc\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Settings and Records</b></span>\", \"col\": 12}}, {\"id\": \"fRUhYQt4ic\", \"type\": \"card\", \"data\": {\"card_name\": \"ERPNext\", \"col\": 4}}, {\"id\": \"WlDBYM3rq8\", \"type\": \"card\", \"data\": {\"card_name\": \"S/4HANA\", \"col\": 4}}, {\"id\": \"IHcardLinks\", \"type\": \"card\", \"data\": {\"card_name\": \"Insights Hub\", \"col\": 4}}, {\"id\": \"MEScardLinks\", \"type\": \"card\", \"data\": {\"card_name\": \"Other MES\", \"col\": 4}}, {\"id\": \"satEONSYxQ\", \"type\": \"card\", \"data\": {\"card_name\": \"Core\", \"col\": 4}}]",
  "creation": "2026-10-31 12:00:00.000000",
  "custom_blocks": [],
  "docstatus": 0,
@@ -150,6 +154,36 @@
   {
    "hidden": 0,
    "is_query_report": 0,
+   "label": "Other MES",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "MES Connection",
+   "link_count": 0,
+   "link_to": "MES Connection",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "MES Outbox",
+   "link_count": 0,
+   "link_to": "MES Outbox",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
    "label": "Core",
    "link_count": 4,
    "onboard": 0,
@@ -200,7 +234,7 @@
    "type": "Link"
   }
  ],
- "modified": "2026-11-04 12:00:00.000000",
+ "modified": "2026-11-04 14:00:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES Adapters",
  "name": "FoaMES Integration",
@@ -232,6 +266,14 @@
   {
    "label": "S4HANA IDocs Failed",
    "number_card_name": "S4HANA IDocs Failed"
+  },
+  {
+   "label": "MES Postings Failed",
+   "number_card_name": "MES Postings Failed"
+  },
+  {
+   "label": "MES Postings Waiting",
+   "number_card_name": "MES Postings Waiting"
   },
   {
    "label": "Missing External References",
@@ -291,6 +333,13 @@
    "doc_view": "List",
    "label": "Insights Hub Outbox",
    "link_to": "Insights Hub Outbox",
+   "type": "DocType"
+  },
+  {
+   "color": "Purple",
+   "doc_view": "List",
+   "label": "MES Outbox",
+   "link_to": "MES Outbox",
    "type": "DocType"
   },
   {

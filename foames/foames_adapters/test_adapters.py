@@ -72,6 +72,19 @@ class TestAdapterRegistry(IntegrationTestCase):
 		adapters = get_adapters()
 		self.assertEqual(adapters["S4HANA"].label, "SAP S/4HANA")
 		self.assertEqual(adapters["INSIGHTS_HUB"].label, "Siemens Insights Hub")
+		for key in (
+			"PLEX",
+			"FTPC",
+			"SAP_DMC",
+			"APRISO",
+			"AVEVA_MES",
+			"CMF_MES",
+			"TULIP",
+			"FACTORYLOGIX",
+			"PASX",
+			"PROFICY",
+		):
+			self.assertIn(key, adapters)
 
 	def test_unknown_adapter_raises(self):
 		with self.assertRaises(AdapterError):

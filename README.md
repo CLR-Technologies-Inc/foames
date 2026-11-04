@@ -15,7 +15,7 @@ FoaMES is a single Frappe app that depends on the Frappe framework only. ERP sys
 | --- | --- |
 | FoaMES Kernel | The shared records every FoaMES product builds on, plus `External Reference` (a pointer to a record in an ERP) and `FoaMES Settings` |
 | FoaMES MES | Shop-floor execution: monitoring, downtime, OEE and machine data |
-| FoaMES Adapters | The ERP adapter contract, the ERPNext adapter, the SAP S/4HANA adapter and the Siemens Insights Hub adapter |
+| FoaMES Adapters | The ERP adapter contract, the ERPNext, SAP S/4HANA and Siemens Insights Hub adapters, and the profiles for other MES and MOM systems |
 | FoaMES Process Mining | Event logs from FoaMES and ERP records, XES and OCEL export, discovery, performance and conformance analysis |
 
 FoaMES records never use Link fields to ERP DocTypes. They store an `External Reference` (ERP system, reference type, external ID) and the matching adapter resolves it. The ERPNext adapter activates only when ERPNext is installed on the same site. Other apps can register more adapters through the `foames_erp_adapters` hook.
@@ -25,6 +25,8 @@ The ERPNext adapter resolves references with their details (a Work Order with it
 The SAP S/4HANA adapter is remote: it resolves references over S/4HANA's released OData APIs, sends postings through an outbox with idempotency keys and retries, rolls each machine's good and scrap counts and running time up to the order operation it is working on as partial confirmations, and receives IDocs over HTTP. It does not use RFC. Setup and licensing notes are in [docs/s4hana-adapter.md](docs/s4hana-adapter.md).
 
 The Siemens Insights Hub adapter is remote too: it resolves Workstation and Location references as Insights Hub assets, resolves the Opcenter Intelligence resources a site maps, and writes each machine's counts, running time and job as time series records on the machine's asset, where Opcenter Intelligence reads them, with state changes as events. Writes go through an outbox of the same kind. Setup is in [docs/insights-hub-adapter.md](docs/insights-hub-adapter.md).
+
+Other MES and MOM systems are reached through one shared REST framework and a profile per system: Rockwell Plex and FactoryTalk ProductionCentre, SAP Digital Manufacturing, DELMIA Apriso, AVEVA MES, Critical Manufacturing, Tulip, Aegis FactoryLogix, Körber PAS-X and Proficy (Velotic). Each resolves the references a site maps from the vendor's API documentation and queues writes through an outbox that is never performed twice. See [docs/mes-adapters.md](docs/mes-adapters.md).
 
 ## Installation
 
@@ -47,6 +49,7 @@ The full guide, including roles, the scheduler, running the gateways and a smoke
 | [docs/erpnext-adapter.md](docs/erpnext-adapter.md) | External References, the ERPNext adapter, running without an ERP, writing an adapter |
 | [docs/s4hana-adapter.md](docs/s4hana-adapter.md) | The SAP S/4HANA adapter: setup on both sides, the outbox, inbound IDocs, operation |
 | [docs/insights-hub-adapter.md](docs/insights-hub-adapter.md) | The Siemens Insights Hub adapter for Opcenter Intelligence: setup on both sides, the outbox, machine data as time series and events |
+| [docs/mes-adapters.md](docs/mes-adapters.md) | The adapters for other MES and MOM systems: connections, entity mappings, the shared outbox, notes per system |
 | [docs/machine-data.md](docs/machine-data.md) | The webhook, MQTT, OPC UA and Sparkplug B paths and the event shape |
 | [docs/ignition.md](docs/ignition.md) | Connecting Ignition SCADA |
 | [docs/floor-view.md](docs/floor-view.md) | The Floor View, downtime and Agent Suggestions |

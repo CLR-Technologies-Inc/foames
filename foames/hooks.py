@@ -21,6 +21,17 @@ foames_erp_adapters = [
 	"foames.foames_adapters.erpnext.ERPNextAdapter",
 	"foames.foames_adapters.s4hana.adapter.S4HANAAdapter",
 	"foames.foames_adapters.insights_hub.adapter.InsightsHubAdapter",
+	# Other MES and MOM systems, each a profile over the shared REST framework in foames_adapters.mes.
+	"foames.foames_adapters.plex.adapter.PlexAdapter",
+	"foames.foames_adapters.factorytalk_productioncentre.adapter.FactoryTalkProductionCentreAdapter",
+	"foames.foames_adapters.sap_dmc.adapter.SAPDigitalManufacturingAdapter",
+	"foames.foames_adapters.delmia_apriso.adapter.DelmiaAprisoAdapter",
+	"foames.foames_adapters.aveva_mes.adapter.AvevaMESAdapter",
+	"foames.foames_adapters.critical_manufacturing.adapter.CriticalManufacturingAdapter",
+	"foames.foames_adapters.tulip.adapter.TulipAdapter",
+	"foames.foames_adapters.aegis_factorylogix.adapter.AegisFactoryLogixAdapter",
+	"foames.foames_adapters.koerber_pasx.adapter.KoerberPASXAdapter",
+	"foames.foames_adapters.proficy.adapter.ProficyAdapter",
 ]
 
 # IDocs received from S/4HANA, by message type. Each handler is called with the S4HANA Inbound IDoc
@@ -129,6 +140,8 @@ scheduler_events = {
 		"foames.foames_adapters.doctype.erpnext_outbox.erpnext_outbox.process_outbox",
 		# Sends due writes to Insights Hub; does nothing unless the Insights Hub adapter is enabled.
 		"foames.foames_adapters.doctype.insights_hub_outbox.insights_hub_outbox.process_outbox",
+		# Sends due writes to the other MES systems; does nothing without an enabled MES Connection.
+		"foames.foames_adapters.doctype.mes_outbox.mes_outbox.process_outbox",
 	],
 	"cron": {
 		"*/5 * * * *": [
