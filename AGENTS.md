@@ -11,7 +11,7 @@ FoaMES is an ERP-agnostic manufacturing execution system built as a single Frapp
 | FoaMES Kernel | `foames/foames_kernel` | `External Reference`, `FoaMES Settings` |
 | FoaMES MES | `foames/foames_mes` | Machine, Machine Event, Downtime Reason and Record, Machine Data Settings, Shift Pattern, OEE Period, Agent Suggestion, Andon Call and Call Type, the Floor View page, the gateways, the API |
 | FoaMES Adapters | `foames/foames_adapters` | The adapter contract, the ERPNext adapter, the S/4HANA adapter with its Settings, Outbox, Inbound IDoc and reconciliation report |
-| FoaMES Process Mining | `foames/foames_process_mining` | Event Log Source, Process Event Log, the extractors, discovery, conformance, XES and OCEL export, the API |
+| FoaMES Process Mining | `foames/foames_process_mining` | Event Log Source, Process Event Log, the event extractors, the XES and OCEL exports, discovery and conformance analysis, and their API |
 | MCP server | `foames/foames_mcp` | The MCP tool catalogue, the Streamable HTTP endpoint, the stdio bridge, read methods for agents |
 
 Frappe v15 and v16 are both supported; Python 3.10 or later. License: Apache-2.0, copyright CLR Technologies Inc. Contributions need the CLA described in [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -61,6 +61,12 @@ foames/
     doctype/                  S4HANA Settings (+ Entity Mapping), S4HANA Outbox, S4HANA Inbound IDoc
     report/                   S4HANA Outbox Reconciliation, ERP Outbox Health
     workspace/  number_card/  dashboard_chart/  foames_adapters_dashboard/   the Integration workspace
+  foames_process_mining/
+    eventlog.py  xes.py  ocel.py  discovery.py  conformance.py   pure logic: the event log, the XES and
+                              OCEL 2.0 formats, directly-follows discovery and performance, conformance
+    extractors.py             build_event_log, the built-in machine-state and downtime extractors, field maps
+    api.py                    summary, events, discover, check_conformance, export
+    doctype/                  Event Log Source, Process Event Log (+ Process Event Log Source)
   foames_mcp/
     protocol.py               MCP/JSON-RPC server core (pure), tools.py the catalogue (pure)
     api.py                    the Streamable HTTP endpoint; reads.py whitelisted read methods
@@ -82,6 +88,7 @@ All of them are Frappe hooks: another app lists dotted paths in its own `hooks.p
 | `foames_floor_snapshot_extensions` | `(snapshot: dict, since, now)`, mutate in place | Add a section to the floor snapshot, so the page, the rules and external agents see it |
 | `foames_suggestion_rules` | `(snapshot: dict) -> list[dict]` | Add rules; each finding dict needs `rule_key`, `title`, `category`, `suggestion`, `severity`, optional `reference_doctype`, `reference_name`, `evidence` |
 | `foames_s4hana_idoc_handlers` | dict of message type to handler list; handler gets `(inbound_doc, idoc, summary)` | Process an IDoc beyond recording its External Reference |
+| `foames_process_event_extractors` | `(since, until)`, returns an iterable of `foames.foames_process_mining.eventlog.Event` | Add your own records to the process-mining event log |
 
 Code entry points you call rather than hook:
 
@@ -93,6 +100,8 @@ Code entry points you call rather than hook:
 | `foames.foames_mes.doctype.agent_suggestion.agent_suggestion.raise_suggestions(findings, agent)` | Insert findings, skipping open duplicates and reopening resolved ones |
 | `foames.foames_adapters.doctype.s4hana_outbox.s4hana_outbox.enqueue(operation, payload, idempotency_key, sequence_group=None, ...)` | Queue a posting to S/4HANA |
 | `foames.foames_mes.oee.compute_oee(ledger, good, scrap, ideal_cycle_seconds)` and `ledger_from_states(intervals, planned_minutes)` | OEE arithmetic without a site |
+| `foames.foames_process_mining.extractors.build_event_log(since, until, sources=None)` | An `EventLog` from the built-in extractors, the enabled Event Log Sources and the hook extractors |
+| `foames.foames_process_mining.discovery.discover_dfg(log)` and `conformance.check_conformance(log, model)` | Process-mining analysis without a site |
 
 ## HTTP API surface
 
@@ -111,13 +120,13 @@ Whitelisted methods, called as `/api/method/<dotted path>`. Authentication is Fr
 | `foames.foames_mes.doctype.andon_call.andon_call.list_open_andon_calls` | GET | read on Andon Call | Open and acknowledged calls with minutes open and targets |
 | `foames.foames_adapters.get_available_erp_systems` | GET | logged in | Registered adapters and their availability |
 | `foames.foames_adapters.s4hana.api.receive_idoc` | POST | create on S4HANA Inbound IDoc (FoaMES Integration role) | S/4HANA's XML HTTP port posts IDocs here |
-| `foames.foames_process_mining.api.summary` / `events` / `discover` / `check_conformance` / `export` | GET or POST | read on Process Event Log | Process mining over a window or a saved log |
+| `foames.foames_process_mining.api.summary`, `events`, `discover`, `check_conformance`, `export` | GET or POST | read on Process Event Log | Process mining over a saved `event_log` or a log built from `since`, `until` and `sources`; `discover` takes `dot=1`, `check_conformance` takes `model`, `export` takes `fmt=xes` or `ocel` |
 | `foames.foames_mcp.reads.*` | GET | read on the DocType listed | Agent-friendly reads: machines, events, downtime, OEE periods, suggestions, ERP systems and references, event logs |
 | `foames.foames_mcp.api.mcp` | POST | logged in; each tool checks its own | The MCP endpoint (Streamable HTTP) |
 
-Document methods callable with `frm.call` or `run_doc_method`: `External Reference.resolve`, `S4HANA Settings.test_connection`, `S4HANA Outbox.requeue`, `S4HANA Outbox.cancel_posting`.
+Document methods callable with `frm.call` or `run_doc_method`: `External Reference.resolve`, `S4HANA Settings.test_connection`, `S4HANA Outbox.requeue`, `S4HANA Outbox.cancel_posting`, `Event Log Source.preview`, `Process Event Log.extract`, `discover`, `check_against`, `export_file`.
 
-The event shape, state aliases and signing scheme are in [docs/machine-data.md](docs/machine-data.md).
+The event shape, state aliases and signing scheme are in [docs/machine-data.md](docs/machine-data.md); the event log, its sources and the analyses are in [docs/process-mining.md](docs/process-mining.md).
 
 **MCP.** The same surface is available to agents as MCP tools: `POST /api/method/foames.foames_mcp.api.mcp` is a Streamable HTTP MCP server authenticated with the API key, and `python -m foames.foames_mcp` is a stdio bridge to it for desktop clients. The catalogue is `foames/foames_mcp/tools.py`; each tool is one whitelisted method above, run as the key's user. Setup and the tool list are in [docs/mcp.md](docs/mcp.md). To expose a new whitelisted method to agents, add a `Tool` record there; the method keeps its own permission check.
 
@@ -130,6 +139,8 @@ The event shape, state aliases and signing scheme are in [docs/machine-data.md](
 **Add a reference type to an adapter.** For ERPNext, add a row to `ERPNEXT_DOCTYPES` in `erpnext.py` (kernel type, DocType, label field). For S/4HANA, map it in S4HANA Settings at run time, or add a default `EntitySpec` to `s4hana/entities.py` with its service, entity set, key fields and label. Adding a *new* kernel reference type means extending `REFERENCE_TYPES` in `base.py` and the Select options on External Reference and S4HANA Entity Mapping together.
 
 **Change OEE or the rules.** Edit the pure module and its unit test first (`test_oee_and_rules.py`), then the DocType or task that calls it. Keep the time ledger exhaustive: every planned minute lands in exactly one bucket, and the gap goes to unknown.
+
+**Mine records from another DocType or app.** For a DocType on the site, create an Event Log Source with a field map (case, activity, timestamp, optional end timestamp, resource, filters, object fields) and check it with **Preview events**; the DocType is named as text and the source is skipped when it is not installed. For records your app builds itself, register a `foames_process_event_extractors` hook that yields `Event` objects. New analyses go in the pure modules with a test in `test_process_mining_logic.py`, and are exposed through `api.py` or a Process Event Log method.
 
 **Add a scheduled job.** Register it in `scheduler_events` in `hooks.py` and make it idempotent, as `compute_daily_oee` is (it skips a period that already exists).
 
