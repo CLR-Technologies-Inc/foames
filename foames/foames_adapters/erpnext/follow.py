@@ -47,8 +47,13 @@ def on_job_card_change(doc, method=None):
 		return
 	if doc.docstatus != 0 or doc.status != IN_PROGRESS:
 		return
+	# Frappe loads the document as it was before a save and before a `db_set` (both v15 and v16),
+	# so the previous status is known; the only document without one is a new one being inserted.
 	before = doc.get_doc_before_save()
-	if before is not None and before.get("status") == IN_PROGRESS and not before.get("docstatus"):
+	if before is None:
+		if not doc.flags.in_insert:
+			return  # Unknown previous state: do not treat it as a start.
+	elif before.get("status") == IN_PROGRESS and not before.get("docstatus"):
 		return  # Already in progress: an unrelated edit does not reassign machines.
 	start_on_idle_machines(doc)
 
