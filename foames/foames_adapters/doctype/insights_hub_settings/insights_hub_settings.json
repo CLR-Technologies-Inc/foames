@@ -1,0 +1,281 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-04 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "connection_section",
+  "gateway_url",
+  "tenant",
+  "column_break_connection",
+  "timeout",
+  "ca_bundle",
+  "auth_section",
+  "auth_method",
+  "client_id",
+  "client_secret",
+  "column_break_auth",
+  "app_name",
+  "app_version",
+  "host_tenant",
+  "user_tenant",
+  "token_url",
+  "mapping_section",
+  "entity_mappings",
+  "outbox_section",
+  "outbox_paused",
+  "rollup_section",
+  "send_machine_data",
+  "property_set",
+  "send_state_events",
+  "event_type_id",
+  "column_break_rollup",
+  "good_variable",
+  "scrap_variable",
+  "run_minutes_variable",
+  "window_minutes_variable",
+  "job_variable",
+  "state_variable"
+ ],
+ "fields": [
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "0",
+   "description": "Turns on reference resolution and the outbox. Writes from FoaMES create time series records and events on the tenant; check the tenant's data and API quotas with Siemens."
+  },
+  {
+   "fieldname": "connection_section",
+   "fieldtype": "Section Break",
+   "label": "Connection"
+  },
+  {
+   "fieldname": "gateway_url",
+   "fieldtype": "Data",
+   "label": "Gateway URL",
+   "options": "URL",
+   "mandatory_depends_on": "enabled",
+   "description": "The region gateway of the tenant, for example https://gateway.eu1.mindsphere.io. Every API is reached as <gateway>/api/<service>/<version>/..."
+  },
+  {
+   "fieldname": "tenant",
+   "fieldtype": "Data",
+   "label": "Tenant",
+   "description": "The tenant name, as in <tenant>.<region>.mindsphere.io."
+  },
+  {
+   "fieldname": "column_break_connection",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "timeout",
+   "fieldtype": "Int",
+   "label": "Timeout (seconds)",
+   "default": "30"
+  },
+  {
+   "fieldname": "ca_bundle",
+   "fieldtype": "Data",
+   "label": "CA Bundle Path",
+   "description": "Path on this server to a PEM file, when the gateway is reached through a proxy with a private CA."
+  },
+  {
+   "fieldname": "auth_section",
+   "fieldtype": "Section Break",
+   "label": "Authentication"
+  },
+  {
+   "fieldname": "auth_method",
+   "fieldtype": "Select",
+   "label": "Method",
+   "options": "Technical Token Manager\nService Credentials",
+   "default": "Technical Token Manager",
+   "description": "Technical Token Manager: the credentials of an application registered on the tenant (Developer Cockpit). Service Credentials: OAuth 2.0 client credentials issued by the tenant's Settings app."
+  },
+  {
+   "fieldname": "client_id",
+   "fieldtype": "Data",
+   "label": "Client ID"
+  },
+  {
+   "fieldname": "client_secret",
+   "fieldtype": "Password",
+   "label": "Client Secret"
+  },
+  {
+   "fieldname": "column_break_auth",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "app_name",
+   "fieldtype": "Data",
+   "label": "Application Name",
+   "depends_on": "eval:doc.auth_method==\"Technical Token Manager\"",
+   "description": "The application the credentials belong to, as registered."
+  },
+  {
+   "fieldname": "app_version",
+   "fieldtype": "Data",
+   "label": "Application Version",
+   "depends_on": "eval:doc.auth_method==\"Technical Token Manager\"",
+   "default": "1.0.0"
+  },
+  {
+   "fieldname": "host_tenant",
+   "fieldtype": "Data",
+   "label": "Host Tenant",
+   "depends_on": "eval:doc.auth_method==\"Technical Token Manager\"",
+   "description": "The tenant the application is registered on. Defaults to Tenant."
+  },
+  {
+   "fieldname": "user_tenant",
+   "fieldtype": "Data",
+   "label": "User Tenant",
+   "depends_on": "eval:doc.auth_method==\"Technical Token Manager\"",
+   "description": "The tenant whose data is read and written. Defaults to Tenant."
+  },
+  {
+   "fieldname": "token_url",
+   "fieldtype": "Data",
+   "label": "Token URL",
+   "depends_on": "eval:doc.auth_method==\"Service Credentials\"",
+   "description": "The tenant's token endpoint, for example https://<tenant>.piam.eu1.mindsphere.io/oauth/token."
+  },
+  {
+   "fieldname": "mapping_section",
+   "fieldtype": "Section Break",
+   "label": "Entity Mappings",
+   "description": "Reference types resolve against these resources. Workstation and Location default to Asset Management assets. Map Item, Work Order, Operation, Batch and the rest to the Opcenter Intelligence resources that hold them, with the service path, resource, key field and label field taken from the Opcenter Intelligence API reference; a row also overrides a default."
+  },
+  {
+   "fieldname": "entity_mappings",
+   "fieldtype": "Table",
+   "label": "Entity Mappings",
+   "options": "Insights Hub Entity Mapping"
+  },
+  {
+   "fieldname": "outbox_section",
+   "fieldtype": "Section Break",
+   "label": "Outbox"
+  },
+  {
+   "fieldname": "outbox_paused",
+   "fieldtype": "Check",
+   "label": "Pause Outbox",
+   "default": "0",
+   "description": "Postings keep queuing but are not sent until this is cleared."
+  },
+  {
+   "fieldname": "rollup_section",
+   "fieldtype": "Section Break",
+   "label": "Machine Data"
+  },
+  {
+   "fieldname": "send_machine_data",
+   "fieldtype": "Check",
+   "label": "Send Machine Production as Time Series",
+   "default": "0",
+   "description": "Every few minutes, and whenever a machine's job changes, write one record on the machine's asset with the good and scrap counts, the running minutes and the job of the window since the last record. The machine's Workstation reference names the asset."
+  },
+  {
+   "fieldname": "property_set",
+   "fieldtype": "Data",
+   "label": "Aspect",
+   "default": "FoaMESProduction",
+   "depends_on": "send_machine_data",
+   "mandatory_depends_on": "send_machine_data",
+   "description": "The aspect (property set) on the asset type that holds the variables below. Create it once on the tenant."
+  },
+  {
+   "fieldname": "send_state_events",
+   "fieldtype": "Check",
+   "label": "Send State Changes as Events",
+   "default": "0",
+   "description": "Each state change of a machine that points at an asset becomes an event on that asset."
+  },
+  {
+   "fieldname": "event_type_id",
+   "fieldtype": "Data",
+   "label": "Event Type ID",
+   "depends_on": "send_state_events",
+   "description": "Leave empty for the platform's standard event type (MindSphereStandardEvent). A custom type must carry the standard type's fields."
+  },
+  {
+   "fieldname": "column_break_rollup",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "good_variable",
+   "fieldtype": "Data",
+   "label": "Good Count Variable",
+   "default": "goodCount",
+   "depends_on": "send_machine_data"
+  },
+  {
+   "fieldname": "scrap_variable",
+   "fieldtype": "Data",
+   "label": "Scrap Count Variable",
+   "default": "scrapCount",
+   "depends_on": "send_machine_data"
+  },
+  {
+   "fieldname": "run_minutes_variable",
+   "fieldtype": "Data",
+   "label": "Running Minutes Variable",
+   "default": "runMinutes",
+   "depends_on": "send_machine_data"
+  },
+  {
+   "fieldname": "window_minutes_variable",
+   "fieldtype": "Data",
+   "label": "Window Minutes Variable",
+   "default": "windowMinutes",
+   "depends_on": "send_machine_data"
+  },
+  {
+   "fieldname": "job_variable",
+   "fieldtype": "Data",
+   "label": "Job Variable",
+   "default": "job",
+   "depends_on": "send_machine_data",
+   "description": "A string variable; the External ID of the machine's current job."
+  },
+  {
+   "fieldname": "state_variable",
+   "fieldtype": "Data",
+   "label": "State Variable",
+   "default": "state",
+   "depends_on": "send_machine_data",
+   "description": "A string variable; the machine's state at the window's end."
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-04 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Adapters",
+ "name": "Insights Hub Settings",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "issingle": 1,
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "track_changes": 1
+}

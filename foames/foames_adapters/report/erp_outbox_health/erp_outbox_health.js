@@ -21,7 +21,7 @@ frappe.query_reports["ERP Outbox Health"] = {
 			fieldname: "adapter",
 			label: __("Adapter"),
 			fieldtype: "Select",
-			options: ["", "ERPNext", "S/4HANA"],
+			options: ["", "ERPNext", "S/4HANA", "Insights Hub"],
 		},
 		{ fieldname: "operation", label: __("Operation"), fieldtype: "Data" },
 	],

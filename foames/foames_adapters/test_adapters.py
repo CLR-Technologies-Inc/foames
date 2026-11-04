@@ -68,6 +68,11 @@ class TestAdapterRegistry(IntegrationTestCase):
 	def test_erpnext_adapter_is_registered(self):
 		self.assertIsInstance(get_adapters()["ERPNext"], ERPNextAdapter)
 
+	def test_remote_adapters_are_registered(self):
+		adapters = get_adapters()
+		self.assertEqual(adapters["S4HANA"].label, "SAP S/4HANA")
+		self.assertEqual(adapters["INSIGHTS_HUB"].label, "Siemens Insights Hub")
+
 	def test_unknown_adapter_raises(self):
 		with self.assertRaises(AdapterError):
 			get_adapter("Not An ERP")

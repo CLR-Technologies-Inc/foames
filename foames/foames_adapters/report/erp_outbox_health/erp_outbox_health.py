@@ -1,11 +1,11 @@
 # Copyright (c) 2026, CLR Technologies Inc. and contributors
 # For license information, please see license.txt
 
-"""One view of both posting outboxes: how many postings sit in each status per adapter, how old the
+"""One view of the posting outboxes: how many postings sit in each status per adapter, how old the
 oldest unposted one is, and what the last errors say.
 
-The ERPNext and S/4HANA outboxes are separate DocTypes with the same lifecycle, so the report reads
-whichever adapters are installed on the site and stacks them side by side.
+The ERPNext, S/4HANA and Insights Hub outboxes are separate DocTypes with the same lifecycle, so the
+report reads whichever adapters are installed on the site and stacks them side by side.
 """
 
 import frappe
@@ -14,7 +14,11 @@ from frappe.utils import get_datetime, now_datetime
 
 from foames.foames_mes.report.utils import chart_of, date_window, summary_item
 
-OUTBOXES = (("ERPNext", "ERPNext Outbox"), ("S/4HANA", "S4HANA Outbox"))
+OUTBOXES = (
+	("ERPNext", "ERPNext Outbox"),
+	("S/4HANA", "S4HANA Outbox"),
+	("Insights Hub", "Insights Hub Outbox"),
+)
 STATUSES = ("Queued", "Sending", "Retry", "Unknown", "Failed", "Posted", "Cancelled")
 ATTENTION = ("Retry", "Unknown", "Failed")
 
