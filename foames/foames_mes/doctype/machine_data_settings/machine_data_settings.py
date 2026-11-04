@@ -11,6 +11,8 @@ from foames.foames_mes.spc import MAX_SUBGROUP_SIZE
 
 class MachineDataSettings(Document):
 	def validate(self):
+		from foames.foames_mes.gateway.opcua import security_config
+
 		size = cint(self.get("spc_subgroup_size"))
 		if size and not 2 <= size <= MAX_SUBGROUP_SIZE:
 			frappe.throw(
@@ -18,3 +20,7 @@ class MachineDataSettings(Document):
 					MAX_SUBGROUP_SIZE
 				)
 			)
+
+		# Catch a missing certificate or a public private key when the settings are saved, not when
+		# the gateway starts.
+		security_config(self)
