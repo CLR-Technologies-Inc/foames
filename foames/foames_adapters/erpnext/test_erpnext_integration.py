@@ -643,6 +643,28 @@ class TestTraceability(ERPNextTestCase):
 		self.assertEqual(self.outbox(posting).status, "Failed")
 		self.assertIn("another item", self.outbox(posting).last_error)
 
+	def test_draft_entry_gets_its_serial_references_on_submission(self):
+		wo = self.fixtures.make_work_order(
+			qty=2, skip_transfer=True, operations=False, item=self.fixtures.FINISHED_GOOD_SERIAL
+		)
+		serials = [f"FOAMES-TS-DRAFT-{frappe.generate_hash(length=5).upper()}-{i}" for i in (1, 2)]
+		posting = enqueue(
+			"Manufacture",
+			{"work_order": wo.name, "qty": 2, "serial_nos": serials, "submit": False},
+			f"{wo.name}:manufacture",
+			wo.name,
+		)
+		self.run_outbox()
+		record = self.outbox(posting)
+		self.assertEqual(record.status, "Posted", record.last_error)
+		reference = {"erp_system": ADAPTER_KEY, "reference_type": "Serial Number", "external_id": serials[0]}
+		self.assertFalse(frappe.db.exists("External Reference", reference))
+		# A person reviews the draft and submits it in ERPNext: the serial numbers now exist.
+		frappe.get_doc("Stock Entry", record.erp_document).submit()
+		self.assertTrue(frappe.db.exists("Serial No", serials[0]))
+		for serial in serials:
+			self.assertTrue(frappe.db.exists("External Reference", {**reference, "external_id": serial}))
+
 
 def hasattr_erpnext_reading_parser() -> bool:
 	"""Whether the installed ERPNext reads Quality Inspection readings in the user's number format."""

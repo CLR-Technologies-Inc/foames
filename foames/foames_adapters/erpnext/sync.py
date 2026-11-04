@@ -22,6 +22,7 @@ from foames.foames_adapters.erpnext import (
 	REFERENCE_TYPES_BY_DOCTYPE,
 	erpnext_installed,
 )
+from foames.foames_adapters.erpnext.postings import MARKER_PREFIX
 from foames.foames_kernel.doctype.external_reference.external_reference import make_reference_key
 
 
@@ -41,6 +42,18 @@ def on_update(doc, method=None):
 		{"label": label, "status": "Resolved", "last_resolved_on": now_datetime()},
 		update_modified=False,
 	)
+
+
+def on_submit(doc, method=None):
+	"""A Manufacture entry FoaMES posted as a draft and a person submitted in ERPNext: its serial
+	numbers exist from now on, so they (and its batch) get their External References."""
+	if doc.doctype != "Stock Entry" or doc.get("purpose") != "Manufacture" or not erpnext_installed():
+		return
+	if not str(doc.get("remarks") or "").startswith(MARKER_PREFIX):
+		return
+	from foames.foames_adapters.erpnext.executor import finished_good_identity, record_identity_references
+
+	record_identity_references(finished_good_identity(doc), submitted=True)
 
 
 def on_trash(doc, method=None):
@@ -96,7 +109,8 @@ def _reference_name(reference_type: str, external_id: str) -> str | None:
 	return frappe.db.get_value("External Reference", {"reference_key": key}, "name")
 
 
-# For hooks.py: every ERPNext DocType the adapter maps gets the same three handlers.
+# For hooks.py: every ERPNext DocType the adapter maps gets the same handlers, and a Stock Entry
+# also reports its submission, for the serial numbers a draft Manufacture entry gets then.
 DOC_EVENTS = {
 	doctype: {
 		"on_update": "foames.foames_adapters.erpnext.sync.on_update",
@@ -105,4 +119,8 @@ DOC_EVENTS = {
 		"after_rename": "foames.foames_adapters.erpnext.sync.after_rename",
 	}
 	for doctype in REFERENCE_TYPES_BY_DOCTYPE
+}
+DOC_EVENTS["Stock Entry"] = {
+	**DOC_EVENTS["Stock Entry"],
+	"on_submit": "foames.foames_adapters.erpnext.sync.on_submit",
 }

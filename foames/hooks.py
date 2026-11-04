@@ -73,6 +73,11 @@ doc_events = {
 		"Workstation",
 	)
 }
+# A Manufacture entry FoaMES left as a draft gets its serial numbers when a person submits it.
+doc_events["Stock Entry"] = {
+	**doc_events["Stock Entry"],
+	"on_submit": "foames.foames_adapters.erpnext.sync.on_submit",
+}
 
 # Machine data and the floor
 # --------------------------

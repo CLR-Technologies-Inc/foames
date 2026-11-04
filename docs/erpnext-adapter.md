@@ -181,7 +181,8 @@ External Reference (type Batch or Serial Number) so quality records, process eve
 point at them from then on. The same `finished_good` comes back from `get_posting` once the posting
 is Posted, which is how a poller learns a batch number ERPNext generated. A draft entry (`submit`
 false) gets its Batch referenced at once; its serial numbers exist in ERPNext only from submission,
-so they are referenced when the submitted entry is next seen by a posting.
+so they are referenced when a person submits the entry in ERPNext (a `Stock Entry` submit hook) or
+when a posting next sees the submitted entry.
 
 #### Idempotency, order and errors
 
