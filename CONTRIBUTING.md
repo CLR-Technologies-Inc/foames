@@ -11,6 +11,8 @@ FoaMES is licensed under the [Apache License 2.0](LICENSE). Before CLR Technolog
 
 To sign, open your pull request. The CLA Assistant check posts a comment with a link. Follow it, sign in with GitHub and accept the agreement. Your GitHub account, the date and the agreement version are recorded, the `license/cla` check turns green, and you do not need to sign again for later pull requests. Every author of a commit in the pull request has to sign.
 
+Commits authored by the `claude` GitHub account are AI-assisted work by CLR staff, made with Anthropic's Claude Code. CLR owns that work under its agreement with Anthropic, so the `claude` account is on the CLA Assistant allowlist and does not sign the CLA. The CLR staff member who opens the pull request is responsible for it.
+
 Every pull request also has a CLA checkbox in its description. Tick it to confirm that the CLA covers your contribution.
 
 ## Development setup
