@@ -105,7 +105,7 @@ Everything the page shows comes from one call, `foames.foames_mes.api.get_floor_
 }
 ```
 
-`external_references` lists only references with status Missing, and only when the caller may read External Reference. Other apps add sections to the snapshot through the `foames_floor_snapshot_extensions` hook. The same call is what an external agent or an Ignition screen uses to read the floor, so the page and the agents always see the same numbers.
+`external_references` lists only references with status Missing, and only when the caller may read External Reference. Other apps add sections to the snapshot through the `foames_floor_snapshot_extensions` hook. The same call is what an external agent or a SCADA screen uses to read the floor, so the page and the agents always see the same numbers.
 
 ## Roles at a glance
 

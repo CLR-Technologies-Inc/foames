@@ -2,15 +2,17 @@
 
 This file is for coding agents and developers who implement something on top of FoaMES, connect a plant to it, or change it. It states what FoaMES is, the rules the code base keeps, where things are, how to extend it without forking it, and how to test. Human-facing guides are under [docs/](docs/README.md); the playbook for an agent that reads the floor at run time is [docs/agents/floor-agent.md](docs/agents/floor-agent.md).
 
+**This file is vendor-neutral on purpose.** Anything that is true of one ERP, SCADA product or other vendor (its settings, its rules, its hooks and endpoints, how to test it) lives in that vendor's own `AGENTS.md`, next to its code, and in its guide under `docs/vendors/`. Read the `AGENTS.md` closest to the code you change; see [Finding vendor guidance](#finding-vendor-guidance).
+
 ## What FoaMES is
 
-FoaMES is an ERP-agnostic manufacturing execution system built as a single Frappe app. It takes machine data in (signed webhook, MQTT, OPC UA, Sparkplug B), turns it into machine state, downtime, counter deltas and OEE, shows the floor on one page, and raises suggestions for people to act on. ERPs and other manufacturing systems are reached only through adapters; ERPNext, SAP S/4HANA and Siemens Insights Hub (Opcenter Intelligence) adapters ship in the app, and so do profiles for Plex, FactoryTalk ProductionCentre, SAP Digital Manufacturing, DELMIA Apriso, AVEVA MES, Critical Manufacturing, Tulip, Aegis FactoryLogix, Körber PAS-X and Proficy over a shared REST framework.
+FoaMES is an ERP-agnostic manufacturing execution system built as a single Frappe app. It takes machine data in (signed webhook, MQTT, OPC UA, Sparkplug B), turns it into machine state, downtime, counter deltas and OEE, shows the floor on one page, and raises suggestions for people to act on. ERPs and other manufacturing systems (MES, MOM, industrial data platforms) are reached only through adapters, registered by hook; some ship in the app and other apps can add more.
 
 | Module | Package | Holds |
 | --- | --- | --- |
 | FoaMES Kernel | `foames/foames_kernel` | `External Reference`, `FoaMES Settings` |
 | FoaMES MES | `foames/foames_mes` | Machine, Machine Event, Downtime Reason and Record, Machine Data Settings, Shift Pattern, OEE Period, Agent Suggestion, Andon Call and Call Type, Maintenance Plan and Work Order, the Floor View page, the gateways, the API |
-| FoaMES Adapters | `foames/foames_adapters` | The adapter contract, the ERPNext adapter, the S/4HANA adapter with its Settings, Outbox, Inbound IDoc and reconciliation report, the Insights Hub adapter with its Settings and Outbox, the `mes` framework with MES Connection and MES Outbox and the ten MES profiles |
+| FoaMES Adapters | `foames/foames_adapters` | The adapter contract and registry, one subpackage per vendor (each with its own `AGENTS.md`), the shared Integration workspace |
 | FoaMES Process Mining | `foames/foames_process_mining` | Event Log Source, Process Event Log, the event extractors, the XES and OCEL exports, discovery and conformance analysis, and their API |
 | MCP server | `foames/foames_mcp` | The MCP tool catalogue, the Streamable HTTP endpoint, the stdio bridge, read methods for agents |
 
@@ -20,15 +22,24 @@ Frappe v15 and v16 are both supported; Python 3.10 or later. License: Apache-2.0
 
 Keep these whatever you build. A pull request that breaks one will not be merged.
 
-1. **No Link field to an ERP DocType, anywhere.** A FoaMES record that needs an ERP record stores an `External Reference` (ERP system key, kernel reference type, external ID) and the adapter resolves it. Do not import from `erpnext`. The core must install and pass its tests on a plain Frappe site; CI checks this on v15 and v16 without ERPNext.
-2. **Adapters are registered, not hard-wired.** New ERPs come through the `foames_erp_adapters` hook and subclass `foames.foames_adapters.base.ERPAdapter`. See [docs/erpnext-adapter.md](docs/erpnext-adapter.md#writing-an-adapter-for-another-erp).
+1. **No Link field to an ERP DocType, anywhere.** A FoaMES record that needs an ERP record stores an `External Reference` (ERP system key, kernel reference type, external ID) and the adapter resolves it. Do not import an ERP's package. The core must install and pass its tests on a plain Frappe site; CI checks this on v15 and v16 without any ERP.
+2. **Adapters are registered, not hard-wired.** New ERPs come through the `foames_erp_adapters` hook and subclass `foames.foames_adapters.base.ERPAdapter`. See [docs/adapters.md](docs/adapters.md#writing-an-adapter-for-another-erp) and [foames/foames_adapters/AGENTS.md](foames/foames_adapters/AGENTS.md).
 3. **Counters never invent production.** Machines send running totals; FoaMES stores the delta against the previous reading of the same counter. A first reading, a reset, or an out-of-order reading yields zero; a wrap is counted only when the machine's Counter Rollover is known. The rules are in `foames/foames_mes/counters.py`.
 4. **Unknown time is loss.** The OEE ledger is built from state events with Downtime Records overlaid, and an Unknown state is never run time. A machine that stops reporting gets an Unknown state event from the scheduler's staleness check (source System), and the Sparkplug gateway writes one at once on NDEATH or DDEATH. Do not add code that infers output or run time from the absence of events.
 5. **Agents suggest; people act.** Anything an agent or a rule finds becomes an `Agent Suggestion` with evidence. FoaMES does not write tags, send commands to SCADA, change machine state on its own, or post to an ERP without an explicit, idempotent posting a person configured.
-6. **Postings to an ERP are idempotent and sequenced.** The S/4HANA outbox is the model: an idempotency key per business event, a marker written into the created document, a check before resending after an unclear answer, exponential backoff, strict order within a sequence group. Follow it for any new write path.
-7. **Pure logic stays pure.** `oee.py`, `counters.py`, `shifts.py`, `andon.py`, `suggestions.py`, `maintenance.py`, `signing.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, `s4hana/outbox.py`, `odata.py`, `idoc.py`, `entities.py`, `insights_hub/rest.py`, `entities.py`, `outbox.py`, `production.py`, `mes/rest.py`, `entities.py`, `profile.py`, `outbox.py` and every vendor `profile.py`, the process-mining core and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe. Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
-8. **Secrets live in Password fields** of a Settings DocType (`Machine Data Settings`, `S4HANA Settings`, `Insights Hub Settings`, `MES Connection`), read with `get_password`. Never in code, hooks or site config, never logged.
+6. **Postings to an ERP are idempotent and sequenced.** An idempotency key per business event, a marker written into the created document, a check before resending after an unclear answer, exponential backoff, strict order within a sequence group. The adapters' outboxes are the model; the details are in [foames/foames_adapters/AGENTS.md](foames/foames_adapters/AGENTS.md). Follow it for any new write path.
+7. **Pure logic stays pure.** `oee.py`, `counters.py`, `shifts.py`, `andon.py`, `suggestions.py`, `maintenance.py`, `signing.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, the process-mining core and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe, and so do the arithmetic, parsing and protocol modules of each adapter (each vendor's `AGENTS.md` lists its own). Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
+8. **Secrets live in Password fields** of a Settings DocType (`Machine Data Settings`, or the adapter's own Settings), read with `get_password`. Never in code, hooks or site config, never logged.
 9. **Both Frappe versions.** Use `foames.tests_compat.IntegrationTestCase` for site tests. Avoid APIs that exist in only one of v15 and v16.
+
+## Finding vendor guidance
+
+Vendors are open-ended: a site may have none, one or twenty adapters, bundled or added by other apps, and several of them may share a framework package (for example one REST framework with a thin profile per system). Do not take the list from a document; discover it, then read the guidance that sits next to the code.
+
+1. **Read the nearest `AGENTS.md`.** Before you change a directory, look for an `AGENTS.md` in it and in its parents up to this one; the closest one wins where they differ. `foames/foames_adapters/AGENTS.md` covers every adapter, and each vendor subpackage under it has its own.
+2. **Find what is installed.** `ls foames/foames_adapters/`; `frappe.get_hooks("foames_erp_adapters")` for the registered adapter classes; the whitelisted `foames.foames_adapters.get_available_erp_systems` for each adapter's key, label and whether its ERP is reachable on the site. For a running installation, map from those answers to the vendor guidance, not the other way round.
+3. **Human guides** for a vendor are under [docs/vendors/](docs/vendors/README.md), one folder per vendor. Vendor-neutral material (External References, running without an ERP, writing an adapter) is in [docs/adapters.md](docs/adapters.md).
+4. **When you add a vendor**, add its `AGENTS.md` and guide with it, and do not edit this file; see "Adding a vendor" in [foames/foames_adapters/AGENTS.md](foames/foames_adapters/AGENTS.md).
 
 ## Repository map
 
@@ -54,23 +65,12 @@ foames/
                               Maintenance Due List
     workspace/  number_card/  dashboard_chart/  foames_mes_dashboard/   role workspaces and dashboards
   foames_adapters/
+    AGENTS.md                 the adapter layer: contract, rules every adapter keeps, how to add a vendor
     __init__.py               get_adapters, get_adapter, get_available_erp_systems
     base.py                   ERPAdapter, ResolvedReference, REFERENCE_TYPES, the error classes
     machine_window.py         a machine's counter totals and states in a window, for the roll-ups
-    erpnext.py                ERPNextAdapter
-    s4hana/                   adapter.py, entities.py, odata.py, outbox.py, idoc.py, api.py, fake.py,
-                              production.py (pure) and rollup.py: machine counts to confirmations
-    insights_hub/             rest.py (REST client, both token flows), entities.py, outbox.py, fake.py (pure),
-                              adapter.py, production.py (pure) and rollup.py: machine data to time series and events
-    mes/                      the shared framework for other MES systems: rest.py (Basic, bearer, API key,
-                              OAuth 2.0), entities.py (path, query, OData and JSON lookups), profile.py,
-                              outbox.py (upsert, client reference or manual idempotency), fake.py (pure); adapter.py
-    plex/  factorytalk_productioncentre/  sap_dmc/  delmia_apriso/  aveva_mes/  critical_manufacturing/
-    tulip/  aegis_factorylogix/  koerber_pasx/  proficy/     one profile.py and adapter.py each
-    doctype/                  S4HANA Settings (+ Entity Mapping), S4HANA Outbox, S4HANA Inbound IDoc,
-                              Insights Hub Settings (+ Entity Mapping), Insights Hub Outbox,
-                              MES Connection (+ MES Entity Mapping), MES Outbox
-    report/                   S4HANA Outbox Reconciliation, ERP Outbox Health
+    <vendor>/                 one subpackage per vendor adapter, each with its own AGENTS.md
+    doctype/  report/         the adapters' Settings and Outbox DocTypes and shared reports
     workspace/  number_card/  dashboard_chart/  foames_adapters_dashboard/   the Integration workspace
   foames_process_mining/
     eventlog.py  xes.py  ocel.py  discovery.py  conformance.py   pure logic: the event log, the XES and
@@ -90,7 +90,7 @@ Files that only serve the design or build process of FoaMES (agent workspaces, w
 
 ## Extension points
 
-All of them are Frappe hooks: another app lists dotted paths in its own `hooks.py`, and FoaMES calls them. No FoaMES file needs to change.
+All of them are Frappe hooks: another app lists dotted paths in its own `hooks.py`, and FoaMES calls them. No FoaMES file needs to change. These are the core hooks; a vendor adapter that declares hooks of its own documents them in its own `AGENTS.md`.
 
 | Hook | Called with | Use it to |
 | --- | --- | --- |
@@ -98,7 +98,6 @@ All of them are Frappe hooks: another app lists dotted paths in its own `hooks.p
 | `foames_machine_event_handlers` | `(machine_event_doc, machine_doc)` after each event is processed | Attach counts, states or alarms to your own records |
 | `foames_floor_snapshot_extensions` | `(snapshot: dict, since, now)`, mutate in place | Add a section to the floor snapshot, so the page, the rules and external agents see it |
 | `foames_suggestion_rules` | `(snapshot: dict) -> list[dict]` | Add rules; each finding dict needs `rule_key`, `title`, `category`, `suggestion`, `severity`, optional `reference_doctype`, `reference_name`, `evidence` |
-| `foames_s4hana_idoc_handlers` | dict of message type to handler list; handler gets `(inbound_doc, idoc, summary)` | Process an IDoc beyond recording its External Reference |
 | `foames_process_event_extractors` | `(since, until)`, returns an iterable of `foames.foames_process_mining.eventlog.Event` | Add your own records to the process-mining event log |
 
 Code entry points you call rather than hook:
@@ -109,16 +108,13 @@ Code entry points you call rather than hook:
 | `foames.foames_mes.api.record_events(events, source)` / `record_event(raw, source)` | Store raw events from inside the bench (gateways use this) |
 | `foames.foames_mes.doctype.machine.machine.get_machine_by_source(source_id)` | Machine name for a gateway source id |
 | `foames.foames_mes.doctype.agent_suggestion.agent_suggestion.raise_suggestions(findings, agent)` | Insert findings, skipping open duplicates and reopening resolved ones |
-| `foames.foames_adapters.doctype.s4hana_outbox.s4hana_outbox.enqueue(operation, payload, idempotency_key, sequence_group=None, ...)` | Queue a posting to S/4HANA |
-| `foames.foames_adapters.doctype.insights_hub_outbox.insights_hub_outbox.enqueue(operation, payload, idempotency_key, sequence_group=None, ...)` | Queue a time series write or an event to Insights Hub |
-| `foames.foames_adapters.doctype.mes_outbox.mes_outbox.enqueue(connection, operation, payload, idempotency_key, sequence_group=None, ...)` | Queue a write to another MES through its connection; `REST Request` with `method`, `path`, `body` and the idempotency fields described in docs/mes-adapters.md |
 | `foames.foames_mes.oee.compute_oee(ledger, good, scrap, ideal_cycle_seconds)` and `ledger_from_states(intervals, planned_minutes)` | OEE arithmetic without a site |
 | `foames.foames_process_mining.extractors.build_event_log(since, until, sources=None)` | An `EventLog` from the built-in extractors, the enabled Event Log Sources and the hook extractors |
 | `foames.foames_process_mining.discovery.discover_dfg(log)` and `conformance.check_conformance(log, model)` | Process-mining analysis without a site |
 
 ## HTTP API surface
 
-Whitelisted methods, called as `/api/method/<dotted path>`. Authentication is Frappe's: session cookie, or `Authorization: token <api_key>:<api_secret>`.
+Whitelisted methods, called as `/api/method/<dotted path>`. Authentication is Frappe's: session cookie, or `Authorization: token <api_key>:<api_secret>`. These are the core methods. Each vendor adapter's endpoints, with their permissions, are in its own `AGENTS.md`.
 
 | Method | Verb | Permission | Purpose |
 | --- | --- | --- | --- |
@@ -132,12 +128,11 @@ Whitelisted methods, called as `/api/method/<dotted path>`. Authentication is Fr
 | `foames.foames_mes.doctype.andon_call.andon_call.acknowledge_andon` / `resolve_andon` | POST | write on Andon Call | Acknowledge, resolve or cancel a call |
 | `foames.foames_mes.doctype.andon_call.andon_call.list_open_andon_calls` | GET | read on Andon Call | Open and acknowledged calls with minutes open and targets |
 | `foames.foames_adapters.get_available_erp_systems` | GET | logged in | Registered adapters and their availability |
-| `foames.foames_adapters.s4hana.api.receive_idoc` | POST | create on S4HANA Inbound IDoc (FoaMES Integration role) | S/4HANA's XML HTTP port posts IDocs here |
 | `foames.foames_process_mining.api.summary`, `events`, `discover`, `check_conformance`, `export` | GET or POST | read on Process Event Log | Process mining over a saved `event_log` or a log built from `since`, `until` and `sources`; `discover` takes `dot=1`, `check_conformance` takes `model`, `export` takes `fmt=xes` or `ocel` |
 | `foames.foames_mcp.reads.*` | GET | read on the DocType listed | Agent-friendly reads: machines, events, downtime, OEE periods, suggestions, ERP systems and references, event logs |
 | `foames.foames_mcp.api.mcp` | POST | logged in; each tool checks its own | The MCP endpoint (Streamable HTTP) |
 
-Document methods callable with `frm.call` or `run_doc_method`: `External Reference.resolve`, `S4HANA Settings.test_connection`, `S4HANA Outbox.requeue`, `S4HANA Outbox.cancel_posting`, `Event Log Source.preview`, `Process Event Log.extract`, `discover`, `check_against`, `export_file`.
+Document methods callable with `frm.call` or `run_doc_method`: `External Reference.resolve`, `Event Log Source.preview`, `Process Event Log.extract`, `discover`, `check_against`, `export_file`.
 
 The event shape, state aliases and signing scheme are in [docs/machine-data.md](docs/machine-data.md); the event log, its sources and the analyses are in [docs/process-mining.md](docs/process-mining.md).
 
@@ -145,19 +140,17 @@ The event shape, state aliases and signing scheme are in [docs/machine-data.md](
 
 ## Common tasks
 
-**Connect a new kind of machine or gateway.** Prefer the signed webhook; it needs nothing installed on the bench. Send running totals for counters, not increments, with the machine's Source ID in `machine` and the source's own event id in `id` so retries deduplicate. If the source speaks MQTT, publish JSON to `<prefix>/<source id>/<event type>`. If it is Ignition, read [docs/ignition.md](docs/ignition.md). Do not add a new gateway module for a protocol a bridge can translate to the webhook.
+**Connect a new kind of machine or gateway.** Prefer the signed webhook; it needs nothing installed on the bench. Send running totals for counters, not increments, with the machine's Source ID in `machine` and the source's own event id in `id` so retries deduplicate. If the source speaks MQTT, publish JSON to `<prefix>/<source id>/<event type>`. If the source belongs to a product with a guide under [docs/vendors/](docs/vendors/README.md), read it first. Do not add a new gateway module for a protocol a bridge can translate to the webhook.
 
 **Build an app on FoaMES.** Depend on `foames` in your app's `required_apps`. Link to `Machine`, `Machine Event`, `Downtime Record`, `OEE Period`, `Agent Suggestion` and `External Reference` freely; never to ERP DocTypes. Use `foames_machine_event_handlers` to react to events, `foames_floor_snapshot_extensions` to show your data on the floor, and `foames_suggestion_rules` to raise findings from it.
 
-**Add a reference type to an adapter.** For ERPNext, add a row to `ERPNEXT_DOCTYPES` in `erpnext.py` (kernel type, DocType, label field). For S/4HANA, map it in S4HANA Settings at run time, or add a default `EntitySpec` to `s4hana/entities.py` with its service, entity set, key fields and label. For Insights Hub, Workstation and Location default to assets; map every other type in Insights Hub Settings with the service path, resource, key and label fields from the Opcenter Intelligence API reference (`insights_hub/entities.py` holds no guessed defaults). For another MES, map it on its MES Connection, or add an `EntitySpec` to the vendor's `profile.py` only when the vendor publishes the path as a stable public API (SAP Digital Manufacturing does; most do not). Adding a *new* kernel reference type means extending `REFERENCE_TYPES` in `base.py` and the Select options on External Reference, S4HANA Entity Mapping, Insights Hub Entity Mapping and MES Entity Mapping together.
+**Add a reference type to an adapter, or an adapter for a new ERP.** Read [foames/foames_adapters/AGENTS.md](foames/foames_adapters/AGENTS.md), then the `AGENTS.md` of the vendor package you change; each says how its own mapping is extended. Adding a *new* kernel reference type means extending `REFERENCE_TYPES` in `base.py` and the Select options on External Reference and on the adapters' mapping DocTypes together.
 
 **Turn a published method into a change.** Follow [docs/agents/research-to-code.md](docs/agents/research-to-code.md): triage the paper against the invariants before reading it in depth, map its inputs to what FoaMES records, pick one landing zone, and write the test from the paper's own example first. Most papers end as a no-go with one metric or loss category carried over.
 
 **Change OEE or the rules.** Edit the pure module and its unit test first (`test_oee_and_rules.py`), then the DocType or task that calls it. Keep the time ledger exhaustive: every planned minute lands in exactly one bucket, and the gap goes to unknown.
 
 **Mine records from another DocType or app.** For a DocType on the site, create an Event Log Source with a field map (case, activity, timestamp, optional end timestamp, resource, filters, object fields) and check it with **Preview events**; the DocType is named as text and the source is skipped when it is not installed. For records your app builds itself, register a `foames_process_event_extractors` hook that yields `Event` objects. New analyses go in the pure modules with a test in `test_process_mining_logic.py`, and are exposed through `api.py` or a Process Event Log method.
-
-**Add an adapter for another MES.** Make a folder under `foames/foames_adapters/` with a `profile.py` (a `foames.foames_adapters.mes.profile.Profile`: key, label, vendor, documentation URL, authentication styles, base URL hint, headers, entity defaults only where published, operations) and an `adapter.py` subclassing `ProfileAdapter` with `profile = PROFILE`; register the class in `foames_erp_adapters`, add its key to the Select on MES Connection, add it to `ADAPTERS` in `mes/test_profiles.py`, and give it a section in docs/mes-adapters.md. No DocType is needed: MES Connection and MES Outbox serve every profile.
 
 **Add a scheduled job.** Register it in `scheduler_events` in `hooks.py` and make it idempotent, as `compute_daily_oee` is (it skips a period that already exists).
 
@@ -176,9 +169,9 @@ bench --site <site> run-tests --app foames
 bench --site <site> run-tests --app foames --module foames.foames_mes.doctype.oee_period.test_oee_period
 ```
 
-Without a bench on the machine, `cd docker && ./bench.sh up && ./bench.sh test` runs the suite in Docker on Frappe v15 or v16, with or without ERPNext; see [docs/dev-bench.md](docs/dev-bench.md).
+Without a bench on the machine, `cd docker && ./bench.sh up && ./bench.sh test` runs the suite in Docker on Frappe v15 or v16, with or without an optional ERP app; see [docs/dev-bench.md](docs/dev-bench.md).
 
-The S/4HANA tests use `foames/foames_adapters/s4hana/fake.py`, an in-memory stand-in for the OData transport, so no SAP system is needed, the Insights Hub tests use `foames/foames_adapters/insights_hub/fake.py` the same way, so no tenant is needed, and the MES profiles use `foames/foames_adapters/mes/fake.py`; all run under `bench run-tests` because the adapters package imports Frappe. CI runs the suite on Frappe v15, v16, and v16 with ERPNext, plus Frappe's semgrep rules and pip-audit. The SBOM workflow runs `python -m unittest discover -s sbom` and builds and validates the CycloneDX 1.7 SBOM on each Frappe line.
+Adapter tests never need a vendor's production system: a remote system is tested against an in-memory stand-in for its transport, and tests that need an ERP installed on the site skip when it is not. How to run a vendor's tests, and what they need, is in that vendor's `AGENTS.md`. CI runs the suite on Frappe v15, v16, and v16 with an ERP app installed, plus Frappe's semgrep rules and pip-audit. The SBOM workflow runs `python -m unittest discover -s sbom` and builds and validates the CycloneDX 1.7 SBOM on each Frappe line.
 
 ## Conventions
 
@@ -186,4 +179,5 @@ The S/4HANA tests use `foames/foames_adapters/s4hana/fake.py`, an in-memory stan
 - Strings shown to users go through `frappe._`.
 - A DocType's Python file holds the document class and the module-level functions that operate on it; the arithmetic it needs lives in a pure module next to it.
 - Commit messages say what changed and why. Credit third-party code and ship its license notice with it.
-- Do not add any vendor's code, API metadata or SDK to the repository (SAP, Siemens, Rockwell, Dassault, AVEVA, Critical Manufacturing, Tulip, Aegis, Körber, Velotic); the S/4HANA adapter talks to released OData APIs and IDoc XML only, and the entity defaults are documented as things to check against a system's `$metadata`; the Insights Hub adapter talks to the released platform REST APIs only, and Opcenter Intelligence resources are mapped by the site from the API reference; the MES profiles ship a path only when the vendor publishes it as a stable public API and otherwise point at the documentation.
+- Do not add a vendor's proprietary code, API metadata or SDK to the repository. Each adapter talks to the vendor's published interfaces only; what that means for a particular vendor is in its `AGENTS.md`.
+- Keep vendor facts out of this file and the vendor-neutral pages in `docs/`. They belong in the vendor's `AGENTS.md` and its folder under `docs/vendors/`. `README.md` names integrations only in its Integrations section: one row per integration with its kind, its status (alpha or planned) and a link to its guide, and no settings, hooks or analysis.

@@ -1,9 +1,9 @@
 # Posting to and reading from S/4HANA
 
 What the S/4HANA adapter can post and read once it is connected
-([s4hana-setup.md](s4hana-setup.md)), and how a screen, an agent or another app calls it. Every
+([setup.md](setup.md)), and how a screen, an agent or another app calls it. Every
 posting goes through the **S4HANA Outbox**, so it is queued immediately, sent by the scheduler, and
-never posted twice ([s4hana-adapter.md](s4hana-adapter.md) describes the outbox).
+never posted twice ([the S/4HANA overview](README.md) describes the outbox).
 
 Field names follow SAP's released APIs. Check them against your system's `$metadata`; the
 payload builders accept an `extra` dict for fields a release adds or renames.

@@ -1,6 +1,6 @@
 # Installing FoaMES
 
-FoaMES is a Frappe app. It installs on any Frappe v15 or v16 site, with or without ERPNext, and needs nothing outside the bench except the optional gateway packages described below.
+FoaMES is a Frappe app. It installs on any Frappe v15 or v16 site, with or without an ERP, and needs nothing outside the bench except the optional gateway packages described below.
 
 ## Requirements
 
@@ -9,7 +9,7 @@ FoaMES is a Frappe app. It installs on any Frappe v15 or v16 site, with or witho
 | Frappe v15 or v16 | Both are tested in CI. The app depends on the Frappe framework only. |
 | Python 3.10 or later | Set by `pyproject.toml`. Frappe v15 benches run 3.10 to 3.12; v16 benches run 3.12 or later. |
 | MariaDB | Whatever the bench already uses. |
-| ERPNext | Optional. Install it on the same site if you want the ERPNext adapter; nothing in FoaMES imports from it. |
+| An ERP | Optional. Adapters connect FoaMES to an ERP, whether it runs on the same site or remotely; nothing in FoaMES imports an ERP's package. What each adapter needs is in its guide under [vendors/](vendors/README.md). |
 | `paho-mqtt` | Optional. Needed only by the MQTT gateway and the Sparkplug B gateway. |
 | `asyncua` | Optional. Needed only by the OPC UA gateway. |
 
@@ -21,7 +21,7 @@ bench get-app https://github.com/CLR-Technologies-Inc/foames
 bench --site $SITE install-app foames
 ```
 
-Installing ERPNext on the same site is independent of FoaMES. Install it before or after; the ERPNext adapter checks for it at run time, not at install time.
+Installing an ERP on the same site is independent of FoaMES. Install it before or after; an adapter checks for its ERP at run time, not at install time.
 
 Installation creates six roles before the DocTypes are synced:
 
@@ -34,9 +34,9 @@ Installation creates six roles before the DocTypes are synced:
 | FoaMES Maintenance | Maintenance technicians and planners | Read Machines, Machine Events and OEE Periods; create and edit Downtime Records and Downtime Reasons; create and edit Agent Suggestions; create Machine Events; create, edit and delete Maintenance Plans and Maintenance Work Orders. Opens the Maintenance workspace. |
 
 Operators and Quality staff can therefore change a Machine's source id, OEE parameters and disabled flag. If that should be reserved to engineers, tighten the Machine permissions in Role Permissions Manager on the site.
-| FoaMES Integration | Service users for other systems | Creates S/4HANA inbound IDoc and outbox records. Give it to the user whose API key S/4HANA uses. |
+| FoaMES Integration | Service users for other systems | Creates the inbound-message and outbox records an adapter receives from another system. Give it to the user whose API key that system uses; the vendor's guide says which records and endpoints it needs. |
 
-System Manager keeps full access to everything, including FoaMES Settings, S4HANA Settings and External References.
+System Manager keeps full access to everything, including FoaMES Settings, the adapters' Settings and External References.
 
 Each role has a workspace of its own with the cards, charts and reports for that job; see [dashboards.md](dashboards.md).
 
@@ -64,11 +64,11 @@ This drops the FoaMES DocTypes and their data. Export OEE Periods or Downtime Re
 
 Everything below is done in the desk (the `/app` UI) as a System Manager.
 
-1. **FoaMES Settings.** Set **Default ERP System** to the key of the adapter new External References should use: `ERPNext` when ERPNext is on the site, `S4HANA` for SAP, or leave it empty to run without an ERP. Leave **Skip Resolving References on Save** off unless the ERP is slow to answer and you prefer to resolve references by hand.
+1. **FoaMES Settings.** Set **Default ERP System** to the key of the adapter new External References should use (the keys on a site are listed by `foames.foames_adapters.get_available_erp_systems`), or leave it empty to run without an ERP. Leave **Skip Resolving References on Save** off unless the ERP is slow to answer and you prefer to resolve references by hand.
 2. **Downtime Reasons.** Create the reasons operators will pick, and tick **Counts As Planned Downtime** on the ones that should not count against availability (scheduled maintenance, planned changeovers). See [oee.md](oee.md).
 3. **Machines.** One record per machine, with a short **Code**, the **Ideal Cycle Time** in seconds, and a **Shift Start** plus **Scheduled Minutes Per Day** for the daily OEE window. **Source ID** defaults to the code and is what the gateways use to find the machine.
-4. **Machine Data Settings.** Set the webhook secret and whichever of MQTT, Sparkplug B or OPC UA you will use. See [machine-data.md](machine-data.md) and, for Ignition, [ignition.md](ignition.md).
-5. **S4HANA Settings**, if you connect to SAP. See [s4hana-adapter.md](s4hana-adapter.md).
+4. **Machine Data Settings.** Set the webhook secret and whichever of MQTT, Sparkplug B or OPC UA you will use. See [machine-data.md](machine-data.md) and, for a SCADA product with a guide, [vendors/](vendors/README.md).
+5. **The Settings of each adapter** you connect, if any. Each adapter's guide under [vendors/](vendors/README.md) says what to fill in and how to switch it on.
 
 Give people the roles above through their User records. The Floor View is at `/app/floor-view`.
 
@@ -87,7 +87,7 @@ bench --site $SITE scheduler status
 | `foames.foames_mes.tasks.run_suggestion_rules` | Hourly | Runs the built-in suggestion rules over the last day. |
 | `foames.foames_mes.tasks.check_maintenance_plans` | Hourly | Reads every Maintenance Plan's meter and raises suggestions for plans that are due soon, due or overdue. See [maintenance.md](maintenance.md). |
 | `foames.foames_mes.tasks.compute_daily_oee` | Daily | Creates one OEE Period per enabled machine for the previous day. |
-| `foames.foames_adapters.doctype.s4hana_outbox.s4hana_outbox.process_outbox` | Every scheduler tick | Sends due S/4HANA postings. Returns at once unless the S/4HANA adapter is enabled. |
+| Each adapter's jobs | As its guide says | Adapters register their own jobs (an outbox that sends due postings, a roll-up of machine counts). Each returns at once unless that adapter is enabled in its Settings. |
 
 On a development bench with `developer_mode` on, the scheduler is often paused. Run a job by hand when you need it:
 
@@ -135,7 +135,7 @@ Each gateway reads Machine Data Settings once at start-up. Restart the gateway a
 
 ## Frappe Cloud and other hosted benches
 
-FoaMES can be added to a private bench as a custom app from its GitHub repository. `pyproject.toml` declares no apt packages, so no extra system dependencies are needed. The webhook and the scheduler work as on any bench. The three gateways are long-running processes started with `bench execute`, which a hosted bench may not let you run. In that case use the signed webhook: a small bridge of your own on a machine near the broker or the OPC UA server subscribes or polls there and posts events to the site over HTTPS, as in the Ignition script in [ignition.md](ignition.md).
+FoaMES can be added to a private bench as a custom app from its GitHub repository. `pyproject.toml` declares no apt packages, so no extra system dependencies are needed. The webhook and the scheduler work as on any bench. The three gateways are long-running processes started with `bench execute`, which a hosted bench may not let you run. In that case use the signed webhook: a small bridge of your own on a machine near the broker or the OPC UA server subscribes or polls there and posts events to the site over HTTPS, as in the gateway-script examples in the [vendor guides](vendors/README.md).
 
 ## Check that it works
 
@@ -163,7 +163,7 @@ FoaMES can be added to a private bench as a custom app from its GitHub repositor
      -H "Authorization: token $API_KEY:$API_SECRET"
    ```
 
-For a signed request from a system with no Frappe user, see the signing description in [machine-data.md](machine-data.md) and the Jython example in [ignition.md](ignition.md).
+For a signed request from a system with no Frappe user, see the signing description in [machine-data.md](machine-data.md) and the script examples in the [vendor guides](vendors/README.md).
 
 ## Development setup
 
@@ -183,4 +183,4 @@ The modules that hold the arithmetic and parsing (`foames/foames_mes/oee.py`, `c
 python -m unittest foames.foames_mes.test_oee_and_rules foames.foames_mes.test_machine_data_logic foames.foames_mes.test_sparkplug
 ```
 
-The rest of the tests need a site, so run them with `bench run-tests` as above. CI runs the whole suite on Frappe v15, on v16, and on v16 with ERPNext. Without a bench on the machine, the [Docker dev bench](dev-bench.md) runs the same matrix locally.
+The rest of the tests need a site, so run them with `bench run-tests` as above. CI runs the whole suite on Frappe v15, on v16, and on v16 with an ERP app installed. Without a bench on the machine, the [Docker dev bench](dev-bench.md) runs the same matrix locally.

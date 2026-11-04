@@ -150,7 +150,7 @@ aspect, a variable the aspect does not have, an asset that does not exist) marks
 **Failed** with the platform's message and `logref`; fix the cause, then **Requeue** it, or
 **Cancel Posting** to drop it. Postings that share a sequence group are sent strictly in the order
 they were queued; state events of one asset share one. **Pause Outbox** stops sending without
-stopping queuing. The statuses are those of the [S/4HANA outbox](s4hana-adapter.md#outbox-statuses),
+stopping queuing. The statuses are those of the [S/4HANA outbox](../s4hana/README.md#outbox-statuses),
 with **Insights Hub Record** holding the event's id or the asset, aspect and time of the time series
 record.
 

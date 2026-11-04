@@ -63,7 +63,7 @@ The floor snapshot carries the calls too: each machine has `andon` (its open and
 | `foames.foames_mes.doctype.andon_call.andon_call.resolve_andon` | POST | `name`, optional `resolution`, `cancel` (1 to cancel) | `name`, `status`, `resolution_minutes` |
 | `foames.foames_mes.doctype.andon_call.andon_call.list_open_andon_calls` | GET | optional `machine` | the open calls, oldest first |
 
-They use Frappe's usual authentication (an API key of a user with the FoaMES Operator role is enough), not the machine-data webhook. An andon button wired to a PLC or a SCADA screen calls `raise_andon` through a gateway script; see [ignition.md](ignition.md) for the Ignition gateway-script pattern.
+They use Frappe's usual authentication (an API key of a user with the FoaMES Operator role is enough), not the machine-data webhook. An andon button wired to a PLC or a SCADA screen calls `raise_andon` through a gateway script; the vendor guides under [vendors/](vendors/README.md) show the gateway-script pattern for the products that have one.
 
 ## The Andon Response report
 

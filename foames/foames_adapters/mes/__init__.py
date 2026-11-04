@@ -3,18 +3,16 @@
 
 """The shared framework behind the adapters for other MES and MOM systems.
 
-FoaMES is often not the only manufacturing system in a plant: an enterprise MES (Rockwell
-FactoryTalk ProductionCentre or Plex, SAP Digital Manufacturing, DELMIA Apriso, AVEVA MES, Critical
-Manufacturing) or a frontline platform (Tulip, Aegis FactoryLogix, Körber PAS-X, Proficy) holds the
-orders, materials and equipment, and FoaMES reads the machines. Each of them is reached through its
-own HTTPS API, and they differ in how a caller logs in, how a record is addressed and how an answer
-is wrapped, but not in what FoaMES needs of them: resolve an External Reference, and queue a write
-that is never performed twice.
+FoaMES is often not the only manufacturing system in a plant: an enterprise MES or MOM suite, or a
+frontline platform, holds the orders, materials and equipment, and FoaMES reads the machines. Each
+of them is reached through its own HTTPS API, and they differ in how a caller logs in, how a record
+is addressed and how an answer is wrapped, but not in what FoaMES needs of them: resolve an External
+Reference, and queue a write that is never performed twice.
 
-So the vendor folders next to this one (`plex/`, `sap_dmc/`, `delmia_apriso/`, ...) each hold a
-**profile**: the adapter's key and label, where its public API documentation lives, how it
-authenticates, the base URL pattern, the entity lookups that are documented well enough to ship as
-defaults, and the outbox operations it offers. This package holds what they share:
+So each system has a vendor folder next to this one that holds a **profile**: the adapter's key
+and label, where its public API documentation lives, how it authenticates, the base URL pattern,
+the entity lookups that are documented well enough to ship as defaults, and the outbox operations
+it offers. This package holds what they share:
 
 - `rest.py`: a JSON REST client with the authentication styles these systems use (Basic, a static
   bearer token, an API key header, OAuth 2.0 client credentials), transport injected.

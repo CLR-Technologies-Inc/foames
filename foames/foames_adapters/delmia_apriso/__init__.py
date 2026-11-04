@@ -5,7 +5,8 @@
 
 Dassault Systèmes' global multi-plant MOM suite on 3DEXPERIENCE, strongest in aerospace and automotive.
 The profile in `profile.py` says how FoaMES reaches it; the shared machinery is in
-`foames.foames_adapters.mes`. Setup is in docs/mes-adapters.md.
+`foames.foames_adapters.mes`. Setup is in docs/mes-adapters.md (the framework) and
+docs/vendors/delmia_apriso/README.md (this system).
 """
 
 ADAPTER_KEY = "APRISO"

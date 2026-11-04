@@ -358,9 +358,9 @@ class TestHooksMatchTheAdapter(unittest.TestCase):
 			hooks.doc_events["Downtime Record"],
 			{"on_update": "foames.foames_adapters.erpnext.downtime.on_update"},
 		)
-		self.assertEqual(
-			hooks.foames_machine_state_changed,
-			["foames.foames_adapters.erpnext.workstation.on_state_changed"],
+		# Other adapters register their own handlers next to the ERPNext one.
+		self.assertIn(
+			"foames.foames_adapters.erpnext.workstation.on_state_changed", hooks.foames_machine_state_changed
 		)
 		self.assertIn(
 			"foames.foames_adapters.erpnext.floor.extend_snapshot", hooks.foames_floor_snapshot_extensions
