@@ -39,7 +39,7 @@ DocTypes in `foames/foames_adapters/doctype/`: `erpnext_adapter_settings`, `erpn
 
 | Item | Detail |
 | --- | --- |
-| `doc_events` in `hooks.py` | ERPNext document events call `sync.on_update`, `on_update_after_submit`, `on_trash` and `after_rename` for the mapped DocTypes; `Stock Entry.on_submit` calls `sync.on_submit` (serial numbers of a draft Manufacture entry); Job Card events also call `follow.on_job_card_update` and `follow.on_job_card_trash`; `Downtime Record.on_update` calls `downtime.on_update`. |
+| `doc_events` in `hooks.py` | ERPNext document events call `sync.on_update`, `on_update_after_submit`, `on_trash` and `after_rename` for the mapped DocTypes; `Stock Entry.on_submit` calls `sync.on_submit` (serial numbers of a draft Manufacture entry); Job Card `on_change` calls `follow.on_job_card_change` (it runs after ERPNext's `db_set` too, which is how Start Job marks a card Work In Progress on v16 without saving it) and `on_trash` also calls `follow.on_job_card_trash`; `Downtime Record.on_update` calls `downtime.on_update`. |
 | Core hooks it uses | `foames_floor_snapshot_extensions` (`floor.extend_snapshot`, `rollup.mark_current_job_cards`), `foames_suggestion_rules` (`floor.running_without_job_card`, `rollup.current_job_card_not_open`), `foames_machine_job_changed` (`rollup.on_job_changed`, `quality.on_job_changed`) and `foames_machine_state_changed` (`workstation.on_state_changed`). Registered in `hooks.py`. |
 | `foames.foames_adapters.doctype.erpnext_outbox.erpnext_outbox.enqueue(...)` / `process_outbox()` | Queue a posting; perform due postings (scheduler). |
 | Scheduler (in `hooks.py`) | `erpnext_outbox.process_outbox`, and `erpnext.rollup.roll_up_all`; each does nothing unless enabled in ERPNext Adapter Settings. |
