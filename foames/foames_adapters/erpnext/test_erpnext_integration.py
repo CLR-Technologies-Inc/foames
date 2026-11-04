@@ -408,7 +408,7 @@ class TestFollowJobCards(ERPNextTestCase):
 		}
 		settings.follow_job_cards_started_in_erpnext = 1
 		settings.save()
-		self.addCleanup(lambda: frappe.get_single("ERPNext Adapter Settings").update(self.restore).save())
+		self.addCleanup(self.restore_settings)
 		workstation = get_reference("Workstation", self.fixtures.WORKSTATION, ADAPTER_KEY)
 		self.machine = make_machine("FOAMES-TEST-FJ", workstation_reference=workstation, counter_rollover=0)
 		frappe.db.set_value(
@@ -419,6 +419,12 @@ class TestFollowJobCards(ERPNextTestCase):
 		frappe.db.delete("Machine Event", {"machine": self.machine.name})
 		self.busy = make_machine("FOAMES-TEST-FJ-BUSY", workstation_reference=workstation)
 		frappe.db.set_value("Machine", self.busy.name, "workstation_reference", workstation)
+
+	def restore_settings(self):
+		"""The outbox commits after each posting, so the flipped settings would outlive this class's
+		rollback; put them back and commit that too."""
+		frappe.get_single("ERPNext Adapter Settings").update(self.restore).save()
+		frappe.db.commit()  # nosemgrep
 
 	def current_job(self, machine):
 		return frappe.db.get_value(
@@ -1002,13 +1008,15 @@ class TestQualityInspections(ERPNextTestCase):
 		settings = frappe.get_single("ERPNext Adapter Settings")
 		settings.update({"inspect_job_cards_from_measurements": 1, "inspection_delay_minutes": 0})
 		settings.save()
-		self.addCleanup(
-			lambda: (
-				frappe.get_single("ERPNext Adapter Settings")
-				.update({"inspect_job_cards_from_measurements": 0, "inspection_delay_minutes": 5})
-				.save()
-			)
-		)
+
+		def restore_settings():
+			# The outbox commits after each posting; commit the restored settings too.
+			frappe.get_single("ERPNext Adapter Settings").update(
+				{"inspect_job_cards_from_measurements": 0, "inspection_delay_minutes": 5}
+			).save()
+			frappe.db.commit()  # nosemgrep
+
+		self.addCleanup(restore_settings)
 		machine = make_machine("FOAMES-TEST-QJ")
 		frappe.db.delete("Machine Event", {"machine": machine.name})
 		start = add_to_date(now_datetime().replace(microsecond=0), hours=-3)
