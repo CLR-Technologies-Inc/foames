@@ -7,7 +7,7 @@ from datetime import timedelta
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import add_to_date, now_datetime
+from frappe.utils import add_to_date, get_datetime, now_datetime
 
 from foames.foames_adapters.erpnext import ADAPTER_KEY, erpnext_installed
 from foames.foames_adapters.erpnext import postings as rules
@@ -155,15 +155,17 @@ def enqueue(
 	sequence_group: str | None = None,
 	reference_doctype: str | None = None,
 	reference_name: str | None = None,
+	not_before=None,
 ) -> str:
 	"""Queue a posting to ERPNext and return the outbox record's name.
 
 	Queuing the same idempotency key twice returns the first record, so callers can retry freely.
 	Use a key that names the business event, for example "<work order>:<operation>:complete".
 	Postings that share a `sequence_group` (typically the Work Order) are performed in queue order.
+	With `not_before`, the posting waits until that time before its first attempt.
 	"""
 	return enqueue_posting(
-		operation, payload, idempotency_key, sequence_group, reference_doctype, reference_name
+		operation, payload, idempotency_key, sequence_group, reference_doctype, reference_name, not_before
 	)[0]
 
 
@@ -174,6 +176,7 @@ def enqueue_posting(
 	sequence_group: str | None = None,
 	reference_doctype: str | None = None,
 	reference_name: str | None = None,
+	not_before=None,
 ) -> tuple[str, bool]:
 	"""Like `enqueue`, and also says whether this call created the record (False when the key was
 	already queued, including by a concurrent caller)."""
@@ -190,6 +193,7 @@ def enqueue_posting(
 			"reference_doctype": reference_doctype,
 			"reference_name": reference_name,
 			"status": "Queued",
+			"next_attempt_at": get_datetime(not_before) if not_before else None,
 		}
 	)
 	frappe.db.savepoint("foames_erpnext_enqueue")

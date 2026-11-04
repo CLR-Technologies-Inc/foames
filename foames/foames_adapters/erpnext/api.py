@@ -10,6 +10,7 @@ apply.
 """
 
 import json
+from datetime import datetime
 
 import frappe
 from frappe import _
@@ -150,8 +151,8 @@ def post_inspection_from_measurements(
 	reference_type: str,
 	reference_name: str,
 	machine: str,
-	since: str,
-	until: str | None = None,
+	since: str | datetime,
+	until: str | datetime | None = None,
 	specifications: str | list | None = None,
 	submit: bool = True,
 	remarks: str | None = None,

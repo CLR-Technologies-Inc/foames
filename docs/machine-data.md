@@ -29,6 +29,8 @@ Username and Password in the OPC UA section still give username authentication, 
 
 Saving Machine Data Settings with `Sign` or `SignAndEncrypt` but no certificate or key is refused, so a misconfiguration shows up on the form, not when the gateway starts.
 
+The algorithms behind each policy (RSA-OAEP and RSA signatures in the handshake, AES-CBC and HMAC-SHA256 on the messages) are listed per policy in the cryptography bill of materials, see [sbom.md](sbom.md#the-cryptography-bill-of-materials).
+
 ### Making a client certificate
 
 An OPC UA application certificate needs the application URI in its subjectAltName, plus the digital signature, key encipherment, data encipherment and non-repudiation key usages, and both client and server extended key usage. With OpenSSL 3:

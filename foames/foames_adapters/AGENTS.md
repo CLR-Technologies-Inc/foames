@@ -11,7 +11,7 @@ This layer is open-ended: a site can have any number of adapters, bundled or reg
 - `foames.foames_adapters.get_available_erp_systems` (whitelisted, logged-in users): every registered adapter with its key, label and whether its ERP is reachable from this site. Use it to map a running installation, not to infer what the code supports.
 - `docs/vendors/<vendor>/`: the human guide for that vendor, and [docs/adapters.md](../../docs/adapters.md) for what is vendor-neutral.
 
-Files that are not in a vendor's folder must not name a vendor, except `hooks.py` (which registers what is bundled) and tests of the registry.
+Files that are not in a vendor's folder must not name a vendor, except where a list of adapters is the point: `hooks.py` (which registers what is bundled), a Select that enumerates adapter keys (as on MES Connection), the registry and profile tests, and the shared reports, cards and charts of the Integration workspace.
 
 ## The contract
 
@@ -37,7 +37,7 @@ Adapters use the same extension points as any app; see the root `AGENTS.md` for 
 
 ## Adding a vendor
 
-1. A subpackage `foames/foames_adapters/<vendor>/` with an adapter class registered as above, and its own `AGENTS.md` that states: what the adapter talks to, its package map, which modules are pure, its Settings and outbox DocTypes, its hooks, entry points and HTTP methods, how to add a reference type to it, how its tests run, and any rule specific to that vendor (licensing, forbidden dependencies, API metadata).
+1. Decide whether the vendor needs its own stack or fits a shared framework (for a REST MES or MOM system, a profile on `mes/`; see [mes/AGENTS.md](mes/AGENTS.md)). Either way: a subpackage `foames/foames_adapters/<vendor>/` with an adapter class registered as above, and its own `AGENTS.md` that states: what the adapter talks to, its package map, which modules are pure, its Settings and outbox DocTypes, its hooks, entry points and HTTP methods, how to add a reference type to it, how its tests run, and any rule specific to that vendor (licensing, forbidden dependencies, API metadata).
 2. A guide at `docs/vendors/<vendor>/README.md` and a row in [docs/vendors/README.md](../../docs/vendors/README.md).
 3. Tests that need no ERP, using a fake transport for a remote system; tests that do need the ERP skip when it is not installed.
 4. `sbom/curated.json` when the adapter adds a connected service, cryptography or a secret (see the root `AGENTS.md`).

@@ -393,6 +393,100 @@ class TestJobCardRollUp(ERPNextTestCase):
 		self.assertEqual([f["reference_name"] for f in findings], [self.machine.name])
 
 
+class TestFollowJobCards(ERPNextTestCase):
+	"""A Job Card started and completed in ERPNext sets and ends the current job of the machines at
+	its workstation."""
+
+	def setUp(self):
+		super().setUp()
+		from foames.foames_mes.doctype.oee_period.test_oee_period import make_machine
+
+		settings = frappe.get_single("ERPNext Adapter Settings")
+		settings.follow_job_cards_started_in_erpnext = 1
+		settings.save()
+		self.addCleanup(
+			frappe.db.set_single_value, "ERPNext Adapter Settings", "follow_job_cards_started_in_erpnext", 0
+		)
+		workstation = get_reference("Workstation", self.fixtures.WORKSTATION, ADAPTER_KEY)
+		self.machine = make_machine("FOAMES-TEST-FJ", workstation_reference=workstation)
+		frappe.db.set_value(
+			"Machine",
+			self.machine.name,
+			{"workstation_reference": workstation, "current_job_reference": None},
+		)
+		self.busy = make_machine("FOAMES-TEST-FJ-BUSY", workstation_reference=workstation)
+		frappe.db.set_value("Machine", self.busy.name, "workstation_reference", workstation)
+
+	def current_job(self, machine):
+		return frappe.db.get_value(
+			"Machine", machine, ["current_job_reference", "current_job_since"], as_dict=True
+		)
+
+	def test_machine_follows_a_job_card_started_and_completed_in_erpnext(self):
+		from foames.foames_mes.api import set_current_job
+
+		wo = self.fixtures.make_work_order(qty=1)
+		job_card = self.fixtures.job_card_for(wo.name)
+		other = self.fixtures.job_card_for(self.fixtures.make_work_order(qty=1).name)
+		busy_job = get_reference("Job Card", other, ADAPTER_KEY)
+		set_current_job(self.busy.name, busy_job)
+		# Any machine another test left idle at the workstation follows the card too; put them back.
+		self.addCleanup(
+			lambda: frappe.db.set_value(
+				"Machine",
+				{"current_job_reference": get_reference("Job Card", job_card, ADAPTER_KEY)},
+				"current_job_reference",
+				None,
+			)
+		)
+		# Clear of other tests' time logs on the same workstation, at capacity 1.
+		start = add_to_date(now_datetime().replace(microsecond=0), hours=-50)
+		end = add_to_date(start, minutes=45)
+		enqueue("Material Transfer for Manufacture", {"work_order": wo.name}, f"{wo.name}:transfer", wo.name)
+		enqueue(
+			"Job Card Time Log", {"job_card": job_card, "start_time": start}, f"{job_card}:start", wo.name
+		)
+		self.assertEqual(self.run_outbox(), 2)
+		self.assertEqual(frappe.db.get_value("Job Card", job_card, "status"), "Work In Progress")
+		job = self.current_job(self.machine.name)
+		self.assertEqual(job.current_job_reference, get_reference("Job Card", job_card, ADAPTER_KEY))
+		self.assertEqual(get_datetime(job.current_job_since), start)
+		# The machine busy on another card is left alone.
+		self.assertEqual(self.current_job(self.busy.name).current_job_reference, busy_job)
+
+		enqueue(
+			"Job Card Time Log",
+			{"job_card": job_card, "complete_time": end, "completed_qty": 1, "submit": True},
+			f"{job_card}:complete",
+			wo.name,
+		)
+		self.assertEqual(self.run_outbox(), 1)
+		self.assertEqual(frappe.db.get_value("Job Card", job_card, "docstatus"), 1)
+		self.assertIsNone(self.current_job(self.machine.name).current_job_reference)
+		# The card was completed in ERPNext, so nothing was rolled up to it afterwards.
+		self.assertFalse(frappe.db.exists("ERPNext Outbox", {"operation": "Job Card Production Log"}))
+		self.assertEqual(self.current_job(self.busy.name).current_job_reference, busy_job)
+
+	def test_a_cancelled_job_card_ends_on_its_machines(self):
+		from foames.foames_adapters.erpnext.follow import end_on_machines, start_on_idle_machines
+		from foames.foames_mes.api import set_current_job
+
+		wo = self.fixtures.make_work_order(qty=1)
+		job_card = self.fixtures.job_card_for(wo.name)
+		reference = get_reference("Job Card", job_card, ADAPTER_KEY)
+		set_current_job(self.machine.name, reference)
+		card = frappe.get_doc("Job Card", job_card)
+		# Not Work In Progress: nothing starts; the busy machine is not touched either way.
+		self.assertEqual(start_on_idle_machines(card), [])
+		self.assertEqual(end_on_machines(card), [self.machine.name])
+		self.assertIsNone(self.current_job(self.machine.name).current_job_reference)
+		# Off, the hooks do nothing.
+		frappe.db.set_single_value("ERPNext Adapter Settings", "follow_job_cards_started_in_erpnext", 0)
+		set_current_job(self.machine.name, reference)
+		frappe.get_doc("Job Card", job_card).run_method("on_update")
+		self.assertEqual(self.current_job(self.machine.name).current_job_reference, reference)
+
+
 class TestWorkstationStatus(ERPNextTestCase):
 	"""A machine's state shows on its ERPNext Workstation, through the outbox, latest state only."""
 
@@ -643,6 +737,52 @@ class TestTraceability(ERPNextTestCase):
 		self.assertEqual(self.outbox(posting).status, "Failed")
 		self.assertIn("another item", self.outbox(posting).last_error)
 
+	def test_draft_entry_gets_its_serial_references_on_submission(self):
+		wo = self.fixtures.make_work_order(
+			qty=2, skip_transfer=True, operations=False, item=self.fixtures.FINISHED_GOOD_SERIAL
+		)
+		serials = [f"FOAMES-TS-DRAFT-{frappe.generate_hash(length=5).upper()}-{i}" for i in (1, 2)]
+		posting = enqueue(
+			"Manufacture",
+			{"work_order": wo.name, "qty": 2, "serial_nos": serials, "submit": False},
+			f"{wo.name}:manufacture",
+			wo.name,
+		)
+		self.run_outbox()
+		record = self.outbox(posting)
+		self.assertEqual(record.status, "Posted", record.last_error)
+		reference = {"erp_system": ADAPTER_KEY, "reference_type": "Serial Number", "external_id": serials[0]}
+		self.assertFalse(frappe.db.exists("External Reference", reference))
+		# A person reviews the draft and submits it in ERPNext: the serial numbers now exist.
+		frappe.get_doc("Stock Entry", record.erp_document).submit()
+		self.assertTrue(frappe.db.exists("Serial No", serials[0]))
+		for serial in serials:
+			self.assertTrue(frappe.db.exists("External Reference", {**reference, "external_id": serial}))
+
+	def test_a_hand_made_entry_with_a_marker_like_remark_gets_no_references(self):
+		"""Only entries the outbox posted get references on submission, whatever their remarks say."""
+		from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry
+
+		wo = self.fixtures.make_work_order(
+			qty=1, skip_transfer=True, operations=False, item=self.fixtures.FINISHED_GOOD_SERIAL
+		)
+		serial = f"FOAMES-TS-HAND-{frappe.generate_hash(length=5).upper()}"
+		entry = frappe.get_doc(make_stock_entry(wo.name, "Manufacture", 1))
+		entry.remarks = "FOAMES-rework by hand"
+		for row in entry.items:
+			if row.item_code == self.fixtures.FINISHED_GOOD_SERIAL:
+				row.use_serial_batch_fields = 1
+				row.serial_no = serial
+		entry.insert()
+		entry.submit()
+		self.assertTrue(frappe.db.exists("Serial No", serial))
+		self.assertFalse(
+			frappe.db.exists(
+				"External Reference",
+				{"erp_system": ADAPTER_KEY, "reference_type": "Serial Number", "external_id": serial},
+			)
+		)
+
 
 def hasattr_erpnext_reading_parser() -> bool:
 	"""Whether the installed ERPNext reads Quality Inspection readings in the user's number format."""
@@ -658,7 +798,10 @@ class TestQualityInspections(ERPNextTestCase):
 
 	LENGTH, COLOUR = "FOAMES-TEST-LENGTH", "FOAMES-TEST-COLOUR"
 
-	def inspect(self, reference_type, reference_name, readings, key, **extra):
+	def inspect(self, reference_type, reference_name, readings, key, group="reference", **extra):
+		"""Queue one inspection and perform the outbox. Postings share the document's sequence group
+		unless `group` is None: a Failed posting holds the later ones of its group back, which the
+		tests that expect failures avoid."""
 		name = enqueue(
 			"Quality Inspection",
 			{
@@ -668,7 +811,7 @@ class TestQualityInspections(ERPNextTestCase):
 				**extra,
 			},
 			key,
-			reference_name,
+			reference_name if group == "reference" else group,
 		)
 		self.run_outbox()
 		return self.outbox(name)
@@ -737,12 +880,20 @@ class TestQualityInspections(ERPNextTestCase):
 		if not frappe.db.exists("Quality Inspection Parameter", parameter):
 			frappe.get_doc({"doctype": "Quality Inspection Parameter", "parameter": parameter}).insert()
 		failed = self.inspect(
-			"Job Card", job_card, [{"specification": parameter, "values": [250]}], f"{job_card}:weight-1"
+			"Job Card",
+			job_card,
+			[{"specification": parameter, "values": [250]}],
+			f"{job_card}:weight-1",
+			group=None,
 		)
 		self.assertEqual(failed.status, "Failed")
 		self.assertIn("not in template", failed.last_error)
 		unknown = self.inspect(
-			"Job Card", job_card, [{"specification": "FOAMES-NO-SUCH", "values": [1]}], f"{job_card}:weight-2"
+			"Job Card",
+			job_card,
+			[{"specification": "FOAMES-NO-SUCH", "values": [1]}],
+			f"{job_card}:weight-2",
+			group=None,
 		)
 		self.assertEqual(unknown.status, "Failed")
 		self.assertIn("no Quality Inspection Parameter", unknown.last_error)
@@ -752,6 +903,7 @@ class TestQualityInspections(ERPNextTestCase):
 			job_card,
 			[{"specification": self.LENGTH, "values": [10]}],
 			f"{job_card}:other-item",
+			group=None,
 			item_code=self.fixtures.RAW_MATERIAL,
 		)
 		self.assertEqual(other.status, "Failed")
@@ -762,6 +914,7 @@ class TestQualityInspections(ERPNextTestCase):
 			job_card,
 			[{"specification": parameter, "values": [250, 262], "min_value": 240, "max_value": 260}],
 			f"{job_card}:weight-3",
+			group=None,
 		)
 		self.assertEqual(record.status, "Posted", record.last_error)
 		self.assertEqual(json.loads(record.response)["status"], "Rejected")
@@ -813,6 +966,98 @@ class TestQualityInspections(ERPNextTestCase):
 			),
 			inspection.name,
 		)
+
+	def test_job_change_queues_an_inspection_from_the_jobs_measurements(self):
+		from foames.foames_adapters.erpnext.quality import inspect_job_card
+		from foames.foames_mes.api import record_events, set_current_job
+		from foames.foames_mes.doctype.oee_period.test_oee_period import make_machine
+
+		settings = frappe.get_single("ERPNext Adapter Settings")
+		settings.update({"inspect_job_cards_from_measurements": 1, "inspection_delay_minutes": 0})
+		settings.save()
+		self.addCleanup(
+			lambda: (
+				frappe.get_single("ERPNext Adapter Settings")
+				.update({"inspect_job_cards_from_measurements": 0, "inspection_delay_minutes": 5})
+				.save()
+			)
+		)
+		machine = make_machine("FOAMES-TEST-QJ")
+		frappe.db.delete("Machine Event", {"machine": machine.name})
+		start = add_to_date(now_datetime().replace(microsecond=0), hours=-3)
+		t = lambda minutes: add_to_date(start, minutes=minutes)  # noqa: E731
+		wo = self.fixtures.make_work_order(qty=1)
+		job_card = self.fixtures.job_card_for(wo.name)
+		set_current_job(machine.name, get_reference("Job Card", job_card, ADAPTER_KEY), at=t(0))
+		rows = [
+			{"type": "Measurement", "name": self.LENGTH, "value": 10.2, "timestamp": t(-1)},  # previous job
+			*[
+				{"type": "Measurement", "name": self.LENGTH, "value": 10 + i / 10, "timestamp": t(i)}
+				for i in range(1, 4)
+			],
+			# Not in the template: left out rather than refused.
+			{"type": "Measurement", "name": "temperature", "value": 71.5, "timestamp": t(2)},
+			# Stamped at the moment the job changes: the next job's.
+			{"type": "Measurement", "name": self.LENGTH, "value": 10.9, "timestamp": t(30)},
+		]
+		result = record_events([{"machine": machine.name, **row} for row in rows], source="Manual")
+		self.assertFalse(result["rejected"], result["rejected"])
+		frappe.db.delete("ERPNext Outbox")
+		# The job ends: the hook queues the inspection for the window the job ran in.
+		set_current_job(machine.name, None, at=t(30))
+		postings = frappe.get_all(
+			"ERPNext Outbox", {"operation": "Quality Inspection"}, ["name", "payload", "next_attempt_at"]
+		)
+		self.assertEqual(len(postings), 1)
+		payload = json.loads(postings[0].payload)
+		self.assertEqual(payload["reference_name"], job_card)
+		self.assertEqual(
+			payload["measurements"],
+			{
+				"machine": machine.name,
+				"since": str(t(0)),
+				"until": str(t(30)),
+				"specifications": [self.LENGTH, self.COLOUR],
+			},
+		)
+		self.assertIsNone(postings[0].next_attempt_at)
+		self.assertEqual(self.run_outbox(), 1)
+		record = self.outbox(postings[0].name)
+		self.assertEqual(record.status, "Posted", record.last_error)
+		inspection = frappe.get_doc("Quality Inspection", record.erp_document)
+		self.assertEqual([r.specification for r in inspection.readings], [self.LENGTH])
+		self.assertEqual(
+			[inspection.readings[0].get(f"reading_{i}") for i in (1, 2, 3)], ["10.1", "10.2", "10.3"]
+		)
+		# The colour was never measured, so the inspection is a draft for a person to finish.
+		self.assertEqual(inspection.docstatus, 0)
+		self.assertEqual(json.loads(record.response)["docstatus"], 0)
+		self.assertFalse(frappe.db.get_value("Job Card", job_card, "quality_inspection"))
+		# A window with nothing for the template posts nothing, and says so.
+		name, created = inspect_job_card(machine.name, job_card, t(40), t(50))
+		self.assertTrue(created)
+		self.assertEqual(self.run_outbox(), 1)
+		record = self.outbox(name)
+		self.assertEqual(record.status, "Posted", record.last_error)
+		self.assertFalse(record.erp_document)
+		self.assertIn("measured nothing", json.loads(record.response)["message"])
+		# With a wait, the posting is not due yet.
+		frappe.db.set_single_value("ERPNext Adapter Settings", "inspection_delay_minutes", 5)
+		name, created = inspect_job_card(machine.name, job_card, t(50), t(60))
+		self.assertTrue(created)
+		self.assertGreater(get_datetime(self.outbox(name).next_attempt_at), now_datetime())
+		self.assertEqual(self.run_outbox(), 0)
+		# A Job Card that names no template, or that is gone, is nothing to inspect.
+		other = self.fixtures.job_card_for(self.fixtures.make_work_order(qty=1).name)
+		frappe.db.set_value("Job Card", other, "quality_inspection_template", None)
+		self.assertIsNone(inspect_job_card(machine.name, other, t(0), t(30)))
+		self.assertIsNone(inspect_job_card(machine.name, "JC-GONE", t(0), t(30)))
+		# Ending a job on a machine whose Job Card was deleted still goes through.
+		gone = self.fixtures.job_card_for(self.fixtures.make_work_order(qty=1).name)
+		set_current_job(machine.name, get_reference("Job Card", gone, ADAPTER_KEY), at=t(60))
+		frappe.delete_doc("Job Card", gone, force=True)
+		set_current_job(machine.name, None, at=t(70))
+		self.assertFalse(frappe.db.get_value("Machine", machine.name, "current_job_reference"))
 
 	def test_inspection_from_machine_measurements(self):
 		from foames.foames_adapters.erpnext.api import post_inspection_from_measurements

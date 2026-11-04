@@ -145,8 +145,10 @@ OPERATIONS: dict[str, Operation] = {
 	),
 	"Quality Inspection": Operation(
 		label="Quality Inspection",
-		required=("reference_type", "reference_name", "readings"),
+		required=("reference_type", "reference_name"),
 		optional=(
+			"readings",
+			"measurements",
 			"item_code",
 			"inspection_type",
 			"sample_size",
@@ -268,7 +270,16 @@ def prepare(operation: Operation, payload: dict) -> dict:
 		if inspection_type not in INSPECTION_TYPES:
 			raise ValueError(f"inspection_type must be one of {', '.join(INSPECTION_TYPES)}")
 		prepared["inspection_type"] = inspection_type
-		prepared["readings"] = inspection_readings(prepared["readings"])
+		if bool(prepared.get("readings")) == bool(prepared.get("measurements")):
+			raise ValueError(
+				"Quality Inspection needs readings, or measurements to read them from (not both)"
+			)
+		if prepared.get("measurements"):
+			prepared["measurements"] = inspection_measurements(prepared["measurements"])
+			prepared.pop("readings", None)
+		else:
+			prepared["readings"] = inspection_readings(prepared["readings"])
+			prepared.pop("measurements", None)
 		if prepared.get("sample_size") not in (None, ""):
 			try:
 				prepared["sample_size"] = float(prepared["sample_size"])
@@ -279,6 +290,31 @@ def prepare(operation: Operation, payload: dict) -> dict:
 		elif "sample_size" in prepared:
 			del prepared["sample_size"]
 	return prepared
+
+
+def inspection_measurements(value) -> dict:
+	"""Where a Quality Inspection's readings are read from when the posting is performed, not when
+	it is queued, so measurements a gateway delivers late still count: `{"machine": <Machine>,
+	"since": <time>, "until": <time>, "specifications": [<parameter>, ...]}` (the window is
+	`since` inclusive to `until` exclusive; `specifications` is optional)."""
+	if not isinstance(value, dict):
+		raise ValueError("measurements must be a dict with machine, since and until")
+	unknown = sorted(set(value) - {"machine", "since", "until", "specifications"})
+	if unknown:
+		raise ValueError(f"measurements has unknown keys: {', '.join(unknown)}")
+	out = {}
+	for key in ("machine", "since", "until"):
+		if not isinstance(value.get(key), str) or not value[key].strip():
+			raise ValueError(f"measurements needs {key}")
+		out[key] = value[key].strip()
+	if out["since"] >= out["until"]:
+		raise ValueError("measurements needs since before until")
+	if value.get("specifications") not in (None, []):
+		names = value["specifications"]
+		if not isinstance(names, list) or not all(isinstance(n, str) and n.strip() for n in names):
+			raise ValueError("measurements.specifications must be a list of parameter names")
+		out["specifications"] = list(dict.fromkeys(n.strip() for n in names))
+	return out
 
 
 def inspection_readings(value) -> list[dict]:

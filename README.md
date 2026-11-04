@@ -15,12 +15,12 @@ FoaMES is a single Frappe app that depends on the Frappe framework only. ERP sys
 | --- | --- |
 | FoaMES Kernel | The shared records every FoaMES product builds on, plus `External Reference` (a pointer to a record in an ERP) and `FoaMES Settings` |
 | FoaMES MES | Shop-floor execution: monitoring, downtime, OEE and machine data |
-| FoaMES Adapters | The ERP adapter contract and registry, and one adapter per supported ERP (see [docs/vendors/](docs/vendors/README.md)) |
+| FoaMES Adapters | The adapter contract and registry, and one adapter per supported ERP, MES or other manufacturing system (see [docs/vendors/](docs/vendors/README.md)) |
 | FoaMES Process Mining | Event logs from FoaMES and ERP records, XES and OCEL export, discovery, performance and conformance analysis |
 
 FoaMES records never use Link fields to ERP DocTypes. They store an `External Reference` (ERP system, reference type, external ID) and the matching adapter resolves it. An adapter is available only when its ERP can be reached from the site. Adapters are registered through the `foames_erp_adapters` hook, so other apps can add more. See [docs/adapters.md](docs/adapters.md).
 
-Which ERPs have an adapter, and what each one reads, posts and needs, is described per vendor under [docs/vendors/](docs/vendors/README.md). Nothing in the core depends on any of them.
+Which ERPs and other manufacturing systems have an adapter, and what each one reads, posts and needs, is described per vendor under [docs/vendors/](docs/vendors/README.md). Nothing in the core depends on any of them.
 
 ## Installation
 

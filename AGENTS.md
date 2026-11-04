@@ -6,7 +6,7 @@ This file is for coding agents and developers who implement something on top of 
 
 ## What FoaMES is
 
-FoaMES is an ERP-agnostic manufacturing execution system built as a single Frappe app. It takes machine data in (signed webhook, MQTT, OPC UA, Sparkplug B), turns it into machine state, downtime, counter deltas and OEE, shows the floor on one page, and raises suggestions for people to act on. ERPs are reached only through adapters, registered by hook; some ship in the app and other apps can add more.
+FoaMES is an ERP-agnostic manufacturing execution system built as a single Frappe app. It takes machine data in (signed webhook, MQTT, OPC UA, Sparkplug B), turns it into machine state, downtime, counter deltas and OEE, shows the floor on one page, and raises suggestions for people to act on. ERPs and other manufacturing systems (MES, MOM, industrial data platforms) are reached only through adapters, registered by hook; some ship in the app and other apps can add more.
 
 | Module | Package | Holds |
 | --- | --- | --- |
@@ -34,7 +34,7 @@ Keep these whatever you build. A pull request that breaks one will not be merged
 
 ## Finding vendor guidance
 
-Vendors are open-ended: a site may have none, one or twenty adapters, bundled or added by other apps. Do not take the list from a document; discover it, then read the guidance that sits next to the code.
+Vendors are open-ended: a site may have none, one or twenty adapters, bundled or added by other apps, and several of them may share a framework package (for example one REST framework with a thin profile per system). Do not take the list from a document; discover it, then read the guidance that sits next to the code.
 
 1. **Read the nearest `AGENTS.md`.** Before you change a directory, look for an `AGENTS.md` in it and in its parents up to this one; the closest one wins where they differ. `foames/foames_adapters/AGENTS.md` covers every adapter, and each vendor subpackage under it has its own.
 2. **Find what is installed.** `ls foames/foames_adapters/`; `frappe.get_hooks("foames_erp_adapters")` for the registered adapter classes; the whitelisted `foames.foames_adapters.get_available_erp_systems` for each adapter's key, label and whether its ERP is reachable on the site. For a running installation, map from those answers to the vendor guidance, not the other way round.
