@@ -390,3 +390,149 @@ class TestJobCardRollUp(ERPNextTestCase):
 		snapshot = floor_snapshot()
 		findings = current_job_card_not_open(snapshot)
 		self.assertEqual([f["reference_name"] for f in findings], [self.machine.name])
+
+
+class TestWorkstationStatus(ERPNextTestCase):
+	"""A machine's state shows on its ERPNext Workstation, through the outbox, latest state only."""
+
+	def setUp(self):
+		super().setUp()
+		from foames.foames_mes.doctype.oee_period.test_oee_period import make_machine
+
+		settings = frappe.get_single("ERPNext Adapter Settings")
+		settings.sync_machine_state_to_workstations = 1
+		settings.save()
+		self.machine = make_machine(
+			"FOAMES-TEST-WS-SYNC",
+			workstation_reference=get_reference("Workstation", self.fixtures.WORKSTATION, ADAPTER_KEY),
+		)
+		frappe.db.set_value("Workstation", self.fixtures.WORKSTATION, "status", "Off")
+
+	def test_state_changes_reach_the_workstation(self):
+		at = add_to_date(now_datetime(), minutes=-5)
+		self.machine.set_state("Running", at)
+		queued = frappe.get_all(
+			"ERPNext Outbox", {"operation": "Workstation Status", "status": "Queued"}, pluck="name"
+		)
+		self.assertEqual(len(queued), 1)
+		self.assertEqual(self.run_outbox(), 1)
+		record = self.outbox(queued[0])
+		self.assertEqual(record.status, "Posted", record.last_error)
+		self.assertEqual(
+			frappe.db.get_value("Workstation", self.fixtures.WORKSTATION, "status"), "Production"
+		)
+		# Down shows as Problem; a lost signal as Off.
+		self.machine.set_state("Down", add_to_date(at, minutes=1))
+		self.run_outbox()
+		self.assertEqual(frappe.db.get_value("Workstation", self.fixtures.WORKSTATION, "status"), "Problem")
+		self.machine.set_state("Unknown", add_to_date(at, minutes=2))
+		self.run_outbox()
+		self.assertEqual(frappe.db.get_value("Workstation", self.fixtures.WORKSTATION, "status"), "Off")
+
+	def test_only_the_latest_state_is_posted(self):
+		at = add_to_date(now_datetime(), minutes=-5)
+		self.machine.set_state("Running", at)
+		self.machine.set_state("Idle", add_to_date(at, minutes=1))
+		self.machine.set_state("Running", add_to_date(at, minutes=2))
+		rows = frappe.get_all(
+			"ERPNext Outbox", {"operation": "Workstation Status"}, ["status", "payload"], order_by="creation"
+		)
+		self.assertEqual([r.status for r in rows], ["Cancelled", "Cancelled", "Queued"])
+		self.assertEqual(self.run_outbox(), 1)
+		self.assertEqual(
+			frappe.db.get_value("Workstation", self.fixtures.WORKSTATION, "status"), "Production"
+		)
+		# Repeating the state the Workstation already shows is done without a write.
+		self.machine.set_state("Idle", add_to_date(at, minutes=3))
+		frappe.db.set_value("Workstation", self.fixtures.WORKSTATION, "status", "Idle")
+		self.run_outbox()
+		latest = frappe.get_all(
+			"ERPNext Outbox",
+			{"operation": "Workstation Status"},
+			["status", "response"],
+			order_by="creation desc",
+		)[0]
+		self.assertEqual(latest.status, "Posted")
+
+	def test_nothing_is_queued_when_the_switch_is_off(self):
+		settings = frappe.get_single("ERPNext Adapter Settings")
+		settings.sync_machine_state_to_workstations = 0
+		settings.save()
+		self.machine.set_state("Running", now_datetime())
+		self.assertEqual(frappe.db.count("ERPNext Outbox", {"operation": "Workstation Status"}), 0)
+
+
+class TestDowntimeEntries(ERPNextTestCase):
+	"""A closed Downtime Record becomes an ERPNext Downtime Entry, and follows the record's reason."""
+
+	def setUp(self):
+		super().setUp()
+		from foames.foames_mes.doctype.oee_period.test_oee_period import make_machine
+		from foames.tests_helpers import make_reason
+
+		settings = frappe.get_single("ERPNext Adapter Settings")
+		settings.post_downtime_to_erpnext = 1
+		settings.downtime_operator = self.fixtures.ensure_employee()
+		settings.save()
+		self.machine = make_machine(
+			"FOAMES-TEST-DT-SYNC",
+			workstation_reference=get_reference("Workstation", self.fixtures.WORKSTATION, ADAPTER_KEY),
+		)
+		self.reason = make_reason("FOAMES-TEST-BRK", category="Breakdown", title="Spindle failure")
+		frappe.db.delete("Downtime Entry", {"workstation": self.fixtures.WORKSTATION})
+		frappe.db.delete("Downtime Record", {"machine": self.machine.name})
+
+	def test_closed_downtime_is_posted_and_updated(self):
+		# Well in the past: ERPNext refuses overlapping entries on a workstation and the outbox commits.
+		start = add_to_date(now_datetime(), days=-3).replace(microsecond=0)
+		self.machine.set_state("Down", start)
+		self.assertEqual(frappe.db.count("ERPNext Outbox", {"operation": "Downtime Entry"}), 0)
+		self.machine.set_state("Running", add_to_date(start, minutes=45))
+		queued = frappe.get_all("ERPNext Outbox", {"operation": "Downtime Entry"}, pluck="name")
+		self.assertEqual(len(queued), 1)
+		self.assertEqual(self.run_outbox(), 1)
+		record = self.outbox(queued[0])
+		self.assertEqual(record.status, "Posted", record.last_error)
+		entry = frappe.get_doc("Downtime Entry", record.erp_document)
+		self.assertEqual(entry.workstation, self.fixtures.WORKSTATION)
+		self.assertEqual(
+			(get_datetime(entry.from_time), get_datetime(entry.to_time)),
+			(start, add_to_date(start, minutes=45)),
+		)
+		self.assertEqual(entry.downtime, 45)
+		self.assertEqual(entry.stop_reason, "Other")
+		self.assertEqual(entry.operator, self.fixtures.ensure_employee())
+		self.assertIn(rules.downtime_marker(record.reference_name), entry.remarks)
+
+		# A person assigns the reason afterwards: the same entry is updated, not a second one made.
+		downtime = frappe.get_doc("Downtime Record", record.reference_name)
+		downtime.reason = self.reason.name
+		downtime.notes = "Bearing seized"
+		downtime.save()
+		later = frappe.get_all(
+			"ERPNext Outbox", {"operation": "Downtime Entry", "status": "Queued"}, pluck="name"
+		)
+		self.assertEqual(len(later), 1)
+		self.assertEqual(self.run_outbox(), 1)
+		self.assertEqual(self.outbox(later[0]).status, "Posted", self.outbox(later[0]).last_error)
+		self.assertEqual(frappe.db.count("Downtime Entry", {"workstation": self.fixtures.WORKSTATION}), 1)
+		entry.reload()
+		self.assertEqual(entry.stop_reason, "Machine malfunction")
+		self.assertIn("Spindle failure", entry.remarks)
+		self.assertIn("Bearing seized", entry.remarks)
+		# Saving the record again without a change queues nothing new.
+		downtime.save()
+		self.assertEqual(frappe.db.count("ERPNext Outbox", {"operation": "Downtime Entry"}), 2)
+
+	def test_without_an_operator_the_posting_fails_with_a_clear_message(self):
+		settings = frappe.get_single("ERPNext Adapter Settings")
+		settings.downtime_operator = None
+		settings.save()
+		start = add_to_date(now_datetime(), days=-4).replace(microsecond=0)
+		self.machine.set_state("Down", start)
+		self.machine.set_state("Idle", add_to_date(start, minutes=5))
+		[name] = frappe.get_all("ERPNext Outbox", {"operation": "Downtime Entry"}, pluck="name")
+		self.run_outbox()
+		self.assertEqual(self.outbox(name).status, "Failed")
+		self.assertIn("operator", self.outbox(name).last_error)
+		self.assertEqual(frappe.db.count("Downtime Entry", {"workstation": self.fixtures.WORKSTATION}), 0)
