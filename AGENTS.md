@@ -12,6 +12,7 @@ FoaMES is an ERP-agnostic manufacturing execution system built as a single Frapp
 | FoaMES MES | `foames/foames_mes` | Machine, Machine Event, Downtime Reason and Record, Machine Data Settings, OEE Period, Agent Suggestion, the Floor View page, the gateways, the API |
 | FoaMES Adapters | `foames/foames_adapters` | The adapter contract, the ERPNext adapter, the S/4HANA adapter with its Settings, Outbox, Inbound IDoc and reconciliation report |
 | FoaMES Process Mining | `foames/foames_process_mining` | Event Log Source, Process Event Log, the event extractors, the XES and OCEL exports, discovery and conformance analysis, and their API |
+| MCP server | `foames/foames_mcp` | The MCP tool catalogue, the Streamable HTTP endpoint, the stdio bridge, read methods for agents |
 
 Frappe v15 and v16 are both supported; Python 3.10 or later. License: Apache-2.0, copyright CLR Technologies Inc. Contributions need the CLA described in [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -25,7 +26,7 @@ Keep these whatever you build. A pull request that breaks one will not be merged
 4. **Unknown time is loss.** The OEE ledger is built from state events with Downtime Records overlaid, and an Unknown state is never run time. A machine that stops reporting gets an Unknown state event from the scheduler's staleness check (source System), and the Sparkplug gateway writes one at once on NDEATH or DDEATH. Do not add code that infers output or run time from the absence of events.
 5. **Agents suggest; people act.** Anything an agent or a rule finds becomes an `Agent Suggestion` with evidence. FoaMES does not write tags, send commands to SCADA, change machine state on its own, or post to an ERP without an explicit, idempotent posting a person configured.
 6. **Postings to an ERP are idempotent and sequenced.** The S/4HANA outbox is the model: an idempotency key per business event, a marker written into the created document, a check before resending after an unclear answer, exponential backoff, strict order within a sequence group. Follow it for any new write path.
-7. **Pure logic stays pure.** `oee.py`, `counters.py`, `suggestions.py`, `signing.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, `s4hana/outbox.py`, `odata.py`, `idoc.py`, `entities.py` and the process-mining core `eventlog.py`, `xes.py`, `ocel.py`, `discovery.py`, `conformance.py` import nothing from Frappe. Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
+7. **Pure logic stays pure.** `oee.py`, `counters.py`, `suggestions.py`, `signing.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, `s4hana/outbox.py`, `odata.py`, `idoc.py`, `entities.py`, the process-mining core `eventlog.py`, `xes.py`, `ocel.py`, `discovery.py`, `conformance.py` and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe. Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
 8. **Secrets live in Password fields** of a Settings DocType (`Machine Data Settings`, `S4HANA Settings`), read with `get_password`. Never in code, hooks or site config, never logged.
 9. **Both Frappe versions.** Use `foames.tests_compat.IntegrationTestCase` for site tests. Avoid APIs that exist in only one of v15 and v16.
 
@@ -40,19 +41,22 @@ foames/
   foames_mes/
     api.py                    ingest_machine_events, get_floor_snapshot, run_suggestion_rules, post_suggestion
     floor.py                  floor_snapshot, collect_findings
-    oee.py  counters.py  suggestions.py  signing.py  kpi.py     pure logic (kpi.py: report roll-ups)
+    oee.py  counters.py  suggestions.py  signing.py  kpi.py  spc.py   pure logic (kpi.py: report roll-ups, spc.py: control charts)
+    spc_monitor.py            SPC over Measurement events: settings, findings, get_control_chart
     tasks.py                  scheduler entry points
     gateway/                  mapping.py (normalise_event), mqtt.py, opcua.py, sparkplug.py
     doctype/                  Machine, Machine Event, Downtime Reason, Downtime Record,
                               Machine Data Settings (+ Machine Node Map), OEE Period, Agent Suggestion
     page/floor_view/          the Floor View page
-    report/                   OEE Trend, Downtime Pareto, MTBF and MTTR, Suggestion Status, Process Throughput
+    report/                   OEE Trend, Downtime Pareto, MTBF and MTTR, Suggestion Status, Process Throughput, SPC Control Chart
     workspace/  number_card/  dashboard_chart/  foames_mes_dashboard/   role workspaces and dashboards
   foames_adapters/
     __init__.py               get_adapters, get_adapter, get_available_erp_systems
     base.py                   ERPAdapter, ResolvedReference, REFERENCE_TYPES, the error classes
+    machine_window.py         a machine's counter totals and states in a window, for the roll-ups
     erpnext.py                ERPNextAdapter
-    s4hana/                   adapter.py, entities.py, odata.py, outbox.py, idoc.py, api.py, fake.py
+    s4hana/                   adapter.py, entities.py, odata.py, outbox.py, idoc.py, api.py, fake.py,
+                              production.py (pure) and rollup.py: machine counts to confirmations
     doctype/                  S4HANA Settings (+ Entity Mapping), S4HANA Outbox, S4HANA Inbound IDoc
     report/                   S4HANA Outbox Reconciliation, ERP Outbox Health
     workspace/  number_card/  dashboard_chart/  foames_adapters_dashboard/   the Integration workspace
@@ -62,6 +66,10 @@ foames/
     extractors.py             build_event_log, the built-in machine-state and downtime extractors, field maps
     api.py                    summary, events, discover, check_conformance, export
     doctype/                  Event Log Source, Process Event Log (+ Process Event Log Source)
+  foames_mcp/
+    protocol.py               MCP/JSON-RPC server core (pure), tools.py the catalogue (pure)
+    api.py                    the Streamable HTTP endpoint; reads.py whitelisted read methods
+    bridge.py                 stdio bridge for desktop agents, standard library only
 docs/                         human-facing guides; docs/agents/ holds run-time agent playbooks
 cla/                          the Individual and Corporate CLAs
 ```
@@ -104,14 +112,19 @@ Whitelisted methods, called as `/api/method/<dotted path>`. Authentication is Fr
 | `foames.foames_mes.api.get_floor_snapshot` | GET | read on Machine | The whole floor as one dict (`days` parameter) |
 | `foames.foames_mes.api.run_suggestion_rules` | POST | create on Agent Suggestion | Run the rules now; returns the names created |
 | `foames.foames_mes.api.post_suggestion` | POST | create on Agent Suggestion | An external agent posts one suggestion |
+| `foames.foames_mes.spc_monitor.get_control_chart` | GET | read on Machine Event | I-MR or X-bar R chart of one machine measurement with run-rule signals |
 | `foames.foames_mes.doctype.oee_period.oee_period.get_oee` | GET | read on OEE Period | OEE for any window without saving a period |
 | `foames.foames_adapters.get_available_erp_systems` | GET | logged in | Registered adapters and their availability |
 | `foames.foames_adapters.s4hana.api.receive_idoc` | POST | create on S4HANA Inbound IDoc (FoaMES Integration role) | S/4HANA's XML HTTP port posts IDocs here |
-| `foames.foames_process_mining.api.summary`, `events`, `discover`, `check_conformance`, `export` | GET | read on Process Event Log | Process mining over a saved `event_log` or a log built from `since`, `until` and `sources`; `discover` takes `dot=1`, `check_conformance` takes `model`, `export` takes `fmt=xes` or `ocel` |
+| `foames.foames_process_mining.api.summary`, `events`, `discover`, `check_conformance`, `export` | GET or POST | read on Process Event Log | Process mining over a saved `event_log` or a log built from `since`, `until` and `sources`; `discover` takes `dot=1`, `check_conformance` takes `model`, `export` takes `fmt=xes` or `ocel` |
+| `foames.foames_mcp.reads.*` | GET | read on the DocType listed | Agent-friendly reads: machines, events, downtime, OEE periods, suggestions, ERP systems and references, event logs |
+| `foames.foames_mcp.api.mcp` | POST | logged in; each tool checks its own | The MCP endpoint (Streamable HTTP) |
 
 Document methods callable with `frm.call` or `run_doc_method`: `External Reference.resolve`, `S4HANA Settings.test_connection`, `S4HANA Outbox.requeue`, `S4HANA Outbox.cancel_posting`, `Event Log Source.preview`, `Process Event Log.extract`, `discover`, `check_against`, `export_file`.
 
-The event shape, state aliases and signing scheme are in [docs/machine-data.md](docs/machine-data.md); the event log, its sources and the analyses are in [docs/process-mining.md](docs/process-mining.md). For an MCP server, wrap `get_floor_snapshot`, `post_suggestion` and `get_oee`, and the process-mining methods if the agent should read event logs; suggested tool names are in [docs/agents/floor-agent.md](docs/agents/floor-agent.md).
+The event shape, state aliases and signing scheme are in [docs/machine-data.md](docs/machine-data.md); the event log, its sources and the analyses are in [docs/process-mining.md](docs/process-mining.md).
+
+**MCP.** The same surface is available to agents as MCP tools: `POST /api/method/foames.foames_mcp.api.mcp` is a Streamable HTTP MCP server authenticated with the API key, and `python -m foames.foames_mcp` is a stdio bridge to it for desktop clients. The catalogue is `foames/foames_mcp/tools.py`; each tool is one whitelisted method above, run as the key's user. Setup and the tool list are in [docs/mcp.md](docs/mcp.md). To expose a new whitelisted method to agents, add a `Tool` record there; the method keeps its own permission check.
 
 ## Common tasks
 
@@ -127,11 +140,14 @@ The event shape, state aliases and signing scheme are in [docs/machine-data.md](
 
 **Add a scheduled job.** Register it in `scheduler_events` in `hooks.py` and make it idempotent, as `compute_daily_oee` is (it skips a period that already exists).
 
+**Add cryptography, a secret or a connected service.** Update `sbom/curated.json` in the same pull request: it feeds the cryptography bill of materials and the `services` list of the published CycloneDX SBOM, which the dependency scan cannot see. See [docs/sbom.md](docs/sbom.md#keeping-it-true).
+
 ## Testing
 
 ```bash
 # pure-logic tests, no site needed
-python -m unittest foames.foames_mes.test_oee_and_rules foames.foames_mes.test_machine_data_logic foames.foames_mes.test_sparkplug foames.foames_mes.test_kpi foames.foames_process_mining.test_process_mining_logic
+python -m unittest foames.foames_mes.test_oee_and_rules foames.foames_mes.test_machine_data_logic foames.foames_mes.test_sparkplug foames.foames_mes.test_kpi
+python -m unittest foames.foames_process_mining.test_process_mining_logic foames.foames_mcp.test_mcp_protocol
 
 # everything, on a bench
 bench --site <site> set-config allow_tests true
@@ -141,7 +157,7 @@ bench --site <site> run-tests --app foames --module foames.foames_mes.doctype.oe
 
 Without a bench on the machine, `cd docker && ./bench.sh up && ./bench.sh test` runs the suite in Docker on Frappe v15 or v16, with or without ERPNext; see [docs/dev-bench.md](docs/dev-bench.md).
 
-The S/4HANA tests use `foames/foames_adapters/s4hana/fake.py`, an in-memory stand-in for the OData transport, so no SAP system is needed; they run under `bench run-tests` because the adapters package imports Frappe. CI runs the suite on Frappe v15, v16, and v16 with ERPNext, plus Frappe's semgrep rules and pip-audit.
+The S/4HANA tests use `foames/foames_adapters/s4hana/fake.py`, an in-memory stand-in for the OData transport, so no SAP system is needed; they run under `bench run-tests` because the adapters package imports Frappe. CI runs the suite on Frappe v15, v16, and v16 with ERPNext, plus Frappe's semgrep rules and pip-audit. The SBOM workflow runs `python -m unittest discover -s sbom` and builds and validates the CycloneDX 1.7 SBOM on each Frappe line.
 
 ## Conventions
 

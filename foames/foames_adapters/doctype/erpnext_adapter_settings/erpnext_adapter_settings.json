@@ -15,6 +15,11 @@
   "show_job_cards_on_floor",
   "column_break_floor",
   "floor_lookahead_days",
+  "workstations_section",
+  "sync_machine_state_to_workstations",
+  "column_break_workstations",
+  "post_downtime_to_erpnext",
+  "downtime_operator",
   "references_section",
   "refresh_references_daily"
  ],
@@ -80,6 +85,36 @@
    "label": "Look Ahead (days)",
    "default": "2",
    "description": "Job Cards expected to start this many days ahead are listed; later ones are left out."
+  },
+  {
+   "fieldname": "workstations_section",
+   "fieldtype": "Section Break",
+   "label": "Workstations and Downtime"
+  },
+  {
+   "fieldname": "sync_machine_state_to_workstations",
+   "fieldtype": "Check",
+   "label": "Show Machine State on Workstations",
+   "default": "0",
+   "description": "Whenever a machine changes state, queue its ERPNext Workstation's status to match (Running shows as Production, Down as Problem, Idle, Setup, and a lost signal as Off), which is what ERPNext's Plant Floor page shows. Needs Enable Postings and the machine's Workstation Reference."
+  },
+  {
+   "fieldname": "column_break_workstations",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "post_downtime_to_erpnext",
+   "fieldtype": "Check",
+   "label": "Post Downtime to ERPNext",
+   "default": "0",
+   "description": "Queue every closed Downtime Record as an ERPNext Downtime Entry on the machine's Workstation, with the stop reason mapped from the Downtime Reason. A reason or note added later updates the entry. Needs Enable Postings."
+  },
+  {
+   "fieldname": "downtime_operator",
+   "fieldtype": "Data",
+   "label": "Downtime Operator (Employee ID)",
+   "depends_on": "post_downtime_to_erpnext",
+   "description": "ERPNext requires an operator on every Downtime Entry. Entries FoaMES posts name this Employee (for example HR-EMP-00001) unless the posting carries its own."
   },
   {
    "fieldname": "references_section",

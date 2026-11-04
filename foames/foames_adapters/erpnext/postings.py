@@ -30,6 +30,33 @@ STOCK_ENTRY_PURPOSES = (
 	"Material Consumption for Manufacture",
 )
 WORK_ORDER_STATUSES = ("Stopped", "Resumed", "Closed")
+# The statuses ERPNext's Workstation (and its Plant Floor page) knows.
+WORKSTATION_STATUSES = ("Production", "Off", "Idle", "Problem", "Maintenance", "Setup")
+# FoaMES machine state -> ERPNext Workstation status.
+WORKSTATION_STATUS_BY_STATE = {
+	"Running": "Production",
+	"Idle": "Idle",
+	"Down": "Problem",
+	"Setup": "Setup",
+	"Unknown": "Off",
+}
+# The stop reasons ERPNext's Downtime Entry offers, and the one used when nothing else fits.
+STOP_REASONS = (
+	"Excessive machine set up time",
+	"Unplanned machine maintenance",
+	"On-machine press checks",
+	"Machine operator errors",
+	"Machine malfunction",
+	"Electricity down",
+	"Other",
+)
+DEFAULT_STOP_REASON = "Other"
+# FoaMES Downtime Reason category -> ERPNext stop reason, when the reason's own title is not one.
+STOP_REASON_BY_CATEGORY = {
+	"Changeover": "Excessive machine set up time",
+	"Breakdown": "Machine malfunction",
+	"Planned": "Unplanned machine maintenance",
+}
 
 
 @dataclass(frozen=True)
@@ -93,7 +120,44 @@ OPERATIONS: dict[str, Operation] = {
 		reference_type="Work Order",
 		creates_document=False,
 	),
+	"Workstation Status": Operation(
+		label="Workstation Status",
+		required=("workstation", "status"),
+		optional=(),
+		doctype="Workstation",
+		reference_type="Workstation",
+		creates_document=False,
+	),
+	"Downtime Entry": Operation(
+		label="Downtime Entry",
+		required=("workstation", "from_time", "to_time"),
+		optional=("operator", "stop_reason", "remarks", "downtime_record"),
+		doctype="Downtime Entry",
+	),
 }
+
+
+def workstation_status_for(state: str | None) -> str:
+	"""The ERPNext Workstation status that shows a machine state; anything unknown shows as Off."""
+	return WORKSTATION_STATUS_BY_STATE.get(state or "", "Off")
+
+
+def stop_reason_for(title: str | None, category: str | None, options: tuple[str, ...] = STOP_REASONS) -> str:
+	"""The ERPNext stop reason for a FoaMES Downtime Reason: its title when that is one of ERPNext's
+	reasons (so a site can match them one to one by naming), otherwise by category, otherwise Other.
+	`options` are the reasons the installed ERPNext offers, so a mapping never names one it lacks."""
+	if title and title.strip() in options:
+		return title.strip()
+	mapped = STOP_REASON_BY_CATEGORY.get(category or "")
+	if mapped and mapped in options:
+		return mapped
+	return DEFAULT_STOP_REASON if DEFAULT_STOP_REASON in options else (options[-1] if options else "")
+
+
+def downtime_marker(downtime_record: str) -> str:
+	"""The marker that ties an ERPNext Downtime Entry to its FoaMES Downtime Record, whatever
+	posting created or last changed it."""
+	return marker(f"downtime-record:{downtime_record}")
 
 
 def marker(idempotency_key: str) -> str:
@@ -144,6 +208,10 @@ def prepare(operation: Operation, payload: dict) -> dict:
 			prepared["run_intervals"] = [[str(a), str(b)] for a, b in intervals]
 	if operation.label == "Work Order Status" and prepared["status"] not in WORK_ORDER_STATUSES:
 		raise ValueError(f"Work Order Status must be one of {', '.join(WORK_ORDER_STATUSES)}")
+	if operation.label == "Workstation Status" and prepared["status"] not in WORKSTATION_STATUSES:
+		raise ValueError(f"Workstation Status must be one of {', '.join(WORKSTATION_STATUSES)}")
+	if operation.label == "Downtime Entry" and str(prepared["from_time"]) >= str(prepared["to_time"]):
+		raise ValueError("Downtime Entry needs from_time before to_time")
 	return prepared
 
 
