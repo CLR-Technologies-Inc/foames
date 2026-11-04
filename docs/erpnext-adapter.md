@@ -251,19 +251,29 @@ submitted, cancelled or gone, since its counts can no longer be rolled up.
 
 Operators who start and complete Job Cards in ERPNext (the Job Card's **Start Job** and **Complete
 Job** buttons, or `Job Card Time Log` postings) should not have to set the machine's job in FoaMES
-as well. With **Follow Job Cards Started in ERPNext** on, the adapter's Job Card document events do
-it: a card that goes **Work In Progress** becomes the **Current Job Reference** of every enabled
-machine whose **Workstation Reference** is the card's workstation and that has no current job, from
-the moment its first time log started; a card that is completed, cancelled or deleted ends on the
-machines working on it, at the moment its last time log ended. Ending the job is what triggers the
-roll-up and the inspection described above, so the next card starts with a clean window. A roll-up
-is skipped for a card that is no longer a draft (completed or cancelled in ERPNext), because it
-takes no more time logs: the quantities were entered there.
+as well. With **Follow Job Cards Started in ERPNext** on, the adapter's Job Card `on_change` event
+does it: the moment a card goes **Work In Progress**, it becomes the **Current Job Reference** of
+every enabled machine whose **Workstation Reference** is the card's workstation and that has no
+current job, from the moment its open time log started (but not before the machine's last roll-up,
+so counts already attributed to an earlier card are not counted again); a card that is completed,
+cancelled, discarded or deleted ends on the machines working on it, at the moment its last time log
+ended. Ending the job is what triggers the roll-up and the inspection described above, so the next
+card starts with a clean window. A roll-up is skipped for a card that is no longer a draft
+(completed or cancelled in ERPNext), because it takes no more time logs: the quantities were entered
+there; and nothing is queued for a card that is being deleted.
 
-A machine busy on another Job Card is left alone; on a workstation with several machines, or
-several open cards, which card a machine is on stays the floor's call (the Machine form,
+Only the transition counts: an edit of a card that is already in progress does not hand idle
+machines to it again, so a machine the floor took off a card stays off it. A machine busy on
+another Job Card is left alone; on a workstation with several machines, or several open cards,
+which card a machine is on stays the floor's call (the Machine form,
 `foames.foames_mes.api.set_current_job`, or an agent). The setting needs no postings: it only
 changes FoaMES Machines.
+
+A Job Card whose BOM and operation require inspection cannot be submitted in ERPNext until a
+Quality Inspection is linked, and the automatic inspection comes from the job ending, which
+submitting the card would be: ERPNext refuses the submission and nothing is half-done (the machine
+keeps its job). For such cards, end the job in FoaMES first (the Machine form, `set_current_job`,
+or an agent), let the inspection post, and submit the card afterwards.
 
 ### Workstation status and downtime
 
