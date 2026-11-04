@@ -304,6 +304,10 @@ class TestJobCardRollUp(ERPNextTestCase):
 
 		settings = frappe.get_single("ERPNext Adapter Settings")
 		settings.roll_up_counts_to_job_cards = 1
+		# With the follow switch on, deleting a card ends the job on its machines, so a machine left on
+		# a gone card (the case the closed-card rule exists for) cannot arise. These tests need it off,
+		# whatever an earlier test class left in the settings.
+		settings.follow_job_cards_started_in_erpnext = 0
 		settings.save()
 		self.machine = make_machine("FOAMES-TEST-RU", counter_rollover=0)
 		frappe.db.delete("Machine Event", {"machine": self.machine.name})
@@ -402,43 +406,51 @@ class TestFollowJobCards(ERPNextTestCase):
 		from foames.foames_mes.doctype.oee_period.test_oee_period import make_machine
 
 		settings = frappe.get_single("ERPNext Adapter Settings")
+		self.restore = {
+			"follow_job_cards_started_in_erpnext": settings.follow_job_cards_started_in_erpnext,
+			"roll_up_counts_to_job_cards": settings.roll_up_counts_to_job_cards,
+		}
 		settings.follow_job_cards_started_in_erpnext = 1
 		settings.save()
-		self.addCleanup(
-			frappe.db.set_single_value, "ERPNext Adapter Settings", "follow_job_cards_started_in_erpnext", 0
-		)
+		self.addCleanup(self.restore_settings)
 		workstation = get_reference("Workstation", self.fixtures.WORKSTATION, ADAPTER_KEY)
-		self.machine = make_machine("FOAMES-TEST-FJ", workstation_reference=workstation)
+		self.machine = make_machine("FOAMES-TEST-FJ", workstation_reference=workstation, counter_rollover=0)
 		frappe.db.set_value(
 			"Machine",
 			self.machine.name,
 			{"workstation_reference": workstation, "current_job_reference": None},
 		)
+		frappe.db.delete("Machine Event", {"machine": self.machine.name})
 		self.busy = make_machine("FOAMES-TEST-FJ-BUSY", workstation_reference=workstation)
 		frappe.db.set_value("Machine", self.busy.name, "workstation_reference", workstation)
+
+	def restore_settings(self):
+		"""The outbox commits after each posting, so the flipped settings would outlive this class's
+		rollback; put them back and commit that too."""
+		frappe.get_single("ERPNext Adapter Settings").update(self.restore).save()
+		frappe.db.commit()  # nosemgrep
 
 	def current_job(self, machine):
 		return frappe.db.get_value(
 			"Machine", machine, ["current_job_reference", "current_job_since"], as_dict=True
 		)
 
+	def release(self, job_card):
+		"""Machines other tests left idle at the workstation follow the card too; put them back."""
+		reference = get_reference("Job Card", job_card, ADAPTER_KEY)
+		for name in frappe.get_all("Machine", {"current_job_reference": reference}, pluck="name"):
+			frappe.db.set_value("Machine", name, {"current_job_reference": None, "current_job_since": None})
+
 	def test_machine_follows_a_job_card_started_and_completed_in_erpnext(self):
 		from foames.foames_mes.api import set_current_job
 
 		wo = self.fixtures.make_work_order(qty=1)
 		job_card = self.fixtures.job_card_for(wo.name)
+		reference = get_reference("Job Card", job_card, ADAPTER_KEY)
+		self.addCleanup(self.release, job_card)
 		other = self.fixtures.job_card_for(self.fixtures.make_work_order(qty=1).name)
 		busy_job = get_reference("Job Card", other, ADAPTER_KEY)
 		set_current_job(self.busy.name, busy_job)
-		# Any machine another test left idle at the workstation follows the card too; put them back.
-		self.addCleanup(
-			lambda: frappe.db.set_value(
-				"Machine",
-				{"current_job_reference": get_reference("Job Card", job_card, ADAPTER_KEY)},
-				"current_job_reference",
-				None,
-			)
-		)
 		# Clear of other tests' time logs on the same workstation, at capacity 1.
 		start = add_to_date(now_datetime().replace(microsecond=0), hours=-50)
 		end = add_to_date(start, minutes=45)
@@ -449,10 +461,18 @@ class TestFollowJobCards(ERPNextTestCase):
 		self.assertEqual(self.run_outbox(), 2)
 		self.assertEqual(frappe.db.get_value("Job Card", job_card, "status"), "Work In Progress")
 		job = self.current_job(self.machine.name)
-		self.assertEqual(job.current_job_reference, get_reference("Job Card", job_card, ADAPTER_KEY))
+		self.assertEqual(job.current_job_reference, reference)
 		self.assertEqual(get_datetime(job.current_job_since), start)
 		# The machine busy on another card is left alone.
 		self.assertEqual(self.current_job(self.busy.name).current_job_reference, busy_job)
+		# The floor takes the machine off the card; an unrelated edit of the card, still in progress,
+		# does not hand the machine back.
+		set_current_job(self.machine.name, None)
+		card = frappe.get_doc("Job Card", job_card)
+		card.remarks = f"{card.remarks or ''} edited".strip()
+		card.save()
+		self.assertIsNone(self.current_job(self.machine.name).current_job_reference)
+		set_current_job(self.machine.name, reference)
 
 		enqueue(
 			"Job Card Time Log",
@@ -467,24 +487,41 @@ class TestFollowJobCards(ERPNextTestCase):
 		self.assertFalse(frappe.db.exists("ERPNext Outbox", {"operation": "Job Card Production Log"}))
 		self.assertEqual(self.current_job(self.busy.name).current_job_reference, busy_job)
 
-	def test_a_cancelled_job_card_ends_on_its_machines(self):
-		from foames.foames_adapters.erpnext.follow import end_on_machines, start_on_idle_machines
-		from foames.foames_mes.api import set_current_job
+	def test_a_deleted_job_card_ends_on_its_machines_without_postings(self):
+		from foames.foames_mes.api import record_events, set_current_job
 
+		settings = frappe.get_single("ERPNext Adapter Settings")
+		settings.roll_up_counts_to_job_cards = 1
+		settings.save()
 		wo = self.fixtures.make_work_order(qty=1)
 		job_card = self.fixtures.job_card_for(wo.name)
 		reference = get_reference("Job Card", job_card, ADAPTER_KEY)
-		set_current_job(self.machine.name, reference)
-		card = frappe.get_doc("Job Card", job_card)
-		# Not Work In Progress: nothing starts; the busy machine is not touched either way.
-		self.assertEqual(start_on_idle_machines(card), [])
-		self.assertEqual(end_on_machines(card), [self.machine.name])
+		start = add_to_date(now_datetime().replace(microsecond=0), hours=-60)
+		set_current_job(self.machine.name, reference, at=start)
+		result = record_events(
+			[
+				{"machine": self.machine.name, "type": "Count", "counter": "good", "value": v, "timestamp": t}
+				for v, t in ((10, add_to_date(start, minutes=1)), (15, add_to_date(start, minutes=5)))
+			],
+			source="Manual",
+		)
+		self.assertFalse(result["rejected"], result["rejected"])
+		frappe.db.delete("ERPNext Outbox")
+		frappe.delete_doc("Job Card", job_card, force=True)
 		self.assertIsNone(self.current_job(self.machine.name).current_job_reference)
+		# The card is gone: no production log or inspection was queued for it.
+		self.assertFalse(frappe.db.exists("ERPNext Outbox", {"reference_name": self.machine.name}))
+		self.assertFalse(frappe.db.exists("ERPNext Outbox", {"operation": "Quality Inspection"}))
 		# Off, the hooks do nothing.
-		frappe.db.set_single_value("ERPNext Adapter Settings", "follow_job_cards_started_in_erpnext", 0)
-		set_current_job(self.machine.name, reference)
-		frappe.get_doc("Job Card", job_card).run_method("on_update")
-		self.assertEqual(self.current_job(self.machine.name).current_job_reference, reference)
+		frappe.get_single("ERPNext Adapter Settings").update(
+			{"follow_job_cards_started_in_erpnext": 0}
+		).save()
+		other = self.fixtures.job_card_for(self.fixtures.make_work_order(qty=1).name)
+		other_reference = get_reference("Job Card", other, ADAPTER_KEY)
+		set_current_job(self.machine.name, other_reference)
+		frappe.delete_doc("Job Card", other, force=True)
+		self.assertEqual(self.current_job(self.machine.name).current_job_reference, other_reference)
+		set_current_job(self.machine.name, None)
 
 
 class TestWorkstationStatus(ERPNextTestCase):
@@ -975,13 +1012,15 @@ class TestQualityInspections(ERPNextTestCase):
 		settings = frappe.get_single("ERPNext Adapter Settings")
 		settings.update({"inspect_job_cards_from_measurements": 1, "inspection_delay_minutes": 0})
 		settings.save()
-		self.addCleanup(
-			lambda: (
-				frappe.get_single("ERPNext Adapter Settings")
-				.update({"inspect_job_cards_from_measurements": 0, "inspection_delay_minutes": 5})
-				.save()
-			)
-		)
+
+		def restore_settings():
+			# The outbox commits after each posting; commit the restored settings too.
+			frappe.get_single("ERPNext Adapter Settings").update(
+				{"inspect_job_cards_from_measurements": 0, "inspection_delay_minutes": 5}
+			).save()
+			frappe.db.commit()  # nosemgrep
+
+		self.addCleanup(restore_settings)
 		machine = make_machine("FOAMES-TEST-QJ")
 		frappe.db.delete("Machine Event", {"machine": machine.name})
 		start = add_to_date(now_datetime().replace(microsecond=0), hours=-3)

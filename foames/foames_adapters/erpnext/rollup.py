@@ -49,8 +49,9 @@ def job_card_for_reference(reference: str | None) -> str | None:
 	return row.external_id
 
 
-def last_window_end(machine: str, job_card: str):
-	"""Where the previous roll-up of this machine and job card stopped, whatever its status."""
+def production_windows(machine: str, limit: int = 20):
+	"""The payloads of the newest production-log postings for a machine, newest first, whatever
+	their status short of Cancelled."""
 	rows = frappe.get_all(
 		"ERPNext Outbox",
 		filters={
@@ -61,14 +62,28 @@ def last_window_end(machine: str, job_card: str):
 		},
 		fields=["payload"],
 		order_by="creation desc",
-		limit_page_length=20,
+		limit_page_length=limit,
 	)
 	for row in rows:
 		try:
-			payload = json.loads(row.payload or "{}")
+			yield json.loads(row.payload or "{}")
 		except ValueError:
 			continue
+
+
+def last_window_end(machine: str, job_card: str):
+	"""Where the previous roll-up of this machine and job card stopped, whatever its status."""
+	for payload in production_windows(machine):
 		if payload.get("job_card") == job_card and payload.get("to_time"):
+			return get_datetime(payload["to_time"])
+	return None
+
+
+def last_rollup_end(machine: str):
+	"""Where the machine's newest roll-up, to any job card, stopped: counts before it are already
+	attributed."""
+	for payload in production_windows(machine, limit=1):
+		if payload.get("to_time"):
 			return get_datetime(payload["to_time"])
 	return None
 
@@ -135,7 +150,7 @@ def on_job_changed(machine, previous_reference: str | None, at):
 	"""Registered under `foames_machine_job_changed`: close the books on the job that ended, up to
 	the moment the job changed, so the new job starts with a clean window. The hook runs inside
 	the Machine's save, so the record before the save still says when the old job started."""
-	if not rollup_enabled():
+	if not rollup_enabled() or machine.flags.get("skip_job_postings"):
 		return
 	job_card = job_card_for_reference(previous_reference)
 	if not job_card:

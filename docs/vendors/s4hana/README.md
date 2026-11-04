@@ -202,6 +202,6 @@ version.
 
 ## Further reading
 
-- [s4hana-setup.md](s4hana-setup.md): users, communication arrangements, OAuth, service checks.
-- [s4hana-postings.md](s4hana-postings.md): confirmations, goods movements, cancellations and
+- [setup.md](setup.md): users, communication arrangements, OAuth, service checks.
+- [postings.md](postings.md): confirmations, goods movements, cancellations and
   reversals, order, routing and BOM reads, and the HTTP endpoints for screens and agents.

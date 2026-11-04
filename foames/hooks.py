@@ -92,20 +92,14 @@ doc_events["Stock Entry"] = {
 }
 # Machines follow the Job Cards people start, complete, cancel or delete in ERPNext.
 doc_events["Job Card"] = {
-	"on_update": [
-		_erpnext_reference_sync["on_update"],
-		"foames.foames_adapters.erpnext.follow.on_job_card_update",
-	],
-	"on_update_after_submit": [
-		_erpnext_reference_sync["on_update_after_submit"],
-		"foames.foames_adapters.erpnext.follow.on_job_card_update",
-	],
-	"on_cancel": "foames.foames_adapters.erpnext.follow.on_job_card_update",
+	**_erpnext_reference_sync,
+	# on_change also runs after ERPNext sets the card's status with db_set, which is how Start Job
+	# marks a card Work In Progress on v16 without saving it, and how a draft is discarded.
+	"on_change": "foames.foames_adapters.erpnext.follow.on_job_card_change",
 	"on_trash": [
 		_erpnext_reference_sync["on_trash"],
 		"foames.foames_adapters.erpnext.follow.on_job_card_trash",
 	],
-	"after_rename": _erpnext_reference_sync["after_rename"],
 }
 
 # Machine data and the floor

@@ -1,60 +1,6 @@
-# ERP adapters and the ERPNext adapter
+# ERPNext adapter
 
-FoaMES keeps no Link fields to ERP DocTypes. When a FoaMES record needs to point at something in an ERP, it points at an **External Reference**, and the ERP's adapter turns that reference into a real record. This page explains External References, how the built-in ERPNext adapter works, how to run with no ERP, and how to write an adapter for another ERP. The SAP S/4HANA adapter has its own page: [s4hana-adapter.md](s4hana-adapter.md).
-
-## External Reference
-
-An External Reference is a triple:
-
-| Field | Meaning |
-| --- | --- |
-| **ERP System** | The key of a registered adapter: `ERPNext`, `S4HANA`, or the key of an adapter another app registers. Defaults to **Default ERP System** in FoaMES Settings. |
-| **Reference Type** | One of the kernel's reference types (below). |
-| **External ID** | The record's identifier in that ERP. For ERPNext this is the document name, for example the Item code or the Work Order name. |
-
-The kernel reference types are Item, Unit of Measure, Batch, Serial Number, Work Order, Operation, Location, Stock Movement, Job Card, Bill of Materials, Routing and Workstation. An adapter declares which of them it supports; saving a reference of an unsupported type for that ERP is refused.
-
-Each reference also carries:
-
-- **Status**: `Unverified` until it has been looked up, then `Resolved` when the record exists in the ERP or `Missing` when it does not.
-- **Label**: the human-readable name the adapter returned (the Item name, the warehouse name, and so on).
-- **Last Resolved On**: when the lookup last ran.
-- **Reference Key**: a hash of the triple that makes the reference unique. The same ERP record is referenced exactly once per site, and a second attempt to create it is rejected as a duplicate.
-
-### When references are resolved
-
-By default a reference is looked up in its ERP every time it is saved, as long as the adapter reports that its ERP is available. If the ERP is reachable but the record is not there, the status becomes `Missing`. If a remote ERP is down, saving still succeeds and the reference stays `Unverified` to be resolved later.
-
-Two controls change this:
-
-- **Skip Resolving References on Save** in FoaMES Settings turns the automatic lookup off. References are then resolved only through the **Resolve** button on the form, or by code calling the document's `resolve` method.
-- Changing the ERP System, Reference Type or External ID of an existing reference clears its resolution, so a corrected reference is never shown as Resolved on the strength of its old value.
-
-References that resolve as `Missing` show up in the floor snapshot and trigger the built-in ERP rule, which raises one Agent Suggestion listing them (see [floor-view.md](floor-view.md)).
-
-### Where references are used
-
-- A **Machine** can carry an **ERP Workstation Reference** and an **ERP Location Reference**. The first must be a Workstation reference and the second a Location reference; the form refuses anything else.
-- The S/4HANA adapter records a reference for every order, material or batch IDoc it receives, and for every material document its outbox creates.
-- Other apps built on FoaMES link to External Reference in the same way instead of linking to ERP DocTypes directly.
-
-### Creating references from code
-
-```python
-from foames.foames_kernel.doctype.external_reference.external_reference import get_reference
-
-# Name of the External Reference for Item "FG-100" in the default ERP, created if it does not exist.
-name = get_reference("Item", "FG-100")
-
-# The same for an explicit ERP.
-name = get_reference("Work Order", "MFG-WO-2026-00012", erp_system="ERPNext")
-```
-
-`get_reference` is safe under concurrency: if two workers create the same reference at once, both get the same record. Only System Managers may create External References through the desk; code that has done its own permission check can pass `ignore_permissions=True`.
-
-For pickers in a UI, `foames.foames_adapters.get_available_erp_systems` returns every registered adapter with its key, label and whether its ERP is reachable from the site.
-
-## The ERPNext adapter
+Everything specific to connecting FoaMES to ERPNext: setup, reads, the ERPNext Outbox, roll-ups to Job Cards, Workstation status and downtime, Quality Inspections and tests. External References, running without an ERP and writing an adapter for another ERP are vendor-neutral and are in [../../adapters.md](../../adapters.md). The code and the rules for changing it are in `foames/foames_adapters/erpnext/` (see its `AGENTS.md`).
 
 The ERPNext adapter is built in and needs no configuration. It is registered under the key `ERPNext` and reports itself available when the `erpnext` app is installed on the same site. Set **Default ERP System** in FoaMES Settings to `ERPNext` so new references use it without being told.
 
@@ -87,7 +33,7 @@ The adapter is built in and switches on by itself when the `erpnext` app is inst
 | ERPNext tells FoaMES | A mapped record was saved, renamed or deleted; a Job Card was started, completed or cancelled | `doc_events` hooks that refresh the matching External Reference and set or end the current job of the machines at the card's workstation |
 | The floor | Open Job Cards and Work Orders per machine, and a rule for a machine running without one | `foames_floor_snapshot_extensions` and `foames_suggestion_rules` |
 
-### Setup
+## Setup
 
 1. Install ERPNext and FoaMES on the same site. Set **Default ERP System** in FoaMES Settings to
    `ERPNext` if new references should point at ERPNext by default.
@@ -112,7 +58,7 @@ The adapter is built in and switches on by itself when the `erpnext` app is inst
 3. Point each Machine at its ERPNext Workstation through **Workstation Reference** (an External
    Reference of type Workstation). That is what ties live machine state to ERPNext's job list.
 
-### Reading ERPNext
+## Reading ERPNext
 
 `External Reference.resolve()` and the adapter's `resolve(reference_type, external_id)` return
 the record's label and a `data` dict. For the manufacturing types the dict carries what a shop-floor
@@ -140,7 +86,7 @@ Whitelisted reads (roles FoaMES Operator, Engineer, Quality, Integration or Syst
 | `foames.foames_adapters.erpnext.api.get_operations()` | The outbox operations and the payload keys each one takes |
 | `foames.foames_adapters.erpnext.api.post_inspection_from_measurements(reference_type, reference_name, machine, since, until=None, specifications=None, submit=True, remarks=None)` (POST, needs create on ERPNext Outbox and read on Machine Event) | Queues a `Quality Inspection` for a Job Card or Stock Entry from the machine's Measurement events in the window; see [Quality inspections](#quality-inspections) |
 
-### The outbox
+## The outbox
 
 Every write to ERPNext is queued as an **ERPNext Outbox** record and performed by the scheduler
 (`scheduler_events["all"]`, so within a few minutes). Code queues a posting with:
@@ -189,7 +135,7 @@ false) gets its Batch referenced at once; its serial numbers exist in ERPNext on
 so they are referenced when a person submits the entry in ERPNext (a `Stock Entry` submit hook) or
 when a posting next sees the submitted entry.
 
-#### Idempotency, order and errors
+### Idempotency, order and errors
 
 - **One record per idempotency key.** Queuing the same key again returns the first record, so a
   caller can retry freely. Name the key after the business event
@@ -213,7 +159,7 @@ when a posting next sees the submitted entry.
   Job Card and Work Order apply to that user. Postings queued by the scheduler run as Administrator.
 - **Monitoring.** Filter the ERPNext Outbox list by status. Retries also leave an Error Log entry.
 
-### Rolling machine counts up to Job Cards
+## Rolling machine counts up to Job Cards
 
 A Machine says which job it is working on through **Current Job Reference**, an External Reference
 of type Job Card (set on the form, through
@@ -247,25 +193,35 @@ The floor snapshot shows the current job on each machine (`current_job`, with `o
 rule `current_job_card_not_open` raises a suggestion for a machine whose current Job Card is
 submitted, cancelled or gone, since its counts can no longer be rolled up.
 
-### Following Job Cards started in ERPNext
+## Following Job Cards started in ERPNext
 
 Operators who start and complete Job Cards in ERPNext (the Job Card's **Start Job** and **Complete
 Job** buttons, or `Job Card Time Log` postings) should not have to set the machine's job in FoaMES
-as well. With **Follow Job Cards Started in ERPNext** on, the adapter's Job Card document events do
-it: a card that goes **Work In Progress** becomes the **Current Job Reference** of every enabled
-machine whose **Workstation Reference** is the card's workstation and that has no current job, from
-the moment its first time log started; a card that is completed, cancelled or deleted ends on the
-machines working on it, at the moment its last time log ended. Ending the job is what triggers the
-roll-up and the inspection described above, so the next card starts with a clean window. A roll-up
-is skipped for a card that is no longer a draft (completed or cancelled in ERPNext), because it
-takes no more time logs: the quantities were entered there.
+as well. With **Follow Job Cards Started in ERPNext** on, the adapter's Job Card `on_change` event
+does it: the moment a card goes **Work In Progress**, it becomes the **Current Job Reference** of
+every enabled machine whose **Workstation Reference** is the card's workstation and that has no
+current job, from the moment its open time log started (but not before the machine's last roll-up,
+so counts already attributed to an earlier card are not counted again); a card that is completed,
+cancelled, discarded or deleted ends on the machines working on it, at the moment its last time log
+ended. Ending the job is what triggers the roll-up and the inspection described above, so the next
+card starts with a clean window. A roll-up is skipped for a card that is no longer a draft
+(completed or cancelled in ERPNext), because it takes no more time logs: the quantities were entered
+there; and nothing is queued for a card that is being deleted.
 
-A machine busy on another Job Card is left alone; on a workstation with several machines, or
-several open cards, which card a machine is on stays the floor's call (the Machine form,
+Only the transition counts: an edit of a card that is already in progress does not hand idle
+machines to it again, so a machine the floor took off a card stays off it. A machine busy on
+another Job Card is left alone; on a workstation with several machines, or several open cards,
+which card a machine is on stays the floor's call (the Machine form,
 `foames.foames_mes.api.set_current_job`, or an agent). The setting needs no postings: it only
 changes FoaMES Machines.
 
-### Workstation status and downtime
+A Job Card whose BOM and operation require inspection cannot be submitted in ERPNext until a
+Quality Inspection is linked, and the automatic inspection comes from the job ending, which
+submitting the card would be: ERPNext refuses the submission and nothing is half-done (the machine
+keeps its job). For such cards, end the job in FoaMES first (the Machine form, `set_current_job`,
+or an agent), let the inspection post, and submit the card afterwards.
+
+## Workstation status and downtime
 
 ERPNext's Workstation has a status (Production, Off, Idle, Problem, Maintenance, Setup) that its
 Plant Floor page displays, and a Downtime Entry per stretch a Workstation was down that its
@@ -294,7 +250,7 @@ updates the same entry, found by a marker for the record; saving a record unchan
 nothing. A record on a machine with no Workstation Reference is not posted. ERPNext rejects
 entries that overlap on a Workstation, which shows up as a Failed posting with its message.
 
-### Quality inspections
+## Quality inspections
 
 ERPNext's Quality Inspection records the readings taken on an item against the limits of a
 Quality Inspection Template, judges each reading (min and max, or an acceptance formula) and
@@ -334,7 +290,7 @@ inspection should leave that default off and submit Job Cards once their inspect
 `inspect_job_card(machine, job_card, since, until, submit=None)` in
 `foames.foames_adapters.erpnext.quality` is the same step for an agent that picks its own window.
 
-### Keeping references current
+## Keeping references current
 
 For every ERPNext DocType the adapter maps, hooks on `on_update`, `on_update_after_submit`,
 `on_trash` and `after_rename` keep the matching External Reference's label and status current:
@@ -343,7 +299,7 @@ FoaMES records that point at it are not touched), and a renamed record is follow
 A daily task re-checks references that are still Unverified or Missing. Both are no-ops on a site
 without ERPNext.
 
-### The floor
+## The floor
 
 With **Show Job Cards on the Floor** on, the floor snapshot gains, per machine, `workstation` and
 `job_cards` (the open Job Cards on that workstation whose expected start is within **Look Ahead
@@ -351,9 +307,9 @@ With **Show Job Cards on the Floor** on, the floor snapshot gains, per machine, 
 with the open Work Orders, the Job Card count and the machines that have no workstation reference.
 The rule `running_without_job_card` raises an Agent Suggestion when a machine reports Running
 while its workstation has no open Job Card. External agents read the same snapshot through
-`foames.foames_mes.api.get_floor_snapshot`; see [agents/floor-agent.md](agents/floor-agent.md).
+`foames.foames_mes.api.get_floor_snapshot`; see [agents/floor-agent.md](../../agents/floor-agent.md).
 
-### For agents
+## For agents
 
 An agent that drives ERPNext through FoaMES does this, in order:
 
@@ -369,7 +325,7 @@ An agent that drives ERPNext through FoaMES does this, in order:
 Use idempotency keys an agent can reconstruct from the event, so a retried conversation never
 posts twice.
 
-### Tests
+## Tests
 
 `foames/foames_adapters/erpnext/test_postings.py` and `test_production.py` cover the rules and
 the roll-up arithmetic without a site; `foames_mes/doctype/machine/test_machine.py` covers the
@@ -379,63 +335,17 @@ end-to-end tests in `test_erpnext_integration.py` need ERPNext on the site; they
 `FoaMES Test Co` with a raw material, a finished good with a one-operation BOM and a workstation,
 and they skip when ERPNext is not installed. CI runs them in the "Frappe v16 + ERPNext" job.
 
-## Running without an ERP
+## Mining ERPNext records
 
-Leave **Default ERP System** empty. Machines, events, downtime, OEE, the Floor View and suggestions work without any reference. An External Reference cannot be saved without an ERP System, because there is nothing to resolve it against, so simply do not create any. When an ERP arrives later, set the default and start adding references; nothing else changes.
+A typical mapping for ERPNext Job Cards, as an Event Log Source (see [../../process-mining.md](../../process-mining.md)):
 
-## Writing an adapter for another ERP
-
-An adapter is a Python class that another Frappe app registers through the `foames_erp_adapters` hook. FoaMES ships two: `foames.foames_adapters.erpnext.ERPNextAdapter` and `foames.foames_adapters.s4hana.adapter.S4HANAAdapter`.
-
-```python
-# myapp/adapters/acme_erp.py
-import frappe
-
-from foames.foames_adapters.base import ERPAdapter, ResolvedReference
-
-
-class AcmeERPAdapter(ERPAdapter):
-	key = "AcmeERP"  # stored on External Reference.erp_system
-	label = "Acme ERP"  # shown to users
-	reference_map = {  # kernel reference type -> the ERP's own record type
-		"Item": "material",
-		"Work Order": "production_order",
-		"Location": "storage_location",
-	}
-
-	def is_available(self) -> bool:
-		# True when the ERP can be reached from this site: a setting is filled in, a connection works.
-		return bool(frappe.db.get_single_value("Acme ERP Settings", "enabled"))
-
-	def fetch(self, erp_type: str, reference_type: str, external_id: str) -> ResolvedReference | None:
-		# erp_type is reference_map[reference_type]. Return None when the record does not exist.
-		record = acme_client().get(erp_type, external_id)
-		if not record:
-			return None
-		return ResolvedReference(
-			reference_type=reference_type,
-			external_id=record["id"],
-			label=record["description"],
-			data={"type": erp_type},
-		)
-```
-
-```python
-# myapp/hooks.py
-foames_erp_adapters = ["myapp.adapters.acme_erp.AcmeERPAdapter"]
-```
-
-The contract, from `foames/foames_adapters/base.py`:
-
-- `key`, `label` and `reference_map` are class attributes. `reference_map` may also be a property when the mapping depends on settings, as the S/4HANA adapter does.
-- `is_available()` says whether the ERP can be reached now. The core calls it before every lookup and treats `False` as "leave the reference Unverified", never as an error.
-- `fetch(erp_type, reference_type, external_id)` returns a `ResolvedReference` or `None`. Raise `foames.foames_adapters.base.AdapterUnavailable` for a transient failure (timeout, authentication problem) so the save still goes through, and `AdapterError` for a real failure that should be shown to the user.
-- `resolve(reference_type, external_id)` is implemented on the base class and is what the core calls. It checks support and availability, then calls `fetch`. Do not override it.
-- Adapters are instantiated on every lookup, so keep the constructor cheap and cache connections elsewhere (for example in `frappe.cache` or a module-level client).
-
-Once registered, the adapter appears in `get_available_erp_systems`, its key is accepted in **ERP System** and **Default ERP System**, and External References of its supported types resolve through it. Nothing in the core needs to change.
-
-Keep two rules when you write one:
-
-1. Resolve by reading. Writing to the ERP belongs in explicit, idempotent postings, as the S/4HANA outbox does, not inside `fetch`.
-2. Store credentials in Password fields of a Settings DocType, never in code or site config.
+| Field | Value |
+| --- | --- |
+| Source DocType | `Job Card` |
+| Case Field | `work_order` |
+| Activity Field | `operation` |
+| Timestamp Field | `actual_start_date` |
+| End Timestamp Field | `actual_end_date` |
+| Resource Field | `workstation` |
+| Filters | `{"docstatus": 1}` |
+| Object Fields | `machine=workstation, item=production_item` |
