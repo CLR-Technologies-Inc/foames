@@ -21,7 +21,9 @@ frappe.query_reports["ERP Outbox Health"] = {
 			fieldname: "adapter",
 			label: __("Adapter"),
 			fieldtype: "Data",
-			description: __("ERPNext, S/4HANA, Insights Hub, or an MES Connection such as SAP_DMC or PLEX"),
+			description: __(
+				"ERPNext, S/4HANA, Insights Hub, or an MES Connection such as SAP_DMC or PLEX"
+			),
 		},
 		{ fieldname: "operation", label: __("Operation"), fieldtype: "Data" },
 	],
