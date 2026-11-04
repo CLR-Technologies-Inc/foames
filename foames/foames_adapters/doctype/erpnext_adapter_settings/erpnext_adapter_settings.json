@@ -12,6 +12,7 @@
   "submit_job_cards_when_complete",
   "roll_up_counts_to_job_cards",
   "inspect_job_cards_from_measurements",
+  "inspection_delay_minutes",
   "floor_section",
   "show_job_cards_on_floor",
   "follow_job_cards_started_in_erpnext",
@@ -71,7 +72,15 @@
    "label": "Inspect Job Cards from Machine Measurements",
    "default": "0",
    "depends_on": "enable_postings",
-   "description": "Whenever a machine's current job changes, queue a Quality Inspection for the Job Card that ended from the machine's Measurement events while it ran, for the parameters of the Quality Inspection Template the card's operation (or BOM, or item) names. A card without a template, or a job without measurements for its parameters, queues nothing."
+   "description": "Whenever a machine's current job changes, queue a Quality Inspection for the Job Card that ended from the machine's Measurement events while it ran, for the parameters of the Quality Inspection Template the card's operation (or BOM, or item) names. The readings are taken when the posting is performed. It is submitted only when every parameter of the template was measured; otherwise it is left as a draft to finish. A card without a template queues nothing."
+  },
+  {
+   "fieldname": "inspection_delay_minutes",
+   "fieldtype": "Int",
+   "label": "Wait for Late Measurements (minutes)",
+   "default": "5",
+   "depends_on": "inspect_job_cards_from_measurements",
+   "description": "How long after a job ends its inspection waits before the readings are taken, so measurements a gateway delivers late still count. 0 performs it on the next outbox run."
   },
   {
    "fieldname": "floor_section",

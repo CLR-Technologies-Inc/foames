@@ -973,10 +973,14 @@ class TestQualityInspections(ERPNextTestCase):
 		from foames.foames_mes.doctype.oee_period.test_oee_period import make_machine
 
 		settings = frappe.get_single("ERPNext Adapter Settings")
-		settings.inspect_job_cards_from_measurements = 1
+		settings.update({"inspect_job_cards_from_measurements": 1, "inspection_delay_minutes": 0})
 		settings.save()
 		self.addCleanup(
-			frappe.db.set_single_value, "ERPNext Adapter Settings", "inspect_job_cards_from_measurements", 0
+			lambda: (
+				frappe.get_single("ERPNext Adapter Settings")
+				.update({"inspect_job_cards_from_measurements": 0, "inspection_delay_minutes": 5})
+				.save()
+			)
 		)
 		machine = make_machine("FOAMES-TEST-QJ")
 		frappe.db.delete("Machine Event", {"machine": machine.name})
@@ -993,27 +997,67 @@ class TestQualityInspections(ERPNextTestCase):
 			],
 			# Not in the template: left out rather than refused.
 			{"type": "Measurement", "name": "temperature", "value": 71.5, "timestamp": t(2)},
+			# Stamped at the moment the job changes: the next job's.
+			{"type": "Measurement", "name": self.LENGTH, "value": 10.9, "timestamp": t(30)},
 		]
 		result = record_events([{"machine": machine.name, **row} for row in rows], source="Manual")
 		self.assertFalse(result["rejected"], result["rejected"])
 		frappe.db.delete("ERPNext Outbox")
 		# The job ends: the hook queues the inspection for the window the job ran in.
 		set_current_job(machine.name, None, at=t(30))
-		postings = frappe.get_all("ERPNext Outbox", {"operation": "Quality Inspection"}, ["name", "payload"])
+		postings = frappe.get_all(
+			"ERPNext Outbox", {"operation": "Quality Inspection"}, ["name", "payload", "next_attempt_at"]
+		)
 		self.assertEqual(len(postings), 1)
 		payload = json.loads(postings[0].payload)
 		self.assertEqual(payload["reference_name"], job_card)
-		self.assertEqual(payload["readings"], [{"specification": self.LENGTH, "values": [10.1, 10.2, 10.3]}])
+		self.assertEqual(
+			payload["measurements"],
+			{
+				"machine": machine.name,
+				"since": str(t(0)),
+				"until": str(t(30)),
+				"specifications": [self.LENGTH, self.COLOUR],
+			},
+		)
+		self.assertIsNone(postings[0].next_attempt_at)
 		self.assertEqual(self.run_outbox(), 1)
 		record = self.outbox(postings[0].name)
 		self.assertEqual(record.status, "Posted", record.last_error)
-		self.assertEqual(json.loads(record.response)["status"], "Accepted")
-		self.assertEqual(frappe.db.get_value("Job Card", job_card, "quality_inspection"), record.erp_document)
-		# A Job Card that names no template, or a job without readings for its parameters, queues nothing.
+		inspection = frappe.get_doc("Quality Inspection", record.erp_document)
+		self.assertEqual([r.specification for r in inspection.readings], [self.LENGTH])
+		self.assertEqual(
+			[inspection.readings[0].get(f"reading_{i}") for i in (1, 2, 3)], ["10.1", "10.2", "10.3"]
+		)
+		# The colour was never measured, so the inspection is a draft for a person to finish.
+		self.assertEqual(inspection.docstatus, 0)
+		self.assertEqual(json.loads(record.response)["docstatus"], 0)
+		self.assertFalse(frappe.db.get_value("Job Card", job_card, "quality_inspection"))
+		# A window with nothing for the template posts nothing, and says so.
+		name, created = inspect_job_card(machine.name, job_card, t(40), t(50))
+		self.assertTrue(created)
+		self.assertEqual(self.run_outbox(), 1)
+		record = self.outbox(name)
+		self.assertEqual(record.status, "Posted", record.last_error)
+		self.assertFalse(record.erp_document)
+		self.assertIn("measured nothing", json.loads(record.response)["message"])
+		# With a wait, the posting is not due yet.
+		frappe.db.set_single_value("ERPNext Adapter Settings", "inspection_delay_minutes", 5)
+		name, created = inspect_job_card(machine.name, job_card, t(50), t(60))
+		self.assertTrue(created)
+		self.assertGreater(get_datetime(self.outbox(name).next_attempt_at), now_datetime())
+		self.assertEqual(self.run_outbox(), 0)
+		# A Job Card that names no template, or that is gone, is nothing to inspect.
 		other = self.fixtures.job_card_for(self.fixtures.make_work_order(qty=1).name)
 		frappe.db.set_value("Job Card", other, "quality_inspection_template", None)
 		self.assertIsNone(inspect_job_card(machine.name, other, t(0), t(30)))
-		self.assertIsNone(inspect_job_card(machine.name, job_card, t(40), t(50)))
+		self.assertIsNone(inspect_job_card(machine.name, "JC-GONE", t(0), t(30)))
+		# Ending a job on a machine whose Job Card was deleted still goes through.
+		gone = self.fixtures.job_card_for(self.fixtures.make_work_order(qty=1).name)
+		set_current_job(machine.name, get_reference("Job Card", gone, ADAPTER_KEY), at=t(60))
+		frappe.delete_doc("Job Card", gone, force=True)
+		set_current_job(machine.name, None, at=t(70))
+		self.assertFalse(frappe.db.get_value("Machine", machine.name, "current_job_reference"))
 
 	def test_inspection_from_machine_measurements(self):
 		from foames.foames_adapters.erpnext.api import post_inspection_from_measurements
