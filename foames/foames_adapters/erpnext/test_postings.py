@@ -181,6 +181,12 @@ class TestFinishedGoodIdentity(unittest.TestCase):
 			self.prepare("Manufacture", {**base, "serial_nos": ", ,"})
 		with self.assertRaises(ValueError):
 			self.prepare("Manufacture", {**base, "serial_nos": 5})
+		# A null in the list is malformed, not the serial number "None".
+		with self.assertRaises(ValueError):
+			self.prepare("Manufacture", {**base, "qty": 2, "serial_nos": ["SN-1", None]})
+		# Serial numbers count units, so the quantity has to be whole.
+		with self.assertRaises(ValueError):
+			self.prepare("Manufacture", {**base, "qty": 1.5, "serial_nos": ["SN-1"]})
 		# Only the Manufacture entry names the finished good.
 		with self.assertRaises(ValueError):
 			self.prepare("Material Transfer for Manufacture", {**base, "batch_no": "B-1"})

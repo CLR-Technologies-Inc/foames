@@ -195,8 +195,12 @@ def prepare(operation: Operation, payload: dict) -> dict:
 		prepared["serial_nos"] = serial_number_list(prepared["serial_nos"])
 		if len(set(prepared["serial_nos"])) != len(prepared["serial_nos"]):
 			raise ValueError("serial_nos repeats a serial number")
-		if prepared.get("qty") is not None and len(prepared["serial_nos"]) != int(prepared["qty"]):
-			raise ValueError("serial_nos must name one serial number per unit of qty")
+		qty = prepared.get("qty")
+		if qty is not None:
+			if qty != int(qty):
+				raise ValueError("serial_nos need a whole-number qty, one serial number per unit")
+			if len(prepared["serial_nos"]) != int(qty):
+				raise ValueError("serial_nos must name one serial number per unit of qty")
 	elif "serial_nos" in prepared:
 		del prepared["serial_nos"]
 	if prepared.get("employees") not in (None, ""):
@@ -257,6 +261,8 @@ def serial_number_list(value) -> list[str]:
 	if isinstance(value, str):
 		parts = value.replace(",", "\n").split("\n")
 	elif isinstance(value, (list, tuple)):
+		if any(v is None or isinstance(v, bool) or not isinstance(v, (str, int)) for v in value):
+			raise ValueError("serial_nos must be a list of serial numbers")
 		parts = [str(v) for v in value]
 	else:
 		raise ValueError("serial_nos must be a list of serial numbers")

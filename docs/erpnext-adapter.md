@@ -176,7 +176,10 @@ stock ledger, the Batch and the Serial No records carry the floor's identifiers 
 ones. A batch of another item is refused. Whether the numbers came from the posting or from
 ERPNext's own series, the posting's response names them under `finished_good`, and each gets an
 External Reference (type Batch or Serial Number) so quality records, process events and agents can
-point at them from then on.
+point at them from then on. The same `finished_good` comes back from `get_posting` once the posting
+is Posted, which is how a poller learns a batch number ERPNext generated. A draft entry (`submit`
+false) gets its Batch referenced at once; its serial numbers exist in ERPNext only from submission,
+so they are referenced when the submitted entry is next seen by a posting.
 
 #### Idempotency, order and errors
 

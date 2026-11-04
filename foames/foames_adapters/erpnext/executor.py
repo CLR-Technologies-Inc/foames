@@ -61,7 +61,14 @@ def find_existing(operation: Operation, payload: dict, marker: str) -> Result | 
 			"Stock Entry", {"remarks": ("like", f"{marker}%"), "docstatus": ("<", 2)}, "name"
 		)
 		if name:
-			return Result("Stock Entry", name, {"found_by": "marker"}, existing=True)
+			# A replayed Manufacture posting still reports the finished good's identity, and an
+			# entry whose first attempt lost the outbox update gets its references recorded now.
+			doc = frappe.get_doc("Stock Entry", name)
+			finished = finished_good_identity(doc)
+			record_identity_references(finished, submitted=doc.docstatus == 1)
+			return Result(
+				"Stock Entry", name, {"found_by": "marker", "finished_good": finished}, existing=True
+			)
 	elif operation.label in ("Job Card Time Log", "Job Card Production Log"):
 		remarks = frappe.db.get_value("Job Card", payload["job_card"], "remarks") or ""
 		if marker in remarks:
@@ -93,8 +100,7 @@ def post_stock_entry(purpose: str, payload: dict, marker: str) -> Result:
 	if payload.get("submit", True):
 		doc.submit()
 	finished = finished_good_identity(doc)
-	if doc.docstatus == 1:
-		record_identity_references(finished)
+	record_identity_references(finished, submitted=doc.docstatus == 1)
 	return Result(
 		"Stock Entry",
 		doc.name,
@@ -171,9 +177,12 @@ def finished_good_identity(doc) -> dict | None:
 	}
 
 
-def record_identity_references(finished: dict | None):
+def record_identity_references(finished: dict | None, submitted: bool = True):
 	"""External References for the batch and serial numbers a Manufacture entry produced, so FoaMES
-	records (quality, process events, agents) can point at them from now on."""
+	records (quality, process events, agents) can point at them from now on. A Batch exists from
+	the draft on; Serial No records are created by ERPNext on submit, so a draft entry's serial
+	numbers are referenced once it is submitted (by a replay of the posting, or on the next entry
+	that names them)."""
 	if not finished:
 		return
 	from foames.foames_adapters.erpnext import ADAPTER_KEY
@@ -181,6 +190,8 @@ def record_identity_references(finished: dict | None):
 
 	for batch_no in finished.get("batch_nos") or []:
 		get_reference("Batch", batch_no, ADAPTER_KEY, ignore_permissions=True)
+	if not submitted:
+		return
 	for serial_no in finished.get("serial_nos") or []:
 		get_reference("Serial Number", serial_no, ADAPTER_KEY, ignore_permissions=True)
 

@@ -573,6 +573,21 @@ class TestTraceability(ERPNextTestCase):
 				{"erp_system": ADAPTER_KEY, "reference_type": "Batch", "external_id": batch_no},
 			)
 		)
+		# A replay after a lost outbox update finds the entry by its marker and still reports the
+		# finished good, and the posting's status read through the API carries the response.
+		frappe.db.set_value(
+			"ERPNext Outbox", record.name, {"status": "Queued", "erp_document": None, "attempts": 0}
+		)
+		frappe.db.commit()  # nosemgrep
+		self.run_outbox()
+		replayed = self.outbox(record.name)
+		self.assertEqual(replayed.erp_document, record.erp_document)
+		response = json.loads(replayed.response)
+		self.assertEqual(response["found_by"], "marker")
+		self.assertEqual(response["finished_good"]["batch_no"], batch_no)
+		from foames.foames_adapters.erpnext.api import get_posting
+
+		self.assertEqual(get_posting(record.name)["response"]["finished_good"]["batch_no"], batch_no)
 
 	def test_manufacture_without_a_batch_reports_the_one_erpnext_made(self):
 		wo = self.fixtures.make_work_order(qty=2, operations=False, item=self.fixtures.FINISHED_GOOD_BATCHED)

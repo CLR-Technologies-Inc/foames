@@ -129,11 +129,18 @@ def get_posting(name: str) -> dict:
 			"erp_doctype",
 			"erp_document",
 			"last_error",
+			"response",
 		],
 		as_dict=True,
 	)
 	if not values:
 		frappe.throw(_("Posting {0} does not exist").format(name), frappe.DoesNotExistError)
+	# What ERPNext recorded (for a Manufacture entry, the finished good's batch and serial numbers
+	# under `finished_good`), decoded so a poller reads it as data.
+	try:
+		values["response"] = json.loads(values["response"]) if values.get("response") else None
+	except ValueError:
+		pass
 	return values
 
 
