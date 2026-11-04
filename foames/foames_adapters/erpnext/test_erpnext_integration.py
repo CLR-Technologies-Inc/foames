@@ -442,10 +442,11 @@ class TestFollowJobCards(ERPNextTestCase):
 		# Clear of other tests' time logs on the same workstation, at capacity 1.
 		start = add_to_date(now_datetime().replace(microsecond=0), hours=-50)
 		end = add_to_date(start, minutes=45)
+		enqueue("Material Transfer for Manufacture", {"work_order": wo.name}, f"{wo.name}:transfer", wo.name)
 		enqueue(
 			"Job Card Time Log", {"job_card": job_card, "start_time": start}, f"{job_card}:start", wo.name
 		)
-		self.assertEqual(self.run_outbox(), 1)
+		self.assertEqual(self.run_outbox(), 2)
 		self.assertEqual(frappe.db.get_value("Job Card", job_card, "status"), "Work In Progress")
 		job = self.current_job(self.machine.name)
 		self.assertEqual(job.current_job_reference, get_reference("Job Card", job_card, ADAPTER_KEY))
