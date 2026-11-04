@@ -9,7 +9,7 @@ FoaMES is an ERP-agnostic manufacturing execution system built as a single Frapp
 | Module | Package | Holds |
 | --- | --- | --- |
 | FoaMES Kernel | `foames/foames_kernel` | `External Reference`, `FoaMES Settings` |
-| FoaMES MES | `foames/foames_mes` | Machine, Machine Event, Downtime Reason and Record, Machine Data Settings, Shift Pattern, OEE Period, Agent Suggestion, Andon Call and Call Type, the Floor View page, the gateways, the API |
+| FoaMES MES | `foames/foames_mes` | Machine, Machine Event, Downtime Reason and Record, Machine Data Settings, Shift Pattern, OEE Period, Agent Suggestion, Andon Call and Call Type, Maintenance Plan and Work Order, the Floor View page, the gateways, the API |
 | FoaMES Adapters | `foames/foames_adapters` | The adapter contract, the ERPNext adapter, the S/4HANA adapter with its Settings, Outbox, Inbound IDoc and reconciliation report |
 | FoaMES Process Mining | `foames/foames_process_mining` | Event Log Source, Process Event Log, the event extractors, the XES and OCEL exports, discovery and conformance analysis, and their API |
 | MCP server | `foames/foames_mcp` | The MCP tool catalogue, the Streamable HTTP endpoint, the stdio bridge, read methods for agents |
@@ -26,7 +26,7 @@ Keep these whatever you build. A pull request that breaks one will not be merged
 4. **Unknown time is loss.** The OEE ledger is built from state events with Downtime Records overlaid, and an Unknown state is never run time. A machine that stops reporting gets an Unknown state event from the scheduler's staleness check (source System), and the Sparkplug gateway writes one at once on NDEATH or DDEATH. Do not add code that infers output or run time from the absence of events.
 5. **Agents suggest; people act.** Anything an agent or a rule finds becomes an `Agent Suggestion` with evidence. FoaMES does not write tags, send commands to SCADA, change machine state on its own, or post to an ERP without an explicit, idempotent posting a person configured.
 6. **Postings to an ERP are idempotent and sequenced.** The S/4HANA outbox is the model: an idempotency key per business event, a marker written into the created document, a check before resending after an unclear answer, exponential backoff, strict order within a sequence group. Follow it for any new write path.
-7. **Pure logic stays pure.** `oee.py`, `counters.py`, `shifts.py`, `andon.py`, `suggestions.py`, `signing.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, `s4hana/outbox.py`, `odata.py`, `idoc.py`, `entities.py`, the process-mining core and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe. Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
+7. **Pure logic stays pure.** `oee.py`, `counters.py`, `shifts.py`, `andon.py`, `suggestions.py`, `maintenance.py`, `signing.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, `s4hana/outbox.py`, `odata.py`, `idoc.py`, `entities.py`, the process-mining core and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe. Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
 8. **Secrets live in Password fields** of a Settings DocType (`Machine Data Settings`, `S4HANA Settings`), read with `get_password`. Never in code, hooks or site config, never logged.
 9. **Both Frappe versions.** Use `foames.tests_compat.IntegrationTestCase` for site tests. Avoid APIs that exist in only one of v15 and v16.
 
@@ -41,15 +41,17 @@ foames/
   foames_mes/
     api.py                    ingest_machine_events, get_floor_snapshot, run_suggestion_rules, post_suggestion
     floor.py                  floor_snapshot, collect_findings
-    oee.py  counters.py  shifts.py  suggestions.py  signing.py  kpi.py  spc.py   pure logic (kpi.py: report roll-ups, shifts.py: shift calendars, spc.py: control charts)
+    oee.py  counters.py  shifts.py  suggestions.py  signing.py  kpi.py  spc.py  maintenance.py   pure logic (kpi.py: report roll-ups, shifts.py: shift calendars, spc.py: control charts)
     spc_monitor.py            SPC over Measurement events: settings, findings, get_control_chart
     tasks.py                  scheduler entry points
     gateway/                  mapping.py (normalise_event), mqtt.py, opcua.py, sparkplug.py
     doctype/                  Machine, Machine Event, Downtime Reason, Downtime Record,
                               Machine Data Settings (+ Machine Node Map), Shift Pattern (+ shifts, non-working days),
-                              OEE Period, Agent Suggestion, Andon Call, Andon Call Type
+                              OEE Period, Agent Suggestion, Andon Call, Andon Call Type,
+                              Maintenance Plan, Maintenance Work Order
     page/floor_view/          the Floor View page
-    report/                   OEE Trend, Downtime Pareto, MTBF and MTTR, Suggestion Status, Process Throughput, SPC Control Chart
+    report/                   OEE Trend, Downtime Pareto, MTBF and MTTR, Suggestion Status, Process Throughput, SPC Control Chart,
+                              Maintenance Due List
     workspace/  number_card/  dashboard_chart/  foames_mes_dashboard/   role workspaces and dashboards
   foames_adapters/
     __init__.py               get_adapters, get_adapter, get_available_erp_systems

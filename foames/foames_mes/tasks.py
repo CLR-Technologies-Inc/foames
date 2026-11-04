@@ -53,3 +53,10 @@ def compute_daily_oee():
 	from foames.foames_mes.doctype.oee_period.oee_period import compute_daily_oee as compute
 
 	return compute()
+
+
+def check_maintenance_plans():
+	"""Scheduled hourly: read the maintenance meters and raise suggestions for plans coming due."""
+	from foames.foames_mes.doctype.maintenance_plan.maintenance_plan import check_maintenance_plans as check
+
+	return check()

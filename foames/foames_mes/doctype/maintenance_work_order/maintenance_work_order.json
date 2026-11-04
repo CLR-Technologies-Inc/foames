@@ -1,0 +1,243 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-03 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "maintenance_plan",
+  "title",
+  "machine",
+  "cb_head",
+  "status",
+  "assigned_to",
+  "due_on",
+  "sb_raise",
+  "plan_status_at_raise",
+  "cb_raise",
+  "meter_at_raise",
+  "sb_exec",
+  "started_on",
+  "completed_on",
+  "completed_by",
+  "cb_exec",
+  "actual_minutes",
+  "downtime_record",
+  "sb_notes",
+  "instructions",
+  "findings"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "MWO-.YYYY.-",
+   "default": "MWO-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "maintenance_plan",
+   "fieldtype": "Link",
+   "label": "Maintenance Plan",
+   "options": "Maintenance Plan",
+   "reqd": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "fetch_from": "maintenance_plan.title",
+   "fetch_if_empty": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "read_only": 1,
+   "fetch_from": "maintenance_plan.machine",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Open\nIn Progress\nCompleted\nCancelled",
+   "default": "Open",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "assigned_to",
+   "fieldtype": "Link",
+   "label": "Assigned To",
+   "options": "User"
+  },
+  {
+   "fieldname": "due_on",
+   "fieldtype": "Datetime",
+   "label": "Due On",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "sb_raise",
+   "fieldtype": "Section Break",
+   "label": "When Raised",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "plan_status_at_raise",
+   "fieldtype": "Data",
+   "label": "Plan Status",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_raise",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "meter_at_raise",
+   "fieldtype": "Float",
+   "label": "Used Since Service",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_exec",
+   "fieldtype": "Section Break",
+   "label": "Execution"
+  },
+  {
+   "fieldname": "started_on",
+   "fieldtype": "Datetime",
+   "label": "Started On"
+  },
+  {
+   "fieldname": "completed_on",
+   "fieldtype": "Datetime",
+   "label": "Completed On"
+  },
+  {
+   "fieldname": "completed_by",
+   "fieldtype": "Link",
+   "label": "Completed By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_exec",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "actual_minutes",
+   "fieldtype": "Float",
+   "label": "Actual Minutes",
+   "read_only": 1
+  },
+  {
+   "fieldname": "downtime_record",
+   "fieldtype": "Link",
+   "label": "Downtime Record",
+   "options": "Downtime Record",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_notes",
+   "fieldtype": "Section Break",
+   "label": "Work"
+  },
+  {
+   "fieldname": "instructions",
+   "fieldtype": "Text Editor",
+   "label": "Instructions",
+   "fetch_from": "maintenance_plan.instructions",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "findings",
+   "fieldtype": "Small Text",
+   "label": "Findings",
+   "description": "What was found and done"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-03 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Maintenance Work Order",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "title",
+ "show_title_field_in_link": 1,
+ "search_fields": "machine",
+ "description": "One service of a Maintenance Plan; completing it restarts the plan's meter"
+}

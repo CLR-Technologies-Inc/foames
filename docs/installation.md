@@ -31,7 +31,7 @@ Installation creates six roles before the DocTypes are synced:
 | FoaMES Operator | Shop-floor users | Create and edit Machines, Downtime Records and Agent Suggestions; create Machine Events (manual entry or unsigned test posts); read Downtime Reasons and OEE Periods. |
 | FoaMES Quality | Quality staff | Edit (not create) Machines, Downtime Records and Agent Suggestions; read Machine Events, Downtime Reasons and OEE Periods. |
 | FoaMES Supervisor | Shift and production supervisors | Read and report on everything in the MES module; edit Machines, create and edit Downtime Records, Downtime Reasons, Agent Suggestions and Process Event Logs. Opens the Supervisor workspace. |
-| FoaMES Maintenance | Maintenance technicians and planners | Read Machines, Machine Events and OEE Periods; create and edit Downtime Records and Downtime Reasons; create and edit Agent Suggestions; create Machine Events. Opens the Maintenance workspace. |
+| FoaMES Maintenance | Maintenance technicians and planners | Read Machines, Machine Events and OEE Periods; create and edit Downtime Records and Downtime Reasons; create and edit Agent Suggestions; create Machine Events; create, edit and delete Maintenance Plans and Maintenance Work Orders. Opens the Maintenance workspace. |
 
 Operators and Quality staff can therefore change a Machine's source id, OEE parameters and disabled flag. If that should be reserved to engineers, tighten the Machine permissions in Role Permissions Manager on the site.
 | FoaMES Integration | Service users for other systems | Creates S/4HANA inbound IDoc and outbox records. Give it to the user whose API key S/4HANA uses. |
@@ -85,6 +85,7 @@ bench --site $SITE scheduler status
 | --- | --- | --- |
 | `foames.foames_mes.tasks.mark_stale_machines_unknown` | Every 5 minutes | Marks a machine Unknown when it has not reported within **Mark Machine Unknown After** (15 minutes by default). |
 | `foames.foames_mes.tasks.run_suggestion_rules` | Hourly | Runs the built-in suggestion rules over the last day. |
+| `foames.foames_mes.tasks.check_maintenance_plans` | Hourly | Reads every Maintenance Plan's meter and raises suggestions for plans that are due soon, due or overdue. See [maintenance.md](maintenance.md). |
 | `foames.foames_mes.tasks.compute_daily_oee` | Daily | Creates one OEE Period per enabled machine for the previous day. |
 | `foames.foames_adapters.doctype.s4hana_outbox.s4hana_outbox.process_outbox` | Every scheduler tick | Sends due S/4HANA postings. Returns at once unless the S/4HANA adapter is enabled. |
 
