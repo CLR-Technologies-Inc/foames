@@ -64,5 +64,6 @@ class TestEWMAValues(unittest.TestCase):
 				ewma_chart(series(8), **kwargs)
 		with self.assertRaises(ValueError):
 			ewma_chart([1.0])
-		with self.assertRaises(ValueError):
-			ewma_chart(series(8), baseline=1)
+		for baseline in (1, 0, -5):
+			with self.assertRaises(ValueError):
+				ewma_chart(series(8), baseline=baseline)

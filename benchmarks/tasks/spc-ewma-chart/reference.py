@@ -13,8 +13,10 @@ def ewma_chart(values, lam: float = 0.2, L: float = 3.0, baseline: int | None = 
 		raise ValueError("lambda must be in (0, 1]")
 	if L <= 0:
 		raise ValueError("L must be above zero")
+	if baseline is not None and baseline < 2:
+		raise ValueError("an EWMA chart needs at least two baseline values")
 	values = [float(v) for v in values]
-	base = values[: baseline or len(values)]
+	base = values if baseline is None else values[:baseline]
 	if len(base) < 2:
 		raise ValueError("an EWMA chart needs at least two baseline values")
 	cl = statistics.fmean(base)

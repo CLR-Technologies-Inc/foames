@@ -35,6 +35,14 @@ def _git(workspace: Path, *args: str, check: bool = True) -> str:
 
 def create(repo: Path, workspace: Path, task) -> Path:
 	"""Copy the repository, apply the task's setup, and commit the starting point."""
+	repo, workspace = repo.resolve(), workspace.resolve()
+	if workspace == repo or workspace.is_relative_to(repo):
+		inside = workspace.relative_to(repo).parts
+		if not inside or inside[0] not in EXCLUDE:
+			raise SystemExit(
+				f"{workspace} is inside the FoaMES checkout and would be copied into itself; "
+				"put run directories outside it or under benchmarks/runs"
+			)
 	# Clear the directory rather than remove it, so a sandbox's working directory can be prepared
 	# in place.
 	workspace.mkdir(parents=True, exist_ok=True)

@@ -91,6 +91,11 @@ def apply(workspace: Path):
 		backoff = max(backoff, int(retry_after))
 	return min(backoff, MAX_DELAY_SECONDS)''',
 	)
+	_replace(
+		workspace / "foames" / "foames_adapters" / "doctype" / "s4hana_outbox" / "s4hana_outbox.py",
+		"seconds=outbox.retry_delay(self.attempts))",
+		"seconds=outbox.retry_delay(self.attempts, result.retry_after))",
+	)
 	(s4 / "test_retry_after.py").write_text(
 		"""import unittest
 
@@ -113,6 +118,6 @@ class TestRetryAfter(unittest.TestCase):
 		"next attempt posted again without first searching for the marker; a 5xx on a write may come after "
 		"S/4HANA committed it, so it is Unknown and the retry verifies first (AGENTS.md invariant 6). "
 		"Retry-After is parsed in both forms and only ever lengthens the wait, capped at six hours. The "
-		"DocType must pass Outcome.retry_after to retry_delay; that call site needs a Frappe site to test.\n",
+		"S4HANA Outbox DocType passes Outcome.retry_after to retry_delay; that call site needs a Frappe site to test.\n",
 		encoding="utf-8",
 	)

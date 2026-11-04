@@ -11,7 +11,7 @@ def d2_2():
 
 def expected(values, lam, L, baseline=None):
 	values = [float(v) for v in values]
-	base = values[: baseline or len(values)]
+	base = values if baseline is None else values[:baseline]
 	cl = statistics.fmean(base)
 	sigma = statistics.fmean(abs(b - a) for a, b in itertools.pairwise(base)) / d2_2()
 	z, zs, ucl, lcl, sig = cl, [], [], [], []

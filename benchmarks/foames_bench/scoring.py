@@ -39,8 +39,11 @@ def score(task, graded: dict, seconds: float, cost_usd: float | None) -> dict:
 	# Process: did the change keep the plant's rules, did the agent verify its own work, did it
 	# stay inside the task, and did it say what it assumed.
 	agent_tests = graded["agent_tests"]
+	# Credit needs new test functions in a discovered test file and at least one of them executed:
+	# skipped-only or undiscovered tests earn nothing.
+	executed = [t for t in agent_tests.get("tests", []) if t["outcome"] != "skip"]
 	wrote_tests = (
-		1.0 if agent_tests["new_test_functions"] > 0 and _rate(agent_tests["pass_rate"], 1.0) == 1.0 else 0.0
+		1.0 if agent_tests["new_test_functions"] > 0 and executed and agent_tests["pass_rate"] == 1.0 else 0.0
 	)
 	in_scope = (
 		0.0

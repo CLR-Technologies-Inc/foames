@@ -32,6 +32,12 @@ class Recorder(unittest.TestResult):
 	def addError(self, test, err):
 		self._row(test, "error", self._exc_info_to_string(err, test))
 
+	def addSubTest(self, test, subtest, err):
+		# A failing subtest is a failed test; passing subtests are covered by the parent's success.
+		if err is not None:
+			outcome = "fail" if issubclass(err[0], test.failureException) else "error"
+			self._row(subtest, outcome, self._exc_info_to_string(err, test))
+
 	def addSkip(self, test, reason):
 		self._row(test, "skip", reason)
 

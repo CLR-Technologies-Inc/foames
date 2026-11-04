@@ -13,6 +13,7 @@ Layout of a run directory:
       workspace/                  kept only with --keep-workspaces
 """
 
+import hashlib
 import json
 import platform
 import shutil
@@ -22,6 +23,35 @@ from pathlib import Path
 
 from foames_bench import __version__, grading, scoring, usage, workspace
 from foames_bench import agents as agents_mod
+from foames_bench.paths import BENCH_ROOT
+
+
+def _source_state(repo: Path) -> dict:
+	"""Whether the checkout under test differs from its commit. Workspaces copy the working tree,
+	so a dirty tree is recorded with a hash of its diff and the list of untracked files."""
+	status = subprocess.run(["git", "status", "--porcelain"], cwd=repo, capture_output=True, text=True)
+	if status.returncode != 0:
+		return {"dirty": None}
+	lines = [l for l in status.stdout.splitlines() if not l[3:].startswith("benchmarks/")]
+	if not lines:
+		return {"dirty": False}
+	diff = subprocess.run(
+		["git", "diff", "HEAD", "--", ".", ":(exclude)benchmarks"], cwd=repo, capture_output=True
+	)
+	return {
+		"dirty": True,
+		"diff_sha256": hashlib.sha256(diff.stdout).hexdigest(),
+		"changes": lines[:200],
+	}
+
+
+def _tree_hash(path: Path) -> str:
+	"""A hash of every file under path, to detect an agent editing the benchmark during a run."""
+	digest = hashlib.sha256()
+	for file in sorted(p for p in path.rglob("*") if p.is_file() and "__pycache__" not in p.parts):
+		digest.update(str(file.relative_to(path)).encode())
+		digest.update(file.read_bytes())
+	return digest.hexdigest()
 
 
 def _foames_commit(repo: Path) -> str:
@@ -32,7 +62,13 @@ def _foames_commit(repo: Path) -> str:
 def run_one(task, agent, repo: Path, run_dir: Path, keep_workspace: bool = False) -> dict:
 	run_dir.mkdir(parents=True, exist_ok=True)
 	ws = workspace.create(repo, run_dir / "workspace", task)
+	# The runner does not sandbox the agent. If it reaches outside its workspace and edits the task,
+	# the harness or the pristine tests, the run is marked as tampered and fails.
+	guarded = [task.path, BENCH_ROOT / "foames_bench", *[repo / p for p in task.regression]]
+	before = [_tree_hash(p) if p.is_dir() else hashlib.sha256(p.read_bytes()).hexdigest() for p in guarded]
 	result = agents_mod.run(agent, task, ws, run_dir)
+	after = [_tree_hash(p) if p.is_dir() else hashlib.sha256(p.read_bytes()).hexdigest() for p in guarded]
+	tampered = [str(p) for p, a, b in zip(guarded, before, after, strict=True) if a != b]
 	change = workspace.collect(ws)
 	(run_dir / "change.patch").write_text(change["patch"], encoding="utf-8")
 	graded = grading.grade(task, ws, repo, change)
@@ -40,6 +76,8 @@ def run_one(task, agent, repo: Path, run_dir: Path, keep_workspace: bool = False
 	if used.cost_usd is None and agent.fixed_cost_usd is not None:
 		used.cost_usd, used.cost_source = agent.fixed_cost_usd, "local"
 	scores = scoring.score(task, graded, result.seconds, used.cost_usd)
+	if tampered:
+		scores = {**scores, "success": False, "efficiency": 0.0, "tampered": tampered}
 	row = {
 		"task": task.id,
 		"tier": task.tier,
@@ -79,6 +117,7 @@ def run(
 	manifest = {
 		"bench_version": __version__,
 		"foames_commit": _foames_commit(repo),
+		"source": _source_state(repo),
 		"python": platform.python_version(),
 		"platform": platform.platform(),
 		"started_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -89,9 +128,12 @@ def run(
 		],
 	}
 	(out / "manifest.json").write_text(json.dumps(manifest, indent=1), encoding="utf-8")
+	if manifest["source"].get("dirty"):
+		log("warning: the FoaMES checkout has uncommitted changes; they are recorded in manifest.json")
 	rows = []
 	spent = 0.0
-	with (out / "results.jsonl").open("a", encoding="utf-8") as sink:
+	# A run directory holds one invocation: rerunning into it starts results.jsonl afresh.
+	with (out / "results.jsonl").open("w", encoding="utf-8") as sink:
 		for task in tasks:
 			for agent in agent_list:
 				for rep in range(1, reps + 1):

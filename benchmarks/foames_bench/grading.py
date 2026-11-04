@@ -59,7 +59,14 @@ def pass_rate(rows: list[dict]) -> float | None:
 
 
 def _new_test_functions(patch: str) -> int:
-	return len(re.findall(r"^\+\s*def test_\w+", patch, flags=re.MULTILINE))
+	"""New `def test_*` lines, counted only in files named test_*.py."""
+	count, in_test_file = 0, False
+	for line in patch.splitlines():
+		if line.startswith("+++ "):
+			in_test_file = bool(re.search(r"(^|/)test_[^/]*\.py$", line[4:].strip()))
+		elif in_test_file and re.match(r"^\+\s*def test_\w+", line):
+			count += 1
+	return count
 
 
 def _in_scope(path: str, allowed: list[str]) -> bool:

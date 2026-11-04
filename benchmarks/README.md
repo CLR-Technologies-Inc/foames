@@ -54,7 +54,7 @@ foames-bench grade --task oee-unknown-time --workspace /tmp/ws --seconds 412 --c
 | `erp-retry-after` | high | Honour S/4HANA throttling, and find why a confirmation was posted twice | Retry-After parsing and backoff; no duplicate posting after a 504; idempotency rules intact |
 | `process-spec-network-loss` | high | Turn an incomplete plant request into a specification with executable acceptance criteria | A written rubric; the acceptance tests must pass now and must catch three planted regressions |
 
-The tasks use only public FoaMES code and invented data. Each one lives in [tasks/](tasks/) with its prompt, an optional setup that plants the defect, hidden tests, and a reference solution. Hidden tests and reference solutions are never copied into the agent's workspace. They are public in this repository, though, so a model trained on it may have seen them; see [docs/methodology.md](docs/methodology.md#contamination).
+The tasks use only public FoaMES code and invented data. Each one lives in [tasks/](tasks/) with its prompt, an optional setup that plants the defect, hidden tests, and a reference solution. Hidden tests and reference solutions are never copied into the agent's workspace, and a run that edits them fails, but the standard runner does not stop an agent from reading outside its workspace: isolate agents in a container for results you publish. They are public in this repository, though, so a model trained on it may have seen them; see [docs/methodology.md](docs/methodology.md#contamination).
 
 ## Scoring
 

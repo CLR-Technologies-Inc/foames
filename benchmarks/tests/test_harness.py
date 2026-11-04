@@ -166,3 +166,48 @@ class TestEndToEnd(unittest.TestCase):
 
 if __name__ == "__main__":
 	unittest.main()
+
+
+class TestReviewFixes(unittest.TestCase):
+	def test_failing_subtests_are_recorded(self):
+		from foames_bench import grading
+
+		with tempfile.TemporaryDirectory() as tmp:
+			test = Path(tmp) / "test_sub.py"
+			test.write_text(
+				"import unittest\n\nclass T(unittest.TestCase):\n\tdef test_x(self):\n"
+				"\t\tfor i in range(2):\n\t\t\twith self.subTest(i=i):\n\t\t\t\tself.assertEqual(i, 0)\n",
+				encoding="utf-8",
+			)
+			rows = grading.run_tests([test], repo_root())
+		self.assertIn("fail", [r["outcome"] for r in rows])
+		self.assertLess(grading.pass_rate(rows), 1.0)
+
+	def test_workspace_inside_the_checkout_is_refused(self):
+		from foames_bench import workspace
+
+		task = tasks.select(["counter-reset"])[0]
+		with self.assertRaises(SystemExit):
+			workspace.create(repo_root(), repo_root() / "results" / "ws", task)
+
+	def test_skipped_tests_earn_no_test_credit(self):
+		task = tasks.select(["counter-reset"])[0]
+		graded = TestScoring().graded()
+		graded["agent_tests"] = {"new_test_functions": 3, "pass_rate": None, "tests": [{"outcome": "skip"}]}
+		with_skips = scoring.score(task, graded, 1, 0.0)["process"]
+		graded["agent_tests"] = {"new_test_functions": 3, "pass_rate": 1.0, "tests": [{"outcome": "pass"}]}
+		self.assertLess(with_skips, scoring.score(task, graded, 1, 0.0)["process"])
+
+	def test_editing_the_task_during_a_run_fails_it(self):
+		task = tasks.select(["counter-reset"])[0]
+		target = task.path / "hidden" / "test_invariants.py"
+		original = target.read_text(encoding="utf-8")
+		script = "import pathlib, sys; p = pathlib.Path(sys.argv[1]); p.write_text(p.read_text() + '\\n# edited\\n')"
+		agent = agents.Agent(name="tamper", command=[sys.executable, "-c", script, str(target)])
+		try:
+			with tempfile.TemporaryDirectory() as tmp:
+				row = runner.run([task], [agent], repo_root(), Path(tmp), log=lambda *a, **k: None)[0]
+		finally:
+			target.write_text(original, encoding="utf-8")
+		self.assertFalse(row["scores"]["success"])
+		self.assertTrue(row["scores"]["tampered"])

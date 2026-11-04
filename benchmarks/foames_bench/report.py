@@ -52,7 +52,12 @@ def _summarise(rows: list[dict]) -> dict:
 		"cost_per_success_usd": round(sum(costs) / len(successes), 4)
 		if costs and successes and len(costs) == len(rows)
 		else None,
-		"regressions": sum(1 for r in rows if (r["graded"]["regression"]["pass_rate"] or 1.0) < 1.0),
+		"regressions": sum(
+			1
+			for r in rows
+			if r["graded"]["regression"]["pass_rate"] is not None
+			and r["graded"]["regression"]["pass_rate"] < 1.0
+		),
 		"purity_violations": sum(1 for r in rows if r["graded"]["purity_violations"]),
 	}
 

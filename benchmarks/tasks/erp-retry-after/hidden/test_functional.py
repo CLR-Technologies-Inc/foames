@@ -83,3 +83,32 @@ class TestOutcomeCarriesRetryAfter(unittest.TestCase):
 
 	def test_default(self):
 		self.assertIsNone(outbox.Outcome("Retry").retry_after)
+
+
+class TestSchedulerUsesRetryAfter(unittest.TestCase):
+	"""The DocType needs a Frappe site, so this is a static check of its scheduling call: the
+	attempt that follows an Outcome must hand the server's Retry-After to retry_delay."""
+
+	def test_attempt_passes_retry_after(self):
+		import ast
+		import os
+		from pathlib import Path
+
+		path = (
+			Path(os.environ["FOAMES_BENCH_WORKSPACE"])
+			/ "foames/foames_adapters/doctype/s4hana_outbox/s4hana_outbox.py"
+		)
+		tree = ast.parse(path.read_text(encoding="utf-8"))
+		calls = [
+			node
+			for node in ast.walk(tree)
+			if isinstance(node, ast.Call)
+			and getattr(node.func, "attr", getattr(node.func, "id", "")) == "retry_delay"
+		]
+		self.assertTrue(calls, "retry_delay is no longer called")
+		passes = [
+			c
+			for c in calls
+			if any("retry_after" in ast.unparse(a) for a in [*c.args[1:], *(k.value for k in c.keywords)])
+		]
+		self.assertTrue(passes, "no retry_delay call passes the Outcome's retry_after")
