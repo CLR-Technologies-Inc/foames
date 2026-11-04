@@ -6,10 +6,50 @@ FoaMES takes machine events four ways. All four end in the same place: a Machine
 | --- | --- | --- |
 | Signed webhook | `POST /api/method/foames.foames_mes.api.ingest_machine_events` with `{"events": [...]}`; headers `X-FoaMES-Timestamp` (Unix seconds) and `X-FoaMES-Signature` (hex HMAC-SHA256 of `<timestamp>.<body>` with the secret in Machine Data Settings) | Nothing installed; any PLC gateway or IoT bridge that can POST JSON |
 | MQTT | `bench --site <site> execute foames.foames_mes.gateway.mqtt.run`; subscribes to `<prefix>/<machine source id>/<event type>` | `pip install paho-mqtt`, a broker |
-| OPC UA | `bench --site <site> execute foames.foames_mes.gateway.opcua.run`; polls the nodes mapped in Machine Data Settings | `pip install asyncua` |
+| OPC UA | `bench --site <site> execute foames.foames_mes.gateway.opcua.run`; polls the nodes mapped in Machine Data Settings, with optional Sign or SignAndEncrypt message security (see [OPC UA security](#opc-ua-security)) | `pip install asyncua` |
 | Sparkplug B | `bench --site <site> execute foames.foames_mes.gateway.sparkplug.run`; subscribes to `spBv1.0/<group>/#` on the same broker and decodes the protobuf payloads itself | `pip install paho-mqtt`, a broker; this is how Ignition publishes, see [ignition.md](ignition.md) |
 
 A logged-in user with the FoaMES Operator role may also post events unsigned, which is how a manual entry or a test harness works.
+
+## OPC UA security
+
+The OPC UA gateway takes its message security from the **OPC UA Security** section of Machine Data Settings.
+
+| Field | What it does |
+| --- | --- |
+| Message Security Mode | `None`, `Sign` or `SignAndEncrypt`. Use `SignAndEncrypt`. `Sign` stops tampering but leaves the values readable. `None` keeps the old behaviour: nothing is signed or encrypted, and the gateway logs a warning to `foames.opcua` each time it starts. |
+| Security Policy | `Basic256Sha256` (the default, which every current server offers), `Aes128_Sha256_RsaOaep` or `Aes256_Sha256_RsaPss`. Pick one that the server's endpoint lists. The deprecated `Basic128Rsa15` and `Basic256` policies are not offered. |
+| Client Certificate | The X.509 certificate, DER or PEM, that the gateway presents. |
+| Client Private Key | The certificate's private key, PEM or DER. It must be uploaded as a **private** file. Saving the settings with a public key file is refused. |
+| Private Key Passphrase | Only if the key is encrypted. It is stored as a Frappe password field. |
+| Client Application URI | Must equal the `URI:` entry in the certificate's subjectAltName. Most servers reject a session whose application URI does not match its certificate. |
+| Server Certificate | Optional. The server's own certificate. When it is set, the gateway uses this one instead of the one the server sends, so a different server at the same address cannot stand in for it. |
+
+Username and Password in the OPC UA section still give username authentication, and they work in every mode. With mode `None`, the password is protected only if the server's user token policy encrypts it, so use a secure mode wherever the server allows one.
+
+Saving Machine Data Settings with `Sign` or `SignAndEncrypt` but no certificate or key is refused, so a misconfiguration shows up on the form, not when the gateway starts.
+
+### Making a client certificate
+
+An OPC UA application certificate needs the application URI in its subjectAltName, plus the digital signature, key encipherment, data encipherment and non-repudiation key usages, and both client and server extended key usage. With OpenSSL 3:
+
+```bash
+openssl req -x509 -newkey rsa:2048 -sha256 -days 730 -nodes \
+  -keyout foames-opcua.key.pem -out foames-opcua.cert.pem \
+  -subj "/CN=FoaMES OPC UA gateway/O=Example Plant" \
+  -addext "subjectAltName=URI:urn:example.com:foames:opcua-gateway,DNS:$(hostname)" \
+  -addext "keyUsage=critical,digitalSignature,nonRepudiation,keyEncipherment,dataEncipherment" \
+  -addext "extendedKeyUsage=clientAuth,serverAuth"
+openssl x509 -in foames-opcua.cert.pem -outform der -out foames-opcua.cert.der
+```
+
+Attach `foames-opcua.cert.der` as the Client Certificate, attach `foames-opcua.key.pem` as a private file for the Client Private Key, and set Client Application URI to `urn:example.com:foames:opcua-gateway`. Use RSA 2048 for `Basic256Sha256` and `Aes128_Sha256_RsaOaep`. For `Aes256_Sha256_RsaPss` the server may require RSA 3072 or larger.
+
+### Trusting the certificate on the server
+
+Most OPC UA servers put an unknown client certificate in a rejected or quarantine list on the first connection attempt. Start the gateway once, move the FoaMES certificate to the trusted list on the server, and start it again. On Ignition, that is Config, OPC UA, Security, Server tab: select the certificate under **Quarantined Certificates** and choose Trust. For a CA-signed certificate, trust the issuing CA instead.
+
+The gateway reads the files when it starts, so restart it after replacing a certificate or key.
 
 ## Event shape
 

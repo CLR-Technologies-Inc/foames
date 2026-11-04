@@ -155,7 +155,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Machines",
-   "link_count": 4,
+   "link_count": 6,
    "onboard": 0,
    "type": "Card Break"
   },
@@ -202,9 +202,31 @@
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Andon Call",
+   "link_count": 0,
+   "link_to": "Andon Call",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Andon Response",
+   "link_count": 0,
+   "link_to": "Andon Response",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2026-11-03 12:00:00.000000",
+ "modified": "2026-11-04 19:00:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES MES",
  "name": "FoaMES Maintenance",

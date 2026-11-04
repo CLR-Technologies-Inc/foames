@@ -28,6 +28,15 @@
   "opcua_username",
   "opcua_password",
   "node_map",
+  "sb_opcua_security",
+  "opcua_security_mode",
+  "opcua_security_policy",
+  "opcua_application_uri",
+  "cb_opcua_security",
+  "opcua_client_certificate",
+  "opcua_private_key",
+  "opcua_private_key_password",
+  "opcua_server_certificate",
   "sb_health",
   "stale_after_minutes",
   "sb_spc",
@@ -168,6 +177,71 @@
    "label": "Node and Metric Map",
    "options": "Machine Node Map",
    "description": "What each OPC UA node or Sparkplug B metric means. Sparkplug metrics that follow the naming convention in docs/ignition.md need no row"
+  },
+  {
+   "fieldname": "sb_opcua_security",
+   "fieldtype": "Section Break",
+   "label": "OPC UA Security",
+   "collapsible": 0,
+   "description": "Message security for the OPC UA gateway. Sign and SignAndEncrypt need a client certificate and private key that the OPC UA server trusts. See docs/machine-data.md"
+  },
+  {
+   "fieldname": "opcua_security_mode",
+   "fieldtype": "Select",
+   "label": "Message Security Mode",
+   "options": "None\nSign\nSignAndEncrypt",
+   "default": "None",
+   "description": "SignAndEncrypt is recommended. None sends everything, including the username and password, in the clear unless the server encrypts the user token"
+  },
+  {
+   "fieldname": "opcua_security_policy",
+   "fieldtype": "Select",
+   "label": "Security Policy",
+   "options": "Basic256Sha256\nAes128_Sha256_RsaOaep\nAes256_Sha256_RsaPss",
+   "default": "Basic256Sha256",
+   "depends_on": "eval:doc.opcua_security_mode && doc.opcua_security_mode != 'None'",
+   "mandatory_depends_on": "eval:doc.opcua_security_mode && doc.opcua_security_mode != 'None'"
+  },
+  {
+   "fieldname": "opcua_application_uri",
+   "fieldtype": "Data",
+   "label": "Client Application URI",
+   "depends_on": "eval:doc.opcua_security_mode && doc.opcua_security_mode != 'None'",
+   "description": "Must equal the URI in the client certificate's subjectAltName, for example urn:example.com:foames:opcua-gateway. Leave empty to use the gateway library's default"
+  },
+  {
+   "fieldname": "cb_opcua_security",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "opcua_client_certificate",
+   "fieldtype": "Attach",
+   "label": "Client Certificate",
+   "depends_on": "eval:doc.opcua_security_mode && doc.opcua_security_mode != 'None'",
+   "mandatory_depends_on": "eval:doc.opcua_security_mode && doc.opcua_security_mode != 'None'",
+   "description": "X.509 certificate (DER or PEM) the gateway presents to the server"
+  },
+  {
+   "fieldname": "opcua_private_key",
+   "fieldtype": "Attach",
+   "label": "Client Private Key",
+   "depends_on": "eval:doc.opcua_security_mode && doc.opcua_security_mode != 'None'",
+   "mandatory_depends_on": "eval:doc.opcua_security_mode && doc.opcua_security_mode != 'None'",
+   "description": "PEM or DER private key for the client certificate. Must be uploaded as a private file"
+  },
+  {
+   "fieldname": "opcua_private_key_password",
+   "fieldtype": "Password",
+   "label": "Private Key Passphrase",
+   "depends_on": "eval:doc.opcua_security_mode && doc.opcua_security_mode != 'None'",
+   "description": "Only if the private key is encrypted"
+  },
+  {
+   "fieldname": "opcua_server_certificate",
+   "fieldtype": "Attach",
+   "label": "Server Certificate",
+   "depends_on": "eval:doc.opcua_security_mode && doc.opcua_security_mode != 'None'",
+   "description": "Optional. The server's certificate (DER or PEM). When set, the gateway uses it instead of the one the server offers, which pins the server"
   },
   {
    "fieldname": "sb_health",

@@ -47,7 +47,8 @@ The full guide, including roles, the scheduler, running the gateways and a smoke
 | [docs/machine-data.md](docs/machine-data.md) | The webhook, MQTT, OPC UA and Sparkplug B paths and the event shape |
 | [docs/ignition.md](docs/ignition.md) | Connecting Ignition SCADA |
 | [docs/floor-view.md](docs/floor-view.md) | The Floor View, downtime and Agent Suggestions |
-| [docs/oee.md](docs/oee.md) | How OEE is computed and how to set a machine up for it |
+| [docs/oee.md](docs/oee.md) | How OEE is computed, shift patterns, and how to set a machine up for it |
+| [docs/andon.md](docs/andon.md) | Andon calls for help at a machine: call types and targets, escalation, the API, the response report |
 | [docs/spc.md](docs/spc.md) | Control charts (I-MR, X-bar R) and Nelson / Western Electric run rules on machine measurements |
 | [docs/dashboards.md](docs/dashboards.md) | Role workspaces, dashboards, number cards and the script reports (OEE trends, downtime Pareto, MTBF and MTTR, suggestions, outbox health, process throughput) |
 | [docs/sbom.md](docs/sbom.md) | The CycloneDX 1.7 SBOM and cryptography bill of materials published with every release |
@@ -81,7 +82,7 @@ GitHub Actions runs the tests on Frappe v15 and v16 without an ERP, and on Frapp
 | Machine | MES | A machine that reports events, with its state, last-seen time, counter rollover and OEE parameters. |
 | Machine Event | MES | One event from a machine (state, count, measurement, alarm, message), processed into state, downtime and counter deltas. |
 | Downtime Reason, Downtime Record | MES | Downtime opened and closed automatically from machine state, with a reason an operator assigns. |
-| Machine Data Settings | MES | Webhook secret, MQTT broker, Sparkplug B group, OPC UA endpoint, the node and metric map, staleness threshold. |
+| Machine Data Settings | MES | Webhook secret, MQTT broker, Sparkplug B group, OPC UA endpoint, security mode and certificates, the node and metric map, staleness threshold. |
 
 Events arrive through a signed webhook, an MQTT gateway, a Sparkplug B gateway or an OPC UA gateway. Ignition SCADA connects through any of the three machine-data paths it supports (Sparkplug B via MQTT Transmission, its OPC UA server, or a gateway script posting to the webhook); see [docs/ignition.md](docs/ignition.md). Counter readings become deltas, and a first, reset or out-of-order reading never invents production. See [docs/machine-data.md](docs/machine-data.md), including the hook other apps use to act on processed events.
 
@@ -89,9 +90,11 @@ Events arrive through a signed webhook, an MQTT gateway, a Sparkplug B gateway o
 
 | Record or page | Module | Role |
 | --- | --- | --- |
-| OEE Period | MES | OEE for a machine over a period from its events, downtime and counts. Planned downtime is excluded from availability; time without a machine signal is counted as loss, never as run time. One period per machine per day is computed by the scheduler over the machine's scheduled shift. |
+| OEE Period | MES | OEE for a machine over a period from its events, downtime and counts. Planned downtime is excluded from availability; time without a machine signal is counted as loss, never as run time. One period per machine per day is computed by the scheduler over the machine's scheduled window, or one per shift when the machine has a Shift Pattern. |
+| Shift Pattern | MES | A shift calendar machines share: shifts with start, length and weekdays, plus non-working days. Drives the daily OEE periods, the operating time in MTBF and the shift shown on the floor. |
 | Floor View (page) | MES | Live tiles per machine with state, counts and OEE, plus open suggestions. |
 | Agent Suggestion | MES | A finding raised by the built-in rules or by an external agent, with evidence, for a person to accept or dismiss. |
+| Andon Call, Andon Call Type | MES | A call for help at a machine (maintenance, material, quality, supervisor, safety), with response and resolution times. A call that misses its type's targets becomes an Agent Suggestion. |
 | SPC Control Chart (report) | MES | I-MR or X-bar R chart of a machine measurement with Nelson or Western Electric run rules; signals on recent readings become Quality suggestions. |
 
 The OEE arithmetic and the suggestion rules have no Frappe dependency (`foames/foames_mes/oee.py`, `suggestions.py`, `spc.py`). The counter-delta, owed-count and coverage ideas follow public MES practice, including the FactorySemantics MES design notes. See [docs/agents/floor-agent.md](docs/agents/floor-agent.md) for the agent API and the hooks that add snapshot sections and rules.

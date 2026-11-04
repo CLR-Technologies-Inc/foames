@@ -22,7 +22,7 @@ def date_window(filters, days: int = DEFAULT_DAYS):
 
 
 def machines_in_scope(filters) -> dict[str, dict]:
-	"""name -> {title, line, shift_start, scheduled_minutes_per_day} for the machines the filters
+	"""name -> {title, line, shift_start, scheduled_minutes_per_day, shift_pattern} for the machines the filters
 	select and the user may read; disabled machines are included when named directly, otherwise left
 	out."""
 	conditions = {}
@@ -35,7 +35,7 @@ def machines_in_scope(filters) -> dict[str, dict]:
 	rows = frappe.get_list(
 		"Machine",
 		filters=conditions,
-		fields=["name", "title", "line", "shift_start", "scheduled_minutes_per_day"],
+		fields=["name", "title", "line", "shift_start", "scheduled_minutes_per_day", "shift_pattern"],
 		order_by="name",
 	)
 	return {r.name: r for r in rows}

@@ -12,7 +12,9 @@ from frappe.query_builder.functions import Sum
 from frappe.utils import add_days, add_to_date, get_datetime, getdate, now_datetime
 
 from foames.foames_mes.counters import good_and_scrap, minutes_between
+from foames.foames_mes.doctype.shift_pattern.shift_pattern import load_pattern
 from foames.foames_mes.oee import compute_oee, ledger_from_states
+from foames.foames_mes.shifts import Window, windows_for_day
 
 
 class OEEPeriod(Document):
@@ -136,38 +138,72 @@ def counts_in(machine: str, start, end) -> tuple[float, float]:
 
 
 def compute_daily_oee(for_date=None):
-	"""Scheduled daily: one OEE Period per enabled machine for each of the previous two days whose
-	window has ended and has no period yet.
+	"""Scheduled daily: one OEE Period per enabled machine and production window for each of the
+	previous two days whose window has ended and has no period yet.
 
-	A machine with a Shift Start is measured over its scheduled window only, so state time and counts
-	outside the shift never enter the period. Without one, the whole day is the planned time. A shift
-	that crosses midnight has not ended when the job runs for its date, so it is skipped then and
-	created by the next day's run; a window is never computed before it is over.
+	A machine with a Shift Pattern gets one period per shift that starts on the day (none on the
+	pattern's non-working days), each named by its shift. Otherwise a machine with a Shift Start is
+	measured over its single scheduled window, and without one the whole day is the planned time.
+	State time and counts outside a window never enter a period. A window that crosses midnight has
+	not ended when the job runs for its date, so it is skipped then and created by the next day's
+	run; a window is never computed before it is over.
 	"""
 	now = now_datetime()
 	today = getdate(now)
 	days = [getdate(for_date)] if for_date else [add_days(today, -1), add_days(today, -2)]
 	machines = frappe.get_all(
-		"Machine", {"disabled": 0}, ["name", "scheduled_minutes_per_day", "shift_start"]
+		"Machine",
+		filters={"disabled": 0},
+		fields=["name", "scheduled_minutes_per_day", "shift_start", "shift_pattern"],
 	)
 	created = []
 	for day, m in ((day, m) for day in days for m in machines):
-		start, end, planned = scheduled_window(day, m.shift_start, m.scheduled_minutes_per_day)
-		if end > now:
-			continue
-		if frappe.db.exists("OEE Period", {"machine": m.name, "from_time": start, "to_time": end}):
-			continue
-		doc = frappe.get_doc(
-			{
-				"doctype": "OEE Period",
-				"machine": m.name,
-				"from_time": start,
-				"to_time": end,
-				"planned_minutes": planned,
-			}
-		).insert(ignore_permissions=True)
-		created.append(doc.name)
+		for window in scheduled_windows(day, m):
+			if window.end > now:
+				continue
+			if frappe.db.exists(
+				"OEE Period", {"machine": m.name, "from_time": window.start, "to_time": window.end}
+			):
+				continue
+			doc = frappe.get_doc(
+				{
+					"doctype": "OEE Period",
+					"machine": m.name,
+					"shift": window.shift,
+					"from_time": window.start,
+					"to_time": window.end,
+					"planned_minutes": window.minutes,
+				}
+			).insert(ignore_permissions=True)
+			created.append(doc.name)
 	return created
+
+
+def scheduled_windows(day, machine) -> list[Window]:
+	"""The production windows that start on `day` for a machine row (shift_pattern, shift_start,
+	scheduled_minutes_per_day): one per shift of its Shift Pattern, else the single window of
+	`scheduled_window`."""
+	if machine.get("shift_pattern"):
+		shifts, holidays = load_pattern(machine.get("shift_pattern"))
+		return windows_for_day(getdate(day), shifts, holidays)
+	start, end, planned = scheduled_window(
+		day, machine.get("shift_start"), machine.get("scheduled_minutes_per_day")
+	)
+	return [Window(None, start, end, planned)]
+
+
+def operating_windows(machine, start, end) -> list[tuple]:
+	"""(from, to) of the machine's production windows that overlap [start, end), clipped to it. A
+	window that started the day before `start` counts with its part inside."""
+	windows = []
+	day = add_days(getdate(start), -1)
+	while get_datetime(f"{day} 00:00:00") < end:
+		for w in scheduled_windows(day, machine):
+			w_start, w_end = max(w.start, start), min(w.end, end)
+			if w_end > w_start:
+				windows.append((w_start, w_end))
+		day = add_days(day, 1)
+	return windows
 
 
 def scheduled_window(day, shift_start, scheduled_minutes):

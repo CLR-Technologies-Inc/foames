@@ -95,7 +95,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Downtime",
-   "link_count": 4,
+   "link_count": 5,
    "onboard": 0,
    "type": "Card Break"
   },
@@ -117,6 +117,17 @@
    "label": "Downtime Reason",
    "link_count": 0,
    "link_to": "Downtime Reason",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Shift Pattern",
+   "link_count": 0,
+   "link_to": "Shift Pattern",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -177,7 +188,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Floor",
-   "link_count": 3,
+   "link_count": 6,
    "onboard": 0,
    "type": "Card Break"
   },
@@ -213,9 +224,42 @@
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Andon Call",
+   "link_count": 0,
+   "link_to": "Andon Call",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Andon Call Type",
+   "link_count": 0,
+   "link_to": "Andon Call Type",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Andon Response",
+   "link_count": 0,
+   "link_to": "Andon Response",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2026-10-31 12:00:00.000000",
+ "modified": "2026-11-03 21:00:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES MES",
  "name": "FoaMES Supervisor",

@@ -24,6 +24,7 @@ REPORTS = (
 	"Suggestion Status",
 	"Process Throughput",
 	"ERP Outbox Health",
+	"Andon Response",
 	"SPC Control Chart",
 )
 DASHBOARDS = ("FoaMES Plant", "FoaMES Maintenance", "FoaMES Quality", "FoaMES Integration")
