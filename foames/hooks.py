@@ -90,8 +90,9 @@ doc_events["Stock Entry"] = {
 # foames_machine_state_changed = ["myapp.floor.on_state_changed"]  # (machine, previous_state, state, at)
 #
 # The ERPNext adapter uses the same hooks to put each machine's open Job Cards on the floor, to
-# roll a machine's counts and run time up to the Job Card it is working on, and to mirror each
-# machine's state onto its ERPNext Workstation.
+# roll a machine's counts and run time up to the Job Card it is working on, to inspect the Job Card
+# a machine finished from what it measured, and to mirror each machine's state onto its ERPNext
+# Workstation.
 # The S/4HANA adapter rolls them up to the order operation a machine is working on, as partial confirmations.
 
 foames_floor_snapshot_extensions = [
@@ -105,6 +106,7 @@ foames_suggestion_rules = [
 ]
 foames_machine_job_changed = [
 	"foames.foames_adapters.erpnext.rollup.on_job_changed",
+	"foames.foames_adapters.erpnext.quality.on_job_changed",
 	"foames.foames_adapters.s4hana.rollup.on_job_changed",
 ]
 foames_machine_state_changed = ["foames.foames_adapters.erpnext.workstation.on_state_changed"]

@@ -873,6 +873,54 @@ class TestQualityInspections(ERPNextTestCase):
 			inspection.name,
 		)
 
+	def test_job_change_queues_an_inspection_from_the_jobs_measurements(self):
+		from foames.foames_adapters.erpnext.quality import inspect_job_card
+		from foames.foames_mes.api import record_events, set_current_job
+		from foames.foames_mes.doctype.oee_period.test_oee_period import make_machine
+
+		settings = frappe.get_single("ERPNext Adapter Settings")
+		settings.inspect_job_cards_from_measurements = 1
+		settings.save()
+		self.addCleanup(
+			frappe.db.set_single_value, "ERPNext Adapter Settings", "inspect_job_cards_from_measurements", 0
+		)
+		machine = make_machine("FOAMES-TEST-QJ")
+		frappe.db.delete("Machine Event", {"machine": machine.name})
+		start = add_to_date(now_datetime().replace(microsecond=0), hours=-3)
+		t = lambda minutes: add_to_date(start, minutes=minutes)  # noqa: E731
+		wo = self.fixtures.make_work_order(qty=1)
+		job_card = self.fixtures.job_card_for(wo.name)
+		set_current_job(machine.name, get_reference("Job Card", job_card, ADAPTER_KEY), at=t(0))
+		rows = [
+			{"type": "Measurement", "name": self.LENGTH, "value": 10.2, "timestamp": t(-1)},  # previous job
+			*[
+				{"type": "Measurement", "name": self.LENGTH, "value": 10 + i / 10, "timestamp": t(i)}
+				for i in range(1, 4)
+			],
+			# Not in the template: left out rather than refused.
+			{"type": "Measurement", "name": "temperature", "value": 71.5, "timestamp": t(2)},
+		]
+		result = record_events([{"machine": machine.name, **row} for row in rows], source="Manual")
+		self.assertFalse(result["rejected"], result["rejected"])
+		frappe.db.delete("ERPNext Outbox")
+		# The job ends: the hook queues the inspection for the window the job ran in.
+		set_current_job(machine.name, None, at=t(30))
+		postings = frappe.get_all("ERPNext Outbox", {"operation": "Quality Inspection"}, ["name", "payload"])
+		self.assertEqual(len(postings), 1)
+		payload = json.loads(postings[0].payload)
+		self.assertEqual(payload["reference_name"], job_card)
+		self.assertEqual(payload["readings"], [{"specification": self.LENGTH, "values": [10.1, 10.2, 10.3]}])
+		self.assertEqual(self.run_outbox(), 1)
+		record = self.outbox(postings[0].name)
+		self.assertEqual(record.status, "Posted", record.last_error)
+		self.assertEqual(json.loads(record.response)["status"], "Accepted")
+		self.assertEqual(frappe.db.get_value("Job Card", job_card, "quality_inspection"), record.erp_document)
+		# A Job Card that names no template, or a job without readings for its parameters, queues nothing.
+		other = self.fixtures.job_card_for(self.fixtures.make_work_order(qty=1).name)
+		frappe.db.set_value("Job Card", other, "quality_inspection_template", None)
+		self.assertIsNone(inspect_job_card(machine.name, other, t(0), t(30)))
+		self.assertIsNone(inspect_job_card(machine.name, job_card, t(40), t(50)))
+
 	def test_inspection_from_machine_measurements(self):
 		from foames.foames_adapters.erpnext.api import post_inspection_from_measurements
 		from foames.foames_adapters.erpnext.quality import measurement_readings
