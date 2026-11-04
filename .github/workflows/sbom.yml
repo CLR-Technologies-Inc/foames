@@ -1,0 +1,107 @@
+name: SBOM
+
+# Builds the CycloneDX 1.7 SBOM of FoaMES for each supported Frappe line, validates it against the
+# official schema, keeps it as a workflow artifact, and attaches it to every published release.
+# How the SBOM is put together: docs/sbom.md.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+concurrency:
+  group: sbom-foames-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  sbom:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - frappe-line: v15
+            frappe-branch: version-15
+            python-version: '3.11'
+          - frappe-line: v16
+            frappe-branch: version-16
+            python-version: '3.14'
+    name: SBOM (Frappe ${{ matrix.frappe-line }})
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Test the SBOM builder
+        run: python -m unittest discover -s sbom -v
+
+      - name: Install the runtime environment to scan
+        # Frappe from the same branch CI tests against, plus the optional gateway packages, in a
+        # clean venv. FoaMES itself is not installed: it is the SBOM's subject, not a component.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libmariadb-dev pkg-config
+          python -m venv "$RUNNER_TEMP/app-env"
+          "$RUNNER_TEMP/app-env/bin/pip" install --upgrade pip
+          "$RUNNER_TEMP/app-env/bin/pip" install \
+            "frappe @ git+https://github.com/frappe/frappe@${{ matrix.frappe-branch }}" \
+            paho-mqtt asyncua
+
+      - name: Install the CycloneDX tools
+        # In their own venv, so they do not show up in the scanned environment.
+        run: |
+          python -m venv "$RUNNER_TEMP/cdx"
+          "$RUNNER_TEMP/cdx/bin/pip" install "cyclonedx-bom>=7.2.0" "cyclonedx-python-lib[json-validation]>=11.5.0"
+
+      - name: Scan the environment
+        run: |
+          "$RUNNER_TEMP/cdx/bin/cyclonedx-py" environment \
+            --spec-version 1.7 --output-format JSON \
+            --output-file "$RUNNER_TEMP/env.cdx.json" \
+            "$RUNNER_TEMP/app-env/bin/python"
+
+      - name: Build and validate the FoaMES SBOM
+        run: |
+          export SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+          version="$(python -c 'import re,pathlib;print(re.search(r"__version__\s*=\s*\"([^\"]+)\"", pathlib.Path("foames/__init__.py").read_text()).group(1))')"
+          mkdir -p dist
+          "$RUNNER_TEMP/cdx/bin/python" sbom/build_sbom.py \
+            --env-bom "$RUNNER_TEMP/env.cdx.json" \
+            --frappe-line ${{ matrix.frappe-line }} \
+            --out "dist/foames-${version}-frappe-${{ matrix.frappe-line }}.cdx.json" \
+            --validate
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom-frappe-${{ matrix.frappe-line }}
+          path: dist/*.cdx.json
+          if-no-files-found: error
+
+  attach:
+    # Only on a published release: add the SBOMs to the release's assets.
+    if: github.event_name == 'release'
+    needs: sbom
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: sbom-frappe-*
+          merge-multiple: true
+          path: dist
+
+      - name: Attach to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" dist/*.cdx.json --clobber --repo "${{ github.repository }}"

@@ -25,6 +25,7 @@ REPORTS = (
 	"Process Throughput",
 	"ERP Outbox Health",
 	"Andon Response",
+	"SPC Control Chart",
 )
 DASHBOARDS = ("FoaMES Plant", "FoaMES Maintenance", "FoaMES Quality", "FoaMES Integration")
 
@@ -383,7 +384,13 @@ class TestRoleAccess(IntegrationTestCase):
 				"Process Throughput",
 			),
 			"FoaMES Maintenance": ("OEE Trend", "Downtime Pareto", "MTBF and MTTR", "Suggestion Status"),
-			"FoaMES Quality": ("OEE Trend", "Downtime Pareto", "Suggestion Status", "Process Throughput"),
+			"FoaMES Quality": (
+				"OEE Trend",
+				"Downtime Pareto",
+				"Suggestion Status",
+				"Process Throughput",
+				"SPC Control Chart",
+			),
 		}
 		for role, reports in allowed.items():
 			frappe.set_user(self.users[role])
