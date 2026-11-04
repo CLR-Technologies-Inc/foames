@@ -51,6 +51,12 @@ def on_submit(doc, method=None):
 		return
 	if not str(doc.get("remarks") or "").startswith(MARKER_PREFIX):
 		return
+	# The marker alone is text anyone can type into a remark: only an entry the outbox recorded as
+	# its own posting's result gets references created on the submitter's behalf.
+	if not frappe.db.exists(
+		"ERPNext Outbox", {"operation": "Manufacture", "erp_doctype": "Stock Entry", "erp_document": doc.name}
+	):
+		return
 	from foames.foames_adapters.erpnext.executor import finished_good_identity, record_identity_references
 
 	record_identity_references(finished_good_identity(doc), submitted=True)

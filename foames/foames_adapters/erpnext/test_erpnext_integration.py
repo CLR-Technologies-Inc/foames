@@ -665,6 +665,30 @@ class TestTraceability(ERPNextTestCase):
 		for serial in serials:
 			self.assertTrue(frappe.db.exists("External Reference", {**reference, "external_id": serial}))
 
+	def test_a_hand_made_entry_with_a_marker_like_remark_gets_no_references(self):
+		"""Only entries the outbox posted get references on submission, whatever their remarks say."""
+		from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry
+
+		wo = self.fixtures.make_work_order(
+			qty=1, skip_transfer=True, operations=False, item=self.fixtures.FINISHED_GOOD_SERIAL
+		)
+		serial = f"FOAMES-TS-HAND-{frappe.generate_hash(length=5).upper()}"
+		entry = frappe.get_doc(make_stock_entry(wo.name, "Manufacture", 1))
+		entry.remarks = "FOAMES-rework by hand"
+		for row in entry.items:
+			if row.item_code == self.fixtures.FINISHED_GOOD_SERIAL:
+				row.use_serial_batch_fields = 1
+				row.serial_no = serial
+		entry.insert()
+		entry.submit()
+		self.assertTrue(frappe.db.exists("Serial No", serial))
+		self.assertFalse(
+			frappe.db.exists(
+				"External Reference",
+				{"erp_system": ADAPTER_KEY, "reference_type": "Serial Number", "external_id": serial},
+			)
+		)
+
 
 def hasattr_erpnext_reading_parser() -> bool:
 	"""Whether the installed ERPNext reads Quality Inspection readings in the user's number format."""
