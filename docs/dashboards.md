@@ -1,6 +1,6 @@
 # Dashboards, reports and role workspaces
 
-FoaMES ships standard Frappe workspaces, number cards, dashboard charts, dashboards and script reports for the public features: OEE by machine and line, the downtime Pareto, MTBF and MTTR, Agent Suggestion status, the ERP outbox health and process-mining throughput. Everything here is a standard Frappe record that `bench migrate` installs and keeps in sync, so nothing has to be built by hand on a site, and all of it can be copied and changed in the usual Frappe way (duplicate a workspace, add a chart, change a filter).
+FoaMES ships standard Frappe workspaces, number cards, dashboard charts, dashboards and script reports for the public features: OEE by machine and line, the downtime Pareto, MTBF and MTTR, Agent Suggestion status, the ERP outbox health, process-mining throughput and andon response times. Everything here is a standard Frappe record that `bench migrate` installs and keeps in sync, so nothing has to be built by hand on a site, and all of it can be copied and changed in the usual Frappe way (duplicate a workspace, add a chart, change a filter).
 
 ## Workspaces by role
 
@@ -22,15 +22,16 @@ The Machine has a `Line` field, a free text such as `Line 2` or `Cell B`. The OE
 
 ## Reports
 
-All six are script reports with a chart and a summary row, so each one can be placed on a workspace or dashboard as a Report chart. Dates default to the last 30 days (90 for suggestions, 7 for the outbox) when a chart calls them without dates.
+All seven are script reports with a chart and a summary row, so each one can be placed on a workspace or dashboard as a Report chart. Dates default to the last 30 days (90 for suggestions, 7 for the outbox) when a chart calls them without dates.
 
 | Report | Based on | Filters | Rows |
 | --- | --- | --- | --- |
-| OEE Trend | OEE Period | date range, machine, line, group by Machine / Line / Day, chart metric OEE / Availability / Performance / Quality | one row per group and day, rolled up from the stored periods: OEE, availability, performance, quality, the time ledger and counts. The chart draws one line per group (the eight busiest when there are more) |
+| OEE Trend | OEE Period | date range, machine, line, shift, group by Machine / Line / Shift / Day, chart metric OEE / Availability / Performance / Quality | one row per group and day, rolled up from the stored periods: OEE, availability, performance, quality, the time ledger and counts. The chart draws one line per group (the eight busiest when there are more) |
 | Downtime Pareto | Downtime Record | date range, machine, line, group by Reason / Category / Machine, include planned, include open | downtime minutes per group largest first, with the share and cumulative share. Records are clipped to the window; records without a reason appear as `Unclassified` |
-| MTBF and MTTR | Downtime Record | date range, machine, line, breakdown reasons only | per machine: failures (closed, unplanned stoppages), MTBF in hours, MTTR in minutes, downtime, longest stop, inherent availability `MTBF / (MTBF + MTTR)`. Operating time is the machine's scheduled window on each day of the range (Shift Start plus Scheduled Minutes Per Day; the whole day when Shift Start is empty) less the downtime inside it, so a stop outside the shift does not count. Frappe fills Shift Start with the current time when a Machine is created, so clear it on machines that run around the clock |
+| MTBF and MTTR | Downtime Record | date range, machine, line, breakdown reasons only | per machine: failures (closed, unplanned stoppages), MTBF in hours, MTTR in minutes, downtime, longest stop, inherent availability `MTBF / (MTBF + MTTR)`. Operating time is the machine's scheduled windows in the range (the shifts of its Shift Pattern, otherwise Shift Start plus Scheduled Minutes Per Day; the whole day when Shift Start is empty) less the downtime inside it, so a stop outside the shift does not count. Frappe fills Shift Start with the current time when a Machine is created, so clear it on machines that run around the clock |
 | Suggestion Status | Agent Suggestion | raised date range, group by Category / Severity / Agent, category, severity, agent | per group: open, accepted, done and dismissed counts, the share accepted or done, the median hours from raising to resolution |
 | Process Throughput | Process Event Log | event log (the latest extracted one by default), daily or weekly, only cases with an activity | cases completed per period (a case completes at its last event), events, median, mean, P90 and longest cycle time in hours; the summary carries the cases per day of the selected cases |
+| Andon Response | Andon Call | raised date range, machine, line, call type, group by Call Type / Machine / Line | per group: calls, still open, resolved, cancelled, median and P90 response and resolution minutes, calls that missed the acknowledge or resolve target ([andon.md](andon.md)) |
 | SPC Control Chart | Machine Event | machine and measurement (required), dates, I-MR or X-bar R, subgroup size, baseline readings, Nelson or Western Electric rules | the measurement against its centre line and control limits, with the moving range or range and the run rules signalled per point; see [spc.md](spc.md) |
 | ERP Outbox Health | S4HANA Outbox (reads the ERPNext Outbox too) | created date range, adapter, operation | per adapter and status: postings, age of the oldest unposted one, the most attempts, the next attempt and the last error. Unposted work outside the date range is always included |
 
