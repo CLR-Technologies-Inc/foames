@@ -58,12 +58,18 @@ def extend_snapshot(snapshot: dict, since, now):
 
 def machine_workstations(machines: list[str]) -> dict[str, str]:
 	"""Machine name -> ERPNext Workstation name, for machines whose reference points at ERPNext."""
+	return machine_records(machines, "workstation_reference", "Workstation")
+
+
+def machine_records(machines: list[str], field: str, reference_type: str) -> dict[str, str]:
+	"""Machine name -> the ERPNext record its `field` (an External Reference of `reference_type`)
+	points at, for the machines whose reference is ERPNext's and not Missing."""
 	if not machines:
 		return {}
 	rows = frappe.get_all(
 		"Machine",
-		filters={"name": ("in", machines), "workstation_reference": ("is", "set")},
-		fields=["name", "workstation_reference"],
+		filters={"name": ("in", machines), field: ("is", "set")},
+		fields=["name", field],
 	)
 	if not rows:
 		return {}
@@ -72,17 +78,15 @@ def machine_workstations(machines: list[str]) -> dict[str, str]:
 		for r in frappe.get_all(
 			"External Reference",
 			filters={
-				"name": ("in", [r.workstation_reference for r in rows]),
+				"name": ("in", [r.get(field) for r in rows]),
 				"erp_system": ADAPTER_KEY,
-				"reference_type": "Workstation",
+				"reference_type": reference_type,
 				"status": ("!=", "Missing"),
 			},
 			fields=["name", "external_id"],
 		)
 	}
-	return {
-		r.name: references[r.workstation_reference] for r in rows if r.workstation_reference in references
-	}
+	return {r.name: references[r.get(field)] for r in rows if r.get(field) in references}
 
 
 def running_without_job_card(snapshot: dict) -> list[dict]:

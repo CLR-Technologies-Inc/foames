@@ -21,6 +21,7 @@ class TestOperations(unittest.TestCase):
 					"Work Order",
 					"Workstation",
 					"Downtime Entry",
+					"Asset Repair",
 					"Quality Inspection",
 				),
 			)
@@ -223,6 +224,37 @@ class TestPrepare(unittest.TestCase):
 		}
 		self.assertEqual(self.prepare("Downtime Entry", full), full)
 
+	def test_asset_repair_rules(self):
+		base = {"asset": "ACC-ASS-2026-00001", "failure_date": "2026-11-04 08:00:00"}
+		self.assertEqual(self.prepare("Asset Repair", base), {**base, "repair_status": "Pending"})
+		done = {
+			**base,
+			"repair_status": "Completed",
+			"completion_date": "2026-11-04 09:30:00",
+			"description": "MWO-2026-00001: Grease the spindle",
+			"actions_performed": "Greased",
+			"maintenance_work_order": "MWO-2026-00001",
+			"submit": 1,
+		}
+		self.assertEqual(self.prepare("Asset Repair", done), {**done, "submit": True})
+		bad = [
+			{"asset": "ACC-ASS-2026-00001"},
+			{**base, "repair_status": "Open"},
+			{**base, "completion_date": "2026-11-04 07:00:00"},
+			{**base, "submit": True},
+			{**base, "workstation": "WS-1"},
+		]
+		for payload in bad:
+			with self.assertRaises(ValueError, msg=payload):
+				self.prepare("Asset Repair", payload)
+
+	def test_repair_marker_is_stable_and_distinct_from_the_posting_marker(self):
+		stable = postings.repair_marker("MWO-2026-00001")
+		self.assertEqual(stable, postings.repair_marker("MWO-2026-00001"))
+		self.assertNotEqual(stable, postings.repair_marker("MWO-2026-00002"))
+		self.assertNotEqual(stable, postings.marker("maintenance:MWO-2026-00001:abc"))
+		self.assertTrue(stable.startswith(postings.MARKER_PREFIX))
+
 
 class TestFinishedGoodIdentity(unittest.TestCase):
 	def prepare(self, operation, payload):
@@ -351,12 +383,19 @@ class TestHooksMatchTheAdapter(unittest.TestCase):
 		spec = importlib.util.spec_from_file_location("foames_hooks", path)
 		hooks = importlib.util.module_from_spec(spec)
 		spec.loader.exec_module(hooks)
-		self.assertEqual(set(hooks.doc_events), set(REFERENCE_TYPES_BY_DOCTYPE) | {"Downtime Record"})
+		self.assertEqual(
+			set(hooks.doc_events),
+			set(REFERENCE_TYPES_BY_DOCTYPE) | {"Downtime Record", "Maintenance Work Order"},
+		)
 		for doctype in REFERENCE_TYPES_BY_DOCTYPE:
 			self.assertEqual(dict(hooks.doc_events[doctype]), DOC_EVENTS[doctype])
 		self.assertEqual(
 			hooks.doc_events["Downtime Record"],
 			{"on_update": "foames.foames_adapters.erpnext.downtime.on_update"},
+		)
+		self.assertEqual(
+			hooks.doc_events["Maintenance Work Order"],
+			{"on_update": "foames.foames_adapters.erpnext.maintenance.on_update"},
 		)
 		# Other adapters register their own handlers next to the ERPNext one.
 		self.assertIn(

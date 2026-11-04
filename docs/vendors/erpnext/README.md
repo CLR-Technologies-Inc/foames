@@ -27,9 +27,9 @@ The adapter is built in and switches on by itself when the `erpnext` app is inst
 
 | Direction | What | How |
 | --- | --- | --- |
-| FoaMES reads ERPNext | Resolve External References (Item, UOM, Batch, Serial No, Work Order, Operation, Warehouse, Stock Entry, Job Card, BOM, Routing, Workstation) with their details; list open Work Orders and Job Cards | `frappe.db` reads of ERPNext's tables |
-| FoaMES writes ERPNext | Stock Entries against a Work Order (transfer, manufacture, consumption), Job Card time logs, Work Order stop, resume and close, Quality Inspections from floor readings | ERPNext's own whitelisted functions, through the **ERPNext Outbox** |
-| Machines write ERPNext | A machine's good and scrap counts and its running time, rolled up to the Job Card it is working on; its state shown as the Workstation's status; its downtime as Downtime Entries; its measurements as the readings of a Quality Inspection, queued for the Job Card it finished | The machine's **Current Job Reference** and **Workstation Reference**, the scheduler, the `foames_machine_job_changed` and `foames_machine_state_changed` hooks, a Downtime Record event and the outbox |
+| FoaMES reads ERPNext | Resolve External References (Item, UOM, Batch, Serial No, Work Order, Operation, Warehouse, Stock Entry, Job Card, BOM, Routing, Workstation, Asset) with their details; list open Work Orders and Job Cards | `frappe.db` reads of ERPNext's tables |
+| FoaMES writes ERPNext | Stock Entries against a Work Order (transfer, manufacture, consumption), Job Card time logs, Work Order stop, resume and close, Quality Inspections from floor readings, Asset Repairs from Maintenance Work Orders | ERPNext's own whitelisted functions, through the **ERPNext Outbox** |
+| Machines write ERPNext | A machine's good and scrap counts and its running time, rolled up to the Job Card it is working on; its state shown as the Workstation's status; its downtime as Downtime Entries; its measurements as the readings of a Quality Inspection, queued for the Job Card it finished; its maintenance work orders as Asset Repairs | The machine's **Current Job Reference**, **Workstation Reference** and **Asset Reference**, the scheduler, the `foames_machine_job_changed` and `foames_machine_state_changed` hooks, Downtime Record and Maintenance Work Order events and the outbox |
 | ERPNext tells FoaMES | A mapped record was saved, renamed or deleted; a Job Card was started, completed or cancelled | `doc_events` hooks that refresh the matching External Reference and set or end the current job of the machines at the card's workstation |
 | The floor | Open Job Cards and Work Orders per machine, and a rule for a machine running without one | `foames_floor_snapshot_extensions` and `foames_suggestion_rules` |
 
@@ -54,9 +54,15 @@ The adapter is built in and switches on by itself when the `erpnext` app is inst
      Workstation's status, and **Post Downtime to ERPNext** turns closed Downtime Records into
      ERPNext Downtime Entries (with **Downtime Operator**, the Employee ERPNext requires on them);
      see [Workstation status and downtime](#workstation-status-and-downtime).
+   - **Post Maintenance Work Orders to ERPNext** turns each Maintenance Work Order that starts into
+     an ERPNext Asset Repair on the machine's Asset, completed or cancelled with the work order;
+     **Submit Asset Repairs When Complete** submits the repair when the work order completes; see
+     [Maintenance work orders](#maintenance-work-orders).
    - **Refresh Unresolved References Daily** re-checks references that are Unverified or Missing.
 3. Point each Machine at its ERPNext Workstation through **Workstation Reference** (an External
    Reference of type Workstation). That is what ties live machine state to ERPNext's job list.
+   A machine that is a fixed asset in ERPNext can also point at it through **Asset Reference**
+   (type Asset), which is where its maintenance work orders go.
 
 ## Reading ERPNext
 
@@ -117,6 +123,7 @@ status; `get_posting(name)` reports progress.
 | `Work Order Status` | `work_order`, `status` = `Stopped`, `Resumed` or `Closed` | `stop_unstop` or `close_work_order`; already being in that state counts as done |
 | `Workstation Status` | `workstation`, `status` = `Production`, `Off`, `Idle`, `Problem`, `Maintenance` or `Setup` | Sets the Workstation's status, which ERPNext's Plant Floor page shows; already showing it counts as done, and a disabled Workstation is left Off |
 | `Downtime Entry` | `workstation`, `from_time`, `to_time`, optional `operator` (Employee; defaults to the settings' **Downtime Operator**, and ERPNext requires one), `stop_reason` (one of ERPNext's reasons, else `Other`), `remarks`, `downtime_record` | Creates a Downtime Entry through its own validation (no overlap on the Workstation, minutes computed); with `downtime_record` the entry carries a marker for that record and a later posting for the same record updates it instead of adding a second one |
+| `Asset Repair` | `asset`, `failure_date`, optional `repair_status` (`Pending`, the default, `Completed` or `Cancelled`), `completion_date`, `description`, `actions_performed`, `maintenance_work_order`, `submit` (only with `Completed`) | Creates an Asset Repair through its own validation (a Pending repair marks the Asset Out of Order; Completed with both dates computes the downtime); with `maintenance_work_order` the repair carries a marker for that work order and a later posting for the same work order updates it instead of adding a second one. A repair a person already submitted in ERPNext is left as it is. With `submit` the completed repair is submitted, which is when ERPNext books its costs and consumed items |
 | `Quality Inspection` | `reference_type` (`Job Card` or `Stock Entry`), `reference_name`, and either `measurements` (`{"machine", "since", "until", "specifications"}`: the readings are taken from the machine's Measurement events in that window, `until` excluded, when the posting is performed) or `readings` (a list of `{"specification": <Quality Inspection Parameter>, "values": [numbers]}` for numeric parameters, up to ten values each, or `{"specification": ..., "value": "text"}`, each optionally with `min_value`/`max_value` or a `status`), optional `item_code`, `inspection_type` (`In Process` for a Job Card and `Incoming` for a Stock Entry unless given), `sample_size` (defaults to the most values any reading has), `inspected_by` (User; defaults to the queuing user), `template`, `batch_no`, `serial_no`, `remarks`, `submit` | Creates the Quality Inspection with the readings, taking each parameter's acceptance limits or formula from the Quality Inspection Template the Job Card's operation, the BOM or the item names (or `template`), and lets ERPNext judge every reading and set the inspection's status (Accepted or Rejected). A reading for a parameter outside the template needs its own limits or a status, and an unknown parameter is refused. Submitting (the default) links the inspection to the Job Card or the Stock Entry row, which is what ERPNext checks when a Job Card whose BOM requires inspection is completed. The response carries the status and each reading's status; see [Quality inspections](#quality-inspections) |
 
 `qty` defaults to the Work Order's remaining quantity, as it does in the form. `submit` defaults
@@ -249,6 +256,28 @@ after the fact, so a change to a closed record (reason, notes, end time) queues 
 updates the same entry, found by a marker for the record; saving a record unchanged queues
 nothing. A record on a machine with no Workstation Reference is not posted. ERPNext rejects
 entries that overlap on a Workstation, which shows up as a Failed posting with its message.
+
+## Maintenance work orders
+
+ERPNext's Asset Repair records a repair of a fixed Asset: when it failed, when it was back, what
+was done, the downtime between the two, and later the costs and the parts consumed. FoaMES
+raises Maintenance Work Orders from its plans (see [Preventive maintenance](../../maintenance.md));
+with **Post Maintenance Work Orders to ERPNext** on, each one is mirrored as an Asset Repair on
+the machine's Asset, for machines that point at their ERPNext Asset through **Asset Reference**.
+
+Starting a work order (status In Progress) queues one `Asset Repair` posting with the status
+Pending and the start as the failure date, which is how ERPNext marks the Asset Out of Order.
+Completing it queues a second posting that brings the same repair to Completed, with the
+completion time and the work order's findings as the actions performed; ERPNext then computes
+the downtime and sets the Asset's status back. Cancelling a started work order marks the repair
+Cancelled. The repair is found by a marker for the work order in its description, so one work
+order is one repair however many postings it takes; saving a work order without a change queues
+nothing, and a work order that is raised but never started tells ERPNext nothing, because the
+machine is still running. The repair stays a draft unless **Submit Asset Repairs When Complete**
+is on, so a person can add the costs and the consumed items ERPNext books on submission; a repair
+someone has already submitted in ERPNext is left alone. Postings for one work order run in order
+(their sequence group is the work order), and a work order on a machine with no Asset Reference
+is not posted.
 
 ## Quality inspections
 

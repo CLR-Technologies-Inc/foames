@@ -68,6 +68,8 @@ _erpnext_reference_sync = {
 doc_events = {
 	# A closed Downtime Record becomes an ERPNext Downtime Entry when the adapter is told to post them.
 	"Downtime Record": {"on_update": "foames.foames_adapters.erpnext.downtime.on_update"},
+	# A started Maintenance Work Order becomes an ERPNext Asset Repair on the machine's Asset.
+	"Maintenance Work Order": {"on_update": "foames.foames_adapters.erpnext.maintenance.on_update"},
 } | {
 	doctype: _erpnext_reference_sync
 	for doctype in (
@@ -83,6 +85,7 @@ doc_events = {
 		"BOM",
 		"Routing",
 		"Workstation",
+		"Asset",
 	)
 }
 # A Manufacture entry FoaMES left as a draft gets its serial numbers when a person submits it.

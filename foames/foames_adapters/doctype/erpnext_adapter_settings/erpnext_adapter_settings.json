@@ -23,6 +23,10 @@
   "column_break_workstations",
   "post_downtime_to_erpnext",
   "downtime_operator",
+  "maintenance_section",
+  "post_maintenance_to_erpnext",
+  "column_break_maintenance",
+  "submit_asset_repairs",
   "references_section",
   "refresh_references_daily"
  ],
@@ -143,6 +147,30 @@
    "description": "ERPNext requires an operator on every Downtime Entry. Entries FoaMES posts name this Employee (for example HR-EMP-00001) unless the posting carries its own."
   },
   {
+   "fieldname": "maintenance_section",
+   "fieldtype": "Section Break",
+   "label": "Maintenance"
+  },
+  {
+   "fieldname": "post_maintenance_to_erpnext",
+   "fieldtype": "Check",
+   "label": "Post Maintenance Work Orders to ERPNext",
+   "default": "0",
+   "description": "Queue every Maintenance Work Order that starts as an ERPNext Asset Repair on the machine's Asset (its Asset Reference), and bring the repair up to date when the work order completes or is cancelled. Needs Enable Postings."
+  },
+  {
+   "fieldname": "column_break_maintenance",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "submit_asset_repairs",
+   "fieldtype": "Check",
+   "label": "Submit Asset Repairs When Complete",
+   "default": "0",
+   "depends_on": "post_maintenance_to_erpnext",
+   "description": "Submit the Asset Repair when its work order completes. Off, the completed repair stays a draft for a person to add costs and consumed items before submitting."
+  },
+  {
    "fieldname": "references_section",
    "fieldtype": "Section Break",
    "label": "References"
@@ -158,7 +186,7 @@
  "index_web_pages_for_search": 0,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-31 07:00:00.000000",
+ "modified": "2026-11-04 21:00:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES Adapters",
  "name": "ERPNext Adapter Settings",

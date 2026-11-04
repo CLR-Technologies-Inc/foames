@@ -52,6 +52,8 @@ def execute(operation: Operation, payload: dict, marker: str) -> Result:
 		return set_workstation_status(payload)
 	if operation.label == "Downtime Entry":
 		return post_downtime_entry(payload, marker)
+	if operation.label == "Asset Repair":
+		return post_asset_repair(payload, marker)
 	if operation.label == "Quality Inspection":
 		return post_quality_inspection(payload, marker)
 	raise ValueError(f"No executor for {operation.label}")
@@ -80,6 +82,12 @@ def find_existing(operation: Operation, payload: dict, marker: str) -> Result | 
 		name = frappe.db.get_value("Downtime Entry", {"remarks": ("like", f"%{marker}%")}, "name")
 		if name:
 			return Result("Downtime Entry", name, {"found_by": "marker"}, existing=True)
+	elif operation.label == "Asset Repair":
+		name = frappe.db.get_value(
+			"Asset Repair", {"description": ("like", f"%{marker}%"), "docstatus": ("<", 2)}, "name"
+		)
+		if name:
+			return Result("Asset Repair", name, {"found_by": "marker", **repair_outcome(name)}, existing=True)
 	elif operation.label == "Quality Inspection":
 		name = frappe.db.get_value(
 			"Quality Inspection", {"remarks": ("like", f"{marker}%"), "docstatus": ("<", 2)}, "name"
@@ -441,6 +449,75 @@ def post_downtime_entry(payload: dict, marker: str) -> Result:
 		return Result("Downtime Entry", doc.name, {"downtime": doc.downtime, "updated": True})
 	doc = frappe.get_doc({"doctype": "Downtime Entry", **values}).insert()
 	return Result("Downtime Entry", doc.name, {"downtime": doc.downtime, "stop_reason": stop_reason})
+
+
+def repair_outcome(name: str) -> dict:
+	"""What a posting reports about an Asset Repair: its state, ERPNext's downtime figure and what
+	the Asset shows now (a Pending repair puts it Out of Order)."""
+	repair = frappe.db.get_value(
+		"Asset Repair", name, ["asset", "repair_status", "downtime", "docstatus"], as_dict=True
+	)
+	return {
+		"repair_status": repair.repair_status,
+		"downtime": repair.downtime,
+		"submitted": repair.docstatus == 1,
+		"asset_status": frappe.db.get_value("Asset", repair.asset, "status"),
+	}
+
+
+def post_asset_repair(payload: dict, marker: str) -> Result:
+	"""Create the ERPNext Asset Repair for a Maintenance Work Order, or bring the one an earlier
+	posting created for the same work order up to date: Pending while the work is on (ERPNext marks
+	the Asset Out of Order), Completed with the completion time and the findings when it is done,
+	Cancelled when the work order is. ERPNext computes the downtime from the two dates and refuses to
+	submit a Pending repair. A repair a person already submitted in ERPNext is left as it is."""
+	from foames.foames_adapters.erpnext.postings import repair_marker
+
+	markers = [marker]
+	work_order = payload.get("maintenance_work_order")
+	existing = None
+	if work_order:
+		stable = repair_marker(work_order)
+		markers.insert(0, stable)
+		existing = frappe.db.get_value(
+			"Asset Repair", {"description": ("like", f"%{stable}%"), "docstatus": ("<", 2)}, "name"
+		)
+	status = payload.get("repair_status") or "Pending"
+	values = {
+		"asset": payload["asset"],
+		"failure_date": get_datetime(payload["failure_date"]),
+		"completion_date": get_datetime(payload["completion_date"])
+		if payload.get("completion_date")
+		else None,
+		"repair_status": status,
+		"description": " ".join([*markers, (payload.get("description") or "").strip()]).strip(),
+		"actions_performed": (payload.get("actions_performed") or "").strip() or None,
+	}
+	if existing:
+		doc = frappe.get_doc("Asset Repair", existing)
+		if doc.docstatus == 1:
+			return Result(
+				"Asset Repair",
+				doc.name,
+				{"unchanged": "already submitted", **repair_outcome(doc.name)},
+				existing=True,
+			)
+		doc.update(values)
+		doc.save()
+	else:
+		doc = frappe.get_doc(
+			{
+				"doctype": "Asset Repair",
+				"naming_series": frappe.get_meta("Asset Repair")
+				.get_field("naming_series")
+				.options.splitlines()[0],
+				"company": frappe.db.get_value("Asset", payload["asset"], "company"),
+				**values,
+			}
+		).insert()
+	if status == "Completed" and payload.get("submit"):
+		doc.submit()
+	return Result("Asset Repair", doc.name, {"updated": bool(existing), **repair_outcome(doc.name)})
 
 
 def post_quality_inspection(payload: dict, marker: str) -> Result:

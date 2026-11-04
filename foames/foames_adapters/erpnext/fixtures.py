@@ -193,6 +193,73 @@ def ensure_inspection_template() -> str:
 	return INSPECTION_TEMPLATE
 
 
+ASSET_LOCATION = "FoaMES Test Plant"
+ASSET_CATEGORY = "FoaMES Test Machines"
+ASSET_ITEM = "FOAMES-TEST-PRESS"
+ASSET_NAME = "FoaMES Test Press"
+
+
+def ensure_asset() -> str:
+	"""The ERPNext Asset a machine points at through its Asset Reference, for Asset Repairs. A
+	draft (unsubmitted) asset of an existing-asset type, so no purchase documents or depreciation
+	are involved; Asset Repair only needs an asset that is not sold or scrapped."""
+	existing = frappe.db.get_value("Asset", {"asset_name": ASSET_NAME, "company": COMPANY}, "name")
+	if existing:
+		return existing
+	if not frappe.db.exists("Location", ASSET_LOCATION):
+		frappe.get_doc({"doctype": "Location", "location_name": ASSET_LOCATION}).insert(
+			ignore_permissions=True
+		)
+	if not frappe.db.exists("Asset Category", ASSET_CATEGORY):
+		fixed_asset_account = frappe.db.get_value(
+			"Account", {"company": COMPANY, "account_type": "Fixed Asset", "is_group": 0}, "name"
+		)
+		frappe.get_doc(
+			{
+				"doctype": "Asset Category",
+				"asset_category_name": ASSET_CATEGORY,
+				"enable_cwip_accounting": 0,
+				"accounts": [{"company_name": COMPANY, "fixed_asset_account": fixed_asset_account}],
+			}
+		).insert(ignore_permissions=True)
+	if not frappe.db.exists("Item", ASSET_ITEM):
+		frappe.get_doc(
+			{
+				"doctype": "Item",
+				"item_code": ASSET_ITEM,
+				"item_name": ASSET_NAME,
+				"item_group": "All Item Groups",
+				"stock_uom": "Nos",
+				"is_stock_item": 0,
+				"is_fixed_asset": 1,
+				"asset_category": ASSET_CATEGORY,
+			}
+		).insert(ignore_permissions=True)
+	cost_center = frappe.db.get_value("Cost Center", {"company": COMPANY, "is_group": 0}, "name")
+	asset = frappe.get_doc(
+		{
+			"doctype": "Asset",
+			"asset_name": ASSET_NAME,
+			"item_code": ASSET_ITEM,
+			"asset_category": ASSET_CATEGORY,
+			"company": COMPANY,
+			"location": ASSET_LOCATION,
+			"cost_center": cost_center,
+			"asset_owner": "Company",
+			"asset_type": "Existing Asset",
+			"is_existing_asset": 1,
+			"purchase_date": "2024-01-01",
+			"available_for_use_date": "2024-01-01",
+			"gross_purchase_amount": 10000,
+			"net_purchase_amount": 10000,
+			"purchase_amount": 10000,
+			"asset_quantity": 1,
+			"calculate_depreciation": 0,
+		}
+	).insert(ignore_permissions=True)
+	return asset.name
+
+
 def ensure_workstation_and_operation():
 	if not frappe.db.exists("Workstation", WORKSTATION):
 		frappe.get_doc(
