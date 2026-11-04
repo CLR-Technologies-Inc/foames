@@ -39,7 +39,7 @@ Site records in `foames/foames_adapters/doctype/`: `mes_connection` (one per sys
 
 1. A folder `foames/foames_adapters/<system>/` with `profile.py` (a `Profile`: key, label, vendor, product, `docs_url`, `base_url_hint`, `auth_methods`, `api_key_header`, `token_url_hint`, `site_label`, `headers`, `entities` only where published, `notes`), `adapter.py` (a `ProfileAdapter` subclass with `profile = PROFILE`), an `__init__.py` docstring, and an `AGENTS.md` like the existing ones.
 2. Register the class in `foames_erp_adapters` in `hooks.py`, add its key to the Select on MES Connection, and add it to `ADAPTERS` in `test_profiles.py`. These three are the only places outside its folder that may name it.
-3. A guide at `docs/vendors/<system>/README.md` (key, connection style, what the profile ships, the system notes) and a row in `docs/vendors/README.md`. Do not add the system to `docs/mes-adapters.md`.
+3. A guide at `docs/vendors/<system>/README.md` (key, connection style, what the profile ships, the system notes), a row in `docs/vendors/README.md` and a row in the Integrations section of the root `README.md`. Do not add the system to `docs/mes-adapters.md`.
 4. `sbom/curated.json` if it adds a connected service (see the root `AGENTS.md`).
 
 ## Adding a reference type

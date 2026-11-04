@@ -25,4 +25,4 @@ A vendor's folder here has the same name as its package under `foames/foames_ada
 
 1. Create `docs/vendors/<vendor>/`, named like the adapter's package, with a `README.md` as the landing page. Split setup, operation and reference into further pages in the same folder once the landing page grows past what one reader wants to scroll.
 2. Keep vendor-neutral material (the event shape, counter rules, the adapter contract, a framework several vendors share) in the parent `docs/` folder and link to it with a relative path such as `../../machine-data.md`. Put the agent-facing rules in the adapter's own `AGENTS.md`.
-3. Add a row to the table above. Nothing else in `docs/`, `README.md` or the root `AGENTS.md` needs to change.
+3. Add a row to the table above and to the Integrations section of the root [README.md](../../README.md) (moving it from Planned to Existing alpha if it was planned). Nothing else in `docs/` or the root `AGENTS.md` needs to change.

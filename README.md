@@ -22,6 +22,45 @@ FoaMES records never use Link fields to ERP DocTypes. They store an `External Re
 
 Which ERPs and other manufacturing systems have an adapter, and what each one reads, posts and needs, is described per vendor under [docs/vendors/](docs/vendors/README.md). Nothing in the core depends on any of them.
 
+## Integrations
+
+FoaMES reaches other systems only through adapters and gateway paths, so none of them is required and each can be added or removed without touching the core. How each one is set up is in its guide under [docs/vendors/](docs/vendors/README.md).
+
+### Existing alpha integrations
+
+These ship in the app today. They are **alpha**: built against the vendors' published interfaces and covered by automated tests against in-memory stand-ins (ERPNext against a real ERPNext test site), but treat each as unproven until it has been run against your own system.
+
+| Integration | Kind | Guide |
+| --- | --- | --- |
+| ERPNext | ERP, same site | [docs/vendors/erpnext/](docs/vendors/erpnext/README.md) |
+| SAP S/4HANA | ERP, remote (OData, IDoc) | [docs/vendors/s4hana/](docs/vendors/s4hana/README.md) |
+| Siemens Insights Hub (Opcenter Intelligence) | Industrial data platform | [docs/vendors/insights_hub/](docs/vendors/insights_hub/README.md) |
+| Rockwell Plex Smart Manufacturing Platform | MES / ERP (REST profile) | [docs/vendors/plex/](docs/vendors/plex/README.md) |
+| Rockwell FactoryTalk ProductionCentre and PharmaSuite | MES (REST profile) | [docs/vendors/factorytalk_productioncentre/](docs/vendors/factorytalk_productioncentre/README.md) |
+| SAP Digital Manufacturing | MES (REST profile) | [docs/vendors/sap_dmc/](docs/vendors/sap_dmc/README.md) |
+| Dassault Systèmes DELMIA Apriso | MES / MOM (REST profile) | [docs/vendors/delmia_apriso/](docs/vendors/delmia_apriso/README.md) |
+| AVEVA Manufacturing Execution System | MES (REST profile) | [docs/vendors/aveva_mes/](docs/vendors/aveva_mes/README.md) |
+| Critical Manufacturing MES | MES (REST profile) | [docs/vendors/critical_manufacturing/](docs/vendors/critical_manufacturing/README.md) |
+| Tulip | Frontline operations platform (REST profile) | [docs/vendors/tulip/](docs/vendors/tulip/README.md) |
+| Aegis FactoryLogix | MES (REST profile) | [docs/vendors/aegis_factorylogix/](docs/vendors/aegis_factorylogix/README.md) |
+| Körber Werum PAS-X MES | MES (REST profile) | [docs/vendors/koerber_pasx/](docs/vendors/koerber_pasx/README.md) |
+| Proficy Smart Factory MES (Velotic) | MES (REST profile) | [docs/vendors/proficy/](docs/vendors/proficy/README.md) |
+| Ignition (Inductive Automation) | SCADA, through Sparkplug B, OPC UA or a gateway script | [docs/vendors/ignition/](docs/vendors/ignition/README.md) |
+
+Any machine, PLC or SCADA system that can publish Sparkplug B, serve OPC UA, publish JSON over MQTT or post to a signed webhook can send machine data without a vendor-specific integration; see [docs/machine-data.md](docs/machine-data.md).
+
+### Planned integrations
+
+Not built yet; listed so contributors can see where help is wanted. Each would follow [docs/adapters.md](docs/adapters.md) and the "Adding a vendor" checklist in [foames/foames_adapters/AGENTS.md](foames/foames_adapters/AGENTS.md).
+
+| Area | Systems |
+| --- | --- |
+| Other ERPs | Odoo; Microsoft Dynamics 365 (Business Central, Supply Chain Management); Epicor Kinetic; Infor CloudSuite and SyteLine; Oracle NetSuite and Fusion Cloud |
+| Industrial data and SCADA | PTC Kepware and ThingWorx; AVEVA PI System; HighByte Intelligence Hub; Litmus Edge; Rockwell FactoryTalk Optix |
+| Maintenance (CMMS) | IBM Maximo; SAP Plant Maintenance; Fiix; UpKeep |
+
+To propose another, open an issue or a pull request.
+
 ## Installation
 
 FoaMES supports Frappe v15 and v16. No ERP is required.
@@ -38,6 +77,7 @@ The full guide, including roles, the scheduler, running the gateways and a smoke
 
 | Page | Covers |
 | --- | --- |
+| [docs/overview.md](docs/overview.md) | What FoaMES records, area by area: machine data, OEE and the floor, suggestions and andon, process mining, agents and MCP |
 | [docs/installation.md](docs/installation.md) | Install, update, roles, scheduler, gateways under supervisor, first configuration, development setup |
 | [docs/dev-bench.md](docs/dev-bench.md) | A Docker dev bench that runs the whole test suite locally, with Frappe v15 or v16 and an optional ERP app |
 | [docs/adapters.md](docs/adapters.md) | External References, running without an ERP, writing an adapter for another ERP |
@@ -71,44 +111,8 @@ GitHub Actions runs the tests on Frappe v15 and v16 without an ERP, and on Frapp
 ## Prior art and credits
 
 - [frappe/erpnext#50827](https://github.com/frappe/erpnext/issues/50827) asked for real-time machine monitoring, plant floor visibility, downtime tracking, OEE, work order and job card tracking, and PLC/IoT integration in ERPNext. It was closed as a product in its own right, and FoaMES takes up that requirement list.
+- The counter-delta, owed-count and coverage ideas follow public MES practice, including the FactorySemantics MES design notes.
 - [Floorgraph](https://github.com/s1dharthpv/floorgraph) by [s1dharthpv](https://github.com/s1dharthpv) (MIT) is an earlier shop-floor execution app for ERPNext built in response to that issue. FoaMES is an independent implementation. If any Floorgraph code is ever reused, its MIT notice will ship with it.
-
-## Machine data
-
-| Record | Module | Role |
-| --- | --- | --- |
-| Machine | MES | A machine that reports events, with its state, last-seen time, counter rollover and OEE parameters. |
-| Machine Event | MES | One event from a machine (state, count, measurement, alarm, message), processed into state, downtime and counter deltas. |
-| Downtime Reason, Downtime Record | MES | Downtime opened and closed automatically from machine state, with a reason an operator assigns. |
-| Machine Data Settings | MES | Webhook secret, MQTT broker, Sparkplug B group, OPC UA endpoint, security mode and certificates, the node and metric map, staleness threshold. |
-
-Events arrive through a signed webhook, an MQTT gateway, a Sparkplug B gateway or an OPC UA gateway. SCADA products connect through whichever of these paths they support, or through a script that posts to the webhook; vendor guides are under [docs/vendors/](docs/vendors/README.md). Counter readings become deltas, and a first, reset or out-of-order reading never invents production. See [docs/machine-data.md](docs/machine-data.md), including the hook other apps use to act on processed events.
-
-## OEE, the floor view and agent suggestions
-
-| Record or page | Module | Role |
-| --- | --- | --- |
-| OEE Period | MES | OEE for a machine over a period from its events, downtime and counts. Planned downtime is excluded from availability; time without a machine signal is counted as loss, never as run time. One period per machine per day is computed by the scheduler over the machine's scheduled window, or one per shift when the machine has a Shift Pattern. |
-| Shift Pattern | MES | A shift calendar machines share: shifts with start, length and weekdays, plus non-working days. Drives the daily OEE periods, the operating time in MTBF and the shift shown on the floor. |
-| Floor View (page) | MES | Live tiles per machine with state, counts and OEE, plus open suggestions. |
-| Agent Suggestion | MES | A finding raised by the built-in rules or by an external agent, with evidence, for a person to accept or dismiss. |
-| Andon Call, Andon Call Type | MES | A call for help at a machine (maintenance, material, quality, supervisor, safety), with response and resolution times. A call that misses its type's targets becomes an Agent Suggestion. |
-| SPC Control Chart (report) | MES | I-MR or X-bar R chart of a machine measurement with Nelson or Western Electric run rules; signals on recent readings become Quality suggestions. |
-
-The OEE arithmetic and the suggestion rules have no Frappe dependency (`foames/foames_mes/oee.py`, `suggestions.py`, `spc.py`). The counter-delta, owed-count and coverage ideas follow public MES practice, including the FactorySemantics MES design notes. See [docs/agents/floor-agent.md](docs/agents/floor-agent.md) for the agent API and the hooks that add snapshot sections and rules.
-
-## Process mining
-
-| Record | Module | Role |
-| --- | --- | --- |
-| Event Log Source | Process Mining | A field map that turns any DocType's records into events (case, activity, timestamps, resource, objects). ERP records are named as text and skipped when not installed. |
-| Process Event Log | Process Mining | A saved extraction over a window and chosen sources, with discovery, conformance against another log, and XES or OCEL 2.0 export from the form. |
-
-Machine states and downtime are built-in sources. The analyses (directly-follows graph, variants, throughput, waiting times, rework, conformance replay and footprint comparison) have no Frappe dependency (`foames/foames_process_mining/discovery.py`, `conformance.py`). See [docs/process-mining.md](docs/process-mining.md).
-
-## Agents and MCP
-
-FoaMES is an MCP server. `POST /api/method/foames.foames_mcp.api.mcp` speaks the Model Context Protocol over Streamable HTTP with a Frappe API key, and `python -m foames.foames_mcp` is a standard-library stdio bridge to it for Claude Desktop, Claude Code, Cursor and other clients. The 24 tools read machines and state, downtime, OEE, the floor snapshot, suggestions, process mining and ERP references through the adapters, each with the permissions of the key's user; the only writes create Agent Suggestions or record a machine's current job. See [docs/mcp.md](docs/mcp.md).
 
 ## License
 

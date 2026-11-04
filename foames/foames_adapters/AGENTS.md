@@ -41,7 +41,7 @@ Adapters use the same extension points as any app; see the root `AGENTS.md` for 
 2. A guide at `docs/vendors/<vendor>/README.md` and a row in [docs/vendors/README.md](../../docs/vendors/README.md).
 3. Tests that need no ERP, using a fake transport for a remote system; tests that do need the ERP skip when it is not installed.
 4. `sbom/curated.json` when the adapter adds a connected service, cryptography or a secret (see the root `AGENTS.md`).
-5. No change to the root `AGENTS.md`, `README.md` or the core docs beyond what the hooks and the registry already generalise.
+5. A row in the Integrations section of the root `README.md` (name, kind, status, link to the guide; move it from Planned to Existing alpha if it was planned). No other change to the root `AGENTS.md`, `README.md` or the core docs.
 
 ## Reports, workspace and dashboards in this layer
 

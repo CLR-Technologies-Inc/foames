@@ -1,6 +1,6 @@
 # FoaMES documentation
 
-Start with [installation.md](installation.md), then the pages for the parts you use.
+Start with [overview.md](overview.md) for what FoaMES records, then [installation.md](installation.md), then the pages for the parts you use.
 
 ## Setting up
 
