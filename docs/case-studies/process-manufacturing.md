@@ -22,7 +22,7 @@ Process units rarely have a part cycle. Their counters are flow or energy totali
 Pick one:
 
 - Batch cycle time: shorter charge, heat, hold or clean phases.
-- Yield: first-pass yield and rework from tighter control of a critical parameter.
+- Yield: yield and rework from tighter control of a critical parameter.
 - Specific energy: energy per unit of product, including idle consumption.
 - Cleaning in place (CIP) scheduling as measured Setup or Cleaning time.
 
@@ -32,13 +32,13 @@ Pick one:
 | --- | --- | --- |
 | Yield | product and feed counters | Product delta divided by feed delta over the window, state any density or unit conversion |
 | Specific energy | energy and product counters | Energy delta divided by product delta; consumption with no product is reported, not hidden |
-| Batch cycle time | state events, Process Event Log | Time from batch start to end; process mining shows where batches wait ([process-mining.md](../process-mining.md)) |
+| Batch cycle time | Event Log Source or hook extractor with the batch as case, Process Event Log | Time from batch start to end. The built-in machine-state extractor uses one case per machine per day, not per batch, so configure a source whose case field is the batch ID before mining this ([process-mining.md](../process-mining.md)) |
 | Capability of a critical parameter | SPC Control Chart ([spc.md](../spc.md)) | I-MR chart of a Measurement event, with run-rule signals |
 | OEE | OEE Period | Only where a planned production time is defined |
 
-TODO: Counter Rollover for each totaliser, sampling interval of the measurement, and which ERP batch or work order references are attached.
+TODO: Counter Rollover. A Machine has one Counter Rollover, applied to every Count event, so totalisers with different rollover values must be modelled as separate Machines (one per meter), or share one value; say which. The sampling interval of the measurement, sampling interval of the measurement, and which ERP batch or work order references are attached.
 
-If the plant is regulated (pharma, food), say which records are the system of record. FoaMES is not the batch record; the MES profile for the plant's system ([mes-adapters.md](../mes-adapters.md)) holds that.
+If the plant is regulated (pharma, food), name the plant's own MES as the holder of the batch record and point audit evidence there. FoaMES is not the batch record; an MES profile ([mes-adapters.md](../mes-adapters.md)) only describes how FoaMES connects to that system.
 
 ## 5. Data connection
 

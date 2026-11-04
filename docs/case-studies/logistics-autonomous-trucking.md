@@ -35,7 +35,7 @@ As with any fleet, a truck is a `Machine` and the operator's system posts events
 | --- | --- |
 | Truck, gate, dock door, hand-off point | Machine or External Reference |
 | Autonomous run with a load | State Running |
-| Waiting for a dock, gate or hand-off | State Idle, Downtime Reason `Waiting` |
+| Waiting for a dock, gate or hand-off | State Idle. Idle opens no Downtime Record, so derive waiting minutes from state history |
 | Minimal-risk stop, fault, remote-operator stop | State Down with a Downtime Reason per cause |
 | Loss of telematics signal | Unknown (staleness check), counted as loss |
 | Intervention | Andon Call (with call type `Remote operator` or `On-site`) or Downtime Record |
@@ -45,7 +45,7 @@ As with any fleet, a truck is a `Machine` and the operator's system posts events
 | --- | --- | --- |
 | Intervention rate | Andon Response report, Downtime Record | Interventions per 100 loads or per 1,000 km, split by cause |
 | Time to resume | Andon Response report, MTBF and MTTR | Minutes from stop to moving again |
-| Availability | OEE Period, `get_oee` | Same ledger and planned time as the manned baseline |
+| Availability | OEE Period, `get_oee` | Run minutes over planned minutes minus planned downtime minutes, with the same ledger and planned time as the manned baseline |
 | Autonomy share | km counters | Autonomous km over total km |
 | Dock-to-dock cycle time | Process Event Log with Event Log Sources | Gate-in, dock, load, gate-out ([process-mining.md](../process-mining.md)) |
 | Cost per load | ERP adapter or finance input | Include remote supervision and support staff |

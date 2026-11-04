@@ -9,7 +9,7 @@
 
 ## 1. Summary
 
-TODO after results: line, change, change in OEE and first-pass yield.
+TODO after results: line, change, change in OEE and yield.
 
 ## 2. Context
 
@@ -31,9 +31,9 @@ Candidate changes to study, pick one per study so the effect can be attributed:
 | Metric | FoaMES source | Definition |
 | --- | --- | --- |
 | OEE, availability, performance, quality | OEE Period, `get_oee` | [oee.md](../oee.md) |
-| Setup minutes per changeover | Machine Event states, Downtime Pareto | Time in Setup between the last good part of order A and the first of order B |
+| Setup minutes per changeover | Machine Event state intervals (state Setup) | Time in Setup between the last good part of order A and the first of order B. Only Down opens a Downtime Record, so Setup minutes do not appear in the Downtime Pareto; derive them from state history, or have the study create Downtime Records explicitly |
 | Micro-stop count | Downtime Record, Process Throughput | Down intervals shorter than the site's threshold (state it) |
-| First-pass yield | good and scrap counters | Good divided by good plus scrap |
+| Final quality yield | good and scrap counters | Good divided by good plus scrap. This is not first-pass yield when units are reworked and later accepted. For first-pass yield, send a separate first-pass-failure counter and say so; otherwise report final yield and name it as such |
 | MTBF, MTTR | MTBF and MTTR report | |
 | Control of the critical dimension | SPC Control Chart ([spc.md](../spc.md)) | I-MR or X-bar R with run-rule signals |
 

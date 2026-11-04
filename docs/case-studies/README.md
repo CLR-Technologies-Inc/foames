@@ -4,7 +4,7 @@ Scaffolds for case studies of manufacturing improvements measured with FoaMES. E
 
 | Segment | Scaffold | Improvement it is meant to document |
 | --- | --- | --- |
-| Discrete | [discrete-manufacturing.md](discrete-manufacturing.md) | Changeover and micro-stop reduction on a machining or assembly line, measured as OEE and first-pass yield |
+| Discrete | [discrete-manufacturing.md](discrete-manufacturing.md) | Changeover and micro-stop reduction on a machining or assembly line, measured as OEE and yield |
 | Process | [process-manufacturing.md](process-manufacturing.md) | Yield, batch cycle time and specific energy on a batch or continuous unit, measured with totaliser counters and SPC |
 | Operational and logistics | [logistics-ev-adoption.md](logistics-ev-adoption.md) | Moving a yard, shuttle or regional fleet to battery-electric trucks, measured as availability, charging loss and energy per load |
 | Operational and logistics | [logistics-autonomous-trucking.md](logistics-autonomous-trucking.md) | Autonomous yard, shuttle or line-haul trucks, measured as intervention rate, time to resume, availability and dwell |
@@ -28,10 +28,10 @@ FoaMES records a `Machine` with state, counter and measurement events. Anything 
 | Segment | Machine is | State means | Counter is | Measurement is |
 | --- | --- | --- | --- | --- |
 | Discrete | CNC, press, assembly cell | Running, Idle, Down, Setup | Parts count | Critical dimension |
-| Process | Reactor, mixer, filler, dryer | Running, Idle, Down, Cleaning | Feed and product totalisers | Temperature, pH, concentration |
-| Logistics | Tractor, yard truck, charger, dock door | Moving, Waiting, Charging, Down | Loads, kWh or km odometer | Battery temperature, state of charge |
+| Process | Reactor, mixer, filler, dryer | Running, Idle, Down, Setup (cleaning in place is recorded as Setup) | Feed and product totalisers | Temperature, pH, concentration |
+| Logistics | Tractor, yard truck, charger, dock door | Running (moving), Idle (waiting, or charging when it is not a loss to chase), Down (faults, and charging when it is recorded as a loss) | Loads, kWh or km odometer | Battery temperature, state of charge |
 
-If a segment needs a state or event type FoaMES does not have, say so in the study's "Gaps" section rather than working around it. Gaps become issues.
+FoaMES accepts the states Running, Idle, Down, Setup and Unknown, plus a fixed set of aliases (for example `waiting`, `starved` and `blocked` map to Idle); a gateway that sends `Cleaning`, `Moving` or `Charging` has its events rejected, so map those to an accepted state first. Only a Down state opens a Downtime Record, and only a Downtime Record carries a Downtime Reason. If a segment needs a state or event type FoaMES does not have, say so in the study's "Gaps" section rather than working around it. Gaps become issues.
 
 ## Data you can use without a plant
 

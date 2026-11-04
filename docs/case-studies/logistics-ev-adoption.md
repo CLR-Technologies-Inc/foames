@@ -27,8 +27,8 @@ FoaMES has no telematics gateway. A truck or charger is registered as a `Machine
 | --- | --- |
 | Truck, charger, dock door | Machine, one per asset, Source ID from the fleet system |
 | Driving with a load | State Running |
-| Waiting for a dock or a load | State Idle, Downtime Reason `Waiting for dock` |
-| Charging | State Idle or Down with Downtime Reason `Charging`, so it shows in the Pareto and is not hidden |
+| Waiting for a dock or a load | State Idle. Idle opens no Downtime Record, so derive waiting minutes from state history |
+| Charging | State Down with Downtime Reason `Charging` when the study counts it as a loss, so it shows in the Pareto; otherwise state Idle, with minutes derived from state history. The states `Charging` and `Moving` are not accepted; send Down, Idle or Running |
 | Fault | State Down with a Downtime Reason |
 | Loss of telematics signal | Unknown (staleness check), counted as loss |
 | Loads, kWh, km | Counters, running totals |
@@ -36,8 +36,8 @@ FoaMES has no telematics gateway. A truck or charger is registered as a `Machine
 
 | Metric | Source | Definition |
 | --- | --- | --- |
-| Availability | OEE Period, `get_oee` | Running plus planned waiting over planned time; unplanned charging is loss, and the study says what was planned |
-| Charging loss | Downtime Pareto | Minutes in Charging per truck per day, and queueing at chargers |
+| Availability | OEE Period, `get_oee` | Run minutes over planned minutes minus planned downtime minutes, exactly as `get_oee` computes it. Waiting and unplanned charging are loss unless the site records them as planned downtime, and the study says which |
+| Charging loss | Downtime Pareto (charging recorded as Down) or state history | Minutes charging per truck per day, and queueing at chargers |
 | Energy per load, per km | energy, loads, distance counters | Energy delta divided by loads or km delta |
 | Range margin | Measurement events | Lowest state of charge at end of duty cycle |
 | MTBF and MTTR | MTBF and MTTR report | Per truck and fleet |
