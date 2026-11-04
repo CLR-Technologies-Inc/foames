@@ -19,31 +19,31 @@ def _print(*args, **kwargs):
 	print(*args, **kwargs)
 
 
-def cmd_list(args):
-	for t in tasks_mod.all_tasks(args.tier):
+def cmd_list(opts):
+	for t in tasks_mod.all_tasks(opts.tier):
 		print(f"{t.id:<26} {t.tier:<7} {t.complexity:<7} TRL {','.join(t.trl_bands):<12} {t.title}")
 
 
-def cmd_agents(args):
-	for a in agents_mod.load(args.agents_file).values():
+def cmd_agents(opts):
+	for a in agents_mod.load(opts.agents_file).values():
 		ok, where = a.available()
 		print(
 			f"{a.name:<22} {a.tier or '-':<9} {a.harness or a.kind:<12} {a.model or '-':<28} {'ready' if ok else 'missing'}: {where}"
 		)
 
 
-def _out_dir(args) -> Path:
-	if args.out:
-		return Path(args.out)
+def _out_dir(opts) -> Path:
+	if opts.out:
+		return Path(opts.out)
 	stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 	return BENCH_ROOT / "runs" / stamp
 
 
-def cmd_run(args):
-	repo = repo_root(args.repo)
-	tasks = tasks_mod.select(args.tasks, args.tier)
-	available = agents_mod.load(args.agents_file)
-	names = args.agents or ["reference"]
+def cmd_run(opts):
+	repo = repo_root(opts.repo)
+	tasks = tasks_mod.select(opts.tasks, opts.tier)
+	available = agents_mod.load(opts.agents_file)
+	names = opts.agents or ["reference"]
 	missing = [n for n in names if n not in available]
 	if missing:
 		raise SystemExit(f"unknown agent(s): {', '.join(missing)}; see `foames-bench agents`")
@@ -52,24 +52,24 @@ def cmd_run(args):
 		ok, where = a.available()
 		if not ok:
 			raise SystemExit(f"agent {a.name} is not runnable here: {where}")
-	out = _out_dir(args)
+	out = _out_dir(opts)
 	print(f"FoaMES checkout: {repo}\nResults: {out}\n")
-	runner.run(tasks, chosen, repo, out, args.reps, args.keep_workspaces, args.cap_usd, log=_print)
+	runner.run(tasks, chosen, repo, out, opts.reps, opts.keep_workspaces, opts.cap_usd, log=_print)
 	summary = report.write(out)
 	print("\n" + report.markdown(summary))
 
 
-def cmd_report(args):
-	summary = report.write(Path(args.run_dir))
+def cmd_report(opts):
+	summary = report.write(Path(opts.run_dir))
 	print(report.markdown(summary))
 
 
-def cmd_validate(args):
+def cmd_validate(opts):
 	"""The reference solution must succeed and doing nothing must fail, on every selected task."""
-	repo = repo_root(args.repo)
-	tasks = tasks_mod.select(args.tasks, args.tier or "pure")
-	builtins = agents_mod.load(args.agents_file)
-	out = _out_dir(args)
+	repo = repo_root(opts.repo)
+	tasks = tasks_mod.select(opts.tasks, opts.tier or "pure")
+	builtins = agents_mod.load(opts.agents_file)
+	out = _out_dir(opts)
 	rows = runner.run(tasks, [builtins["reference"], builtins["noop"]], repo, out, log=_print)
 	bad = []
 	for r in rows:
@@ -84,38 +84,38 @@ def cmd_validate(args):
 	return 0
 
 
-def cmd_prepare(args):
+def cmd_prepare(opts):
 	"""Make a task workspace by hand, for running an agent yourself or from Inspect AI."""
-	repo = repo_root(args.repo)
-	task = tasks_mod.select([args.task])[0]
-	dest = Path(args.dest).resolve()
+	repo = repo_root(opts.repo)
+	task = tasks_mod.select([opts.task])[0]
+	dest = Path(opts.dest).resolve()
 	workspace.create(repo, dest, task)
 	(dest.parent / f"{task.id}.prompt.md").write_text(task.prompt, encoding="utf-8")
 	print(f"workspace: {dest}\nprompt:    {dest.parent / (task.id + '.prompt.md')}")
 
 
-def cmd_grade(args):
+def cmd_grade(opts):
 	"""Grade a workspace made by `prepare`, after an agent worked in it. Prints JSON."""
-	repo = repo_root(args.repo)
-	task = tasks_mod.select([args.task])[0]
-	ws = Path(args.workspace).resolve()
+	repo = repo_root(opts.repo)
+	task = tasks_mod.select([opts.task])[0]
+	ws = Path(opts.workspace).resolve()
 	change = workspace.collect(ws)
 	graded = grading.grade(task, ws, repo, change)
-	scores = scoring.score(task, graded, args.seconds or 0.0, args.cost_usd)
+	scores = scoring.score(task, graded, opts.seconds or 0.0, opts.cost_usd)
 	print(
 		json.dumps(
 			{"task": task.id, "scores": scores, "graded": graded}
-			if args.full
+			if opts.full
 			else {"task": task.id, "scores": scores},
 			indent=1,
 		)
 	)
 
 
-def cmd_recommend(args):
-	rec = recommend.cell(args.trl, args.complexity)
+def cmd_recommend(opts):
+	rec = recommend.cell(opts.trl, opts.complexity)
 	tiers = recommend.load()["tiers"]
-	print(f"TRL {args.trl} (band {rec['band']}), {rec['complexity']} complexity, prior as of {rec['as_of']}")
+	print(f"TRL {opts.trl} (band {rec['band']}), {rec['complexity']} complexity, prior as of {rec['as_of']}")
 	print(f"  Start with: {tiers[rec['primary']]['label']}")
 	if rec["alternative"]:
 		print(f"  Alternative: {tiers[rec['alternative']]['label']}")
@@ -127,8 +127,8 @@ def cmd_recommend(args):
 	print("  Example models in that tier:")
 	for ex in tiers[rec["primary"]]["examples"]:
 		print("   - " + ", ".join(f"{v}" for v in ex.values()))
-	if args.results:
-		ranked = recommend.qualify(report.load(Path(args.results)), rec)
+	if opts.results:
+		ranked = recommend.qualify(report.load(Path(opts.results)), rec)
 		print("\nFrom your results:")
 		if not ranked:
 			print("  none of the qualifying tasks were run")
@@ -142,18 +142,18 @@ def cmd_recommend(args):
 			print(
 				f"  {a['agent']:<22} {a['tier'] or '-':<9} quality {a['quality']:.2f}  cost/success {cps:<8} {note}"
 			)
-	if args.json:
+	if opts.json:
 		print(json.dumps(rec, indent=1))
 
 
-def cmd_matrix(args):
+def cmd_matrix(opts):
 	print(recommend.matrix_markdown())
 
 
-def cmd_estimate(args):
-	n = args.agents * args.tasks * args.reps
-	print(f"{args.agents} agents x {args.tasks} tasks x {args.reps} reps = {n} runs")
-	print(f"at ${args.per_run:.2f} per run (an assumption, not a quote): ${n * args.per_run:.2f}")
+def cmd_estimate(opts):
+	n = opts.agents * opts.tasks * opts.reps
+	print(f"{opts.agents} agents x {opts.tasks} tasks x {opts.reps} reps = {n} runs")
+	print(f"at ${opts.per_run:.2f} per run (an assumption, not a quote): ${n * opts.per_run:.2f}")
 	print("Local runs of open-weight models cost electricity and time, not tokens. Use --cap-usd on `run`.")
 
 

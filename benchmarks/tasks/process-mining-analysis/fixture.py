@@ -40,10 +40,11 @@ def rows(seed: int = 20261105) -> list[dict]:
 		case = f"WO-{n:04d}"
 		t = T0 + timedelta(minutes=rng.randint(0, 60 * 24 * 4))
 		steps = ["Cut", "Weld", "Inspect"]
-		loops = 0
-		while rng.random() < (0.3 if loops == 0 else 0.15):
+		# A first rework is likelier than a second.
+		chance = 0.3
+		while rng.random() < chance:
 			steps += ["Rework Weld", "Inspect"]
-			loops += 1
+			chance = 0.15
 		if n in (17, 33, 52):
 			pass  # stopped after inspection: still open at extraction time
 		else:

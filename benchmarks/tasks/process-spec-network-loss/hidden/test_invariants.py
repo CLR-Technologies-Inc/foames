@@ -34,7 +34,11 @@ def run_acceptance(root: Path) -> int:
 		"sys.exit(0 if r.wasSuccessful() and r.testsRun else 1)\n"
 	)
 	result = subprocess.run(
-		[sys.executable, "-c", code, *map(str, files)], cwd=root, env=env, capture_output=True, timeout=180
+		[sys.executable, "-c", code, *[str(f) for f in files]],
+		cwd=root,
+		env=env,
+		capture_output=True,
+		timeout=180,
 	)
 	return result.returncode
 
