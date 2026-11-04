@@ -102,6 +102,7 @@ foames_machine_job_changed = [
 	"foames.foames_adapters.erpnext.rollup.on_job_changed",
 	"foames.foames_adapters.s4hana.rollup.on_job_changed",
 ]
+foames_machine_state_changed = ["foames.foames_adapters.erpnext.workstation.on_state_changed"]
 
 # Process mining
 # --------------
