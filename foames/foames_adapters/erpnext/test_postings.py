@@ -124,6 +124,32 @@ class TestPrepare(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			self.prepare("Workstation Status", {"workstation": "WS-1"})
 
+	def test_quality_inspection_from_measurements(self):
+		from foames.foames_adapters.erpnext import postings
+
+		op = postings.OPERATIONS["Quality Inspection"]
+		base = {"reference_type": "Job Card", "reference_name": "JC-1"}
+		window = {"machine": "M1", "since": "2026-01-01 08:00:00", "until": "2026-01-01 09:00:00"}
+		prepared = postings.prepare(
+			op, {**base, "measurements": {**window, "specifications": ["L", "L", " W "]}}
+		)
+		self.assertEqual(prepared["measurements"], {**window, "specifications": ["L", "W"]})
+		self.assertNotIn("readings", prepared)
+		self.assertEqual(postings.prepare(op, {**base, "measurements": window})["measurements"], window)
+		readings = [{"specification": "L", "values": [1.0]}]
+		for bad in (
+			{},
+			{"measurements": window, "readings": readings},
+			{"measurements": "M1"},
+			{"measurements": {**window, "colour": "Blue"}},
+			{"measurements": {"machine": "M1", "since": "2026-01-01 08:00:00"}},
+			{"measurements": {**window, "until": window["since"]}},
+			{"measurements": {**window, "specifications": "L"}},
+			{"measurements": {**window, "specifications": ["L", ""]}},
+		):
+			with self.assertRaises(ValueError, msg=bad):
+				postings.prepare(op, {**base, **bad})
+
 	def test_quality_inspection_readings(self):
 		base = {"reference_type": "Job Card", "reference_name": "PO-JOB00001"}
 		prepared = self.prepare(

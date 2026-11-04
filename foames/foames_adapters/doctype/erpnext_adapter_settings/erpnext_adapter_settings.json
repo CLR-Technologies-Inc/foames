@@ -12,8 +12,10 @@
   "submit_job_cards_when_complete",
   "roll_up_counts_to_job_cards",
   "inspect_job_cards_from_measurements",
+  "inspection_delay_minutes",
   "floor_section",
   "show_job_cards_on_floor",
+  "follow_job_cards_started_in_erpnext",
   "column_break_floor",
   "floor_lookahead_days",
   "workstations_section",
@@ -70,7 +72,15 @@
    "label": "Inspect Job Cards from Machine Measurements",
    "default": "0",
    "depends_on": "enable_postings",
-   "description": "Whenever a machine's current job changes, queue a Quality Inspection for the Job Card that ended from the machine's Measurement events while it ran, for the parameters of the Quality Inspection Template the card's operation (or BOM, or item) names. A card without a template, or a job without measurements for its parameters, queues nothing."
+   "description": "Whenever a machine's current job changes, queue a Quality Inspection for the Job Card that ended from the machine's Measurement events while it ran, for the parameters of the Quality Inspection Template the card's operation (or BOM, or item) names. The readings are taken when the posting is performed. It is submitted only when every parameter of the template was measured; otherwise it is left as a draft to finish. A card without a template queues nothing."
+  },
+  {
+   "fieldname": "inspection_delay_minutes",
+   "fieldtype": "Int",
+   "label": "Wait for Late Measurements (minutes)",
+   "default": "5",
+   "depends_on": "inspect_job_cards_from_measurements",
+   "description": "How long after a job ends its inspection waits before the readings are taken, so measurements a gateway delivers late still count. 0 performs it on the next outbox run."
   },
   {
    "fieldname": "floor_section",
@@ -83,6 +93,13 @@
    "label": "Show Job Cards on the Floor",
    "default": "1",
    "description": "Add the open Job Cards and Work Orders of each machine's workstation to the floor snapshot, and raise a suggestion for a machine running without one."
+  },
+  {
+   "fieldname": "follow_job_cards_started_in_erpnext",
+   "fieldtype": "Check",
+   "label": "Follow Job Cards Started in ERPNext",
+   "default": "0",
+   "description": "When a Job Card goes Work In Progress in ERPNext (someone starts it there), make it the current job of every machine at its workstation that has no current job, from its first time log; when it is completed, cancelled or deleted, end it on the machines working on it, so their counts are rolled up to it and the next card starts clean. Machines busy on another Job Card are left alone."
   },
   {
    "fieldname": "column_break_floor",

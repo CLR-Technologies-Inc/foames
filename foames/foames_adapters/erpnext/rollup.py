@@ -140,6 +140,10 @@ def on_job_changed(machine, previous_reference: str | None, at):
 	job_card = job_card_for_reference(previous_reference)
 	if not job_card:
 		return
+	# A card that was completed or cancelled in ERPNext (the job ends because of that) takes no more
+	# time logs: the quantities were entered there, and a posting would only fail.
+	if frappe.db.get_value("Job Card", job_card, "docstatus") != 0:
+		return
 	before = machine.get_doc_before_save()
 	since = before.current_job_since if before else None
 	roll_up(machine, job_card=job_card, until=at, since=since)

@@ -29,7 +29,7 @@ class Result:
 	"""What a posting produced: the ERPNext document and a response for the outbox record."""
 
 	doctype: str
-	name: str
+	name: str | None  # None when the posting was performed but had nothing to create
 	response: dict = field(default_factory=dict)
 	# True when the document existed before this attempt (found by marker or already in the state asked for).
 	existing: bool = False
@@ -456,6 +456,38 @@ def post_quality_inspection(payload: dict, marker: str) -> Result:
 	reference = frappe.get_doc(reference_type, reference_name)
 	item_code, bom_no, template = inspection_subject(reference, payload.get("item_code"))
 	template = payload.get("template") or template
+	submit = payload.get("submit")
+	if payload.get("measurements"):
+		# Read the machine's measurements now, so a reading a gateway delivered after the posting
+		# was queued still counts; the window is half-open, so a reading at the moment one job gave
+		# way to the next belongs to the next job only.
+		from foames.foames_adapters.erpnext.quality import measurement_readings
+
+		window = payload["measurements"]
+		readings = measurement_readings(
+			window["machine"],
+			window["since"],
+			window["until"],
+			window.get("specifications"),
+			until_inclusive=False,
+		)
+		if not readings:
+			return Result(
+				"Quality Inspection",
+				None,
+				{
+					"status": None,
+					"readings": [],
+					"message": _(
+						"{0} measured nothing for the template's parameters between {1} and {2}"
+					).format(window["machine"], window["since"], window["until"]),
+				},
+			)
+		payload = {**payload, "readings": readings}
+		if submit is None:
+			# Submitting stands for "inspected": only when every parameter of the template was measured.
+			measured = {r["specification"] for r in readings}
+			submit = bool(template) and measured >= set(template_criteria(template))
 	if not item_code:
 		frappe.throw(_("{0} {1} has no item to inspect").format(_(reference_type), reference_name))
 	if item_code not in inspectable_items(reference):
@@ -520,7 +552,7 @@ def post_quality_inspection(payload: dict, marker: str) -> Result:
 			row.manual_inspection = 1
 			row.status = reading["status"]
 	doc.insert()
-	if payload.get("submit", True):
+	if submit is None or submit:
 		doc.submit()
 	return Result("Quality Inspection", doc.name, inspection_outcome(doc))
 
