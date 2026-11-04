@@ -13,8 +13,45 @@ from foames.foames_adapters.erpnext import postings
 class TestOperations(unittest.TestCase):
 	def test_every_operation_names_an_erpnext_doctype(self):
 		for op in postings.OPERATIONS.values():
-			self.assertIn(op.doctype, ("Stock Entry", "Job Card", "Work Order"))
+			self.assertIn(
+				op.doctype, ("Stock Entry", "Job Card", "Work Order", "Workstation", "Downtime Entry")
+			)
 			self.assertTrue(op.required)
+
+	def test_workstation_status_follows_the_machine_state(self):
+		self.assertEqual(postings.workstation_status_for("Running"), "Production")
+		self.assertEqual(postings.workstation_status_for("Down"), "Problem")
+		self.assertEqual(postings.workstation_status_for("Idle"), "Idle")
+		self.assertEqual(postings.workstation_status_for("Setup"), "Setup")
+		self.assertEqual(postings.workstation_status_for("Unknown"), "Off")
+		self.assertEqual(postings.workstation_status_for(None), "Off")
+		for status in postings.WORKSTATION_STATUS_BY_STATE.values():
+			self.assertIn(status, postings.WORKSTATION_STATUSES)
+
+	def test_stop_reason_mapping(self):
+		# A title that is one of ERPNext's reasons wins, whatever the category says.
+		self.assertEqual(postings.stop_reason_for("Electricity down", "Breakdown"), "Electricity down")
+		self.assertEqual(postings.stop_reason_for(" Electricity down ", None), "Electricity down")
+		# Otherwise the category decides, and the rest is Other.
+		self.assertEqual(
+			postings.stop_reason_for("Tool change", "Changeover"), "Excessive machine set up time"
+		)
+		self.assertEqual(postings.stop_reason_for("Spindle", "Breakdown"), "Machine malfunction")
+		self.assertEqual(postings.stop_reason_for("PM", "Planned"), "Unplanned machine maintenance")
+		self.assertEqual(postings.stop_reason_for("Waiting", "No Material"), "Other")
+		self.assertEqual(postings.stop_reason_for(None, None), "Other")
+		# An installed ERPNext that lacks a reason never gets it.
+		self.assertEqual(postings.stop_reason_for("Spindle", "Breakdown", ("Other",)), "Other")
+		self.assertEqual(postings.stop_reason_for("Spindle", "Breakdown", ("Something",)), "Something")
+		for reason in postings.STOP_REASON_BY_CATEGORY.values():
+			self.assertIn(reason, postings.STOP_REASONS)
+
+	def test_downtime_marker_is_stable_and_distinct_from_the_posting_marker(self):
+		self.assertEqual(postings.downtime_marker("DT-2026-00001"), postings.downtime_marker("DT-2026-00001"))
+		self.assertNotEqual(postings.downtime_marker("DT-2026-00001"), postings.marker("DT-2026-00001"))
+		self.assertNotEqual(
+			postings.downtime_marker("DT-2026-00001"), postings.downtime_marker("DT-2026-00002")
+		)
 
 	def test_stock_entry_purposes_are_operations(self):
 		for purpose in postings.STOCK_ENTRY_PURPOSES:
@@ -68,6 +105,32 @@ class TestPrepare(unittest.TestCase):
 		payload = {"work_order": "MFG-WO-1", "qty": "3"}
 		postings.prepare(postings.OPERATIONS["Manufacture"], payload)
 		self.assertEqual(payload["qty"], "3")
+
+	def test_workstation_status_is_restricted(self):
+		self.assertEqual(
+			self.prepare("Workstation Status", {"workstation": "WS-1", "status": "Production"})["status"],
+			"Production",
+		)
+		with self.assertRaises(ValueError):
+			self.prepare("Workstation Status", {"workstation": "WS-1", "status": "Running"})
+		with self.assertRaises(ValueError):
+			self.prepare("Workstation Status", {"workstation": "WS-1"})
+
+	def test_downtime_entry_needs_a_window(self):
+		base = {"workstation": "WS-1", "from_time": "2026-10-31 08:00:00", "to_time": "2026-10-31 08:30:00"}
+		self.assertEqual(self.prepare("Downtime Entry", base), base)
+		with self.assertRaises(ValueError):
+			self.prepare("Downtime Entry", {**base, "to_time": base["from_time"]})
+		with self.assertRaises(ValueError):
+			self.prepare("Downtime Entry", {**base, "machine": "M-1"})
+		full = {
+			**base,
+			"operator": "HR-EMP-00001",
+			"stop_reason": "Other",
+			"remarks": "x",
+			"downtime_record": "DT-1",
+		}
+		self.assertEqual(self.prepare("Downtime Entry", full), full)
 
 
 class TestMarker(unittest.TestCase):
@@ -138,9 +201,17 @@ class TestHooksMatchTheAdapter(unittest.TestCase):
 		spec = importlib.util.spec_from_file_location("foames_hooks", path)
 		hooks = importlib.util.module_from_spec(spec)
 		spec.loader.exec_module(hooks)
-		self.assertEqual(set(hooks.doc_events), set(REFERENCE_TYPES_BY_DOCTYPE))
-		for doctype, handlers in hooks.doc_events.items():
-			self.assertEqual(dict(handlers), DOC_EVENTS[doctype])
+		self.assertEqual(set(hooks.doc_events), set(REFERENCE_TYPES_BY_DOCTYPE) | {"Downtime Record"})
+		for doctype in REFERENCE_TYPES_BY_DOCTYPE:
+			self.assertEqual(dict(hooks.doc_events[doctype]), DOC_EVENTS[doctype])
+		self.assertEqual(
+			hooks.doc_events["Downtime Record"],
+			{"on_update": "foames.foames_adapters.erpnext.downtime.on_update"},
+		)
+		self.assertEqual(
+			hooks.foames_machine_state_changed,
+			["foames.foames_adapters.erpnext.workstation.on_state_changed"],
+		)
 		self.assertIn(
 			"foames.foames_adapters.erpnext.floor.extend_snapshot", hooks.foames_floor_snapshot_extensions
 		)

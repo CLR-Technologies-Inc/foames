@@ -93,6 +93,8 @@ class Machine(Document):
 			open_downtime(self.name, at)
 		elif previous == "Down":
 			close_open_downtime(self.name, at)
+		for handler in frappe.get_hooks("foames_machine_state_changed") or []:
+			frappe.get_attr(handler)(self, previous, state, get_datetime(at))
 
 
 def get_machine_by_source(source_id: str) -> str | None:
