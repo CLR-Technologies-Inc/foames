@@ -7,7 +7,7 @@ FoaMES takes machine events four ways. All four end in the same place: a Machine
 | Signed webhook | `POST /api/method/foames.foames_mes.api.ingest_machine_events` with `{"events": [...]}`; headers `X-FoaMES-Timestamp` (Unix seconds) and `X-FoaMES-Signature` (hex HMAC-SHA256 of `<timestamp>.<body>` with the secret in Machine Data Settings) | Nothing installed; any PLC gateway or IoT bridge that can POST JSON |
 | MQTT | `bench --site <site> execute foames.foames_mes.gateway.mqtt.run`; subscribes to `<prefix>/<machine source id>/<event type>` | `pip install paho-mqtt`, a broker |
 | OPC UA | `bench --site <site> execute foames.foames_mes.gateway.opcua.run`; polls the nodes mapped in Machine Data Settings, with optional Sign or SignAndEncrypt message security (see [OPC UA security](#opc-ua-security)) | `pip install asyncua` |
-| Sparkplug B | `bench --site <site> execute foames.foames_mes.gateway.sparkplug.run`; subscribes to `spBv1.0/<group>/#` on the same broker and decodes the protobuf payloads itself | `pip install paho-mqtt`, a broker; this is how Ignition publishes, see [ignition.md](vendors/ignition/README.md) |
+| Sparkplug B | `bench --site <site> execute foames.foames_mes.gateway.sparkplug.run`; subscribes to `spBv1.0/<group>/#` on the same broker and decodes the protobuf payloads itself | `pip install paho-mqtt`, a broker; SCADA products that publish Sparkplug B connect this way (vendor guides are under [vendors/](vendors/README.md)) |
 
 A logged-in user with the FoaMES Operator role may also post events unsigned, which is how a manual entry or a test harness works.
 
@@ -47,7 +47,7 @@ Attach `foames-opcua.cert.der` as the Client Certificate, attach `foames-opcua.k
 
 ### Trusting the certificate on the server
 
-Most OPC UA servers put an unknown client certificate in a rejected or quarantine list on the first connection attempt. Start the gateway once, move the FoaMES certificate to the trusted list on the server, and start it again. On Ignition, that is Config, OPC UA, Security, Server tab: select the certificate under **Quarantined Certificates** and choose Trust. For a CA-signed certificate, trust the issuing CA instead.
+Most OPC UA servers put an unknown client certificate in a rejected or quarantine list on the first connection attempt. Start the gateway once, move the FoaMES certificate to the trusted list on the server, and start it again. For a CA-signed certificate, trust the issuing CA instead. Where a particular server lists quarantined certificates is in that product's guide under [vendors/](vendors/README.md).
 
 The gateway reads the files when it starts, so restart it after replacing a certificate or key.
 
@@ -78,8 +78,8 @@ After an event is processed, every dotted path registered under the `foames_mach
 foames_machine_event_handlers = ["myapp.floor.on_machine_event"]
 ```
 
-A Machine also carries a **Current Job Reference**, an External Reference of type Job Card for whatever ERP is connected, and **Current Job Since**. Set it on the form or with `foames.foames_mes.api.set_current_job(machine, reference, at=None)` (pass no reference to end the job). Whenever it changes, every dotted path under the `foames_machine_job_changed` hook is called with the Machine, the previous reference and the time of the change. The ERPNext adapter uses this to roll the counts of the job that ended up to its Job Card; see [erpnext-adapter.md](vendors/erpnext/README.md#rolling-machine-counts-up-to-job-cards).
+A Machine also carries a **Current Job Reference**, an External Reference of type Job Card for whatever ERP is connected, and **Current Job Since**. Set it on the form or with `foames.foames_mes.api.set_current_job(machine, reference, at=None)` (pass no reference to end the job). Whenever it changes, every dotted path under the `foames_machine_job_changed` hook is called with the Machine, the previous reference and the time of the change. Adapters use this to roll the counts of the job that ended up to their ERP's job record; each vendor guide under [vendors/](vendors/README.md) describes what it does with it.
 
-Every state change (from an event, a manual entry or the stale-machine task) also calls each dotted path under the `foames_machine_state_changed` hook with the Machine, the previous state, the new state and the time of the change. The ERPNext adapter uses this to show the state on the machine's ERPNext Workstation; see [erpnext-adapter.md](vendors/erpnext/README.md#workstation-status-and-downtime).
+Every state change (from an event, a manual entry or the stale-machine task) also calls each dotted path under the `foames_machine_state_changed` hook with the Machine, the previous state, the new state and the time of the change. An adapter can use this to mirror the state into its ERP; each vendor guide under [vendors/](vendors/README.md) says whether it does.
 
 A machine that stops reporting is marked Unknown after the configured minutes by a scheduled task, so a silent line never looks like a running one.

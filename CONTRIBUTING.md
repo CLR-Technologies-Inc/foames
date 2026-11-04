@@ -22,5 +22,5 @@ See [Installation](README.md#installation) and [Contributing](README.md#contribu
 ## Pull requests
 
 - Keep each pull request to one change, and explain why it is needed.
-- Add or update tests for behaviour changes. CI runs the tests on Frappe v15 and v16, with and without ERPNext.
+- Add or update tests for behaviour changes. CI runs the tests on Frappe v15 and v16, with and without an optional ERP app installed.
 - Credit any third-party code you include and keep its license notice with it.

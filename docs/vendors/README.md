@@ -1,6 +1,6 @@
 # Vendor guides
 
-Everything specific to one vendor's product lives here, one folder per vendor. The pages in the parent folder describe FoaMES itself and stay vendor-neutral; these pages say how FoaMES connects to a particular ERP, SCADA or other system. Each folder starts with a `README.md` that is the vendor's landing page and links to the rest.
+Everything specific to one vendor's product lives here, one folder per vendor. The pages in the parent folder describe FoaMES itself and stay vendor-neutral (External References and writing an adapter are in [../adapters.md](../adapters.md)); these pages say how FoaMES connects to a particular ERP, SCADA or other system. The matching guidance for coding agents sits next to each adapter's code, in `foames/foames_adapters/<vendor>/AGENTS.md`. Each folder starts with a `README.md` that is the vendor's landing page and links to the rest.
 
 | Vendor | Kind | Start here | What it covers |
 | --- | --- | --- | --- |
@@ -11,5 +11,5 @@ Everything specific to one vendor's product lives here, one folder per vendor. T
 ## Adding a vendor
 
 1. Create `docs/vendors/<vendor>/` with a `README.md` as the landing page. Split setup, operation and reference into further pages in the same folder once the landing page grows past what one reader wants to scroll.
-2. Keep vendor-neutral material (the event shape, counter rules, the adapter contract) in the parent `docs/` folder and link to it with a relative path such as `../../machine-data.md`.
-3. Add a row to the table above and to the vendor section of [../README.md](../README.md).
+2. Keep vendor-neutral material (the event shape, counter rules, the adapter contract) in the parent `docs/` folder, and the agent-facing rules in the adapter's own `AGENTS.md` and link to it with a relative path such as `../../machine-data.md`.
+3. Add a row to the table above. Nothing else in `docs/`, `README.md` or the root `AGENTS.md` needs to change.

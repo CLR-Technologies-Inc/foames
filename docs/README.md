@@ -7,19 +7,16 @@ Start with [installation.md](installation.md), then the pages for the parts you 
 | Page | What it covers |
 | --- | --- |
 | [installation.md](installation.md) | Requirements, `bench` install, roles, scheduler, running the gateways under supervisor, first configuration, a smoke test, development setup |
-| [dev-bench.md](dev-bench.md) | The Docker dev bench: the whole test suite locally on Frappe v15 or v16, with ERPNext optional |
+| [dev-bench.md](dev-bench.md) | The Docker dev bench: the whole test suite locally on Frappe v15 or v16, with an optional ERP app |
+| [adapters.md](adapters.md) | External References, running without an ERP, writing an adapter for another ERP (vendor-neutral) |
 | [machine-data.md](machine-data.md) | How machine events reach FoaMES: the signed webhook, MQTT, OPC UA and Sparkplug B, the event shape, counter rules |
 | [sbom.md](sbom.md) | The CycloneDX 1.7 SBOM: where to get it, what is in it (dependencies, the cryptography bill of materials, connected services), building and validating it |
 
 ## Vendors
 
-Vendor-specific guides, one folder per vendor. See [vendors/](vendors/README.md) for the index and how to add one.
-
 | Page | What it covers |
 | --- | --- |
-| [vendors/s4hana/](vendors/s4hana/README.md) | The SAP S/4HANA adapter: OData resolution, the posting outbox, inbound IDocs, setup on both sides ([setup](vendors/s4hana/setup.md)), postings ([postings](vendors/s4hana/postings.md)), day-to-day operation |
-| [vendors/erpnext/](vendors/erpnext/README.md) | External References, the ERPNext adapter, running without an ERP, writing an adapter for another ERP |
-| [vendors/ignition/](vendors/ignition/README.md) | Connecting an Ignition SCADA gateway through Sparkplug B, OPC UA or a gateway script |
+| [vendors/](vendors/README.md) | One folder per vendor, for its ERP adapter or SCADA connection: setup, operation, endpoints. The index lists what ships and how to add one. |
 
 ## Using
 

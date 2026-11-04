@@ -2,7 +2,7 @@
 
 FoaMES speaks the Model Context Protocol (MCP), so an agent in Claude Desktop, Claude Code, Cursor or any other MCP client can read the plant floor and raise suggestions through tools, with no custom integration. The server exposes the public FoaMES API and nothing more: every tool is one whitelisted method that is already callable at `/api/method/...`, run as the user whose API key the agent holds, with that user's permissions.
 
-The 24 tools cover machines and their state, machine events, downtime, OEE, the floor snapshot, Agent Suggestions, process mining (event logs, discovery, conformance, export) and ERP reference reads through the ERPNext and S/4HANA adapters. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act.
+The 24 tools cover machines and their state, machine events, downtime, OEE, the floor snapshot, Agent Suggestions, process mining (event logs, discovery, conformance, export) and ERP reference reads through whichever adapters are registered on the site. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act.
 
 ## Two ways to connect
 

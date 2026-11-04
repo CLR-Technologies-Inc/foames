@@ -23,20 +23,7 @@ Everything in the analysis core is plain Python with no Frappe dependency (`foam
 | Event Log Source | A field map over any DocType on the site: case, activity (or a fixed name), timestamp, optional end timestamp, resource, filters, attribute and object fields | the mapped field |
 | Other apps | Dotted paths under the `foames_process_event_extractors` hook, called with `(since, until)` | whatever they return |
 
-An Event Log Source names its DocType as text and resolves it at run time. This is how ERP records are mined without the core linking to them: when the DocType is not installed the source is skipped, so a site without ERPNext still installs and runs. A typical ERPNext mapping is:
-
-| Field | Value |
-| --- | --- |
-| Source DocType | `Job Card` |
-| Case Field | `work_order` |
-| Activity Field | `operation` |
-| Timestamp Field | `actual_start_date` |
-| End Timestamp Field | `actual_end_date` |
-| Resource Field | `workstation` |
-| Filters | `{"docstatus": 1}` |
-| Object Fields | `machine=workstation, item=production_item` |
-
-Use **Preview events** on the form to check a mapping before relying on it.
+An Event Log Source names its DocType as text and resolves it at run time. This is how ERP records are mined without the core linking to them: when the DocType is not installed the source is skipped, so a site without that ERP still installs and runs. A mapping names the fields that become the case, the activity, the timestamps and the resource; the vendor guides under [vendors/](vendors/README.md) give typical mappings for their ERP's records. Use **Preview events** on the form to check a mapping before relying on it.
 
 ## Saved logs
 

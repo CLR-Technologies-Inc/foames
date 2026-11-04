@@ -9,24 +9,22 @@ Other information is included in this project as a one stop shop for engineers l
 
 ## Architecture
 
-FoaMES is a single Frappe app that depends on the Frappe framework only. ERP systems are optional and are reached through adapters, so the same core can run with ERPNext, with another ERP, or with no ERP at all.
+FoaMES is a single Frappe app that depends on the Frappe framework only. ERP systems are optional and are reached through adapters, so the same core can run with any ERP that has an adapter, or with no ERP at all.
 
 | Module | What it holds |
 | --- | --- |
 | FoaMES Kernel | The shared records every FoaMES product builds on, plus `External Reference` (a pointer to a record in an ERP) and `FoaMES Settings` |
 | FoaMES MES | Shop-floor execution: monitoring, downtime, OEE and machine data |
-| FoaMES Adapters | The ERP adapter contract, the ERPNext adapter and the SAP S/4HANA adapter |
+| FoaMES Adapters | The ERP adapter contract and registry, and one adapter per supported ERP (see [docs/vendors/](docs/vendors/README.md)) |
 | FoaMES Process Mining | Event logs from FoaMES and ERP records, XES and OCEL export, discovery, performance and conformance analysis |
 
-FoaMES records never use Link fields to ERP DocTypes. They store an `External Reference` (ERP system, reference type, external ID) and the matching adapter resolves it. The ERPNext adapter activates only when ERPNext is installed on the same site. Other apps can register more adapters through the `foames_erp_adapters` hook.
+FoaMES records never use Link fields to ERP DocTypes. They store an `External Reference` (ERP system, reference type, external ID) and the matching adapter resolves it. An adapter is available only when its ERP can be reached from the site. Adapters are registered through the `foames_erp_adapters` hook, so other apps can add more. See [docs/adapters.md](docs/adapters.md).
 
-The ERPNext adapter resolves references with their details (a Work Order with its operations and required items, a BOM with its items and operations, a Job Card with its time logs), writes to ERPNext through the **ERPNext Outbox** (Stock Entries against a Work Order, Job Card time logs, Work Order stop, resume and close) with idempotency keys, document markers, sequence groups and retries, keeps External References current from ERPNext document events, puts each machine's open Job Cards on the floor, and rolls each machine's good and scrap counts and running time up to the Job Card it is working on. See [docs/vendors/erpnext/README.md](docs/vendors/erpnext/README.md).
-
-The SAP S/4HANA adapter is remote: it resolves references over S/4HANA's released OData APIs, sends postings through an outbox with idempotency keys and retries, rolls each machine's good and scrap counts and running time up to the order operation it is working on as partial confirmations, and receives IDocs over HTTP. It does not use RFC. Setup and licensing notes are in [docs/vendors/s4hana/README.md](docs/vendors/s4hana/README.md).
+Which ERPs have an adapter, and what each one reads, posts and needs, is described per vendor under [docs/vendors/](docs/vendors/README.md). Nothing in the core depends on any of them.
 
 ## Installation
 
-FoaMES supports Frappe v15 and v16. ERPNext is optional.
+FoaMES supports Frappe v15 and v16. No ERP is required.
 
 ```bash
 cd $PATH_TO_YOUR_BENCH
@@ -41,11 +39,10 @@ The full guide, including roles, the scheduler, running the gateways and a smoke
 | Page | Covers |
 | --- | --- |
 | [docs/installation.md](docs/installation.md) | Install, update, roles, scheduler, gateways under supervisor, first configuration, development setup |
-| [docs/dev-bench.md](docs/dev-bench.md) | A Docker dev bench that runs the whole test suite locally, with Frappe v15 or v16 and ERPNext optional |
-| [docs/vendors/erpnext/README.md](docs/vendors/erpnext/README.md) | External References, the ERPNext adapter, running without an ERP, writing an adapter |
-| [docs/vendors/s4hana/README.md](docs/vendors/s4hana/README.md) | The SAP S/4HANA adapter: setup on both sides, the outbox, inbound IDocs, operation |
+| [docs/dev-bench.md](docs/dev-bench.md) | A Docker dev bench that runs the whole test suite locally, with Frappe v15 or v16 and an optional ERP app |
+| [docs/adapters.md](docs/adapters.md) | External References, running without an ERP, writing an adapter for another ERP |
+| [docs/vendors/](docs/vendors/README.md) | One guide folder per vendor: its ERP adapter or SCADA connection, setup and operation |
 | [docs/machine-data.md](docs/machine-data.md) | The webhook, MQTT, OPC UA and Sparkplug B paths and the event shape |
-| [docs/vendors/ignition/README.md](docs/vendors/ignition/README.md) | Connecting Ignition SCADA |
 | [docs/floor-view.md](docs/floor-view.md) | The Floor View, downtime and Agent Suggestions |
 | [docs/oee.md](docs/oee.md) | How OEE is computed, shift patterns, and how to set a machine up for it |
 | [docs/andon.md](docs/andon.md) | Andon calls for help at a machine: call types and targets, escalation, the API, the response report |
@@ -69,7 +66,7 @@ cd apps/foames
 pre-commit install
 ```
 
-GitHub Actions runs the tests on Frappe v15 and v16 without an ERP, and on Frappe v16 with ERPNext. The same matrix runs locally in Docker with the [dev bench](docs/dev-bench.md) (`cd docker && ./bench.sh up && ./bench.sh test`). It also runs [Frappe Semgrep Rules](https://github.com/frappe/semgrep-rules) and [pip-audit](https://pypi.org/project/pip-audit/) on every pull request, and builds a [CycloneDX 1.7 SBOM](docs/sbom.md) for each Frappe line that is attached to every release.
+GitHub Actions runs the tests on Frappe v15 and v16 without an ERP, and on Frappe v16 with an ERP app installed. The same matrix runs locally in Docker with the [dev bench](docs/dev-bench.md) (`cd docker && ./bench.sh up && ./bench.sh test`). It also runs [Frappe Semgrep Rules](https://github.com/frappe/semgrep-rules) and [pip-audit](https://pypi.org/project/pip-audit/) on every pull request, and builds a [CycloneDX 1.7 SBOM](docs/sbom.md) for each Frappe line that is attached to every release.
 
 ## Prior art and credits
 
@@ -85,7 +82,7 @@ GitHub Actions runs the tests on Frappe v15 and v16 without an ERP, and on Frapp
 | Downtime Reason, Downtime Record | MES | Downtime opened and closed automatically from machine state, with a reason an operator assigns. |
 | Machine Data Settings | MES | Webhook secret, MQTT broker, Sparkplug B group, OPC UA endpoint, security mode and certificates, the node and metric map, staleness threshold. |
 
-Events arrive through a signed webhook, an MQTT gateway, a Sparkplug B gateway or an OPC UA gateway. Ignition SCADA connects through any of the three machine-data paths it supports (Sparkplug B via MQTT Transmission, its OPC UA server, or a gateway script posting to the webhook); see [docs/vendors/ignition/README.md](docs/vendors/ignition/README.md). Counter readings become deltas, and a first, reset or out-of-order reading never invents production. See [docs/machine-data.md](docs/machine-data.md), including the hook other apps use to act on processed events.
+Events arrive through a signed webhook, an MQTT gateway, a Sparkplug B gateway or an OPC UA gateway. SCADA products connect through whichever of these paths they support, or through a script that posts to the webhook; vendor guides are under [docs/vendors/](docs/vendors/README.md). Counter readings become deltas, and a first, reset or out-of-order reading never invents production. See [docs/machine-data.md](docs/machine-data.md), including the hook other apps use to act on processed events.
 
 ## OEE, the floor view and agent suggestions
 
