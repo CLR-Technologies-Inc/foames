@@ -6,6 +6,7 @@
  "engine": "InnoDB",
  "field_order": [
   "machine",
+  "shift",
   "from_time",
   "to_time",
   "cb_head",
@@ -37,6 +38,14 @@
    "reqd": 1,
    "in_list_view": 1,
    "in_standard_filter": 1
+  },
+  {
+   "fieldname": "shift",
+   "fieldtype": "Data",
+   "label": "Shift",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "The shift of the machine's Shift Pattern this period covers, when it was created from one"
   },
   {
    "fieldname": "from_time",
@@ -166,7 +175,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-31 12:00:00.000000",
+ "modified": "2026-11-03 20:30:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES MES",
  "name": "OEE Period",

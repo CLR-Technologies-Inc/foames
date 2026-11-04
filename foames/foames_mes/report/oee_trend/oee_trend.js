@@ -19,11 +19,12 @@ frappe.query_reports["OEE Trend"] = {
 		},
 		{ fieldname: "machine", label: __("Machine"), fieldtype: "Link", options: "Machine" },
 		{ fieldname: "line", label: __("Line"), fieldtype: "Data" },
+		{ fieldname: "shift", label: __("Shift"), fieldtype: "Data" },
 		{
 			fieldname: "group_by",
 			label: __("Group By"),
 			fieldtype: "Select",
-			options: ["Machine", "Line", "Day"],
+			options: ["Machine", "Line", "Shift", "Day"],
 			default: "Machine",
 		},
 		{

@@ -1,7 +1,7 @@
 # Copyright (c) 2026, CLR Technologies Inc. and contributors
 # For license information, please see license.txt
 
-"""OEE over time, one row per machine (or line) and day, rolled up from the stored OEE Periods.
+"""OEE over time, one row per machine (or line, or shift) and day, rolled up from the stored OEE Periods.
 
 The trend never recomputes OEE: it reads the periods the daily task created, so what the report
 shows is what the OEE Period list shows. Lines are the Machine's Line field; a line's figures are
@@ -32,13 +32,15 @@ def execute(filters=None):
 	group_by = filters.get("group_by") or "Machine"
 	metric = filters.get("metric") if filters.get("metric") in METRICS else "OEE"
 	machines = machines_in_scope(filters)
-	periods = get_periods(list(machines), start, end)
+	periods = get_periods(list(machines), start, end, filters.get("shift"))
 
 	grouped = defaultdict(list)
 	for p in periods:
 		day = getdate(p.from_time)
 		if group_by == "Line":
 			key = machines[p.machine].line or _("No Line")
+		elif group_by == "Shift":
+			key = p.shift or _("No Shift")
 		elif group_by == "Day":
 			key = _("All Machines")
 		else:
@@ -64,19 +66,23 @@ def execute(filters=None):
 	)
 
 
-def get_periods(machine_names, start, end):
+def get_periods(machine_names, start, end, shift=None):
 	if not machine_names:
 		return []
+	filters = [
+		["machine", "in", machine_names],
+		["from_time", ">=", start],
+		["from_time", "<", end],
+	]
+	if shift:
+		filters.append(["shift", "=", shift])
 	return frappe.get_all(
 		"OEE Period",
-		filters=[
-			["machine", "in", machine_names],
-			["from_time", ">=", start],
-			["from_time", "<", end],
-		],
+		filters=filters,
 		fields=[
 			"name",
 			"machine",
+			"shift",
 			"from_time",
 			"to_time",
 			"planned_minutes",
