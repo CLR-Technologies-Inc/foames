@@ -1,0 +1,78 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-04 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "reference_type",
+  "service",
+  "resource",
+  "lookup",
+  "key_fields",
+  "label_field"
+ ],
+ "fields": [
+  {
+   "fieldname": "reference_type",
+   "fieldtype": "Select",
+   "label": "Reference Type",
+   "options": "Item\nUnit of Measure\nBatch\nSerial Number\nWork Order\nOperation\nLocation\nStock Movement\nJob Card\nBill of Materials\nRouting\nWorkstation",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "service",
+   "fieldtype": "Data",
+   "label": "Service",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "The API behind the gateway with its version, for example assetmanagement/v3."
+  },
+  {
+   "fieldname": "resource",
+   "fieldtype": "Data",
+   "label": "Resource",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "The collection inside the service, for example assets."
+  },
+  {
+   "fieldname": "lookup",
+   "fieldtype": "Select",
+   "label": "Lookup",
+   "options": "Path\nFilter",
+   "default": "Path",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "Path: GET <resource>/<id>. Filter: GET <resource>?filter={\"<key>\":\"<value>\"} for a record addressed by another field, or by several."
+  },
+  {
+   "fieldname": "key_fields",
+   "fieldtype": "Data",
+   "label": "Key Fields",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "Comma-separated, in the order used in External ID (values joined by |). One field for a Path lookup."
+  },
+  {
+   "fieldname": "label_field",
+   "fieldtype": "Data",
+   "label": "Label Field",
+   "description": "Dotted path to the text shown for the record, for example name or location.locality."
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-04 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Adapters",
+ "name": "Insights Hub Entity Mapping",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "editable_grid": 1,
+ "istable": 1,
+ "permissions": []
+}

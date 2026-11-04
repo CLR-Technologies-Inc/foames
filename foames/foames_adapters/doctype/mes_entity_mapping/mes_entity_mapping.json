@@ -1,0 +1,77 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-04 14:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "reference_type",
+  "path",
+  "lookup",
+  "key_fields",
+  "label_field",
+  "extra_query"
+ ],
+ "fields": [
+  {
+   "fieldname": "reference_type",
+   "fieldtype": "Select",
+   "label": "Reference Type",
+   "options": "Item\nUnit of Measure\nBatch\nSerial Number\nWork Order\nOperation\nLocation\nStock Movement\nJob Card\nBill of Materials\nRouting\nWorkstation",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "path",
+   "fieldtype": "Data",
+   "label": "Path",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "Relative to the Base URL. May carry {site}, and for a Path lookup {<key field>} where the key goes."
+  },
+  {
+   "fieldname": "lookup",
+   "fieldtype": "Select",
+   "label": "Lookup",
+   "options": "Path\nQuery\nOData\nJSON Filter",
+   "default": "Query",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "Path: GET <path>/<id>. Query: GET <path>?<key>=<value>. OData: $filter=<key> eq '<value>'. JSON Filter: ?filter={\"<key>\":\"<value>\"}."
+  },
+  {
+   "fieldname": "key_fields",
+   "fieldtype": "Data",
+   "label": "Key Fields",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "Comma-separated, in the order used in External ID (values joined by |)."
+  },
+  {
+   "fieldname": "label_field",
+   "fieldtype": "Data",
+   "label": "Label Field",
+   "in_list_view": 1,
+   "description": "Dotted path to the text shown for the record."
+  },
+  {
+   "fieldname": "extra_query",
+   "fieldtype": "Data",
+   "label": "Extra Query",
+   "description": "Fixed query parameters, name=value pairs joined by &; values may carry {site}."
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-04 14:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Adapters",
+ "name": "MES Entity Mapping",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "editable_grid": 1,
+ "istable": 1,
+ "permissions": []
+}
