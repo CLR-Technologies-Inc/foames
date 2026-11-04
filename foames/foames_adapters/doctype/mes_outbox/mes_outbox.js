@@ -15,10 +15,14 @@ frappe.ui.form.on("MES Outbox", {
 						fieldname: "document",
 						fieldtype: "Data",
 						label: __("Record in the MES"),
-						description: __("The id of the record the send created, if you found one."),
+						description: __(
+							"The id of the record the send created, if you found one."
+						),
 					},
 					(values) => {
-						frm.call("mark_posted", { document: values.document }).then(() => frm.reload_doc());
+						frm.call("mark_posted", { document: values.document }).then(() =>
+							frm.reload_doc()
+						);
 					},
 					__("A person has checked the system"),
 					__("Mark Posted")
