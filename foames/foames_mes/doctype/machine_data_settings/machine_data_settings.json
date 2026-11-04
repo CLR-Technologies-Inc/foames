@@ -176,7 +176,7 @@
    "fieldtype": "Table",
    "label": "Node and Metric Map",
    "options": "Machine Node Map",
-   "description": "What each OPC UA node or Sparkplug B metric means. Sparkplug metrics that follow the naming convention in docs/ignition.md need no row"
+   "description": "What each OPC UA node or Sparkplug B metric means. Sparkplug metrics that follow the naming convention in docs/vendors/ignition/README.md need no row"
   },
   {
    "fieldname": "sb_opcua_security",

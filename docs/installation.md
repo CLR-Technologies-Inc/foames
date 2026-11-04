@@ -67,8 +67,8 @@ Everything below is done in the desk (the `/app` UI) as a System Manager.
 1. **FoaMES Settings.** Set **Default ERP System** to the key of the adapter new External References should use: `ERPNext` when ERPNext is on the site, `S4HANA` for SAP, or leave it empty to run without an ERP. Leave **Skip Resolving References on Save** off unless the ERP is slow to answer and you prefer to resolve references by hand.
 2. **Downtime Reasons.** Create the reasons operators will pick, and tick **Counts As Planned Downtime** on the ones that should not count against availability (scheduled maintenance, planned changeovers). See [oee.md](oee.md).
 3. **Machines.** One record per machine, with a short **Code**, the **Ideal Cycle Time** in seconds, and a **Shift Start** plus **Scheduled Minutes Per Day** for the daily OEE window. **Source ID** defaults to the code and is what the gateways use to find the machine.
-4. **Machine Data Settings.** Set the webhook secret and whichever of MQTT, Sparkplug B or OPC UA you will use. See [machine-data.md](machine-data.md) and, for Ignition, [ignition.md](ignition.md).
-5. **S4HANA Settings**, if you connect to SAP. See [s4hana-adapter.md](s4hana-adapter.md).
+4. **Machine Data Settings.** Set the webhook secret and whichever of MQTT, Sparkplug B or OPC UA you will use. See [machine-data.md](machine-data.md) and, for Ignition, [ignition.md](vendors/ignition/README.md).
+5. **S4HANA Settings**, if you connect to SAP. See [s4hana-adapter.md](vendors/s4hana/README.md).
 
 Give people the roles above through their User records. The Floor View is at `/app/floor-view`.
 
@@ -135,7 +135,7 @@ Each gateway reads Machine Data Settings once at start-up. Restart the gateway a
 
 ## Frappe Cloud and other hosted benches
 
-FoaMES can be added to a private bench as a custom app from its GitHub repository. `pyproject.toml` declares no apt packages, so no extra system dependencies are needed. The webhook and the scheduler work as on any bench. The three gateways are long-running processes started with `bench execute`, which a hosted bench may not let you run. In that case use the signed webhook: a small bridge of your own on a machine near the broker or the OPC UA server subscribes or polls there and posts events to the site over HTTPS, as in the Ignition script in [ignition.md](ignition.md).
+FoaMES can be added to a private bench as a custom app from its GitHub repository. `pyproject.toml` declares no apt packages, so no extra system dependencies are needed. The webhook and the scheduler work as on any bench. The three gateways are long-running processes started with `bench execute`, which a hosted bench may not let you run. In that case use the signed webhook: a small bridge of your own on a machine near the broker or the OPC UA server subscribes or polls there and posts events to the site over HTTPS, as in the Ignition script in [ignition.md](vendors/ignition/README.md).
 
 ## Check that it works
 
@@ -163,7 +163,7 @@ FoaMES can be added to a private bench as a custom app from its GitHub repositor
      -H "Authorization: token $API_KEY:$API_SECRET"
    ```
 
-For a signed request from a system with no Frappe user, see the signing description in [machine-data.md](machine-data.md) and the Jython example in [ignition.md](ignition.md).
+For a signed request from a system with no Frappe user, see the signing description in [machine-data.md](machine-data.md) and the Jython example in [ignition.md](vendors/ignition/README.md).
 
 ## Development setup
 

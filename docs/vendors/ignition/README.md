@@ -55,7 +55,7 @@ For tags that cannot be renamed, add rows to **Node and Metric Map** with source
 
 ## OPC UA
 
-Enable Ignition's OPC UA server and give it a user. Ignition exposes tags as string node ids in namespace 2, for example `ns=2;s=[default]Line1/Press1/GoodCount` for a tag in the default tag provider. Add one row per tag under **Node and Metric Map** with source **OPC UA**, then run the OPC UA gateway. The endpoint is `opc.tcp://<gateway host>:62541/discovery` by default. Set Message Security Mode to `SignAndEncrypt` with a client certificate and trust it in Ignition, as described in [machine-data.md](machine-data.md#opc-ua-security).
+Enable Ignition's OPC UA server and give it a user. Ignition exposes tags as string node ids in namespace 2, for example `ns=2;s=[default]Line1/Press1/GoodCount` for a tag in the default tag provider. Add one row per tag under **Node and Metric Map** with source **OPC UA**, then run the OPC UA gateway. The endpoint is `opc.tcp://<gateway host>:62541/discovery` by default. Set Message Security Mode to `SignAndEncrypt` with a client certificate and trust it in Ignition, as described in [machine-data.md](../../machine-data.md#opc-ua-security).
 
 ## Webhook from a gateway script
 
@@ -96,7 +96,7 @@ elif tag in ("good", "scrap"):
 	post_events([{"machine": machine, "type": "Count", "counter": tag, "value": value}])
 ```
 
-The event shape is the same as for any other source; see [machine-data.md](machine-data.md).
+The event shape is the same as for any other source; see [machine-data.md](../../machine-data.md).
 
 ## Checking that data arrives
 

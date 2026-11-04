@@ -1,6 +1,6 @@
 # ERP adapters and the ERPNext adapter
 
-FoaMES keeps no Link fields to ERP DocTypes. When a FoaMES record needs to point at something in an ERP, it points at an **External Reference**, and the ERP's adapter turns that reference into a real record. This page explains External References, how the built-in ERPNext adapter works, how to run with no ERP, and how to write an adapter for another ERP. The SAP S/4HANA adapter has its own page: [s4hana-adapter.md](s4hana-adapter.md).
+FoaMES keeps no Link fields to ERP DocTypes. When a FoaMES record needs to point at something in an ERP, it points at an **External Reference**, and the ERP's adapter turns that reference into a real record. This page explains External References, how the built-in ERPNext adapter works, how to run with no ERP, and how to write an adapter for another ERP. The SAP S/4HANA adapter has its own page: [the S/4HANA adapter](../s4hana/README.md).
 
 ## External Reference
 
@@ -30,7 +30,7 @@ Two controls change this:
 - **Skip Resolving References on Save** in FoaMES Settings turns the automatic lookup off. References are then resolved only through the **Resolve** button on the form, or by code calling the document's `resolve` method.
 - Changing the ERP System, Reference Type or External ID of an existing reference clears its resolution, so a corrected reference is never shown as Resolved on the strength of its old value.
 
-References that resolve as `Missing` show up in the floor snapshot and trigger the built-in ERP rule, which raises one Agent Suggestion listing them (see [floor-view.md](floor-view.md)).
+References that resolve as `Missing` show up in the floor snapshot and trigger the built-in ERP rule, which raises one Agent Suggestion listing them (see [floor-view.md](../../floor-view.md)).
 
 ### Where references are used
 
@@ -309,7 +309,7 @@ With **Show Job Cards on the Floor** on, the floor snapshot gains, per machine, 
 with the open Work Orders, the Job Card count and the machines that have no workstation reference.
 The rule `running_without_job_card` raises an Agent Suggestion when a machine reports Running
 while its workstation has no open Job Card. External agents read the same snapshot through
-`foames.foames_mes.api.get_floor_snapshot`; see [agents/floor-agent.md](agents/floor-agent.md).
+`foames.foames_mes.api.get_floor_snapshot`; see [agents/floor-agent.md](../../agents/floor-agent.md).
 
 ### For agents
 

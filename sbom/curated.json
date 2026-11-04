@@ -212,7 +212,7 @@
 			"externalReferences": [
 				{
 					"type": "documentation",
-					"url": "https://github.com/CLR-Technologies-Inc/foames/blob/main/docs/s4hana-adapter.md"
+					"url": "https://github.com/CLR-Technologies-Inc/foames/blob/main/docs/vendors/s4hana/README.md"
 				}
 			]
 		}
@@ -279,7 +279,7 @@
 			"externalReferences": [
 				{
 					"type": "documentation",
-					"url": "https://github.com/CLR-Technologies-Inc/foames/blob/main/docs/s4hana-adapter.md"
+					"url": "https://github.com/CLR-Technologies-Inc/foames/blob/main/docs/vendors/s4hana/README.md"
 				}
 			]
 		},
@@ -301,7 +301,7 @@
 			"externalReferences": [
 				{
 					"type": "documentation",
-					"url": "https://github.com/CLR-Technologies-Inc/foames/blob/main/docs/s4hana-setup.md"
+					"url": "https://github.com/CLR-Technologies-Inc/foames/blob/main/docs/vendors/s4hana/setup.md"
 				}
 			]
 		}

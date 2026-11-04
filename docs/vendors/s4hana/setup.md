@@ -3,8 +3,8 @@
 This guide walks through the S/4HANA side of the adapter setup: which user FoaMES logs in as,
 which services have to be exposed for it, and how to check the services before switching the
 adapter on. The FoaMES side (S4HANA Settings) and the day-to-day operation are described in
-[s4hana-adapter.md](s4hana-adapter.md); the postings themselves in
-[s4hana-postings.md](s4hana-postings.md).
+[the S/4HANA overview](README.md); the postings themselves in
+[postings.md](postings.md).
 
 Menu paths and app names differ between S/4HANA Cloud, private cloud and on-premise releases.
 Where they differ, both are given. Nothing here needs SAP add-ons, RFC or the SAP Cloud SDK.
