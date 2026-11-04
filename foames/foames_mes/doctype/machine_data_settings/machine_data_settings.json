@@ -37,6 +37,7 @@
   "opcua_private_key",
   "opcua_private_key_password",
   "opcua_server_certificate",
+  "opcua_trusted_certificates",
   "sb_health",
   "stale_after_minutes",
   "sb_spc",
@@ -244,6 +245,13 @@
    "description": "Optional. The server's certificate (DER or PEM). When set, the gateway uses it instead of the one the server offers, which pins the server"
   },
   {
+   "fieldname": "opcua_trusted_certificates",
+   "fieldtype": "Attach",
+   "label": "Trusted Certificates",
+   "depends_on": "eval:doc.opcua_security_mode && doc.opcua_security_mode != 'None'",
+   "description": "Optional. A PEM bundle (or one DER file) of the certificates the server's certificate must be, or chain to: the plant CA, or the server certificates themselves. The gateway then refuses a server whose certificate is unknown, expired or carries another application URI. Needs asyncua 1.1 or later"
+  },
+  {
    "fieldname": "sb_health",
    "fieldtype": "Section Break",
    "label": "Health"
@@ -306,7 +314,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-11-03 20:30:00.000000",
+ "modified": "2026-11-04 20:00:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES MES",
  "name": "Machine Data Settings",

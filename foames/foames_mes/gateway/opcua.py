@@ -10,12 +10,14 @@ per poll when its value changed: a Count node gives a Count event with the runni
 node is translated through its state map, and Measurement nodes give Measurement events.
 
 Message security (Sign or SignAndEncrypt with Basic256Sha256, Aes128_Sha256_RsaOaep or
-Aes256_Sha256_RsaPss), the client certificate and key, an optional pinned server certificate and
-username authentication all come from Machine Data Settings; see `security_config`.
+Aes256_Sha256_RsaPss), the client certificate and key, an optional pinned server certificate, an
+optional bundle of trusted certificates that the server's certificate must chain to, and username
+authentication all come from Machine Data Settings; see `security_config` and `opcua_trust`.
 """
 
 import asyncio
 import inspect
+from pathlib import Path
 
 import frappe
 from frappe import _
@@ -84,6 +86,9 @@ def security_config(settings) -> dict | None:
 		frappe.throw(
 			_("OPC UA security mode {0} needs a Client Certificate and a Client Private Key").format(mode)
 		)
+	trusted_certificates = attached_file_path(settings.get("opcua_trusted_certificates"))
+	if trusted_certificates:
+		check_trusted_certificates(trusted_certificates)
 	return {
 		"mode": mode,
 		"policy": policy,
@@ -92,8 +97,25 @@ def security_config(settings) -> dict | None:
 		"private_key_password": settings.get_password("opcua_private_key_password", raise_exception=False)
 		or None,
 		"server_certificate": attached_file_path(settings.opcua_server_certificate),
+		"trusted_certificates": trusted_certificates,
 		"application_uri": (settings.opcua_application_uri or "").strip() or None,
 	}
+
+
+def check_trusted_certificates(path: str) -> int:
+	"""The number of certificates in the trusted bundle at `path`; a validation error when it holds
+	none or cannot be parsed, so a bad upload is caught when the settings are saved."""
+	try:
+		from foames.foames_mes.gateway.opcua_trust import load_certificates
+
+		certificates = load_certificates(Path(path).read_bytes())
+	except ImportError:
+		return -1  # cryptography is not installed here; the gateway host checks the bundle at start
+	except (OSError, ValueError) as e:
+		frappe.throw(_("Trusted Certificates could not be read as PEM or DER certificates: {0}").format(e))
+	if not certificates:
+		frappe.throw(_("Trusted Certificates holds no certificate"))
+	return len(certificates)
 
 
 async def apply_security(client, settings) -> None:
@@ -105,6 +127,7 @@ async def apply_security(client, settings) -> None:
 
 		if config["application_uri"]:
 			client.application_uri = config["application_uri"]
+		install_certificate_validator(client, config)
 		result = client.set_security(
 			getattr(security_policies, SECURITY_POLICIES[config["policy"]]),
 			config["certificate"],
@@ -123,6 +146,34 @@ async def apply_security(client, settings) -> None:
 		# Credentials must be set before connect(), which `async with` calls on entry.
 		client.set_user(settings.opcua_username)
 		client.set_password(settings.get_password("opcua_password", raise_exception=False))
+
+
+def install_certificate_validator(client, config: dict) -> None:
+	"""Make asyncua validate the server's certificate against the trusted bundle, before `set_security`
+	fetches it from the endpoint. Without a bundle the gateway keeps the old behaviour, pinned or as
+	presented, and says so in the log."""
+	log = frappe.logger("foames.opcua")
+	if not config.get("trusted_certificates"):
+		if config.get("server_certificate"):
+			log.info("OPC UA server certificate is pinned to the attached Server Certificate")
+		else:
+			log.warning(
+				"OPC UA server certificate is accepted as the server presents it: attach Trusted "
+				"Certificates or a Server Certificate in Machine Data Settings to check it"
+			)
+		return
+	if not hasattr(client, "certificate_validator"):
+		frappe.throw(
+			_(
+				"Trusted Certificates need asyncua 1.1 or later, which validates the server certificate "
+				"through Client.certificate_validator; upgrade asyncua or clear the field"
+			)
+		)
+	from foames.foames_mes.gateway.opcua_trust import make_validator
+
+	validator = make_validator(Path(config["trusted_certificates"]).read_bytes())
+	client.certificate_validator = validator
+	log.info(f"OPC UA server certificate must chain to one of {len(validator.trusted)} trusted certificates")
 
 
 async def poll_forever(settings):

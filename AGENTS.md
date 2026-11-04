@@ -26,7 +26,7 @@ Keep these whatever you build. A pull request that breaks one will not be merged
 4. **Unknown time is loss.** The OEE ledger is built from state events with Downtime Records overlaid, and an Unknown state is never run time. A machine that stops reporting gets an Unknown state event from the scheduler's staleness check (source System), and the Sparkplug gateway writes one at once on NDEATH or DDEATH. Do not add code that infers output or run time from the absence of events.
 5. **Agents suggest; people act.** Anything an agent or a rule finds becomes an `Agent Suggestion` with evidence. FoaMES does not write tags, send commands to SCADA, change machine state on its own, or post to an ERP without an explicit, idempotent posting a person configured.
 6. **Postings to an ERP are idempotent and sequenced.** The S/4HANA outbox is the model: an idempotency key per business event, a marker written into the created document, a check before resending after an unclear answer, exponential backoff, strict order within a sequence group. Follow it for any new write path.
-7. **Pure logic stays pure.** `oee.py`, `counters.py`, `shifts.py`, `andon.py`, `suggestions.py`, `maintenance.py`, `signing.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, `s4hana/outbox.py`, `odata.py`, `idoc.py`, `entities.py`, `insights_hub/rest.py`, `entities.py`, `outbox.py`, `production.py`, `mes/rest.py`, `entities.py`, `profile.py`, `outbox.py` and every vendor `profile.py`, the process-mining core and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe. Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
+7. **Pure logic stays pure.** `oee.py`, `counters.py`, `shifts.py`, `andon.py`, `suggestions.py`, `maintenance.py`, `signing.py`, `cbom.py`, `gateway/mapping.py`, `gateway/opcua_trust.py`, `gateway/sparkplug.py`, `s4hana/outbox.py`, `odata.py`, `idoc.py`, `entities.py`, `insights_hub/rest.py`, `entities.py`, `outbox.py`, `production.py`, `mes/rest.py`, `entities.py`, `profile.py`, `outbox.py` and every vendor `profile.py`, the process-mining core and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe. Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
 8. **Secrets live in Password fields** of a Settings DocType (`Machine Data Settings`, `S4HANA Settings`, `Insights Hub Settings`, `MES Connection`), read with `get_password`. Never in code, hooks or site config, never logged.
 9. **Both Frappe versions.** Use `foames.tests_compat.IntegrationTestCase` for site tests. Avoid APIs that exist in only one of v15 and v16.
 
@@ -42,9 +42,10 @@ foames/
     api.py                    ingest_machine_events, get_floor_snapshot, run_suggestion_rules, post_suggestion
     floor.py                  floor_snapshot, collect_findings
     oee.py  counters.py  shifts.py  suggestions.py  signing.py  kpi.py  spc.py  maintenance.py   pure logic (kpi.py: report roll-ups, shifts.py: shift calendars, spc.py: control charts)
+    cbom.py                   pure: the site CBOM with the deployed certificates; site_cbom.py reads the site and writes it
     spc_monitor.py            SPC over Measurement events: settings, findings, get_control_chart
     tasks.py                  scheduler entry points
-    gateway/                  mapping.py (normalise_event), mqtt.py, opcua.py, sparkplug.py
+    gateway/                  mapping.py (normalise_event), mqtt.py, opcua.py, opcua_trust.py (server certificate validation, pure), sparkplug.py
     doctype/                  Machine, Machine Event, Downtime Reason, Downtime Record,
                               Machine Data Settings (+ Machine Node Map), Shift Pattern (+ shifts, non-working days),
                               OEE Period, Agent Suggestion, Andon Call, Andon Call Type,
@@ -127,6 +128,7 @@ Whitelisted methods, called as `/api/method/<dotted path>`. Authentication is Fr
 | `foames.foames_mes.api.run_suggestion_rules` | POST | create on Agent Suggestion | Run the rules now; returns the names created |
 | `foames.foames_mes.api.post_suggestion` | POST | create on Agent Suggestion | An external agent posts one suggestion |
 | `foames.foames_mes.spc_monitor.get_control_chart` | GET | read on Machine Event | I-MR or X-bar R chart of one machine measurement with run-rule signals |
+| `foames.foames_mes.site_cbom.get_site_cbom` | GET | System Manager | The site's CycloneDX 1.7 CBOM with the deployed OPC UA certificates |
 | `foames.foames_mes.doctype.oee_period.oee_period.get_oee` | GET | read on OEE Period | OEE for any window without saving a period |
 | `foames.foames_mes.doctype.andon_call.andon_call.raise_andon` | POST | create on Andon Call | Raise a call for help at a machine (`machine`, `call_type`, `note`) |
 | `foames.foames_mes.doctype.andon_call.andon_call.acknowledge_andon` / `resolve_andon` | POST | write on Andon Call | Acknowledge, resolve or cancel a call |
@@ -168,6 +170,7 @@ The event shape, state aliases and signing scheme are in [docs/machine-data.md](
 ```bash
 # pure-logic tests, no site needed
 python -m unittest foames.foames_mes.test_oee_and_rules foames.foames_mes.test_machine_data_logic foames.foames_mes.test_sparkplug foames.foames_mes.test_kpi
+python -m unittest foames.foames_mes.gateway.test_opcua_trust foames.foames_mes.test_cbom   # need the cryptography package
 python -m unittest foames.foames_process_mining.test_process_mining_logic foames.foames_mcp.test_mcp_protocol
 
 # everything, on a bench
