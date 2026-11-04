@@ -81,10 +81,13 @@ class ProfileAdapter(ERPAdapter):
 			data = self.client().get(path, query)
 		except MESError as e:
 			raise self.adapter_error(e)
-		if data is None:
-			return None
 		if single:
+			if data is None:
+				return None
 			return data if isinstance(data, dict) and data else None
+		if data is None:
+			# A collection that does not exist is a wrong path on the mapping, not a missing record.
+			raise AdapterError(f"{self.label}: no collection at {path}; check the mapping's path")
 		records = items_of(data)
 		return records[0] if records and isinstance(records[0], dict) else None
 

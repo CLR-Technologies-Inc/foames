@@ -97,7 +97,10 @@ Open **Insights Hub Settings**:
   equivalent for yours) and the **Tenant** name.
 - **Method**: Technical Token Manager (application credentials) or Service Credentials. For the
   token manager, fill in **Application Name**, **Application Version**, and **Host Tenant** and **User
-  Tenant** when they differ from the tenant. For service credentials, the **Token URL**.
+  Tenant** when they differ from the tenant; **Credentials Header Scheme** is the word before the
+  base64 credentials in `X-SPACE-AUTH-KEY` (Basic, as the platform SDKs send it; switch to Bearer only
+  if your tenant's documentation says so). For service credentials, the **Token URL**. Both URLs
+  must be `https://`.
 - **Client ID** and **Client Secret**. The secret is a Password field, read with `get_password`.
 - **CA Bundle Path** if the gateway is reached through a proxy with a private CA.
 - **Entity Mappings**, as above.
@@ -137,8 +140,8 @@ Two operations exist:
   23-character marker derived from the idempotency key into the event's `correlationId`. When a send
   ends without a clear answer (timeout, dropped connection, server error), the record goes to
   **Unknown**, and the next attempt searches the asset's events of that type within a minute of the
-  event's timestamp for the marker before posting, so an event is never created twice. Do not set
-  `correlationId` in the payload; it is overwritten.
+  event's timestamp, every page of them, for the marker before posting, so an event is never created
+  twice. Do not set `correlationId` in the payload; it is overwritten.
 
 The rest is the same as the S/4HANA outbox. Queuing the same key twice returns the first record.
 Throttling, server errors, network failures and a rejected login are retried with exponential backoff
@@ -166,7 +169,8 @@ an out-of-order reading adds nothing.
 
 Where the previous window ended is read back from the outbox (the newest record's `_time`), so
 nothing about Insights Hub is stored on the Machine, and a machine is rolled up by one worker at a
-time. A machine rolled up for the first time starts with the last ten minutes, so connecting a plant
+time. A scheduled window ends two minutes behind the clock, so an event whose transaction is still
+committing when the window is cut lands in the next window instead of behind the checkpoint. A machine rolled up for the first time starts with the last ten minutes, so connecting a plant
 with months of history does not flood the tenant. Timestamps are converted from the site's timezone
 to UTC on the way out.
 

@@ -260,6 +260,11 @@ class TestSAPDigitalManufacturing(unittest.TestCase):
 		adapter(SAPDigitalManufacturingAdapter, fake, mappings=[mapping]).resolve("Item", "FG-1")
 		self.assertEqual(fake.requests[-1]["path"], "/api/material/v2/materials")
 
+	def test_missing_collection_is_a_mapping_error(self):
+		with self.assertRaises(AdapterError) as raised:
+			adapter(SAPDigitalManufacturingAdapter, FakeMES()).resolve("Item", "FG-9")
+		self.assertIn("no collection", str(raised.exception))
+
 	def test_empty_collection_is_missing(self):
 		fake = FakeMES().on("GET", "/material/v1/materials", ok({"content": []}))
 		self.assertIsNone(adapter(SAPDigitalManufacturingAdapter, fake).resolve("Item", "FG-9"))

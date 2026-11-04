@@ -73,9 +73,20 @@ class TestInsightsHubSettings(IntegrationTestCase):
 		with self.assertRaises(frappe.ValidationError):
 			doc.save()
 
+	def test_urls_must_be_https(self):
+		with self.assertRaises(frappe.ValidationError):
+			self.settings(gateway_url="http://gateway.eu1.example").save()
+		with self.assertRaises(frappe.ValidationError):
+			self.settings(
+				auth_method=SERVICE_CREDENTIALS, token_url="http://plant1.piam.example/oauth/token"
+			).save()
+
 	def test_rollup_needs_distinct_variables(self):
 		with self.assertRaises(frappe.ValidationError):
 			self.settings(send_machine_data=1, good_variable="count", scrap_variable="count").save()
+		# A blank field takes its default, so an explicit name equal to another field's default clashes too.
+		with self.assertRaises(frappe.ValidationError):
+			self.settings(send_machine_data=1, good_variable="", scrap_variable="goodCount").save()
 		doc = self.settings(
 			send_machine_data=1, property_set="Prod", good_variable="ok", scrap_variable="nok"
 		)

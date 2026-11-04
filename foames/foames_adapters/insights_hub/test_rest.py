@@ -60,11 +60,16 @@ class TestTokens(unittest.TestCase):
 		self.assertEqual(request["method"], "POST")
 		self.assertEqual(request["path"], "/api/technicaltokenmanager/v3/oauth/token")
 		expected = base64.b64encode(b"app-client:s3cret").decode()
-		self.assertEqual(request["headers"]["X-SPACE-AUTH-KEY"], "Bearer " + expected)
+		self.assertEqual(request["headers"]["X-SPACE-AUTH-KEY"], "Basic " + expected)
 		self.assertEqual(
 			request["body"],
 			{"appName": "foames", "appVersion": "1.0.0", "hostTenant": "plant1", "userTenant": "plant1"},
 		)
+
+	def test_token_manager_scheme_can_be_switched(self):
+		fake = FakeInsightsHub()
+		client(fake, token_manager_scheme="Bearer").access_token()
+		self.assertTrue(fake.requests[0]["headers"]["X-SPACE-AUTH-KEY"].startswith("Bearer "))
 
 	def test_token_manager_tenants_can_differ(self):
 		fake = FakeInsightsHub()
@@ -135,6 +140,22 @@ class TestReads(unittest.TestCase):
 		self.assertEqual(rows, [{"assetId": "a1"}])
 		query = fake.requests[-1]["query"]
 		self.assertEqual((query["page"], query["size"], query["filter"]), ("0", "2", {"name": "P"}))
+
+	def test_missing_collection_is_an_error_not_an_empty_page(self):
+		with self.assertRaises(InsightsHubError) as raised:
+			client(FakeInsightsHub()).get_page("opcenter/v1/nowhere")
+		self.assertFalse(raised.exception.transient)
+		self.assertIn("nowhere", str(raised.exception))
+
+	def test_get_all_pages_until_a_short_page(self):
+		pages = {"0": [{"n": 1}, {"n": 2}], "1": [{"n": 3}]}
+		fake = FakeInsightsHub().on(
+			"GET", "/events", lambda request: page(pages[request["query"]["page"]], "events")
+		)
+		self.assertEqual(
+			[r["n"] for r in client(fake).get_all("eventmanagement/v3/events", size=2)], [1, 2, 3]
+		)
+		self.assertEqual([r["query"]["page"] for r in fake.requests if "events" in r["path"]], ["0", "1"])
 
 	def test_items_of_every_envelope(self):
 		self.assertEqual(items_of(None), [])

@@ -52,14 +52,21 @@ class InsightsHubSettings(Document):
 			frappe.throw(_("Service Credentials need the tenant's Token URL"))
 		if self.auth_method == TOKEN_MANAGER and not (self.app_name or "").strip():
 			frappe.throw(_("The Technical Token Manager needs the registered Application Name"))
+		for field, label in (("gateway_url", _("Gateway URL")), ("token_url", _("Token URL"))):
+			value = (self.get(field) or "").strip()
+			if value and not value.lower().startswith("https://"):
+				frappe.throw(
+					_("{0} must use https://, or the client secret would travel unencrypted").format(label)
+				)
 
 	def validate_rollup(self):
 		if not self.send_machine_data:
 			return
 		if not (self.property_set or "").strip():
 			frappe.throw(_("Set the Aspect (property set) the machine records are written to"))
-		names = [(self.get(field) or "").strip() for field in VARIABLE_FIELDS.values()]
-		if len({name for name in names if name}) != len([name for name in names if name]):
+		# Compare the names as the roll-up will use them, defaults filled in.
+		names = list(self.rollup_options().variables.values())
+		if len(set(names)) != len(names):
 			frappe.throw(_("Two aspect variables have the same name"))
 
 	def connection(self) -> Connection:
@@ -73,6 +80,7 @@ class InsightsHubSettings(Document):
 			app_version=self.app_version or "",
 			host_tenant=self.host_tenant or "",
 			user_tenant=self.user_tenant or "",
+			token_manager_scheme=self.token_manager_scheme or "Basic",
 			token_url=(self.token_url or "").strip(),
 			timeout=float(self.timeout or 30),
 			cafile=self.ca_bundle or None,

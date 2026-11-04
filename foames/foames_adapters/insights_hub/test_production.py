@@ -104,9 +104,13 @@ class TestStateEvents(unittest.TestCase):
 			(payload["severity"], payload["description"]), (SEVERITY_INFORMATION, "Press 1 is Running")
 		)
 
-	def test_state_key(self):
+	def test_state_key_keeps_sub_second_precision(self):
 		self.assertEqual(
 			production.state_key("Press 1", "Down", END), "Press 1:state:Down:2026-11-04 10:10:00"
+		)
+		self.assertNotEqual(
+			production.state_key("Press 1", "Running", END),
+			production.state_key("Press 1", "Running", END.replace(microsecond=400000)),
 		)
 
 

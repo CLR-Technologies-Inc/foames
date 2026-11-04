@@ -11,7 +11,9 @@ token are supported:
 
 - **Technical Token Manager**: the way an application registered on the tenant gets a token. A POST
   to `technicaltokenmanager/v3/oauth/token` carries the app's client id and secret, base64-encoded,
-  in the `X-SPACE-AUTH-KEY` header and names the app and the host and user tenants in the body.
+  in the `X-SPACE-AUTH-KEY` header (`Basic <credentials>` as the platform SDKs send it; the scheme
+  is configurable because documentation versions differ) and names the app and the host and user
+  tenants in the body.
 - **Service Credentials**: plain OAuth 2.0 client credentials against the tenant's identity provider
   (`https://<tenant>.piam.<region>/oauth/token`), with the client id and secret as Basic auth.
 
@@ -107,6 +109,7 @@ class Connection:
 	app_version: str = ""
 	host_tenant: str = ""
 	user_tenant: str = ""
+	token_manager_scheme: str = "Basic"  # the scheme word in X-SPACE-AUTH-KEY
 	# Service Credentials: the tenant's token endpoint.
 	token_url: str = ""
 	timeout: float = 30.0
@@ -163,7 +166,7 @@ class RestClient:
 				"POST",
 				self.url(TOKEN_MANAGER_PATH),
 				{
-					"X-SPACE-AUTH-KEY": "Bearer " + basic,
+					"X-SPACE-AUTH-KEY": f"{(c.token_manager_scheme or 'Basic').strip()} {basic}",
 					"Content-Type": "application/json",
 					"Accept": "application/json",
 				},
@@ -211,9 +214,23 @@ class RestClient:
 		return response.json()
 
 	def get_page(self, path: str, query: dict | None = None, size: int = 10, page: int = 0) -> list:
-		"""One page of a collection, as a list, whatever envelope the service uses."""
+		"""One page of a collection, as a list, whatever envelope the service uses. A collection that
+		answers 404 does not exist: that is a wrong service or resource path, not an empty result."""
 		data = self.get(path, {**(query or {}), "page": str(page), "size": str(size)})
+		if data is None:
+			raise InsightsHubError(
+				f"Insights Hub has no collection at {path}: check the service and resource of the mapping",
+				status=404,
+			)
 		return items_of(data)
+
+	def get_all(self, path: str, query: dict | None = None, size: int = 50, max_pages: int = 20):
+		"""Every record of a collection, page by page, up to `max_pages`."""
+		for page in range(max_pages):
+			records = self.get_page(path, query, size=size, page=page)
+			yield from records
+			if len(records) < size:
+				return
 
 	def write(self, method: str, path: str, payload, *, idempotent: bool = False):
 		"""PUT or POST a JSON body. Returns the decoded answer (None for 204 No Content)."""

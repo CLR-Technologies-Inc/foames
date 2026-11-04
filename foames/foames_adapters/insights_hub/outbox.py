@@ -113,15 +113,15 @@ def time_series_path(payload: dict) -> str:
 def find_existing(client: RestClient, payload: dict) -> dict | None:
 	"""The event an earlier attempt of this posting created, if Insights Hub has one.
 
-	Events are searched on the asset and type within a minute of the event's timestamp and matched
-	on the correlation id, because that is what the event filter is sure to support."""
+	Events are searched on the asset and type within a minute of the event's timestamp, every page
+	of them, and matched on the correlation id, because that is what the event filter is sure to
+	support."""
 	at = parse_time(payload["timestamp"])
 	window = (at - timedelta(minutes=1), at + timedelta(minutes=1)) if at else None
 	filters = {"entityId": payload["entityId"], "typeId": payload.get("typeId", STANDARD_EVENT_TYPE)}
 	if window:
 		filters["timestamp"] = {"between": f"[{iso_utc(window[0])},{iso_utc(window[1])}]"}
-	events = client.get_page(f"{EVENT_SERVICE}/events", {"filter": json_filter(filters)}, size=50)
-	for event in events:
+	for event in client.get_all(f"{EVENT_SERVICE}/events", {"filter": json_filter(filters)}, size=50):
 		if event.get("correlationId") == payload.get("correlationId"):
 			return event
 	return None

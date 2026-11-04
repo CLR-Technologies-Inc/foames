@@ -46,6 +46,11 @@ from foames.foames_adapters.machine_window import counter_totals, state_before, 
 
 WORKSTATION = "Workstation"
 FIRST_WINDOW_MINUTES = 10
+# A scheduled window ends this far behind the clock, so a Machine Event whose transaction is still
+# committing when the window is cut (its timestamp a moment ago) lands in the next window rather than
+# behind the checkpoint. An event that arrives later than that is out of order and, as the counter
+# rules say, counts as nothing anyway.
+ROLLUP_LAG_SECONDS = 120
 
 
 def settings():
@@ -156,13 +161,18 @@ def roll_up(machine, until=None, since=None, job: str | None = None, state: str 
 	asset = asset_for_reference(machine.workstation_reference)
 	if not asset:
 		return None
-	if job is None:
-		job = job_tag(machine.current_job_reference)
 	# One roll-up per machine at a time: the scheduler and a job change must not both cut a window
-	# from the same checkpoint. A job change already holds this lock through the Machine's save.
-	frappe.db.get_value("Machine", machine.name, "name", for_update=True)
+	# from the same checkpoint. A job change already holds this lock through the Machine's save. The
+	# job is read after the lock, so a job change committed a moment ago is not tagged with the old job.
+	current_job = frappe.db.get_value("Machine", machine.name, "current_job_reference", for_update=True)
+	if job is None:
+		job = job_tag(current_job)
 	options = options_from_settings()
-	end = (get_datetime(until) if until else now_datetime()).replace(microsecond=0)
+	if until:
+		end = get_datetime(until)
+	else:
+		end = now_datetime() - timedelta(seconds=ROLLUP_LAG_SECONDS)
+	end = end.replace(microsecond=0)
 	start = last_window_end(machine.name, options.tz)
 	if not start:
 		start = get_datetime(since) if since else end - timedelta(minutes=FIRST_WINDOW_MINUTES)

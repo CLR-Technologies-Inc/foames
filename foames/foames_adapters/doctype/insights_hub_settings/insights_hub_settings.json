@@ -21,6 +21,7 @@
   "app_version",
   "host_tenant",
   "user_tenant",
+  "token_manager_scheme",
   "token_url",
   "mapping_section",
   "entity_mappings",
@@ -136,6 +137,15 @@
    "label": "User Tenant",
    "depends_on": "eval:doc.auth_method==\"Technical Token Manager\"",
    "description": "The tenant whose data is read and written. Defaults to Tenant."
+  },
+  {
+   "fieldname": "token_manager_scheme",
+   "fieldtype": "Select",
+   "label": "Credentials Header Scheme",
+   "options": "Basic\nBearer",
+   "default": "Basic",
+   "depends_on": "eval:doc.auth_method==\"Technical Token Manager\"",
+   "description": "The scheme word before the base64 credentials in X-SPACE-AUTH-KEY. Basic is what the platform SDKs send; switch to Bearer only if your tenant's documentation says so."
   },
   {
    "fieldname": "token_url",

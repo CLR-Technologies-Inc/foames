@@ -157,6 +157,19 @@ class TestSend(unittest.TestCase):
 			{"between": "[2026-11-04T09:59:00.000Z,2026-11-04T10:01:00.000Z]"},
 		)
 
+	def test_event_verify_first_searches_every_page(self):
+		prepared = outbox.prepare(outbox.operation(outbox.EVENT), EVENT, "k")
+		first = [{"id": f"e{i}", "correlationId": "other"} for i in range(50)]
+		second = [{"id": "e77", "correlationId": outbox.marker("k")}]
+		fake = FakeInsightsHub().on(
+			"GET",
+			"/events",
+			lambda request: page(first if request["query"]["page"] == "0" else second, "events"),
+		)
+		outcome = outbox.send(client(fake), outbox.operation(outbox.EVENT), prepared, verify_first=True)
+		self.assertEqual((outcome.status, outcome.document), ("Posted", "e77"))
+		self.assertEqual(len([r for r in fake.requests if r["method"] == "GET"]), 2)
+
 	def test_event_verify_first_posts_when_nothing_matches(self):
 		prepared = outbox.prepare(outbox.operation(outbox.EVENT), EVENT, "k")
 		fake = (

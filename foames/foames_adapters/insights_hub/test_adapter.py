@@ -140,6 +140,11 @@ class TestResolve(unittest.TestCase):
 		empty = FakeInsightsHub().on("GET", "/orders", page([], "orders"))
 		self.assertIsNone(adapter(empty, overrides={"Work Order": ORDERS}).resolve("Work Order", "1000123"))
 
+	def test_missing_collection_is_a_mapping_error(self):
+		with self.assertRaises(AdapterError) as raised:
+			adapter(FakeInsightsHub(), overrides={"Work Order": ORDERS}).resolve("Work Order", "1000123")
+		self.assertIn("no collection", str(raised.exception))
+
 	def test_composite_filter_key(self):
 		batches = {
 			"service": "oi/v1",

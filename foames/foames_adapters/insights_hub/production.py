@@ -138,4 +138,6 @@ def state_event_payload(
 
 
 def state_key(machine: str, state: str, at: datetime) -> str:
-	return f"{machine}:state:{state}:{at.isoformat(sep=' ', timespec='seconds')}"
+	"""Idempotency key of a state change, at the full precision of the event's timestamp, so two
+	changes within one second are two events."""
+	return f"{machine}:state:{state}:{at.isoformat(sep=' ')}"
