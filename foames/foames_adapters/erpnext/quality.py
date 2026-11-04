@@ -162,7 +162,7 @@ def on_job_changed(machine, previous_reference: str | None, at):
 	what the machine measured while it ran. The hook runs inside the Machine's save, so the record
 	before the save still says when that job started; a Job Card that is gone is nothing to
 	inspect, not a reason to refuse the machine its next job."""
-	if not inspection_on_job_change_enabled():
+	if not inspection_on_job_change_enabled() or machine.flags.get("skip_job_postings"):
 		return
 	from foames.foames_adapters.erpnext.rollup import job_card_for_reference
 
