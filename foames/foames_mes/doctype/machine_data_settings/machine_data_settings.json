@@ -38,7 +38,15 @@
   "opcua_private_key_password",
   "opcua_server_certificate",
   "sb_health",
-  "stale_after_minutes"
+  "stale_after_minutes",
+  "sb_spc",
+  "spc_enabled",
+  "spc_rule_set",
+  "spc_subgroup_size",
+  "cb_spc",
+  "spc_baseline_days",
+  "spc_recent_hours",
+  "spc_min_baseline_points"
  ],
  "fields": [
   {
@@ -246,6 +254,54 @@
    "label": "Mark Machine Unknown After (min)",
    "default": "15",
    "description": "A machine with no event for this long is marked Unknown by the scheduler"
+  },
+  {
+   "fieldname": "sb_spc",
+   "fieldtype": "Section Break",
+   "label": "Statistical Process Control",
+   "description": "Control charts over Measurement events. The hourly suggestion run judges the last hours' readings against limits set by the readings before them, and raises an Agent Suggestion for each chart and rule that signals."
+  },
+  {
+   "fieldname": "spc_enabled",
+   "fieldtype": "Check",
+   "label": "SPC Suggestions Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "spc_rule_set",
+   "fieldtype": "Select",
+   "label": "Run Rules",
+   "options": "Nelson\nWestern Electric",
+   "default": "Nelson"
+  },
+  {
+   "fieldname": "spc_subgroup_size",
+   "fieldtype": "Int",
+   "label": "X-bar R Subgroup Size",
+   "default": "0",
+   "description": "Consecutive readings per subgroup, 2 to 25. 0 charts individuals (I-MR) only."
+  },
+  {
+   "fieldname": "cb_spc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "spc_baseline_days",
+   "fieldtype": "Int",
+   "label": "Baseline Window (days)",
+   "default": "7"
+  },
+  {
+   "fieldname": "spc_recent_hours",
+   "fieldtype": "Int",
+   "label": "Judge Readings From the Last (hours)",
+   "default": "2"
+  },
+  {
+   "fieldname": "spc_min_baseline_points",
+   "fieldtype": "Int",
+   "label": "Minimum Baseline Readings",
+   "default": "20"
   }
  ],
  "index_web_pages_for_search": 0,

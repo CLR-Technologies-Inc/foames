@@ -83,7 +83,7 @@ The adapter is built in and switches on by itself when the `erpnext` app is inst
 | --- | --- | --- |
 | FoaMES reads ERPNext | Resolve External References (Item, UOM, Batch, Serial No, Work Order, Operation, Warehouse, Stock Entry, Job Card, BOM, Routing, Workstation) with their details; list open Work Orders and Job Cards | `frappe.db` reads of ERPNext's tables |
 | FoaMES writes ERPNext | Stock Entries against a Work Order (transfer, manufacture, consumption), Job Card time logs, Work Order stop, resume and close | ERPNext's own whitelisted functions, through the **ERPNext Outbox** |
-| Machines write ERPNext | A machine's good and scrap counts and its running time, rolled up to the Job Card it is working on | The machine's **Current Job Reference**, the scheduler and the outbox |
+| Machines write ERPNext | A machine's good and scrap counts and its running time, rolled up to the Job Card it is working on; its state shown as the Workstation's status; its downtime as Downtime Entries | The machine's **Current Job Reference** and **Workstation Reference**, the scheduler, the `foames_machine_state_changed` hook, a Downtime Record event and the outbox |
 | ERPNext tells FoaMES | A mapped record was saved, renamed or deleted | `doc_events` hooks that refresh the matching External Reference |
 | The floor | Open Job Cards and Work Orders per machine, and a rule for a machine running without one | `foames_floor_snapshot_extensions` and `foames_suggestion_rules` |
 
@@ -99,6 +99,10 @@ The adapter is built in and switches on by itself when the `erpnext` app is inst
    - **Roll Up Machine Counts to Job Cards** queues each machine's counts and run time to the Job
      Card named by its Current Job Reference; see [Rolling machine counts up](#rolling-machine-counts-up-to-job-cards).
    - **Show Job Cards on the Floor** and **Look Ahead (days)** control the floor snapshot section.
+   - **Show Machine State on Workstations** mirrors each machine's state onto its ERPNext
+     Workstation's status, and **Post Downtime to ERPNext** turns closed Downtime Records into
+     ERPNext Downtime Entries (with **Downtime Operator**, the Employee ERPNext requires on them);
+     see [Workstation status and downtime](#workstation-status-and-downtime).
    - **Refresh Unresolved References Daily** re-checks references that are Unverified or Missing.
 3. Point each Machine at its ERPNext Workstation through **Workstation Reference** (an External
    Reference of type Workstation). That is what ties live machine state to ERPNext's job list.
@@ -159,6 +163,8 @@ status; `get_posting(name)` reports progress.
 | `Job Card Time Log` | `job_card`, `start_time` and/or `complete_time`, optional `completed_qty`, `employees`, `submit` | `start_time` opens a time log row and `complete_time` closes the open one, both through `make_time_log`, which validates the operation sequence and updates the Job Card's status; a posting with both times is applied as a start followed by a completion, and a completion with no open row is rejected. The Job Card's totals are recomputed, and with `submit` (or the settings default) it is submitted once its completed quantity reaches its for quantity |
 | `Job Card Production Log` | `job_card`, `from_time`, `to_time`, optional `completed_qty`, `process_loss_qty`, `run_intervals` (list of `[from, to]`), `remarks`, `submit` | Appends one time log per run interval (or one for the whole window) with `completed_qty` on the last, adds `process_loss_qty` to the Job Card's process loss (recent versions derive the field on save as planned minus completed minus pending, so the posting sets the pending quantity to carry the loss; the scrap is also written into the remarks), and saves through the Job Card's own validation (overlaps, totals); a Job Card that is no longer a draft rejects it; with `submit` (or the settings default) the Job Card is submitted once completed plus loss reaches its for quantity |
 | `Work Order Status` | `work_order`, `status` = `Stopped`, `Resumed` or `Closed` | `stop_unstop` or `close_work_order`; already being in that state counts as done |
+| `Workstation Status` | `workstation`, `status` = `Production`, `Off`, `Idle`, `Problem`, `Maintenance` or `Setup` | Sets the Workstation's status, which ERPNext's Plant Floor page shows; already showing it counts as done, and a disabled Workstation is left Off |
+| `Downtime Entry` | `workstation`, `from_time`, `to_time`, optional `operator` (Employee; defaults to the settings' **Downtime Operator**, and ERPNext requires one), `stop_reason` (one of ERPNext's reasons, else `Other`), `remarks`, `downtime_record` | Creates a Downtime Entry through its own validation (no overlap on the Workstation, minutes computed); with `downtime_record` the entry carries a marker for that record and a later posting for the same record updates it instead of adding a second one |
 
 `qty` defaults to the Work Order's remaining quantity, as it does in the form. `submit` defaults
 to true for Stock Entries; pass `false` to leave a draft for review.
@@ -220,6 +226,35 @@ The floor snapshot shows the current job on each machine (`current_job`, with `o
 `docstatus` from ERPNext) and marks the matching entry of `job_cards` with `current: true`. The
 rule `current_job_card_not_open` raises a suggestion for a machine whose current Job Card is
 submitted, cancelled or gone, since its counts can no longer be rolled up.
+
+### Workstation status and downtime
+
+ERPNext's Workstation has a status (Production, Off, Idle, Problem, Maintenance, Setup) that its
+Plant Floor page displays, and a Downtime Entry per stretch a Workstation was down that its
+reports draw on. Both can follow what the machines report, through the outbox like every other
+write, for machines that point at their ERPNext Workstation through **Workstation Reference**.
+
+**Show Machine State on Workstations.** Whenever a machine changes state (the core's
+`foames_machine_state_changed` hook), one `Workstation Status` posting is queued: Running shows as
+Production, Down as Problem, Idle and Setup as themselves, and a lost signal (Unknown) as Off.
+Only the latest state matters, so a posting still waiting for the same Workstation is cancelled
+rather than performed: a machine that flaps does not pile up postings, and the Workstation never
+steps through stale states. The posting's reference is the Machine; its sequence group is the
+Workstation.
+
+**Post Downtime to ERPNext.** When a Downtime Record closes (the machine left Down, or a person
+entered the end time), one `Downtime Entry` posting is queued for the machine's Workstation with
+the record's window, the operator from **Downtime Operator** (ERPNext requires one on every
+entry), and the stop reason mapped from the record's Downtime Reason: a reason whose **title** is
+one of ERPNext's own reasons (`Excessive machine set up time`, `Unplanned machine maintenance`,
+`On-machine press checks`, `Machine operator errors`, `Machine malfunction`, `Electricity down`,
+`Other`) maps to it directly, otherwise the category decides (Changeover, Breakdown and Planned
+map to the set-up, malfunction and maintenance reasons), and anything else is `Other`. The FoaMES
+machine, reason and notes go into the entry's remarks either way. Reasons are usually assigned
+after the fact, so a change to a closed record (reason, notes, end time) queues a new posting that
+updates the same entry, found by a marker for the record; saving a record unchanged queues
+nothing. A record on a machine with no Workstation Reference is not posted. ERPNext rejects
+entries that overlap on a Workstation, which shows up as a Failed posting with its message.
 
 ### Keeping references current
 

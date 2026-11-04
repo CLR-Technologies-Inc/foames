@@ -28,9 +28,44 @@ def ensure_manufacturing_setup() -> dict:
 	ensure_workstation_and_operation()
 	bom = ensure_bom()
 	ensure_bom(with_operations=False)
+	employee = ensure_employee()
 	# Fixtures must outlive the per-test savepoint, so they are committed once.
 	frappe.db.commit()  # nosemgrep
-	return {"company": COMPANY, "bom": bom, "item": FINISHED_GOOD, "workstation": WORKSTATION}
+	return {
+		"company": COMPANY,
+		"bom": bom,
+		"item": FINISHED_GOOD,
+		"workstation": WORKSTATION,
+		"employee": employee,
+	}
+
+
+EMPLOYEE_NAME = "FoaMES Test Operator"
+
+
+def ensure_employee() -> str:
+	"""The Employee ERPNext's Downtime Entry needs as its operator."""
+	existing = frappe.db.get_value("Employee", {"employee_name": EMPLOYEE_NAME, "company": COMPANY}, "name")
+	if existing:
+		return existing
+	if not frappe.db.exists("Gender", "Other"):
+		frappe.get_doc({"doctype": "Gender", "gender": "Other"}).insert(ignore_permissions=True)
+	return (
+		frappe.get_doc(
+			{
+				"doctype": "Employee",
+				"first_name": "FoaMES Test",
+				"last_name": "Operator",
+				"company": COMPANY,
+				"status": "Active",
+				"gender": "Other",
+				"date_of_birth": "1990-01-01",
+				"date_of_joining": "2020-01-01",
+			}
+		)
+		.insert(ignore_permissions=True)
+		.name
+	)
 
 
 def ensure_company():
