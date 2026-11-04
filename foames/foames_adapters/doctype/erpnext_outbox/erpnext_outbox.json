@@ -33,7 +33,7 @@
    "fieldname": "operation",
    "fieldtype": "Select",
    "label": "Operation",
-   "options": "Material Transfer for Manufacture\nManufacture\nMaterial Consumption for Manufacture\nJob Card Time Log\nJob Card Production Log\nWork Order Status\nWorkstation Status\nDowntime Entry",
+   "options": "Material Transfer for Manufacture\nManufacture\nMaterial Consumption for Manufacture\nJob Card Time Log\nJob Card Production Log\nWork Order Status\nWorkstation Status\nDowntime Entry\nQuality Inspection",
    "reqd": 1,
    "in_list_view": 1,
    "in_standard_filter": 1,
