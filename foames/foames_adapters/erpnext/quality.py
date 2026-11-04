@@ -9,6 +9,10 @@ Parameter it stands for. `measurement_readings` turns the events of a window int
 `Quality Inspection` posting takes (the last ten values per parameter, in time order), and
 `queue_inspection` queues the posting; `post_inspection_from_measurements` in `api.py` does both
 for an agent or a gateway. ERPNext judges the readings against the template's limits.
+
+With **Inspect Job Cards from Machine Measurements** on, `on_job_changed` (registered under the
+core's `foames_machine_job_changed` hook) does it on its own whenever a machine's job ends: the
+readings of the job's window, for the parameters of the template the Job Card names.
 """
 
 from __future__ import annotations
@@ -19,6 +23,7 @@ import json
 import frappe
 from frappe.utils import get_datetime, now_datetime
 
+from foames.foames_adapters.erpnext import erpnext_installed
 from foames.foames_adapters.erpnext.postings import MAX_READINGS_PER_SPECIFICATION
 
 
@@ -96,3 +101,54 @@ def queue_inspection(
 		idempotency_key = f"inspection:{reference_type}:{reference_name}:{digest}"
 	group = f"{reference_type}:{reference_name}"
 	return enqueue_posting("Quality Inspection", payload, idempotency_key, group, None, None)
+
+
+def inspection_on_job_change_enabled() -> bool:
+	if not erpnext_installed():
+		return False
+	settings = frappe.get_cached_doc("ERPNext Adapter Settings")
+	return bool(settings.enable_postings and settings.inspect_job_cards_from_measurements)
+
+
+def inspect_job_card(machine: str, job_card: str, since, until, submit: bool | None = None):
+	"""Queue a Quality Inspection for `job_card` from the measurements `machine` took between
+	`since` and `until`, for the parameters of the template the Job Card's operation (or its BOM, or
+	its item) names; other measurements are left out, so a gauge the template does not ask about
+	cannot fail the inspection. Returns `(outbox name, created)`, or None when the Job Card names
+	no template or the window holds no reading for its parameters."""
+	from foames.foames_adapters.erpnext.executor import inspection_subject, template_criteria
+
+	card = frappe.get_doc("Job Card", job_card)
+	_item, _bom, template = inspection_subject(card, None)
+	specifications = list(template_criteria(template)) if template else []
+	if not specifications:
+		return None
+	readings = measurement_readings(machine, since, until, specifications)
+	if not readings:
+		return None
+	extra = {} if submit is None else {"submit": bool(submit)}
+	return queue_inspection(
+		"Job Card",
+		job_card,
+		readings,
+		source=(machine, str(get_datetime(since)), str(get_datetime(until))),
+		**extra,
+	)
+
+
+def on_job_changed(machine, previous_reference: str | None, at):
+	"""Registered under `foames_machine_job_changed`: the job that ended gets its inspection from
+	what the machine measured while it ran. The hook runs inside the Machine's save, so the record
+	before the save still says when that job started."""
+	if not inspection_on_job_change_enabled():
+		return
+	from foames.foames_adapters.erpnext.rollup import job_card_for_reference
+
+	job_card = job_card_for_reference(previous_reference)
+	if not job_card:
+		return
+	before = machine.get_doc_before_save()
+	since = before.current_job_since if before else None
+	if not since:
+		return
+	inspect_job_card(machine.name, job_card, since, at)

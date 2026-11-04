@@ -1,0 +1,210 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-04 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "operation",
+  "status",
+  "sequence_group",
+  "idempotency_key",
+  "column_break_status",
+  "hub_document",
+  "reference_doctype",
+  "reference_name",
+  "attempts_section",
+  "attempts",
+  "next_attempt_at",
+  "column_break_attempts",
+  "last_attempt_at",
+  "posted_on",
+  "last_error",
+  "error_details",
+  "payload_section",
+  "payload",
+  "sent_payload",
+  "response"
+ ],
+ "fields": [
+  {
+   "fieldname": "operation",
+   "fieldtype": "Select",
+   "label": "Operation",
+   "options": "Time Series Write\nEvent",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Queued\nSending\nRetry\nUnknown\nPosted\nFailed\nCancelled",
+   "default": "Queued",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "read_only": 1,
+   "description": "Unknown means the last send may have reached Insights Hub; the next attempt checks for it before posting again."
+  },
+  {
+   "fieldname": "sequence_group",
+   "fieldtype": "Data",
+   "label": "Sequence Group",
+   "in_standard_filter": 1,
+   "search_index": 1,
+   "description": "Postings in the same group, for example one asset's events, are sent strictly in the order they were queued."
+  },
+  {
+   "fieldname": "idempotency_key",
+   "fieldtype": "Data",
+   "label": "Idempotency Key",
+   "reqd": 1,
+   "unique": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "column_break_status",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "hub_document",
+   "fieldtype": "Data",
+   "label": "Insights Hub Record",
+   "read_only": 1,
+   "in_list_view": 1,
+   "description": "The event's id, or the asset, aspect and time of the time series record."
+  },
+  {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "label": "Source Type",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "reference_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Source",
+   "options": "reference_doctype"
+  },
+  {
+   "fieldname": "attempts_section",
+   "fieldtype": "Section Break",
+   "label": "Attempts"
+  },
+  {
+   "fieldname": "attempts",
+   "fieldtype": "Int",
+   "label": "Attempts",
+   "default": "0",
+   "read_only": 1
+  },
+  {
+   "fieldname": "next_attempt_at",
+   "fieldtype": "Datetime",
+   "label": "Next Attempt",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_attempts",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_attempt_at",
+   "fieldtype": "Datetime",
+   "label": "Last Attempt",
+   "read_only": 1
+  },
+  {
+   "fieldname": "posted_on",
+   "fieldtype": "Datetime",
+   "label": "Posted On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_error",
+   "fieldtype": "Small Text",
+   "label": "Last Error",
+   "read_only": 1
+  },
+  {
+   "fieldname": "error_details",
+   "fieldtype": "Code",
+   "label": "Error Details",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "fieldname": "payload_section",
+   "fieldtype": "Section Break",
+   "label": "Payload"
+  },
+  {
+   "fieldname": "payload",
+   "fieldtype": "Code",
+   "label": "Payload",
+   "options": "JSON",
+   "reqd": 1,
+   "description": "The request as FoaMES built it: for a Time Series Write entityId, propertySetName and data; for an Event the event's fields."
+  },
+  {
+   "fieldname": "sent_payload",
+   "fieldtype": "Code",
+   "label": "Sent Payload",
+   "options": "JSON",
+   "read_only": 1,
+   "description": "The body as sent, with the idempotency marker in an event's correlationId."
+  },
+  {
+   "fieldname": "response",
+   "fieldtype": "Code",
+   "label": "Response",
+   "options": "JSON",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-04 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Adapters",
+ "name": "Insights Hub Outbox",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "IHOB-.#######",
+ "naming_rule": "Expression (old style)",
+ "title_field": "operation",
+ "track_changes": 1,
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "report": 1,
+   "role": "FoaMES Integration"
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "write": 1
+  }
+ ]
+}

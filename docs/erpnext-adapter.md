@@ -83,7 +83,7 @@ The adapter is built in and switches on by itself when the `erpnext` app is inst
 | --- | --- | --- |
 | FoaMES reads ERPNext | Resolve External References (Item, UOM, Batch, Serial No, Work Order, Operation, Warehouse, Stock Entry, Job Card, BOM, Routing, Workstation) with their details; list open Work Orders and Job Cards | `frappe.db` reads of ERPNext's tables |
 | FoaMES writes ERPNext | Stock Entries against a Work Order (transfer, manufacture, consumption), Job Card time logs, Work Order stop, resume and close, Quality Inspections from floor readings | ERPNext's own whitelisted functions, through the **ERPNext Outbox** |
-| Machines write ERPNext | A machine's good and scrap counts and its running time, rolled up to the Job Card it is working on; its state shown as the Workstation's status; its downtime as Downtime Entries; its measurements as the readings of a Quality Inspection | The machine's **Current Job Reference** and **Workstation Reference**, the scheduler, the `foames_machine_state_changed` hook, a Downtime Record event and the outbox |
+| Machines write ERPNext | A machine's good and scrap counts and its running time, rolled up to the Job Card it is working on; its state shown as the Workstation's status; its downtime as Downtime Entries; its measurements as the readings of a Quality Inspection, queued for the Job Card it finished | The machine's **Current Job Reference** and **Workstation Reference**, the scheduler, the `foames_machine_job_changed` and `foames_machine_state_changed` hooks, a Downtime Record event and the outbox |
 | ERPNext tells FoaMES | A mapped record was saved, renamed or deleted | `doc_events` hooks that refresh the matching External Reference |
 | The floor | Open Job Cards and Work Orders per machine, and a rule for a machine running without one | `foames_floor_snapshot_extensions` and `foames_suggestion_rules` |
 
@@ -98,6 +98,8 @@ The adapter is built in and switches on by itself when the `erpnext` app is inst
    - **Submit Job Cards When Complete** is the default for time-log postings that do not say.
    - **Roll Up Machine Counts to Job Cards** queues each machine's counts and run time to the Job
      Card named by its Current Job Reference; see [Rolling machine counts up](#rolling-machine-counts-up-to-job-cards).
+   - **Inspect Job Cards from Machine Measurements** queues a Quality Inspection for the Job Card
+     a machine finished, from what it measured while it ran; see [Quality inspections](#quality-inspections).
    - **Show Job Cards on the Floor** and **Look Ahead (days)** control the floor snapshot section.
    - **Show Machine State on Workstations** mirrors each machine's state onto its ERPNext
      Workstation's status, and **Post Downtime to ERPNext** turns closed Downtime Records into
@@ -181,7 +183,8 @@ External Reference (type Batch or Serial Number) so quality records, process eve
 point at them from then on. The same `finished_good` comes back from `get_posting` once the posting
 is Posted, which is how a poller learns a batch number ERPNext generated. A draft entry (`submit`
 false) gets its Batch referenced at once; its serial numbers exist in ERPNext only from submission,
-so they are referenced when the submitted entry is next seen by a posting.
+so they are referenced when a person submits the entry in ERPNext (a `Stock Entry` submit hook) or
+when a posting next sees the submitted entry.
 
 #### Idempotency, order and errors
 
@@ -291,6 +294,19 @@ rename a tag). `measurement_readings(machine, since, until, specifications=None)
 window in time order, and `post_inspection_from_measurements` queues the posting for a Job Card
 or Stock Entry with them; the same measurements for the same document queue once. An agent that
 sees a Job Card about to complete can call it for the job's window and let ERPNext decide.
+
+**When a job ends.** With **Inspect Job Cards from Machine Measurements** on (and **Enable
+Postings**), the adapter does this on its own: whenever a machine's Current Job Reference changes,
+the Job Card that ended gets a `Quality Inspection` posting from the machine's measurements between
+the moment the job was set and the moment it changed, for the parameters of the template the Job
+Card's operation (or its BOM, or its item) names and no others, so a gauge the template does not
+ask about cannot fail the inspection. A Job Card without a template, or a job during which none of
+the template's parameters was measured, queues nothing. The inspection is submitted by default, so
+a Job Card whose BOM requires inspection can be completed afterwards; because the roll-up's
+production log for the same window is queued first and may submit the Job Card when **Submit Job
+Cards When Complete** is on, a plant that requires inspection should leave that default off and
+submit Job Cards once their inspection is in. `inspect_job_card(machine, job_card, since, until)`
+in `foames.foames_adapters.erpnext.quality` is the same step for an agent that picks its own window.
 
 ### Keeping references current
 
