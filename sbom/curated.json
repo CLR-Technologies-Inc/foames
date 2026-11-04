@@ -114,7 +114,7 @@
 			"cryptoProperties": {
 				"assetType": "algorithm",
 				"algorithmProperties": {
-					"algorithmFamily": "RSA",
+					"algorithmFamily": "RSAES-OAEP",
 					"primitive": "pke",
 					"parameterSetIdentifier": "2048-4096",
 					"padding": "oaep",
@@ -145,7 +145,7 @@
 			"cryptoProperties": {
 				"assetType": "algorithm",
 				"algorithmProperties": {
-					"algorithmFamily": "RSA",
+					"algorithmFamily": "RSAES-OAEP",
 					"primitive": "pke",
 					"parameterSetIdentifier": "2048-4096",
 					"padding": "oaep",
@@ -176,7 +176,7 @@
 			"cryptoProperties": {
 				"assetType": "algorithm",
 				"algorithmProperties": {
-					"algorithmFamily": "RSA",
+					"algorithmFamily": "RSASSA-PKCS1",
 					"primitive": "signature",
 					"parameterSetIdentifier": "2048-4096",
 					"padding": "pkcs1v15",
@@ -207,7 +207,7 @@
 			"cryptoProperties": {
 				"assetType": "algorithm",
 				"algorithmProperties": {
-					"algorithmFamily": "RSA",
+					"algorithmFamily": "RSASSA-PSS",
 					"primitive": "signature",
 					"parameterSetIdentifier": "2048-4096",
 					"executionEnvironment": "software-plain-ram",
