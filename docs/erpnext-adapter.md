@@ -84,7 +84,7 @@ The adapter is built in and switches on by itself when the `erpnext` app is inst
 | FoaMES reads ERPNext | Resolve External References (Item, UOM, Batch, Serial No, Work Order, Operation, Warehouse, Stock Entry, Job Card, BOM, Routing, Workstation) with their details; list open Work Orders and Job Cards | `frappe.db` reads of ERPNext's tables |
 | FoaMES writes ERPNext | Stock Entries against a Work Order (transfer, manufacture, consumption), Job Card time logs, Work Order stop, resume and close, Quality Inspections from floor readings | ERPNext's own whitelisted functions, through the **ERPNext Outbox** |
 | Machines write ERPNext | A machine's good and scrap counts and its running time, rolled up to the Job Card it is working on; its state shown as the Workstation's status; its downtime as Downtime Entries; its measurements as the readings of a Quality Inspection, queued for the Job Card it finished | The machine's **Current Job Reference** and **Workstation Reference**, the scheduler, the `foames_machine_job_changed` and `foames_machine_state_changed` hooks, a Downtime Record event and the outbox |
-| ERPNext tells FoaMES | A mapped record was saved, renamed or deleted | `doc_events` hooks that refresh the matching External Reference |
+| ERPNext tells FoaMES | A mapped record was saved, renamed or deleted; a Job Card was started, completed or cancelled | `doc_events` hooks that refresh the matching External Reference and set or end the current job of the machines at the card's workstation |
 | The floor | Open Job Cards and Work Orders per machine, and a rule for a machine running without one | `foames_floor_snapshot_extensions` and `foames_suggestion_rules` |
 
 ### Setup
@@ -101,6 +101,8 @@ The adapter is built in and switches on by itself when the `erpnext` app is inst
    - **Inspect Job Cards from Machine Measurements** queues a Quality Inspection for the Job Card
      a machine finished, from what it measured while it ran; see [Quality inspections](#quality-inspections).
    - **Show Job Cards on the Floor** and **Look Ahead (days)** control the floor snapshot section.
+   - **Follow Job Cards Started in ERPNext** sets and ends each machine's current job from the Job
+     Cards started and completed in ERPNext; see [Following Job Cards](#following-job-cards-started-in-erpnext).
    - **Show Machine State on Workstations** mirrors each machine's state onto its ERPNext
      Workstation's status, and **Post Downtime to ERPNext** turns closed Downtime Records into
      ERPNext Downtime Entries (with **Downtime Operator**, the Employee ERPNext requires on them);
@@ -243,6 +245,24 @@ The floor snapshot shows the current job on each machine (`current_job`, with `o
 `docstatus` from ERPNext) and marks the matching entry of `job_cards` with `current: true`. The
 rule `current_job_card_not_open` raises a suggestion for a machine whose current Job Card is
 submitted, cancelled or gone, since its counts can no longer be rolled up.
+
+### Following Job Cards started in ERPNext
+
+Operators who start and complete Job Cards in ERPNext (the Job Card's **Start Job** and **Complete
+Job** buttons, or `Job Card Time Log` postings) should not have to set the machine's job in FoaMES
+as well. With **Follow Job Cards Started in ERPNext** on, the adapter's Job Card document events do
+it: a card that goes **Work In Progress** becomes the **Current Job Reference** of every enabled
+machine whose **Workstation Reference** is the card's workstation and that has no current job, from
+the moment its first time log started; a card that is completed, cancelled or deleted ends on the
+machines working on it, at the moment its last time log ended. Ending the job is what triggers the
+roll-up and the inspection described above, so the next card starts with a clean window. A roll-up
+is skipped for a card that is no longer a draft (completed or cancelled in ERPNext), because it
+takes no more time logs: the quantities were entered there.
+
+A machine busy on another Job Card is left alone; on a workstation with several machines, or
+several open cards, which card a machine is on stays the floor's call (the Machine form,
+`foames.foames_mes.api.set_current_job`, or an agent). The setting needs no postings: it only
+changes FoaMES Machines.
 
 ### Workstation status and downtime
 

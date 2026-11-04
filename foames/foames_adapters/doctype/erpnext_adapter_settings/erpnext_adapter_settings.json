@@ -14,6 +14,7 @@
   "inspect_job_cards_from_measurements",
   "floor_section",
   "show_job_cards_on_floor",
+  "follow_job_cards_started_in_erpnext",
   "column_break_floor",
   "floor_lookahead_days",
   "workstations_section",
@@ -83,6 +84,13 @@
    "label": "Show Job Cards on the Floor",
    "default": "1",
    "description": "Add the open Job Cards and Work Orders of each machine's workstation to the floor snapshot, and raise a suggestion for a machine running without one."
+  },
+  {
+   "fieldname": "follow_job_cards_started_in_erpnext",
+   "fieldtype": "Check",
+   "label": "Follow Job Cards Started in ERPNext",
+   "default": "0",
+   "description": "When a Job Card goes Work In Progress in ERPNext (someone starts it there), make it the current job of every machine at its workstation that has no current job, from its first time log; when it is completed, cancelled or deleted, end it on the machines working on it, so their counts are rolled up to it and the next card starts clean. Machines busy on another Job Card are left alone."
   },
   {
    "fieldname": "column_break_floor",

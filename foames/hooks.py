@@ -78,6 +78,23 @@ doc_events["Stock Entry"] = {
 	**doc_events["Stock Entry"],
 	"on_submit": "foames.foames_adapters.erpnext.sync.on_submit",
 }
+# Machines follow the Job Cards people start, complete, cancel or delete in ERPNext.
+doc_events["Job Card"] = {
+	"on_update": [
+		_erpnext_reference_sync["on_update"],
+		"foames.foames_adapters.erpnext.follow.on_job_card_update",
+	],
+	"on_update_after_submit": [
+		_erpnext_reference_sync["on_update_after_submit"],
+		"foames.foames_adapters.erpnext.follow.on_job_card_update",
+	],
+	"on_cancel": "foames.foames_adapters.erpnext.follow.on_job_card_update",
+	"on_trash": [
+		_erpnext_reference_sync["on_trash"],
+		"foames.foames_adapters.erpnext.follow.on_job_card_trash",
+	],
+	"after_rename": _erpnext_reference_sync["after_rename"],
+}
 
 # Machine data and the floor
 # --------------------------

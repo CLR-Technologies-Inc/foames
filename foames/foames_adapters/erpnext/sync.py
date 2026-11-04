@@ -130,3 +130,19 @@ DOC_EVENTS["Stock Entry"] = {
 	**DOC_EVENTS["Stock Entry"],
 	"on_submit": "foames.foames_adapters.erpnext.sync.on_submit",
 }
+DOC_EVENTS["Job Card"] = {
+	"on_update": [
+		DOC_EVENTS["Job Card"]["on_update"],
+		"foames.foames_adapters.erpnext.follow.on_job_card_update",
+	],
+	"on_update_after_submit": [
+		DOC_EVENTS["Job Card"]["on_update_after_submit"],
+		"foames.foames_adapters.erpnext.follow.on_job_card_update",
+	],
+	"on_cancel": "foames.foames_adapters.erpnext.follow.on_job_card_update",
+	"on_trash": [
+		DOC_EVENTS["Job Card"]["on_trash"],
+		"foames.foames_adapters.erpnext.follow.on_job_card_trash",
+	],
+	"after_rename": DOC_EVENTS["Job Card"]["after_rename"],
+}
