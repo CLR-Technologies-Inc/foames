@@ -1,0 +1,182 @@
+# Copyright (c) 2026, CLR Technologies Inc. and contributors
+# For license information, please see license.txt
+
+"""Run tasks x agents x repetitions and write one result per run.
+
+Layout of a run directory:
+
+  runs/<run id>/
+    manifest.json                 the FoaMES commit, the bench version, the agents and tasks
+    results.jsonl                 one line per run (the report reads only this)
+    <task>/<agent>/rep-<n>/
+      prompt.md  agent.stdout  agent.stderr  change.patch  result.json
+      workspace/                  kept only with --keep-workspaces
+"""
+
+import hashlib
+import json
+import platform
+import shutil
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+
+from foames_bench import __version__, grading, scoring, usage, workspace
+from foames_bench import agents as agents_mod
+from foames_bench.paths import BENCH_ROOT
+from foames_bench.sandbox import NoSandbox
+
+
+def _source_state(repo: Path) -> dict:
+	"""Whether the checkout under test differs from its commit. Workspaces copy the working tree,
+	so a dirty tree is recorded with a hash of its diff and the list of untracked files."""
+	status = subprocess.run(["git", "status", "--porcelain"], cwd=repo, capture_output=True, text=True)
+	if status.returncode != 0:
+		return {"dirty": None}
+	lines = [l for l in status.stdout.splitlines() if not l[3:].startswith("benchmarks/")]
+	if not lines:
+		return {"dirty": False}
+	diff = subprocess.run(
+		["git", "diff", "HEAD", "--", ".", ":(exclude)benchmarks"], cwd=repo, capture_output=True
+	)
+	return {
+		"dirty": True,
+		"diff_sha256": hashlib.sha256(diff.stdout).hexdigest(),
+		"changes": lines[:200],
+	}
+
+
+def _tree_hash(path: Path) -> str:
+	"""A hash of every file under path, to detect an agent editing the benchmark during a run."""
+	digest = hashlib.sha256()
+	for file in sorted(p for p in path.rglob("*") if p.is_file() and "__pycache__" not in p.parts):
+		digest.update(str(file.relative_to(path)).encode())
+		digest.update(file.read_bytes())
+	return digest.hexdigest()
+
+
+def _foames_commit(repo: Path) -> str:
+	result = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True)
+	return result.stdout.strip() if result.returncode == 0 else "unknown"
+
+
+def _sandbox_name(agent, box) -> str:
+	if agent.kind != "command":
+		return "built-in"
+	return box.name if box is not None else "none"
+
+
+def run_one(task, agent, repo: Path, run_dir: Path, keep_workspace: bool = False, sandbox=None) -> dict:
+	"""One run. Command agents and the tests that import their code run in `sandbox`; built-in
+	agents (reference, noop) need none."""
+	box = sandbox if agent.kind == "command" and sandbox is not None else NoSandbox()
+	run_dir.mkdir(parents=True, exist_ok=True)
+	ws = workspace.create(repo, run_dir / "workspace", task)
+	# A second line of defence, and the only one with --sandbox none: if the agent edits the task,
+	# the harness or the pristine tests, the run is marked as tampered and fails.
+	guarded = [task.path, BENCH_ROOT / "foames_bench", *[repo / p for p in task.regression]]
+	before = [_tree_hash(p) if p.is_dir() else hashlib.sha256(p.read_bytes()).hexdigest() for p in guarded]
+	result = agents_mod.run(agent, task, ws, run_dir, sandbox=box)
+	after = [_tree_hash(p) if p.is_dir() else hashlib.sha256(p.read_bytes()).hexdigest() for p in guarded]
+	tampered = [str(p) for p, a, b in zip(guarded, before, after, strict=True) if a != b]
+	change = workspace.collect(ws)
+	(run_dir / "change.patch").write_text(change["patch"], encoding="utf-8")
+	graded = grading.grade(task, ws, repo, change, sandbox=box)
+	used = usage.parse(agent.usage_parser, result.stdout, agent.prices)
+	if used.cost_usd is None and agent.fixed_cost_usd is not None:
+		used.cost_usd, used.cost_source = agent.fixed_cost_usd, "local"
+	scores = scoring.score(task, graded, result.seconds, used.cost_usd)
+	if tampered:
+		scores = {**scores, "success": False, "efficiency": 0.0, "tampered": tampered}
+	row = {
+		"task": task.id,
+		"tier": task.tier,
+		"complexity": task.complexity,
+		"agent": agent.name,
+		"agent_tier": agent.tier,
+		"harness": agent.harness,
+		"model": agent.model,
+		# "none" for a command agent means it could read the hidden tests: do not publish that run.
+		"sandbox": _sandbox_name(agent, box),
+		"rep": int(run_dir.name.split("-")[-1]) if run_dir.name.startswith("rep-") else 1,
+		"exit_code": result.exit_code,
+		"timed_out": result.timed_out,
+		"seconds": round(result.seconds, 2),
+		"usage": used.to_dict(),
+		"scores": scores,
+		"graded": graded,
+		"finished_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+	}
+	(run_dir / "result.json").write_text(json.dumps(row, indent=1), encoding="utf-8")
+	if not keep_workspace:
+		shutil.rmtree(ws, ignore_errors=True)
+	return row
+
+
+def run(
+	tasks,
+	agent_list,
+	repo: Path,
+	out: Path,
+	reps: int = 1,
+	keep_workspaces: bool = False,
+	cap_usd=None,
+	log=print,
+	sandboxes: dict | None = None,
+):
+	"""Every task with every agent, `reps` times. With `cap_usd`, stop starting runs once the
+	reported and estimated spend reaches the cap (a run already started is not cut short).
+	`sandboxes` maps agent names to the sandbox each runs in (sandbox.make); a missing entry runs
+	the agent without one."""
+	sandboxes = sandboxes or {}
+	out.mkdir(parents=True, exist_ok=True)
+	manifest = {
+		"bench_version": __version__,
+		"foames_commit": _foames_commit(repo),
+		"source": _source_state(repo),
+		"python": platform.python_version(),
+		"platform": platform.platform(),
+		"started_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+		"reps": reps,
+		"tasks": [t.id for t in tasks],
+		"agents": [
+			{
+				"name": a.name,
+				"model": a.model,
+				"tier": a.tier,
+				"harness": a.harness,
+				"sandbox": _sandbox_name(a, sandboxes.get(a.name)),
+			}
+			for a in agent_list
+		],
+	}
+	(out / "manifest.json").write_text(json.dumps(manifest, indent=1), encoding="utf-8")
+	unsandboxed = [a["name"] for a in manifest["agents"] if a["sandbox"] == "none"]
+	if unsandboxed:
+		log(f"warning: {', '.join(unsandboxed)} run(s) without a sandbox and could read the hidden tests")
+	if manifest["source"].get("dirty"):
+		log("warning: the FoaMES checkout has uncommitted changes; they are recorded in manifest.json")
+	rows = []
+	spent = 0.0
+	# A run directory holds one invocation: rerunning into it starts results.jsonl afresh.
+	with (out / "results.jsonl").open("w", encoding="utf-8") as sink:
+		for task in tasks:
+			for agent in agent_list:
+				for rep in range(1, reps + 1):
+					if cap_usd is not None and spent >= cap_usd:
+						log(f"spending cap of ${cap_usd:.2f} reached (${spent:.2f}); stopping")
+						return rows
+					run_dir = out / task.id / agent.name / f"rep-{rep}"
+					log(f"{task.id:<24} {agent.name:<20} rep {rep} ...", end=" ", flush=True)
+					row = run_one(task, agent, repo, run_dir, keep_workspaces, sandboxes.get(agent.name))
+					s = row["scores"]
+					cost = row["usage"]["cost_usd"]
+					log(
+						f"{'PASS' if s['success'] else 'fail'}  quality {s['quality']:.2f}  composite {s['composite']:.2f}"
+						f"  {row['seconds']:.0f} s  {f'${cost:.2f}' if cost is not None else 'cost n/a'}"
+					)
+					sink.write(json.dumps(row) + "\n")
+					sink.flush()
+					rows.append(row)
+					spent += cost or 0.0
+	return rows

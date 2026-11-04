@@ -1,0 +1,13 @@
+{
+ "id": "oee-unknown-time",
+ "title": "Build an OEE ledger from a state timeline with gaps",
+ "tier": "pure",
+ "complexity": "medium",
+ "trl_bands": ["1-3", "4-6", "7-9"],
+ "dimension": "Arithmetic accuracy; invariant 4 (unknown time is loss)",
+ "hidden": {"functional": ["test_functional.py"], "invariant": ["test_invariants.py"]},
+ "regression": ["foames/foames_mes/test_oee_ledger.py", "foames/foames_mes/test_oee_and_rules.py", "foames/foames_mes/test_kpi.py"],
+ "allowed_paths": ["foames/foames_mes/oee.py", "foames/foames_mes/test_*.py"],
+ "deliverables": [],
+ "budget": {"usd": 1.0, "seconds": 900}
+}

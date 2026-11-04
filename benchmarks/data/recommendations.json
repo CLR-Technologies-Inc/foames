@@ -1,0 +1,64 @@
+{
+ "_about": "Prior model recommendations by TRL band and process complexity. These are informed starting points, not benchmark results: replace them with your own runs (`foames-bench recommend --results runs/<id>`). See docs/model-matrix.md for the reasoning and the assumptions.",
+ "as_of": "2026-11-04",
+ "knowledge_basis": "Model families and licences as publicly known up to mid-2026. No benchmark run with real agents backs these cells yet; the first pilot should.",
+ "review_by": "2027-02-01",
+ "tiers": {
+  "oss": {
+   "label": "Free / open weights",
+   "meaning": "Open-weight models run locally (Ollama, llama.cpp, vLLM) or on a university cluster, driven by an open harness such as OpenCode or Aider. No per-token cost; you pay in hardware and setup time.",
+   "examples": [
+    {"family": "Qwen3-Coder", "sizes": "30B-A3B (laptop or one GPU), 480B-A35B (server)", "licence": "Apache-2.0"},
+    {"family": "gpt-oss", "sizes": "20b (laptop), 120b (one 80 GB GPU)", "licence": "Apache-2.0"},
+    {"family": "DeepSeek V3.x", "sizes": "671B MoE (cluster or hosted)", "licence": "MIT"},
+    {"family": "GLM-4.x", "sizes": "Air (workstation), full (cluster)", "licence": "MIT"},
+    {"family": "Kimi K2", "sizes": "1T MoE (cluster or hosted)", "licence": "Modified MIT"}
+   ]
+  },
+  "baseline": {
+   "label": "Baseline (low-cost hosted)",
+   "meaning": "Smaller or mid-sized commercial models: cheap per task, good at well-specified single-module changes.",
+   "examples": [
+    {"family": "Claude Haiku / Sonnet (current release)", "harness": "Claude Code"},
+    {"family": "Gemini Flash-class (current release)", "harness": "Gemini CLI"},
+    {"family": "GPT mini-class (current release)", "harness": "Codex CLI"}
+   ]
+  },
+  "frontier": {
+   "label": "Frontier",
+   "meaning": "The most capable commercial models. Highest cost per run; strongest at ambiguous, multi-module and integration work.",
+   "examples": [
+    {"family": "Claude Opus (current release)", "harness": "Claude Code"},
+    {"family": "GPT-5.x Codex-class (current release)", "harness": "Codex CLI"},
+    {"family": "Gemini Pro-class (current release)", "harness": "Gemini CLI"}
+   ]
+  }
+ },
+ "trl_bands": {
+  "1-3": "Concept and research: a method from a paper, a notebook, a thesis prototype on synthetic or historical data. Wrong answers cost time, not product.",
+  "4-6": "Validation in the lab or on a pilot line: real machine data, a FoaMES site, people start reading the numbers.",
+  "7-9": "Qualified and in production: the numbers drive shifts, maintenance and ERP postings. Wrong answers cost product or money."
+ },
+ "complexity": {
+  "low": "One module, one data source, discrete counts: a counter rule, an OEE window, a report.",
+  "medium": "Several modules or a statistical method: shift calendars with OEE, SPC rules, process mining over an event log, batch steps.",
+  "high": "Several systems or regulated traceability: ERP postings, retries and idempotency, designation changes between batch and discrete, an ambiguous requirement that must be turned into a specification."
+ },
+ "cells": {
+  "1-3": {
+   "low":    {"primary": "oss", "alternative": "baseline", "qualify_with": ["counter-reset"], "min_quality": 0.7, "human_review": "Spot check", "why": "Well-specified, cheap to retry, and students learn more from reading the diff. A local 20-30B model is usually enough."},
+   "medium": {"primary": "oss", "alternative": "baseline", "qualify_with": ["oee-unknown-time", "process-mining-analysis"], "min_quality": 0.7, "human_review": "Review the method", "why": "Statistics and process mining reward care more than size; run two repetitions and keep the better-reasoned one. Escalate to baseline if the OSS model fails the invariant group."},
+   "high":   {"primary": "baseline", "alternative": "frontier", "qualify_with": ["process-spec-network-loss"], "min_quality": 0.7, "human_review": "Supervisor reviews the specification", "why": "Ambiguity is the hard part. Use a baseline model for the specification and a frontier model to critique it; OSS models tend to skip the 'what cannot be inferred' section."}
+  },
+  "4-6": {
+   "low":    {"primary": "baseline", "alternative": "oss", "qualify_with": ["counter-reset", "oee-unknown-time"], "min_quality": 0.8, "human_review": "Code review before the pilot", "why": "Real plant data now; a cheap hosted model gives a reliable first attempt. A local model is fine if it passes both qualifying tasks on two repetitions."},
+   "medium": {"primary": "baseline", "alternative": "frontier", "qualify_with": ["oee-unknown-time", "spc-ewma-chart", "process-mining-analysis"], "min_quality": 0.8, "human_review": "Code review and a check against plant data", "why": "Multi-module work with statistics; baseline models usually pass, frontier models pass more often on the first try."},
+   "high":   {"primary": "frontier", "alternative": "baseline", "qualify_with": ["erp-retry-after", "process-spec-network-loss"], "min_quality": 0.85, "human_review": "Design review with the process owner", "why": "Integration and idempotency mistakes duplicate ERP postings; the first-attempt rate matters more than the per-run price."}
+  },
+  "7-9": {
+   "low":    {"primary": "baseline", "alternative": "frontier", "qualify_with": ["counter-reset", "oee-unknown-time"], "min_quality": 0.9, "human_review": "Two-person review, tests required", "why": "Simple changes, but in production. Require the agent's own tests to pass and every repetition to succeed."},
+   "medium": {"primary": "frontier", "alternative": "baseline", "qualify_with": ["oee-unknown-time", "spc-ewma-chart", "process-mining-analysis"], "min_quality": 0.9, "human_review": "Two-person review, validation on historical data", "why": "Production statistics feed decisions; pay for the higher first-attempt rate and keep a baseline model as a second opinion."},
+   "high":   {"primary": "frontier", "alternative": null, "qualify_with": ["erp-retry-after", "process-spec-network-loss", "counter-reset"], "min_quality": 0.9, "human_review": "Formal change control; the agent proposes, people approve", "why": "Production ERP postings and regulated traceability. Use the strongest model you can, require reproducible success, and keep FoaMES's rule that agents suggest and people act. Open-weight models are fine for drafting tests only."}
+  }
+ }
+}
