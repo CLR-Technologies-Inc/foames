@@ -53,9 +53,10 @@ foames/
     api.py                    ingest_machine_events, get_floor_snapshot, run_suggestion_rules, post_suggestion
     floor.py                  floor_snapshot, collect_findings
     oee.py  counters.py  shifts.py  suggestions.py  signing.py  kpi.py  spc.py  maintenance.py   pure logic (kpi.py: report roll-ups, shifts.py: shift calendars, spc.py: control charts)
+    cbom.py                   pure: the site CBOM with the deployed certificates; site_cbom.py reads the site and writes it
     spc_monitor.py            SPC over Measurement events: settings, findings, get_control_chart
     tasks.py                  scheduler entry points
-    gateway/                  mapping.py (normalise_event), mqtt.py, opcua.py, sparkplug.py
+    gateway/                  mapping.py (normalise_event), mqtt.py, opcua.py, opcua_trust.py (server certificate validation, pure), sparkplug.py
     doctype/                  Machine, Machine Event, Downtime Reason, Downtime Record,
                               Machine Data Settings (+ Machine Node Map), Shift Pattern (+ shifts, non-working days),
                               OEE Period, Agent Suggestion, Andon Call, Andon Call Type,
@@ -123,6 +124,7 @@ Whitelisted methods, called as `/api/method/<dotted path>`. Authentication is Fr
 | `foames.foames_mes.api.run_suggestion_rules` | POST | create on Agent Suggestion | Run the rules now; returns the names created |
 | `foames.foames_mes.api.post_suggestion` | POST | create on Agent Suggestion | An external agent posts one suggestion |
 | `foames.foames_mes.spc_monitor.get_control_chart` | GET | read on Machine Event | I-MR or X-bar R chart of one machine measurement with run-rule signals |
+| `foames.foames_mes.site_cbom.get_site_cbom` | GET | System Manager | The site's CycloneDX 1.7 CBOM with the deployed OPC UA certificates |
 | `foames.foames_mes.doctype.oee_period.oee_period.get_oee` | GET | read on OEE Period | OEE for any window without saving a period |
 | `foames.foames_mes.doctype.andon_call.andon_call.raise_andon` | POST | create on Andon Call | Raise a call for help at a machine (`machine`, `call_type`, `note`) |
 | `foames.foames_mes.doctype.andon_call.andon_call.acknowledge_andon` / `resolve_andon` | POST | write on Andon Call | Acknowledge, resolve or cancel a call |
@@ -161,6 +163,7 @@ The event shape, state aliases and signing scheme are in [docs/machine-data.md](
 ```bash
 # pure-logic tests, no site needed
 python -m unittest foames.foames_mes.test_oee_and_rules foames.foames_mes.test_machine_data_logic foames.foames_mes.test_sparkplug foames.foames_mes.test_kpi
+python -m unittest foames.foames_mes.gateway.test_opcua_trust foames.foames_mes.test_cbom   # need the cryptography package
 python -m unittest foames.foames_process_mining.test_process_mining_logic foames.foames_mcp.test_mcp_protocol
 
 # everything, on a bench

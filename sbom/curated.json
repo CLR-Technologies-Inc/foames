@@ -370,7 +370,7 @@
 			"bom-ref": "crypto:protocol:opcua-secure-channel",
 			"type": "cryptographic-asset",
 			"name": "OPC UA secure channel",
-			"description": "Message security between the OPC UA gateway and the OPC UA server (OPC UA Part 4 and Part 6 secure conversation, opc.tcp). Off by default: Machine Data Settings chooses mode None, Sign or SignAndEncrypt and one of three security policies. With mode None nothing is signed or encrypted, and the gateway logs a warning at every start. Sign authenticates every message; SignAndEncrypt also encrypts them. The policy decides the algorithms, listed as cipher suites below with their OPC UA policy URIs. The deprecated Basic128Rsa15 and Basic256 policies are not offered. The server's certificate is taken from its endpoint unless a Server Certificate is attached, which pins it.",
+			"description": "Message security between the OPC UA gateway and the OPC UA server (OPC UA Part 4 and Part 6 secure conversation, opc.tcp). Off by default: Machine Data Settings chooses mode None, Sign or SignAndEncrypt and one of three security policies. With mode None nothing is signed or encrypted, and the gateway logs a warning at every start. Sign authenticates every message; SignAndEncrypt also encrypts them. The policy decides the algorithms, listed as cipher suites below with their OPC UA policy URIs. The deprecated Basic128Rsa15 and Basic256 policies are not offered. The server's certificate is taken from its endpoint unless a Server Certificate is attached, which pins it; with a Trusted Certificates bundle attached, asyncua's certificate_validator hook refuses a server certificate that is not in the bundle or chained to it, is outside its validity period, or does not carry the server's application URI.",
 			"cryptoProperties": {
 				"assetType": "protocol",
 				"protocolProperties": {
@@ -420,7 +420,8 @@
 					"cryptoRefArray": [
 						"crypto:certificate:opcua-client",
 						"crypto:material:opcua-client-private-key",
-						"crypto:certificate:opcua-server"
+						"crypto:certificate:opcua-server",
+						"crypto:certificate:opcua-trusted"
 					]
 				}
 			},
@@ -434,6 +435,10 @@
 					"value": "foames/foames_mes/doctype/machine_data_settings/machine_data_settings.py"
 				},
 				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_mes/gateway/opcua_trust.py"
+				},
+				{
 					"name": "foames:crypto:implementation",
 					"value": "asyncua security_policies on the cryptography package (OpenSSL of the host); FoaMES selects the policy and supplies the certificate, key and mode"
 				}
@@ -443,7 +448,7 @@
 			"bom-ref": "crypto:certificate:opcua-client",
 			"type": "cryptographic-asset",
 			"name": "OPC UA gateway application instance certificate",
-			"description": "The X.509 certificate the OPC UA gateway presents to the server in modes Sign and SignAndEncrypt, attached to Machine Data Settings as DER or PEM and read from disk when the gateway starts. Its subjectAltName URI must equal the Client Application URI. Subject, issuer and validity are set by the plant that issues it, so they are not recorded here; docs/machine-data.md shows a self-signed RSA-2048 certificate signed with sha256WithRSAEncryption.",
+			"description": "The X.509 certificate the OPC UA gateway presents to the server in modes Sign and SignAndEncrypt, attached to Machine Data Settings as DER or PEM and read from disk when the gateway starts. Its subjectAltName URI must equal the Client Application URI. Subject, issuer and validity are set by the plant that issues it, so they are not recorded here; docs/machine-data.md shows a self-signed RSA-2048 certificate signed with sha256WithRSAEncryption. The site CBOM (foames.foames_mes.site_cbom) fills in the deployed certificate's subject, issuer, validity, key and fingerprint.",
 			"cryptoProperties": {
 				"assetType": "certificate",
 				"certificateProperties": {
@@ -454,6 +459,10 @@
 				{
 					"name": "foames:crypto:sourceLocation",
 					"value": "foames/foames_mes/gateway/opcua.py"
+				},
+				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_mes/cbom.py"
 				}
 			]
 		},
@@ -461,7 +470,7 @@
 			"bom-ref": "crypto:certificate:opcua-server",
 			"type": "cryptographic-asset",
 			"name": "OPC UA server certificate (pinned)",
-			"description": "Optional. The OPC UA server's own X.509 certificate, attached to Machine Data Settings. When it is attached the gateway encrypts the handshake to this certificate instead of the one the server offers, so a substituted server at the same address cannot complete the channel. Without it the certificate the server presents in its endpoint description is used.",
+			"description": "Optional. The OPC UA server's own X.509 certificate, attached to Machine Data Settings. When it is attached the gateway encrypts the handshake to this certificate instead of the one the server offers, so a substituted server at the same address cannot complete the channel. Without it the certificate the server presents in its endpoint description is used, and checked against the Trusted Certificates bundle when one is attached. The site CBOM (foames.foames_mes.site_cbom) fills in the deployed certificate's subject, issuer, validity, key and fingerprint.",
 			"cryptoProperties": {
 				"assetType": "certificate",
 				"certificateProperties": {
@@ -472,6 +481,36 @@
 				{
 					"name": "foames:crypto:sourceLocation",
 					"value": "foames/foames_mes/gateway/opcua.py"
+				},
+				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_mes/cbom.py"
+				}
+			]
+		},
+		{
+			"bom-ref": "crypto:certificate:opcua-trusted",
+			"type": "cryptographic-asset",
+			"name": "OPC UA trusted certificates bundle",
+			"description": "Optional. A PEM bundle, or one DER file, of X.509 certificates attached to Machine Data Settings: the plant CA, or the OPC UA server certificates themselves. When attached, the gateway accepts a server certificate only when it is one of these or chains to one through them, every link is within its validity period, and the certificate carries the server's application URI. Saving the settings is refused when the file holds no certificate. The site CBOM lists each certificate of the bundle.",
+			"cryptoProperties": {
+				"assetType": "certificate",
+				"certificateProperties": {
+					"certificateFormat": "X.509"
+				}
+			},
+			"properties": [
+				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_mes/gateway/opcua_trust.py"
+				},
+				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_mes/gateway/opcua.py"
+				},
+				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "foames/foames_mes/cbom.py"
 				}
 			]
 		},
@@ -745,7 +784,7 @@
 		{
 			"bom-ref": "service:other-mes-rest-apis",
 			"name": "Other MES and MOM systems' REST APIs",
-			"description": "Optional, one connection per system. The MES profiles (Rockwell Plex and FactoryTalk ProductionCentre, SAP Digital Manufacturing, DELMIA Apriso, AVEVA MES, Critical Manufacturing, Tulip, Aegis FactoryLogix, K\u00f6rber PAS-X, Proficy) resolve mapped references and send outbox writes over HTTPS with Basic, bearer token, API key header or OAuth 2.0 client credentials authentication, as each MES Connection is configured. Endpoints are per installation; the examples are the vendors' public gateways.",
+			"description": "Optional, one connection per system. The MES profiles (Rockwell Plex and FactoryTalk ProductionCentre, SAP Digital Manufacturing, DELMIA Apriso, AVEVA MES, Critical Manufacturing, Tulip, Aegis FactoryLogix, Körber PAS-X, Proficy) resolve mapped references and send outbox writes over HTTPS with Basic, bearer token, API key header or OAuth 2.0 client credentials authentication, as each MES Connection is configured. Endpoints are per installation; the examples are the vendors' public gateways.",
 			"endpoints": [
 				"https://connect.plex.com/",
 				"https://api.eu10.dmc.cloud.sap/",
