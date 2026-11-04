@@ -304,6 +304,10 @@ class TestJobCardRollUp(ERPNextTestCase):
 
 		settings = frappe.get_single("ERPNext Adapter Settings")
 		settings.roll_up_counts_to_job_cards = 1
+		# With the follow switch on, deleting a card ends the job on its machines, so a machine left on
+		# a gone card (the case the closed-card rule exists for) cannot arise. These tests need it off,
+		# whatever an earlier test class left in the settings.
+		settings.follow_job_cards_started_in_erpnext = 0
 		settings.save()
 		self.machine = make_machine("FOAMES-TEST-RU", counter_rollover=0)
 		frappe.db.delete("Machine Event", {"machine": self.machine.name})
