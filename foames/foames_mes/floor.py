@@ -120,11 +120,16 @@ def current_jobs(references: list[str]) -> dict[str, dict]:
 	}
 
 
-def downtime_by_reason(machine: str, since, until) -> dict[str | None, float]:
+def downtime_by_reason(
+	machine: str, since, until, ignore_permissions: bool = True
+) -> dict[str | None, float]:
 	"""Minutes of downtime per reason inside [since, until), counting the part of each record that
 	overlaps the window. Open downtime counts up to `until`. Downtime with no reason assigned yet is
-	returned under the key None, so shares are computed over all downtime, not only the classified part."""
-	rows = frappe.get_all(
+	returned under the key None, so shares are computed over all downtime, not only the classified part.
+
+	The snapshot and the rules read every record. A read on behalf of a user (the MCP tools) passes
+	`ignore_permissions=False`, so that user's role and user permissions filter the records."""
+	rows = frappe.get_list(
 		"Downtime Record",
 		filters=[
 			["machine", "=", machine],
@@ -132,6 +137,7 @@ def downtime_by_reason(machine: str, since, until) -> dict[str | None, float]:
 		],
 		or_filters=[["end_time", "is", "not set"], ["end_time", ">=", since]],
 		fields=["reason", "start_time", "end_time"],
+		ignore_permissions=ignore_permissions,
 	)
 	minutes: dict[str, float] = {}
 	for r in rows:
@@ -160,6 +166,18 @@ def collect_findings(snapshot: dict) -> list[dict]:
 	from foames.foames_mes.suggestions import all_rules
 
 	findings = all_rules(snapshot)
+	findings.extend(_spc_findings())
 	for rule in frappe.get_hooks("foames_suggestion_rules") or []:
 		findings.extend(frappe.get_attr(rule)(snapshot))
 	return findings
+
+
+def _spc_findings() -> list[dict]:
+	"""Control chart signals on recent Measurement events; a failure here never stops the other rules."""
+	from foames.foames_mes.spc_monitor import spc_findings
+
+	try:
+		return spc_findings()
+	except Exception:
+		frappe.log_error(title="FoaMES SPC rules", message=frappe.get_traceback())
+		return []

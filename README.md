@@ -22,7 +22,7 @@ FoaMES records never use Link fields to ERP DocTypes. They store an `External Re
 
 The ERPNext adapter resolves references with their details (a Work Order with its operations and required items, a BOM with its items and operations, a Job Card with its time logs), writes to ERPNext through the **ERPNext Outbox** (Stock Entries against a Work Order, Job Card time logs, Work Order stop, resume and close) with idempotency keys, document markers, sequence groups and retries, keeps External References current from ERPNext document events, puts each machine's open Job Cards on the floor, and rolls each machine's good and scrap counts and running time up to the Job Card it is working on. See [docs/erpnext-adapter.md](docs/erpnext-adapter.md).
 
-The SAP S/4HANA adapter is remote: it resolves references over S/4HANA's released OData APIs, sends postings through an outbox with idempotency keys and retries, and receives IDocs over HTTP. It does not use RFC. Setup and licensing notes are in [docs/s4hana-adapter.md](docs/s4hana-adapter.md).
+The SAP S/4HANA adapter is remote: it resolves references over S/4HANA's released OData APIs, sends postings through an outbox with idempotency keys and retries, rolls each machine's good and scrap counts and running time up to the order operation it is working on as partial confirmations, and receives IDocs over HTTP. It does not use RFC. Setup and licensing notes are in [docs/s4hana-adapter.md](docs/s4hana-adapter.md).
 
 ## Installation
 
@@ -48,8 +48,11 @@ The full guide, including roles, the scheduler, running the gateways and a smoke
 | [docs/ignition.md](docs/ignition.md) | Connecting Ignition SCADA |
 | [docs/floor-view.md](docs/floor-view.md) | The Floor View, downtime and Agent Suggestions |
 | [docs/oee.md](docs/oee.md) | How OEE is computed and how to set a machine up for it |
+| [docs/spc.md](docs/spc.md) | Control charts (I-MR, X-bar R) and Nelson / Western Electric run rules on machine measurements |
 | [docs/dashboards.md](docs/dashboards.md) | Role workspaces, dashboards, number cards and the script reports (OEE trends, downtime Pareto, MTBF and MTTR, suggestions, outbox health, process throughput) |
 | [docs/sbom.md](docs/sbom.md) | The CycloneDX 1.7 SBOM and cryptography bill of materials published with every release |
+| [docs/process-mining.md](docs/process-mining.md) | Event logs, discovery, conformance, XES and OCEL export |
+| [docs/mcp.md](docs/mcp.md) | The MCP server: connecting Claude Desktop, Claude Code or any MCP client, the tools, permissions |
 | [AGENTS.md](AGENTS.md) | For coding agents and developers building on FoaMES: invariants, hooks, API, tests |
 | [docs/agents/floor-agent.md](docs/agents/floor-agent.md) | For an agent reading the floor and raising suggestions at run time |
 
@@ -89,8 +92,9 @@ Events arrive through a signed webhook, an MQTT gateway, a Sparkplug B gateway o
 | OEE Period | MES | OEE for a machine over a period from its events, downtime and counts. Planned downtime is excluded from availability; time without a machine signal is counted as loss, never as run time. One period per machine per day is computed by the scheduler over the machine's scheduled shift. |
 | Floor View (page) | MES | Live tiles per machine with state, counts and OEE, plus open suggestions. |
 | Agent Suggestion | MES | A finding raised by the built-in rules or by an external agent, with evidence, for a person to accept or dismiss. |
+| SPC Control Chart (report) | MES | I-MR or X-bar R chart of a machine measurement with Nelson or Western Electric run rules; signals on recent readings become Quality suggestions. |
 
-The OEE arithmetic and the suggestion rules have no Frappe dependency (`foames/foames_mes/oee.py`, `suggestions.py`). The counter-delta, owed-count and coverage ideas follow public MES practice, including the FactorySemantics MES design notes. See [docs/agents/floor-agent.md](docs/agents/floor-agent.md) for the agent API and the hooks that add snapshot sections and rules.
+The OEE arithmetic and the suggestion rules have no Frappe dependency (`foames/foames_mes/oee.py`, `suggestions.py`, `spc.py`). The counter-delta, owed-count and coverage ideas follow public MES practice, including the FactorySemantics MES design notes. See [docs/agents/floor-agent.md](docs/agents/floor-agent.md) for the agent API and the hooks that add snapshot sections and rules.
 
 ## Process mining
 
@@ -100,6 +104,10 @@ The OEE arithmetic and the suggestion rules have no Frappe dependency (`foames/f
 | Process Event Log | Process Mining | A saved extraction over a window and chosen sources, with discovery, conformance against another log, and XES or OCEL 2.0 export from the form. |
 
 Machine states and downtime are built-in sources. The analyses (directly-follows graph, variants, throughput, waiting times, rework, conformance replay and footprint comparison) have no Frappe dependency (`foames/foames_process_mining/discovery.py`, `conformance.py`). See [docs/process-mining.md](docs/process-mining.md).
+
+## Agents and MCP
+
+FoaMES is an MCP server. `POST /api/method/foames.foames_mcp.api.mcp` speaks the Model Context Protocol over Streamable HTTP with a Frappe API key, and `python -m foames.foames_mcp` is a standard-library stdio bridge to it for Claude Desktop, Claude Code, Cursor and other clients. The 24 tools read machines and state, downtime, OEE, the floor snapshot, suggestions, process mining and ERP references through the adapters, each with the permissions of the key's user; the only writes create Agent Suggestions or record a machine's current job. See [docs/mcp.md](docs/mcp.md).
 
 ## License
 

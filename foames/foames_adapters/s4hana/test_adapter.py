@@ -175,6 +175,102 @@ class TestResolve(unittest.TestCase):
 		self.assertEqual(resolved.label, "Hamburg")
 		self.assertIn("/API_PLANT_SRV/A_Plant('1010')", fake.requests[0]["path"])
 
+	def test_job_card_resolves_as_an_order_operation(self):
+		order = {
+			"ManufacturingOrder": "1000123",
+			"Material": "FG-1",
+			"ProductionPlant": "1010",
+			"ProductionUnit": "PC",
+			"to_ProductionOrderOperation": {
+				"results": [
+					{
+						"ManufacturingOrderOperation": "0010",
+						"MfgOrderOperationText": "Mix",
+						"WorkCenter": "MIX01",
+					},
+					{
+						"ManufacturingOrderOperation": "0020",
+						"MfgOrderOperationText": "Press",
+						"WorkCenter": "PRS01",
+						"OperationUnit": "KG",
+						"OpPlannedTotalQuantity": "500",
+					},
+				]
+			},
+		}
+		fake = FakeS4HANA().on("GET", "A_ProductionOrder_2", ok(order))
+		self.assertEqual(adapter(fake).reference_map["Job Card"], "Order Operation")
+		resolved = adapter(fake).resolve("Job Card", "1000123|20")
+		self.assertEqual((resolved.external_id, resolved.label), ("1000123|0020", "1000123 0020: Press"))
+		self.assertEqual(
+			(resolved.data["work_center"], resolved.data["unit"], resolved.data["plant"]),
+			("PRS01", "KG", "1010"),
+		)
+		self.assertIn("A_ProductionOrder_2('1000123')", fake.requests[0]["path"])
+		self.assertIn("to_ProductionOrderOperation", fake.requests[0]["query"]["$expand"])
+		# An operation the order does not have, an order S/4HANA does not know, an ID that is not
+		# ORDER|OPERATION: all missing, the last without a request.
+		self.assertIsNone(adapter(fake).resolve("Job Card", "1000123|0030"))
+		self.assertIsNone(
+			adapter(FakeS4HANA().on("GET", "A_ProductionOrder_2", Response(404, {}, b""))).resolve(
+				"Job Card", "9|0010"
+			)
+		)
+		empty = FakeS4HANA()
+		self.assertIsNone(adapter(empty).resolve("Job Card", "1000123"))
+		self.assertEqual(empty.requests, [])
+
+	def test_job_card_in_another_sequence(self):
+		order = {
+			"ManufacturingOrder": "1000123",
+			"to_ProductionOrderOperation": {
+				"results": [
+					{
+						"ManufacturingOrderSequence": "0",
+						"ManufacturingOrderOperation": "0010",
+						"WorkCenter": "A",
+					},
+					{
+						"ManufacturingOrderSequence": "1",
+						"ManufacturingOrderOperation": "0010",
+						"WorkCenter": "B",
+					},
+				]
+			},
+		}
+		fake = FakeS4HANA().on("GET", "A_ProductionOrder_2", ok(order))
+		standard = adapter(fake).resolve("Job Card", "1000123|0010")
+		alternative = adapter(fake).resolve("Job Card", "1000123|000001|0010")
+		self.assertEqual((standard.external_id, standard.data["work_center"]), ("1000123|0010", "A"))
+		self.assertEqual((alternative.external_id, alternative.data["work_center"]), ("1000123|1|0010", "B"))
+		self.assertIsNone(adapter(fake).resolve("Job Card", "1000123|2|0010"))
+
+	def test_job_card_on_process_orders_and_errors(self):
+		settings = Settings(enabled=1, base_url="https://s4", language="EN", confirm_process_orders=1)
+		fake = FakeS4HANA().on(
+			"GET",
+			"A_ProcessOrder_2",
+			ok(
+				{
+					"ManufacturingOrder": "7",
+					"to_ProcessOrderOperation": {"results": [{"ManufacturingOrderOperation": "0010"}]},
+				}
+			),
+		)
+		resolved = S4HANAAdapter(settings, transport=fake).resolve("Job Card", "7|0010")
+		self.assertEqual(resolved.external_id, "7|0010")
+		self.assertIn("API_PROCESS_ORDER_2_SRV", fake.requests[0]["path"])
+		down = FakeS4HANA().on("GET", "A_ProductionOrder_2", sap_error(503, "C", "down"))
+		with self.assertRaises(AdapterUnavailable):
+			adapter(down).resolve("Job Card", "7|0010")
+
+	def test_mapped_job_card_uses_the_mapping(self):
+		override = {"service": "ZMES_SRV", "entity_set": "ZJobs", "key_fields": "Job"}
+		fake = FakeS4HANA().on("GET", "ZJobs", ok({"Job": "J1"}))
+		resolved = adapter(fake, overrides={"Job Card": override}).resolve("Job Card", "J1")
+		self.assertEqual(resolved.external_id, "J1")
+		self.assertIn("/ZMES_SRV/ZJobs('J1')", fake.requests[0]["path"])
+
 	def test_fetch_can_be_called_directly_with_the_entity_set(self):
 		fake = FakeS4HANA().on("GET", "A_Product", ok({"Product": "FG-1"}))
 		resolved = adapter(fake).fetch("A_Product", "Item", "FG-1")
