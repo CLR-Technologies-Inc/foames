@@ -10,9 +10,11 @@ apply.
 """
 
 import json
+from datetime import datetime
 
 import frappe
 from frappe import _
+from frappe.utils import get_datetime, now_datetime
 
 from foames.foames_adapters.erpnext import ADAPTER_KEY, erpnext_installed
 from foames.foames_adapters.erpnext import postings as rules
@@ -142,6 +144,50 @@ def get_posting(name: str) -> dict:
 	except ValueError:
 		pass
 	return values
+
+
+@frappe.whitelist(methods=["POST"])
+def post_inspection_from_measurements(
+	reference_type: str,
+	reference_name: str,
+	machine: str,
+	since: str | datetime,
+	until: str | datetime | None = None,
+	specifications: str | list | None = None,
+	submit: bool = True,
+	remarks: str | None = None,
+) -> dict:
+	"""Queue a Quality Inspection for a Job Card or Stock Entry from a machine's Measurement
+	events between `since` and `until`: one reading per measurement name (or per name listed in
+	`specifications`, a list or JSON list), with the last ten values each, judged by ERPNext against
+	the template's limits. Returns the outbox record, or says that there were no measurements."""
+	from foames.foames_adapters.erpnext.quality import measurement_readings, queue_inspection
+
+	_require_erpnext()
+	frappe.has_permission("ERPNext Outbox", "create", throw=True)
+	frappe.has_permission("Machine Event", "read", throw=True)
+	if isinstance(specifications, str):
+		try:
+			specifications = json.loads(specifications)
+		except ValueError:
+			specifications = [s.strip() for s in specifications.split(",") if s.strip()]
+	until = until or now_datetime()
+	readings = measurement_readings(machine, since, until, specifications)
+	if not readings:
+		return {"name": None, "readings": [], "message": _("No measurements in that window")}
+	try:
+		rules.prepare(
+			rules.OPERATIONS["Quality Inspection"],
+			{"reference_type": reference_type, "reference_name": reference_name, "readings": readings},
+		)
+	except ValueError as e:
+		frappe.throw(str(e))
+	extra = {"submit": bool(submit)}
+	if remarks:
+		extra["remarks"] = remarks
+	window = (machine, str(get_datetime(since)), str(get_datetime(until)))
+	name, created = queue_inspection(reference_type, reference_name, readings, source=window, **extra)
+	return {"name": name, "created": created, "readings": readings}
 
 
 @frappe.whitelist(methods=["POST"])

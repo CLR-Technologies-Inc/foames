@@ -1,0 +1,302 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-03 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "title",
+  "machine",
+  "disabled",
+  "cb_head",
+  "status",
+  "open_work_order",
+  "sb_trigger",
+  "trigger_type",
+  "interval",
+  "counter_name",
+  "cb_trigger",
+  "warn_percent",
+  "grace_percent",
+  "auto_create_work_order",
+  "sb_meter",
+  "last_done_on",
+  "last_work_order",
+  "last_checked",
+  "cb_meter",
+  "used",
+  "percent_used",
+  "remaining",
+  "due_on",
+  "sb_work",
+  "downtime_reason",
+  "cb_work",
+  "estimated_minutes",
+  "sb_instructions",
+  "instructions"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "MPL-.#####",
+   "default": "MPL-.#####",
+   "hidden": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "What is done, for example Lubricate main spindle"
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled",
+   "default": "0"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "OK\nDue Soon\nDue\nOverdue",
+   "default": "OK",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "open_work_order",
+   "fieldtype": "Link",
+   "label": "Open Work Order",
+   "options": "Maintenance Work Order",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_trigger",
+   "fieldtype": "Section Break",
+   "label": "Trigger"
+  },
+  {
+   "fieldname": "trigger_type",
+   "fieldtype": "Select",
+   "label": "Trigger",
+   "options": "Calendar\nRun Hours\nCount",
+   "default": "Calendar",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "Calendar counts days; Run Hours counts Running time from the OEE ledger; Count counts production from the counter deltas"
+  },
+  {
+   "fieldname": "interval",
+   "fieldtype": "Float",
+   "label": "Interval",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "Days, run hours or counts between services, by trigger"
+  },
+  {
+   "fieldname": "counter_name",
+   "fieldtype": "Data",
+   "label": "Counter",
+   "depends_on": "eval:doc.trigger_type=='Count'",
+   "description": "One counter name, for example good or strokes. Leave empty to count all output (good plus scrap)"
+  },
+  {
+   "fieldname": "cb_trigger",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "warn_percent",
+   "fieldtype": "Percent",
+   "label": "Due Soon At (%)",
+   "default": "90",
+   "description": "Share of the interval at which the plan is Due Soon"
+  },
+  {
+   "fieldname": "grace_percent",
+   "fieldtype": "Percent",
+   "label": "Overdue After (%)",
+   "default": "10",
+   "description": "Share past the interval after which a Due plan is Overdue"
+  },
+  {
+   "fieldname": "auto_create_work_order",
+   "fieldtype": "Check",
+   "label": "Create Work Order When Due",
+   "default": "0",
+   "description": "Open a Maintenance Work Order when the plan reaches Due and none is open"
+  },
+  {
+   "fieldname": "sb_meter",
+   "fieldtype": "Section Break",
+   "label": "Since Last Service"
+  },
+  {
+   "fieldname": "last_done_on",
+   "fieldtype": "Datetime",
+   "label": "Last Service",
+   "description": "The meter counts from here. A new plan starts counting when it is saved"
+  },
+  {
+   "fieldname": "last_work_order",
+   "fieldtype": "Link",
+   "label": "Last Work Order",
+   "options": "Maintenance Work Order",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_checked",
+   "fieldtype": "Datetime",
+   "label": "Meter Read At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_meter",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "used",
+   "fieldtype": "Float",
+   "label": "Used",
+   "read_only": 1,
+   "description": "Days, run hours or counts since the last service"
+  },
+  {
+   "fieldname": "percent_used",
+   "fieldtype": "Percent",
+   "label": "Used (%)",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "remaining",
+   "fieldtype": "Float",
+   "label": "Remaining",
+   "read_only": 1
+  },
+  {
+   "fieldname": "due_on",
+   "fieldtype": "Datetime",
+   "label": "Due On",
+   "read_only": 1,
+   "description": "Exact for Calendar plans; projected at the average rate since the last service for usage plans"
+  },
+  {
+   "fieldname": "sb_work",
+   "fieldtype": "Section Break",
+   "label": "Work"
+  },
+  {
+   "fieldname": "downtime_reason",
+   "fieldtype": "Link",
+   "label": "Downtime Reason",
+   "options": "Downtime Reason",
+   "description": "Recorded as a Downtime Record while a work order is In Progress. Use a reason that counts as planned so OEE takes the stop out of availability"
+  },
+  {
+   "fieldname": "cb_work",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "estimated_minutes",
+   "fieldtype": "Float",
+   "label": "Estimated Minutes"
+  },
+  {
+   "fieldname": "sb_instructions",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "instructions",
+   "fieldtype": "Text Editor",
+   "label": "Instructions"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-03 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Maintenance Plan",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "title",
+ "show_title_field_in_link": 1,
+ "search_fields": "machine",
+ "description": "A preventive maintenance task for one machine, due by calendar, run hours or counts"
+}

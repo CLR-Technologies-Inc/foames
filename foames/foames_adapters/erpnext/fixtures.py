@@ -157,6 +157,42 @@ def receive_raw_material(qty: float):
 WORKSTATION_CAPACITY = 100
 
 
+INSPECTION_TEMPLATE = "FOAMES-TEST-QIT"
+# (parameter, numeric, min, max, expected text)
+INSPECTION_PARAMETERS = (
+	("FOAMES-TEST-LENGTH", 1, 9.5, 10.5, None),
+	("FOAMES-TEST-COLOUR", 0, None, None, "Blue"),
+)
+
+
+def ensure_inspection_template() -> str:
+	"""A Quality Inspection Template with a numeric parameter (length 9.5 to 10.5) and a text one
+	(colour Blue), hung on the test operation so its Job Cards inspect against it."""
+	for parameter, *_rest in INSPECTION_PARAMETERS:
+		if not frappe.db.exists("Quality Inspection Parameter", parameter):
+			frappe.get_doc({"doctype": "Quality Inspection Parameter", "parameter": parameter}).insert(
+				ignore_permissions=True
+			)
+	if not frappe.db.exists("Quality Inspection Template", INSPECTION_TEMPLATE):
+		frappe.get_doc(
+			{
+				"doctype": "Quality Inspection Template",
+				"quality_inspection_template_name": INSPECTION_TEMPLATE,
+				"item_quality_inspection_parameter": [
+					{
+						"specification": parameter,
+						"numeric": numeric,
+						"min_value": low,
+						"max_value": high,
+						"value": expected,
+					}
+					for parameter, numeric, low, high, expected in INSPECTION_PARAMETERS
+				],
+			}
+		).insert(ignore_permissions=True)
+	return INSPECTION_TEMPLATE
+
+
 def ensure_workstation_and_operation():
 	if not frappe.db.exists("Workstation", WORKSTATION):
 		frappe.get_doc(
@@ -170,10 +206,18 @@ def ensure_workstation_and_operation():
 		).insert(ignore_permissions=True)
 	elif frappe.db.get_value("Workstation", WORKSTATION, "production_capacity") != WORKSTATION_CAPACITY:
 		frappe.db.set_value("Workstation", WORKSTATION, "production_capacity", WORKSTATION_CAPACITY)
+	template = ensure_inspection_template()
 	if not frappe.db.exists("Operation", OPERATION):
-		frappe.get_doc({"doctype": "Operation", "name": OPERATION, "workstation": WORKSTATION}).insert(
-			ignore_permissions=True
-		)
+		frappe.get_doc(
+			{
+				"doctype": "Operation",
+				"name": OPERATION,
+				"workstation": WORKSTATION,
+				"quality_inspection_template": template,
+			}
+		).insert(ignore_permissions=True)
+	elif frappe.db.get_value("Operation", OPERATION, "quality_inspection_template") != template:
+		frappe.db.set_value("Operation", OPERATION, "quality_inspection_template", template)
 
 
 def ensure_bom(with_operations: bool = True, item: str = FINISHED_GOOD) -> str:

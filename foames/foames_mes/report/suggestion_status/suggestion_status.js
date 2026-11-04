@@ -35,6 +35,7 @@ frappe.query_reports["Suggestion Status"] = {
 				"Quality",
 				"Release",
 				"Machine Data",
+				"Maintenance",
 				"ERP",
 				"Other",
 			],

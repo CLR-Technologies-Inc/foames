@@ -11,6 +11,7 @@
   "column_break_postings",
   "submit_job_cards_when_complete",
   "roll_up_counts_to_job_cards",
+  "inspect_job_cards_from_measurements",
   "floor_section",
   "show_job_cards_on_floor",
   "column_break_floor",
@@ -62,6 +63,14 @@
    "default": "0",
    "depends_on": "enable_postings",
    "description": "Every few minutes, and whenever a machine's current job changes, queue the machine's good and scrap counts and its running time since the last roll-up as time logs on the Job Card named by the machine's Current Job Reference."
+  },
+  {
+   "fieldname": "inspect_job_cards_from_measurements",
+   "fieldtype": "Check",
+   "label": "Inspect Job Cards from Machine Measurements",
+   "default": "0",
+   "depends_on": "enable_postings",
+   "description": "Whenever a machine's current job changes, queue a Quality Inspection for the Job Card that ended from the machine's Measurement events while it ran, for the parameters of the Quality Inspection Template the card's operation (or BOM, or item) names. A card without a template, or a job without measurements for its parameters, queues nothing."
   },
   {
    "fieldname": "floor_section",
