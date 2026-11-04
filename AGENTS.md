@@ -53,8 +53,10 @@ foames/
   foames_adapters/
     __init__.py               get_adapters, get_adapter, get_available_erp_systems
     base.py                   ERPAdapter, ResolvedReference, REFERENCE_TYPES, the error classes
+    machine_window.py         a machine's counter totals and states in a window, for the roll-ups
     erpnext.py                ERPNextAdapter
-    s4hana/                   adapter.py, entities.py, odata.py, outbox.py, idoc.py, api.py, fake.py
+    s4hana/                   adapter.py, entities.py, odata.py, outbox.py, idoc.py, api.py, fake.py,
+                              production.py (pure) and rollup.py: machine counts to confirmations
     doctype/                  S4HANA Settings (+ Entity Mapping), S4HANA Outbox, S4HANA Inbound IDoc
     report/                   S4HANA Outbox Reconciliation, ERP Outbox Health
     workspace/  number_card/  dashboard_chart/  foames_adapters_dashboard/   the Integration workspace

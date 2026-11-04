@@ -22,7 +22,7 @@ FoaMES records never use Link fields to ERP DocTypes. They store an `External Re
 
 The ERPNext adapter resolves references with their details (a Work Order with its operations and required items, a BOM with its items and operations, a Job Card with its time logs), writes to ERPNext through the **ERPNext Outbox** (Stock Entries against a Work Order, Job Card time logs, Work Order stop, resume and close) with idempotency keys, document markers, sequence groups and retries, keeps External References current from ERPNext document events, puts each machine's open Job Cards on the floor, and rolls each machine's good and scrap counts and running time up to the Job Card it is working on. See [docs/erpnext-adapter.md](docs/erpnext-adapter.md).
 
-The SAP S/4HANA adapter is remote: it resolves references over S/4HANA's released OData APIs, sends postings through an outbox with idempotency keys and retries, and receives IDocs over HTTP. It does not use RFC. Setup and licensing notes are in [docs/s4hana-adapter.md](docs/s4hana-adapter.md).
+The SAP S/4HANA adapter is remote: it resolves references over S/4HANA's released OData APIs, sends postings through an outbox with idempotency keys and retries, rolls each machine's good and scrap counts and running time up to the order operation it is working on as partial confirmations, and receives IDocs over HTTP. It does not use RFC. Setup and licensing notes are in [docs/s4hana-adapter.md](docs/s4hana-adapter.md).
 
 ## Installation
 
