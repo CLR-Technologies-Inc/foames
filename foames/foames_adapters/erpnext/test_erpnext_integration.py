@@ -680,7 +680,10 @@ class TestQualityInspections(ERPNextTestCase):
 
 	LENGTH, COLOUR = "FOAMES-TEST-LENGTH", "FOAMES-TEST-COLOUR"
 
-	def inspect(self, reference_type, reference_name, readings, key, **extra):
+	def inspect(self, reference_type, reference_name, readings, key, group="reference", **extra):
+		"""Queue one inspection and perform the outbox. Postings share the document's sequence group
+		unless `group` is None: a Failed posting holds the later ones of its group back, which the
+		tests that expect failures avoid."""
 		name = enqueue(
 			"Quality Inspection",
 			{
@@ -690,7 +693,7 @@ class TestQualityInspections(ERPNextTestCase):
 				**extra,
 			},
 			key,
-			reference_name,
+			reference_name if group == "reference" else group,
 		)
 		self.run_outbox()
 		return self.outbox(name)
@@ -759,12 +762,20 @@ class TestQualityInspections(ERPNextTestCase):
 		if not frappe.db.exists("Quality Inspection Parameter", parameter):
 			frappe.get_doc({"doctype": "Quality Inspection Parameter", "parameter": parameter}).insert()
 		failed = self.inspect(
-			"Job Card", job_card, [{"specification": parameter, "values": [250]}], f"{job_card}:weight-1"
+			"Job Card",
+			job_card,
+			[{"specification": parameter, "values": [250]}],
+			f"{job_card}:weight-1",
+			group=None,
 		)
 		self.assertEqual(failed.status, "Failed")
 		self.assertIn("not in template", failed.last_error)
 		unknown = self.inspect(
-			"Job Card", job_card, [{"specification": "FOAMES-NO-SUCH", "values": [1]}], f"{job_card}:weight-2"
+			"Job Card",
+			job_card,
+			[{"specification": "FOAMES-NO-SUCH", "values": [1]}],
+			f"{job_card}:weight-2",
+			group=None,
 		)
 		self.assertEqual(unknown.status, "Failed")
 		self.assertIn("no Quality Inspection Parameter", unknown.last_error)
@@ -774,6 +785,7 @@ class TestQualityInspections(ERPNextTestCase):
 			job_card,
 			[{"specification": self.LENGTH, "values": [10]}],
 			f"{job_card}:other-item",
+			group=None,
 			item_code=self.fixtures.RAW_MATERIAL,
 		)
 		self.assertEqual(other.status, "Failed")
@@ -784,6 +796,7 @@ class TestQualityInspections(ERPNextTestCase):
 			job_card,
 			[{"specification": parameter, "values": [250, 262], "min_value": 240, "max_value": 260}],
 			f"{job_card}:weight-3",
+			group=None,
 		)
 		self.assertEqual(record.status, "Posted", record.last_error)
 		self.assertEqual(json.loads(record.response)["status"], "Rejected")
