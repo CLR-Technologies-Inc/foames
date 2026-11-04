@@ -17,7 +17,7 @@ import hashlib
 import json
 
 import frappe
-from frappe.utils import get_datetime
+from frappe.utils import get_datetime, now_datetime
 
 from foames.foames_adapters.erpnext.postings import MAX_READINGS_PER_SPECIFICATION
 
@@ -31,33 +31,42 @@ def measurement_readings(
 ) -> list[dict]:
 	"""The readings for a Quality Inspection from a machine's Measurement events between `since`
 	and `until` (default now): one entry per measurement name (or per name in `specifications`,
-	in that order), with the last `per_specification` values in time order."""
+	in that order), with the last `per_specification` values in time order. Only those last values
+	are read from the database, however dense the sensor."""
 	event = frappe.qb.DocType("Machine Event")
-	condition = (
+	window = (
 		(event.machine == machine)
 		& (event.event_type == "Measurement")
 		& (event.timestamp >= get_datetime(since))
+		& (event.timestamp <= get_datetime(until) if until is not None else now_datetime())
 		& event.value.isnotnull()
 	)
-	if until is not None:
-		condition &= event.timestamp <= get_datetime(until)
 	if specifications:
-		condition &= event.measurement_name.isin(list(specifications))
-	rows = (
-		frappe.qb.from_(event)
-		.select(event.measurement_name, event.value, event.timestamp)
-		.where(condition)
-		.orderby(event.timestamp)
-		.orderby(event.name)
-		.run(as_dict=True)
-	)
-	series: dict[str, list[float]] = {}
-	for row in rows:
-		series.setdefault(row.measurement_name, []).append(float(row.value))
-	names = [s for s in specifications if s in series] if specifications else list(series)
-	return [
-		{"specification": name, "values": series[name][-max(int(per_specification), 1) :]} for name in names
-	]
+		names = list(dict.fromkeys(specifications))
+	else:
+		names = (
+			frappe.qb.from_(event)
+			.select(event.measurement_name)
+			.distinct()
+			.where(window)
+			.orderby(event.measurement_name)
+			.run(pluck=True)
+		)
+	limit = max(int(per_specification), 1)
+	readings = []
+	for name in names:
+		latest = (
+			frappe.qb.from_(event)
+			.select(event.value)
+			.where(window & (event.measurement_name == name))
+			.orderby(event.timestamp, order=frappe.qb.desc)
+			.orderby(event.name, order=frappe.qb.desc)
+			.limit(limit)
+			.run(pluck=True)
+		)
+		if latest:
+			readings.append({"specification": name, "values": [float(v) for v in reversed(latest)]})
+	return readings
 
 
 def queue_inspection(
@@ -65,10 +74,13 @@ def queue_inspection(
 	reference_name: str,
 	readings: list[dict],
 	idempotency_key: str | None = None,
+	source: tuple | None = None,
 	**extra,
 ) -> tuple[str, bool]:
-	"""Queue a `Quality Inspection` posting for a Job Card or Stock Entry. Without a key, the same
-	readings for the same document queue once; different readings make a new inspection."""
+	"""Queue a `Quality Inspection` posting for a Job Card or Stock Entry. Without a key, the
+	business event is the readings for the document plus their `source` (the machine and the window
+	they were read from): the same call queues once, and a later window of the same gauge, even
+	with identical values, is a new inspection."""
 	from foames.foames_adapters.doctype.erpnext_outbox.erpnext_outbox import enqueue_posting
 
 	payload = {
@@ -78,7 +90,9 @@ def queue_inspection(
 		**extra,
 	}
 	if not idempotency_key:
-		digest = hashlib.sha256(json.dumps(readings, sort_keys=True, default=str).encode()).hexdigest()[:12]
+		digest = hashlib.sha256(
+			json.dumps([readings, list(source or [])], sort_keys=True, default=str).encode()
+		).hexdigest()[:12]
 		idempotency_key = f"inspection:{reference_type}:{reference_name}:{digest}"
 	group = f"{reference_type}:{reference_name}"
 	return enqueue_posting("Quality Inspection", payload, idempotency_key, group, None, None)

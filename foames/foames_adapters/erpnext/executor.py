@@ -19,6 +19,7 @@ from frappe.utils import cint, flt, get_datetime
 
 from foames.foames_adapters.erpnext.postings import Operation
 
+QUALITY_INSPECTION_API = "erpnext.stock.doctype.quality_inspection.quality_inspection"
 WORK_ORDER_API = "erpnext.manufacturing.doctype.work_order.work_order"
 JOB_CARD_API = "erpnext.manufacturing.doctype.job_card.job_card"
 
@@ -457,6 +458,12 @@ def post_quality_inspection(payload: dict, marker: str) -> Result:
 	template = payload.get("template") or template
 	if not item_code:
 		frappe.throw(_("{0} {1} has no item to inspect").format(_(reference_type), reference_name))
+	if item_code not in inspectable_items(reference):
+		frappe.throw(
+			_("{0} {1} does not produce or move item {2}, so it cannot be inspected for it").format(
+				_(reference_type), reference_name, item_code
+			)
+		)
 	criteria = template_criteria(template)
 	for reading in payload["readings"]:
 		if not frappe.db.exists("Quality Inspection Parameter", reading["specification"]):
@@ -519,10 +526,27 @@ def post_quality_inspection(payload: dict, marker: str) -> Result:
 
 
 def plain_number(value: float) -> str:
-	"""A reading as ERPNext's number parser reads it: plain decimal digits with a point, no
-	exponent and no trailing zeros (`10.1`, `250`, `0.005`)."""
-	text = f"{float(value):.10f}".rstrip("0").rstrip(".")
-	return text or "0"
+	"""A reading as ERPNext reads it back: plain decimal digits, no exponent, no grouping and no
+	trailing zeros (`10.1`, `250`, `0.005`), with the decimal separator of the posting user's
+	number format where the installed ERPNext parses readings in that format (recent releases;
+	older ones read a point)."""
+	text = f"{float(value):.10f}".rstrip("0").rstrip(".") or "0"
+	try:
+		number_format = frappe.get_attr(f"{QUALITY_INSPECTION_API}.get_reading_number_format")()
+		decimal_str, _comma = frappe.get_attr(f"{QUALITY_INSPECTION_API}.get_reading_separators")(
+			number_format
+		)
+	except (AttributeError, ImportError):
+		return text
+	return text.replace(".", decimal_str) if decimal_str != "." else text
+
+
+def inspectable_items(reference) -> set[str]:
+	"""The items a Quality Inspection on this document may be about: a Job Card's production item,
+	a Stock Entry's items."""
+	if reference.doctype == "Job Card":
+		return {reference.production_item} if reference.production_item else set()
+	return {row.item_code for row in reference.items}
 
 
 def inspection_subject(reference, item_code: str | None) -> tuple[str | None, str | None, str | None]:

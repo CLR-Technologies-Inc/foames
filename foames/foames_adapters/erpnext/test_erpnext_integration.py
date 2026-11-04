@@ -644,6 +644,15 @@ class TestTraceability(ERPNextTestCase):
 		self.assertIn("another item", self.outbox(posting).last_error)
 
 
+def hasattr_erpnext_reading_parser() -> bool:
+	"""Whether the installed ERPNext reads Quality Inspection readings in the user's number format."""
+	try:
+		frappe.get_attr("erpnext.stock.doctype.quality_inspection.quality_inspection.get_reading_separators")
+	except (AttributeError, ImportError):
+		return False
+	return True
+
+
 class TestQualityInspections(ERPNextTestCase):
 	"""Floor readings become ERPNext Quality Inspections, judged by the template's limits."""
 
@@ -737,6 +746,16 @@ class TestQualityInspections(ERPNextTestCase):
 		)
 		self.assertEqual(unknown.status, "Failed")
 		self.assertIn("no Quality Inspection Parameter", unknown.last_error)
+		# An item the Job Card does not produce cannot be inspected against it.
+		other = self.inspect(
+			"Job Card",
+			job_card,
+			[{"specification": self.LENGTH, "values": [10]}],
+			f"{job_card}:other-item",
+			item_code=self.fixtures.RAW_MATERIAL,
+		)
+		self.assertEqual(other.status, "Failed")
+		self.assertIn("does not produce or move", other.last_error)
 		# With limits of its own the reading is judged against them.
 		record = self.inspect(
 			"Job Card",
@@ -746,6 +765,28 @@ class TestQualityInspections(ERPNextTestCase):
 		)
 		self.assertEqual(record.status, "Posted", record.last_error)
 		self.assertEqual(json.loads(record.response)["status"], "Rejected")
+
+	def test_readings_follow_the_posting_users_number_format(self):
+		from foames.foames_adapters.erpnext.executor import plain_number
+
+		self.assertEqual(plain_number(10.1), "10.1")
+		self.assertEqual((plain_number(250), plain_number(0.005)), ("250", "0.005"))
+		frappe.defaults.set_user_default("number_format", "#.###,##")
+		try:
+			expected = "10,1" if hasattr_erpnext_reading_parser() else "10.1"
+			self.assertEqual(plain_number(10.1), expected)
+			wo = self.fixtures.make_work_order(qty=1)
+			job_card = self.fixtures.job_card_for(wo.name)
+			record = self.inspect(
+				"Job Card",
+				job_card,
+				[{"specification": self.LENGTH, "values": [10.1, 9.75]}],
+				f"{job_card}:comma",
+			)
+			self.assertEqual(record.status, "Posted", record.last_error)
+			self.assertEqual(json.loads(record.response)["status"], "Accepted")
+		finally:
+			frappe.defaults.clear_user_default("number_format")
 
 	def test_manufacture_entry_is_inspected_as_it_comes_in(self):
 		wo = self.fixtures.make_work_order(qty=1, skip_transfer=True, operations=False)
@@ -820,10 +861,16 @@ class TestQualityInspections(ERPNextTestCase):
 		self.assertEqual(
 			frappe.get_doc("Quality Inspection", record.erp_document).readings[0].reading_10, "10.11"
 		)
-		# The same measurements queue once; a window with none queues nothing.
+		# The same measurements queue once; a later window is a new inspection even when a stable
+		# gauge repeats the values; a window with none queues nothing.
 		self.assertFalse(
 			post_inspection_from_measurements(
 				"Job Card", job_card, machine.name, t(0), t(30), specifications=[self.LENGTH]
+			)["created"]
+		)
+		self.assertTrue(
+			post_inspection_from_measurements(
+				"Job Card", job_card, machine.name, t(2), t(30), specifications=[self.LENGTH]
 			)["created"]
 		)
 		self.assertIsNone(

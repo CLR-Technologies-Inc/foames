@@ -13,6 +13,7 @@ import json
 
 import frappe
 from frappe import _
+from frappe.utils import get_datetime, now_datetime
 
 from foames.foames_adapters.erpnext import ADAPTER_KEY, erpnext_installed
 from foames.foames_adapters.erpnext import postings as rules
@@ -169,6 +170,7 @@ def post_inspection_from_measurements(
 			specifications = json.loads(specifications)
 		except ValueError:
 			specifications = [s.strip() for s in specifications.split(",") if s.strip()]
+	until = until or now_datetime()
 	readings = measurement_readings(machine, since, until, specifications)
 	if not readings:
 		return {"name": None, "readings": [], "message": _("No measurements in that window")}
@@ -182,7 +184,8 @@ def post_inspection_from_measurements(
 	extra = {"submit": bool(submit)}
 	if remarks:
 		extra["remarks"] = remarks
-	name, created = queue_inspection(reference_type, reference_name, readings, **extra)
+	window = (machine, str(get_datetime(since)), str(get_datetime(until)))
+	name, created = queue_inspection(reference_type, reference_name, readings, source=window, **extra)
 	return {"name": name, "created": created, "readings": readings}
 
 
