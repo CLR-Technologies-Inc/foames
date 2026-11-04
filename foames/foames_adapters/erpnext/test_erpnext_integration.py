@@ -8,6 +8,7 @@ The outbox commits after each posting, so these tests leave their Work Orders an
 the test site's FoaMES Test Co company.
 """
 
+import json
 import unittest
 
 import frappe
@@ -536,3 +537,108 @@ class TestDowntimeEntries(ERPNextTestCase):
 		self.assertEqual(self.outbox(name).status, "Failed")
 		self.assertIn("operator", self.outbox(name).last_error)
 		self.assertEqual(frappe.db.count("Downtime Entry", {"workstation": self.fixtures.WORKSTATION}), 0)
+
+
+class TestTraceability(ERPNextTestCase):
+	"""The batch and serial numbers a Manufacture entry gives the finished good, and the External
+	References FoaMES keeps for them."""
+
+	def manufacture(self, wo, **extra):
+		enqueue("Material Transfer for Manufacture", {"work_order": wo.name}, f"{wo.name}:transfer", wo.name)
+		posting = enqueue(
+			"Manufacture", {"work_order": wo.name, "qty": wo.qty, **extra}, f"{wo.name}:manufacture", wo.name
+		)
+		self.run_outbox()
+		record = self.outbox(posting)
+		self.assertEqual(record.status, "Posted", record.last_error)
+		return record, json.loads(record.response)["finished_good"]
+
+	def test_manufacture_names_the_batch(self):
+		wo = self.fixtures.make_work_order(qty=3, operations=False, item=self.fixtures.FINISHED_GOOD_BATCHED)
+		batch_no = f"FOAMES-TB-TEST-{frappe.generate_hash(length=6).upper()}"
+		record, finished = self.manufacture(wo, batch_no=batch_no)
+		self.assertEqual(finished["item_code"], self.fixtures.FINISHED_GOOD_BATCHED)
+		self.assertEqual(finished["batch_no"], batch_no)
+		self.assertEqual(frappe.db.get_value("Batch", batch_no, "item"), self.fixtures.FINISHED_GOOD_BATCHED)
+		# The stock really went in under that batch, and FoaMES has a reference to it.
+		ledger = frappe.get_all(
+			"Stock Ledger Entry",
+			{"voucher_no": record.erp_document, "item_code": self.fixtures.FINISHED_GOOD_BATCHED},
+			["actual_qty"],
+		)
+		self.assertEqual(sum(row.actual_qty for row in ledger), 3)
+		self.assertTrue(
+			frappe.db.exists(
+				"External Reference",
+				{"erp_system": ADAPTER_KEY, "reference_type": "Batch", "external_id": batch_no},
+			)
+		)
+		# A replay after a lost outbox update finds the entry by its marker and still reports the
+		# finished good, and the posting's status read through the API carries the response.
+		frappe.db.set_value(
+			"ERPNext Outbox", record.name, {"status": "Queued", "erp_document": None, "attempts": 0}
+		)
+		frappe.db.commit()  # nosemgrep
+		self.run_outbox()
+		replayed = self.outbox(record.name)
+		self.assertEqual(replayed.erp_document, record.erp_document)
+		response = json.loads(replayed.response)
+		self.assertEqual(response["found_by"], "marker")
+		self.assertEqual(response["finished_good"]["batch_no"], batch_no)
+		from foames.foames_adapters.erpnext.api import get_posting
+
+		self.assertEqual(get_posting(record.name)["response"]["finished_good"]["batch_no"], batch_no)
+
+	def test_manufacture_without_a_batch_reports_the_one_erpnext_made(self):
+		wo = self.fixtures.make_work_order(qty=2, operations=False, item=self.fixtures.FINISHED_GOOD_BATCHED)
+		_, finished = self.manufacture(wo)
+		self.assertTrue(finished["batch_no"], finished)
+		self.assertTrue(finished["batch_no"].startswith("FOAMES-TB-"))
+
+	def test_manufacture_names_the_serial_numbers(self):
+		wo = self.fixtures.make_work_order(qty=2, operations=False, item=self.fixtures.FINISHED_GOOD_SERIAL)
+		suffix = frappe.generate_hash(length=6).upper()
+		serials = [f"FOAMES-TS-TEST-{suffix}-1", f"FOAMES-TS-TEST-{suffix}-2"]
+		_, finished = self.manufacture(wo, serial_nos=serials)
+		self.assertEqual(sorted(finished["serial_nos"]), serials)
+		for serial in serials:
+			self.assertEqual(frappe.db.get_value("Serial No", serial, "warehouse"), self.fixtures.FINISHED)
+			self.assertTrue(
+				frappe.db.exists(
+					"External Reference",
+					{"erp_system": ADAPTER_KEY, "reference_type": "Serial Number", "external_id": serial},
+				)
+			)
+
+	def test_a_batch_of_another_item_is_refused(self):
+		wo = self.fixtures.make_work_order(qty=1, operations=False, item=self.fixtures.FINISHED_GOOD_BATCHED)
+		other_item = "FOAMES-TEST-OTHER-B"
+		if not frappe.db.exists("Item", other_item):
+			frappe.get_doc(
+				{
+					"doctype": "Item",
+					"item_code": other_item,
+					"item_name": other_item,
+					"item_group": frappe.db.get_value("Item", self.fixtures.RAW_MATERIAL, "item_group"),
+					"stock_uom": "Nos",
+					"is_stock_item": 1,
+					"has_batch_no": 1,
+				}
+			).insert(ignore_permissions=True)
+		other = frappe.get_doc(
+			{
+				"doctype": "Batch",
+				"batch_id": f"FOAMES-TB-OTHER-{frappe.generate_hash(length=6).upper()}",
+				"item": other_item,
+			}
+		).insert(ignore_permissions=True)
+		enqueue("Material Transfer for Manufacture", {"work_order": wo.name}, f"{wo.name}:transfer", wo.name)
+		posting = enqueue(
+			"Manufacture",
+			{"work_order": wo.name, "qty": 1, "batch_no": other.name},
+			f"{wo.name}:manufacture",
+			wo.name,
+		)
+		self.run_outbox()
+		self.assertEqual(self.outbox(posting).status, "Failed")
+		self.assertIn("another item", self.outbox(posting).last_error)

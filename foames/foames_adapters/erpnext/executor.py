@@ -61,7 +61,14 @@ def find_existing(operation: Operation, payload: dict, marker: str) -> Result | 
 			"Stock Entry", {"remarks": ("like", f"{marker}%"), "docstatus": ("<", 2)}, "name"
 		)
 		if name:
-			return Result("Stock Entry", name, {"found_by": "marker"}, existing=True)
+			# A replayed Manufacture posting still reports the finished good's identity, and an
+			# entry whose first attempt lost the outbox update gets its references recorded now.
+			doc = frappe.get_doc("Stock Entry", name)
+			finished = finished_good_identity(doc)
+			record_identity_references(finished, submitted=doc.docstatus == 1)
+			return Result(
+				"Stock Entry", name, {"found_by": "marker", "finished_good": finished}, existing=True
+			)
 	elif operation.label in ("Job Card Time Log", "Job Card Production Log"):
 		remarks = frappe.db.get_value("Job Card", payload["job_card"], "remarks") or ""
 		if marker in remarks:
@@ -87,9 +94,13 @@ def post_stock_entry(purpose: str, payload: dict, marker: str) -> Result:
 			doc.posting_date = payload["posting_date"]
 		if payload.get("posting_time"):
 			doc.posting_time = payload["posting_time"]
+	if purpose == "Manufacture" and (payload.get("batch_no") or payload.get("serial_nos")):
+		name_finished_good(doc, payload.get("batch_no"), payload.get("serial_nos"))
 	doc.insert()
 	if payload.get("submit", True):
 		doc.submit()
+	finished = finished_good_identity(doc)
+	record_identity_references(finished, submitted=doc.docstatus == 1)
 	return Result(
 		"Stock Entry",
 		doc.name,
@@ -97,6 +108,7 @@ def post_stock_entry(purpose: str, payload: dict, marker: str) -> Result:
 			"purpose": doc.purpose,
 			"docstatus": doc.docstatus,
 			"fg_completed_qty": doc.fg_completed_qty,
+			"finished_good": finished,
 			"items": [
 				{
 					"item_code": row.item_code,
@@ -108,6 +120,80 @@ def post_stock_entry(purpose: str, payload: dict, marker: str) -> Result:
 			],
 		},
 	)
+
+
+def finished_item_row(doc):
+	return next((row for row in doc.items if cint(row.get("is_finished_item"))), None)
+
+
+def name_finished_good(doc, batch_no: str | None, serial_nos: list[str] | None):
+	"""Give the Manufacture entry's finished good the batch and serial numbers the floor knows it
+	by, through ERPNext's own serial and batch fields (the bundle is built from them on save). A
+	batch that does not exist yet is created for the item; serial numbers that do not exist yet
+	are created by ERPNext when the entry is submitted."""
+	row = finished_item_row(doc)
+	if row is None:
+		frappe.throw(_("The Manufacture entry for {0} has no finished item row").format(doc.work_order))
+	if batch_no:
+		if not frappe.db.exists("Batch", batch_no):
+			frappe.get_doc({"doctype": "Batch", "batch_id": batch_no, "item": row.item_code}).insert()
+		elif frappe.db.get_value("Batch", batch_no, "item") != row.item_code:
+			frappe.throw(_("Batch {0} belongs to another item than {1}").format(batch_no, row.item_code))
+		row.batch_no = batch_no
+	if serial_nos:
+		row.serial_no = "\n".join(serial_nos)
+	row.use_serial_batch_fields = 1
+
+
+def finished_good_identity(doc) -> dict | None:
+	"""The finished good's item, batch and serial numbers as ERPNext recorded them (from the row's
+	bundle once the entry is submitted, else from the fields), for traceability in FoaMES."""
+	row = finished_item_row(doc)
+	if row is None:
+		return None
+	batches: list[str] = []
+	serials: list[str] = []
+	bundle = (
+		frappe.db.get_value("Stock Entry Detail", row.name, "serial_and_batch_bundle") if row.name else None
+	)
+	if bundle:
+		batches = list(
+			frappe.get_attr("erpnext.stock.serial_batch_bundle.get_batches_from_bundle")(bundle) or {}
+		)
+		serials = list(
+			frappe.get_attr("erpnext.stock.serial_batch_bundle.get_serial_nos_from_bundle")(bundle) or []
+		)
+	if not batches and row.get("batch_no"):
+		batches = [row.batch_no]
+	if not serials and row.get("serial_no"):
+		serials = [s.strip() for s in str(row.serial_no).replace(",", "\n").split("\n") if s.strip()]
+	return {
+		"item_code": row.item_code,
+		"qty": row.qty,
+		"warehouse": row.t_warehouse,
+		"batch_no": batches[0] if len(batches) == 1 else None,
+		"batch_nos": batches,
+		"serial_nos": serials,
+	}
+
+
+def record_identity_references(finished: dict | None, submitted: bool = True):
+	"""External References for the batch and serial numbers a Manufacture entry produced, so FoaMES
+	records (quality, process events, agents) can point at them from now on. A Batch exists from
+	the draft on; Serial No records are created by ERPNext on submit, so a draft entry's serial
+	numbers are referenced once it is submitted (by a replay of the posting, or on the next entry
+	that names them)."""
+	if not finished:
+		return
+	from foames.foames_adapters.erpnext import ADAPTER_KEY
+	from foames.foames_kernel.doctype.external_reference.external_reference import get_reference
+
+	for batch_no in finished.get("batch_nos") or []:
+		get_reference("Batch", batch_no, ADAPTER_KEY, ignore_permissions=True)
+	if not submitted:
+		return
+	for serial_no in finished.get("serial_nos") or []:
+		get_reference("Serial Number", serial_no, ADAPTER_KEY, ignore_permissions=True)
 
 
 def post_job_card_time_log(payload: dict, marker: str) -> Result:

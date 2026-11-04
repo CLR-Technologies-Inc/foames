@@ -85,7 +85,7 @@ OPERATIONS: dict[str, Operation] = {
 	"Manufacture": Operation(
 		label="Manufacture",
 		required=("work_order",),
-		optional=("qty", "posting_date", "posting_time", "remarks", "submit"),
+		optional=("qty", "posting_date", "posting_time", "remarks", "submit", "batch_no", "serial_nos"),
 		doctype="Stock Entry",
 		reference_type="Stock Movement",
 	),
@@ -191,6 +191,26 @@ def prepare(operation: Operation, payload: dict) -> dict:
 				raise ValueError(f"{name} cannot be negative")
 	if "submit" in prepared:
 		prepared["submit"] = _to_bool(prepared["submit"])
+	if prepared.get("serial_nos") not in (None, ""):
+		prepared["serial_nos"] = serial_number_list(prepared["serial_nos"])
+		if len(set(prepared["serial_nos"])) != len(prepared["serial_nos"]):
+			raise ValueError("serial_nos repeats a serial number")
+		qty = prepared.get("qty")
+		if qty is not None:
+			if qty != int(qty):
+				raise ValueError("serial_nos need a whole-number qty, one serial number per unit")
+			if len(prepared["serial_nos"]) != int(qty):
+				raise ValueError("serial_nos must name one serial number per unit of qty")
+	elif "serial_nos" in prepared:
+		del prepared["serial_nos"]
+	if prepared.get("employees") not in (None, ""):
+		prepared["employees"] = employee_rows(prepared["employees"])
+	elif "employees" in prepared:
+		del prepared["employees"]
+	if "batch_no" in prepared:
+		prepared["batch_no"] = str(prepared["batch_no"] or "").strip()
+		if not prepared["batch_no"]:
+			del prepared["batch_no"]
 	if operation.label == "Job Card Time Log" and not (
 		prepared.get("start_time") or prepared.get("complete_time")
 	):
@@ -213,6 +233,43 @@ def prepare(operation: Operation, payload: dict) -> dict:
 	if operation.label == "Downtime Entry" and str(prepared["from_time"]) >= str(prepared["to_time"]):
 		raise ValueError("Downtime Entry needs from_time before to_time")
 	return prepared
+
+
+def employee_rows(value) -> list[dict]:
+	"""The operators of a time log in the shape ERPNext's `make_time_log` takes: a list of
+	`{"employee": <Employee>}` rows, from that, from a list of Employee ids, or from text separated
+	by commas or newlines."""
+	if isinstance(value, str):
+		value = [part.strip() for part in value.replace(",", "\n").split("\n") if part.strip()]
+	if not isinstance(value, (list, tuple)) or not value:
+		raise ValueError("employees must be a list of Employee ids")
+	rows = []
+	for entry in value:
+		if isinstance(entry, dict):
+			employee = str(entry.get("employee") or "").strip()
+		else:
+			employee = str(entry or "").strip()
+		if not employee:
+			raise ValueError("employees must be a list of Employee ids")
+		rows.append({"employee": employee})
+	return rows
+
+
+def serial_number_list(value) -> list[str]:
+	"""Serial numbers as a list of strings, from a list or from text separated by newlines or
+	commas (the way ERPNext's own serial number fields take them)."""
+	if isinstance(value, str):
+		parts = value.replace(",", "\n").split("\n")
+	elif isinstance(value, (list, tuple)):
+		if any(v is None or isinstance(v, bool) or not isinstance(v, (str, int)) for v in value):
+			raise ValueError("serial_nos must be a list of serial numbers")
+		parts = [str(v) for v in value]
+	else:
+		raise ValueError("serial_nos must be a list of serial numbers")
+	serials = [part.strip() for part in parts if part and part.strip()]
+	if not serials:
+		raise ValueError("serial_nos must name at least one serial number")
+	return serials
 
 
 def _to_bool(value) -> bool:

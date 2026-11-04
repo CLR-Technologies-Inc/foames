@@ -133,6 +133,65 @@ class TestPrepare(unittest.TestCase):
 		self.assertEqual(self.prepare("Downtime Entry", full), full)
 
 
+class TestFinishedGoodIdentity(unittest.TestCase):
+	def prepare(self, operation, payload):
+		return postings.prepare(postings.OPERATIONS[operation], payload)
+
+	def test_time_log_operators_take_any_shape(self):
+		base = {"job_card": "PO-JOB00001", "start_time": "2026-10-31 08:00:00"}
+		rows = [{"employee": "HR-EMP-00001"}, {"employee": "HR-EMP-00002"}]
+		self.assertEqual(self.prepare("Job Card Time Log", {**base, "employees": rows})["employees"], rows)
+		self.assertEqual(
+			self.prepare("Job Card Time Log", {**base, "employees": ["HR-EMP-00001", "HR-EMP-00002"]})[
+				"employees"
+			],
+			rows,
+		)
+		self.assertEqual(
+			self.prepare("Job Card Time Log", {**base, "employees": "HR-EMP-00001, HR-EMP-00002"})[
+				"employees"
+			],
+			rows,
+		)
+		self.assertNotIn("employees", self.prepare("Job Card Time Log", {**base, "employees": None}))
+		with self.assertRaises(ValueError):
+			self.prepare("Job Card Time Log", {**base, "employees": [{"name": "x"}]})
+		with self.assertRaises(ValueError):
+			self.prepare("Job Card Time Log", {**base, "employees": 7})
+
+	def test_manufacture_batch_and_serial_numbers(self):
+		base = {"work_order": "MFG-WO-1"}
+		self.assertEqual(
+			self.prepare("Manufacture", {**base, "serial_nos": "SN-1, SN-2\nSN-3 "})["serial_nos"],
+			["SN-1", "SN-2", "SN-3"],
+		)
+		self.assertEqual(
+			self.prepare("Manufacture", {**base, "qty": 2, "serial_nos": ["SN-1", "SN-2"]})["serial_nos"],
+			["SN-1", "SN-2"],
+		)
+		self.assertEqual(self.prepare("Manufacture", {**base, "batch_no": " B-1 "})["batch_no"], "B-1")
+		# Empty values are dropped rather than sent.
+		self.assertNotIn("batch_no", self.prepare("Manufacture", {**base, "batch_no": ""}))
+		self.assertNotIn("serial_nos", self.prepare("Manufacture", {**base, "serial_nos": None}))
+		with self.assertRaises(ValueError):
+			self.prepare("Manufacture", {**base, "qty": 3, "serial_nos": ["SN-1", "SN-2"]})
+		with self.assertRaises(ValueError):
+			self.prepare("Manufacture", {**base, "serial_nos": ["SN-1", "SN-1"]})
+		with self.assertRaises(ValueError):
+			self.prepare("Manufacture", {**base, "serial_nos": ", ,"})
+		with self.assertRaises(ValueError):
+			self.prepare("Manufacture", {**base, "serial_nos": 5})
+		# A null in the list is malformed, not the serial number "None".
+		with self.assertRaises(ValueError):
+			self.prepare("Manufacture", {**base, "qty": 2, "serial_nos": ["SN-1", None]})
+		# Serial numbers count units, so the quantity has to be whole.
+		with self.assertRaises(ValueError):
+			self.prepare("Manufacture", {**base, "qty": 1.5, "serial_nos": ["SN-1"]})
+		# Only the Manufacture entry names the finished good.
+		with self.assertRaises(ValueError):
+			self.prepare("Material Transfer for Manufacture", {**base, "batch_no": "B-1"})
+
+
 class TestMarker(unittest.TestCase):
 	def test_marker_is_short_stable_and_distinct(self):
 		a = postings.marker("MFG-WO-1:OP1:complete")

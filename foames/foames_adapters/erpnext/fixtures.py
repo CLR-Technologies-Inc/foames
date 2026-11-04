@@ -29,6 +29,8 @@ def ensure_manufacturing_setup() -> dict:
 	bom = ensure_bom()
 	ensure_bom(with_operations=False)
 	employee = ensure_employee()
+	ensure_bom(with_operations=False, item=FINISHED_GOOD_BATCHED)
+	ensure_bom(with_operations=False, item=FINISHED_GOOD_SERIAL)
 	# Fixtures must outlive the per-test savepoint, so they are committed once.
 	frappe.db.commit()  # nosemgrep
 	return {
@@ -115,8 +117,17 @@ def ensure_company():
 	frappe.db.set_single_value("Manufacturing Settings", "disable_capacity_planning", 1)
 
 
+FINISHED_GOOD_BATCHED = "FOAMES-TEST-FG-B"
+FINISHED_GOOD_SERIAL = "FOAMES-TEST-FG-S"
+BATCH_SERIES = "FOAMES-TB-.####"
+ITEM_FLAGS = {
+	FINISHED_GOOD_BATCHED: {"has_batch_no": 1, "create_new_batch": 1, "batch_number_series": BATCH_SERIES},
+	FINISHED_GOOD_SERIAL: {"has_serial_no": 1, "serial_no_series": "FOAMES-TS-.####"},
+}
+
+
 def ensure_items():
-	for item_code in (RAW_MATERIAL, FINISHED_GOOD):
+	for item_code in (RAW_MATERIAL, FINISHED_GOOD, FINISHED_GOOD_BATCHED, FINISHED_GOOD_SERIAL):
 		if frappe.db.exists("Item", item_code):
 			continue
 		frappe.get_doc(
@@ -130,6 +141,7 @@ def ensure_items():
 				"is_stock_item": 1,
 				"valuation_rate": 10,
 				"item_defaults": [{"company": COMPANY, "default_warehouse": STORES}],
+				**ITEM_FLAGS.get(item_code, {}),
 			}
 		).insert(ignore_permissions=True)
 	receive_raw_material(1000)
@@ -164,12 +176,13 @@ def ensure_workstation_and_operation():
 		)
 
 
-def ensure_bom(with_operations: bool = True) -> str:
+def ensure_bom(with_operations: bool = True, item: str = FINISHED_GOOD) -> str:
 	"""The finished good's BOM: by default the one with a single operation (so a Work Order gets a
-	Job Card), otherwise a plain one for stock-only tests."""
+	Job Card), otherwise a plain one for stock-only tests. The batched and serialised finished
+	goods get plain BOMs too."""
 	existing = frappe.db.get_value(
 		"BOM",
-		{"item": FINISHED_GOOD, "is_active": 1, "docstatus": 1, "with_operations": int(with_operations)},
+		{"item": item, "is_active": 1, "docstatus": 1, "with_operations": int(with_operations)},
 		"name",
 	)
 	if existing:
@@ -182,11 +195,11 @@ def ensure_bom(with_operations: bool = True) -> str:
 	bom = frappe.get_doc(
 		{
 			"doctype": "BOM",
-			"item": FINISHED_GOOD,
+			"item": item,
 			"company": COMPANY,
 			"quantity": 1,
 			"is_active": 1,
-			"is_default": int(with_operations),
+			"is_default": int(with_operations or item != FINISHED_GOOD),
 			"with_operations": int(with_operations),
 			"rm_cost_as_per": "Valuation Rate",
 			"operations": operations,
@@ -201,13 +214,17 @@ def ensure_bom(with_operations: bool = True) -> str:
 
 
 def make_work_order(
-	qty: float = 5, submit: bool = True, skip_transfer: bool = False, operations: bool = True
+	qty: float = 5,
+	submit: bool = True,
+	skip_transfer: bool = False,
+	operations: bool = True,
+	item: str = FINISHED_GOOD,
 ):
 	"""A submitted Work Order for the finished good. With `operations` it has one operation and
 	therefore one Job Card, which must be completed before a Manufacture entry is accepted."""
-	bom = ensure_bom(with_operations=operations)
+	bom = ensure_bom(with_operations=operations, item=item)
 	wo = frappe.new_doc("Work Order")
-	wo.production_item = FINISHED_GOOD
+	wo.production_item = item
 	wo.bom_no = bom
 	wo.qty = qty
 	wo.company = COMPANY
