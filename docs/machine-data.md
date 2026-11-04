@@ -65,6 +65,8 @@ The gateway reads the files when it starts, so restart it after replacing a cert
 | `Alarm` | `code` or `value`, `text` | Stored and marks the machine Down |
 | `Message` | `text` | Stored; refreshes the machine's last-seen time |
 
+A meter is sent as a counter too: `{"type": "Count", "counter": "energy_kwh", "value": 48213.6}` with the meter's running total. Counters named `energy`, `kwh`, `power`, `electricity`, `water`, `gas`, `feed`, `steam`, `air` or `fuel`, exactly or with a unit suffix, are treated as consumed inputs rather than production: their deltas feed the specific-consumption figure (`foames.foames_mes.kpi.resource_intensity`) and the consumption-with-no-output rule on the Floor View, and never count towards OEE. A continuous unit without a cycle reports its production the same way, as a flow or mass totaliser named `good`.
+
 `id` is optional and deduplicates retries. `timestamp` is ISO 8601 or Unix seconds; missing means now.
 
 ## Extending the processing

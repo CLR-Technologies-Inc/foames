@@ -56,6 +56,7 @@ The full guide, including roles, the scheduler, running the gateways and a smoke
 | [docs/mcp.md](docs/mcp.md) | The MCP server: connecting Claude Desktop, Claude Code or any MCP client, the tools, permissions |
 | [AGENTS.md](AGENTS.md) | For coding agents and developers building on FoaMES: invariants, hooks, API, tests |
 | [docs/agents/floor-agent.md](docs/agents/floor-agent.md) | For an agent reading the floor and raising suggestions at run time |
+| [docs/agents/research-to-code.md](docs/agents/research-to-code.md) | For an agent or developer turning a published method into a FoaMES change |
 
 ## Contributing
 

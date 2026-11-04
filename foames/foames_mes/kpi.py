@@ -1,7 +1,8 @@
 # Copyright (c) 2026, CLR Technologies Inc. and contributors
 # For license information, please see license.txt
 
-"""The arithmetic behind the FoaMES reports: OEE roll-ups, the downtime Pareto, MTBF and MTTR.
+"""The arithmetic behind the FoaMES reports: OEE roll-ups, the downtime Pareto, MTBF and MTTR,
+specific consumption of metered inputs.
 
 Pure functions over plain dicts and numbers, so the reports stay thin and the formulas can be tested
 without a site. Percentages come out on the 0-100 scale the OEE Period stores.
@@ -13,6 +14,8 @@ from collections import OrderedDict
 from datetime import datetime
 from math import ceil
 from statistics import median
+
+from foames.foames_mes.counters import good_and_scrap, resource_totals
 
 
 def roll_up_oee(periods: list[dict]) -> dict:
@@ -151,3 +154,32 @@ def percentile(values: list[float], share: float) -> float | None:
 	ordered = sorted(values)
 	rank = max(0, min(len(ordered) - 1, ceil(share * len(ordered)) - 1))
 	return ordered[rank]
+
+
+def specific_consumption(resource: float, output: float) -> float | None:
+	"""Resource consumed per good unit produced, the figure process engineering compares plants and
+	routes by (kWh per kg, m3 of water per tonne, kg of feed per unit).
+
+	It is the counter-delta rule applied to a ratio: a window in which nothing was produced has no
+	rate (None), not an infinite or a zero one, so a reactor that drew power while idle is reported
+	as consumption without output rather than hidden inside an average.
+	"""
+	if output is None or output <= 0:
+		return None
+	return float(resource or 0) / float(output)
+
+
+def resource_intensity(counts: dict[str, float]) -> dict[str, float | None]:
+	"""Specific consumption of every metered input in a machine's per-counter deltas, per good unit:
+	{"energy_kwh": 0.35, "water_m3": None} for {"good": 120, "scrap": 3, "energy_kwh": 42, "water_m3": 0}.
+
+	A resource with no consumption in the window is left out; one consumed with no good output maps
+	to None.
+	"""
+	good, _scrap = good_and_scrap(counts)
+	out = {}
+	for name, used in resource_totals(counts).items():
+		if used <= 0:
+			continue
+		out[name] = specific_consumption(used, good)
+	return out

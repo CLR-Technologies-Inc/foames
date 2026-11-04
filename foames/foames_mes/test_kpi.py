@@ -12,7 +12,9 @@ from foames.foames_mes.kpi import (
 	percentile,
 	reliability,
 	resolution_hours,
+	resource_intensity,
 	roll_up_oee,
+	specific_consumption,
 )
 
 

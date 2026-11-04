@@ -68,6 +68,9 @@ The scheduler runs the rules every hour over the last day. The **Run suggestion 
 | Running without counting | A machine has counted before, reports Running, and has not counted for 30 minutes or more | Downtime, Warning |
 | Dominant downtime reason | One reason is half or more of a machine's downtime over the window, counting downtime that has no reason yet in the total | Downtime, Info |
 | Missing ERP references | Any External Reference has resolved as Missing | ERP, Warning (one suggestion listing them) |
+| Consumption with no output | A metered input counter (energy, water, gas, feed, steam, air, fuel, or one of these with a unit suffix such as `energy_kwh`) advanced over the window and the machine counted no good or scrap production | Yield, Warning (one per machine, resource and day) |
+
+The consumption rule is for electrified and continuous units, whose cost is what they consume per unit made: a reactor held at power through a feed stop, a furnace kept hot with no orders. The time is usually booked as Idle already; the suggestion puts the consumption number on it so someone can decide whether the unit should be powered down or put in standby. If the unit was in fact producing, the finding means the production counter is not reaching FoaMES.
 
 Andon calls that miss their targets are escalated by their own five-minute task rather than by the hourly rules, and once per call and target; see [andon.md](andon.md#escalation). The **Call for Help** button on the Floor View raises an andon call, and open calls show on their machine's tile.
 

@@ -138,6 +138,8 @@ The event shape, state aliases and signing scheme are in [docs/machine-data.md](
 
 **Add a reference type to an adapter.** For ERPNext, add a row to `ERPNEXT_DOCTYPES` in `erpnext.py` (kernel type, DocType, label field). For S/4HANA, map it in S4HANA Settings at run time, or add a default `EntitySpec` to `s4hana/entities.py` with its service, entity set, key fields and label. Adding a *new* kernel reference type means extending `REFERENCE_TYPES` in `base.py` and the Select options on External Reference and S4HANA Entity Mapping together.
 
+**Turn a published method into a change.** Follow [docs/agents/research-to-code.md](docs/agents/research-to-code.md): triage the paper against the invariants before reading it in depth, map its inputs to what FoaMES records, pick one landing zone, and write the test from the paper's own example first. Most papers end as a no-go with one metric or loss category carried over.
+
 **Change OEE or the rules.** Edit the pure module and its unit test first (`test_oee_and_rules.py`), then the DocType or task that calls it. Keep the time ledger exhaustive: every planned minute lands in exactly one bucket, and the gap goes to unknown.
 
 **Mine records from another DocType or app.** For a DocType on the site, create an Event Log Source with a field map (case, activity, timestamp, optional end timestamp, resource, filters, object fields) and check it with **Preview events**; the DocType is named as text and the source is skipped when it is not installed. For records your app builds itself, register a `foames_process_event_extractors` hook that yields `Event` objects. New analyses go in the pure modules with a test in `test_process_mining_logic.py`, and are exposed through `api.py` or a Process Event Log method.
