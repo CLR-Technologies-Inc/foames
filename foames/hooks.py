@@ -20,6 +20,18 @@ app_license = "apache-2.0"
 foames_erp_adapters = [
 	"foames.foames_adapters.erpnext.ERPNextAdapter",
 	"foames.foames_adapters.s4hana.adapter.S4HANAAdapter",
+	"foames.foames_adapters.insights_hub.adapter.InsightsHubAdapter",
+	# Other MES and MOM systems, each a profile over the shared REST framework in foames_adapters.mes.
+	"foames.foames_adapters.plex.adapter.PlexAdapter",
+	"foames.foames_adapters.factorytalk_productioncentre.adapter.FactoryTalkProductionCentreAdapter",
+	"foames.foames_adapters.sap_dmc.adapter.SAPDigitalManufacturingAdapter",
+	"foames.foames_adapters.delmia_apriso.adapter.DelmiaAprisoAdapter",
+	"foames.foames_adapters.aveva_mes.adapter.AvevaMESAdapter",
+	"foames.foames_adapters.critical_manufacturing.adapter.CriticalManufacturingAdapter",
+	"foames.foames_adapters.tulip.adapter.TulipAdapter",
+	"foames.foames_adapters.aegis_factorylogix.adapter.AegisFactoryLogixAdapter",
+	"foames.foames_adapters.koerber_pasx.adapter.KoerberPASXAdapter",
+	"foames.foames_adapters.proficy.adapter.ProficyAdapter",
 ]
 
 # IDocs received from S/4HANA, by message type. Each handler is called with the S4HANA Inbound IDoc
@@ -94,6 +106,7 @@ doc_events["Stock Entry"] = {
 # a machine finished from what it measured, and to mirror each machine's state onto its ERPNext
 # Workstation.
 # The S/4HANA adapter rolls them up to the order operation a machine is working on, as partial confirmations.
+# The Insights Hub adapter writes them as time series records on the machine's asset, for Opcenter Intelligence.
 
 foames_floor_snapshot_extensions = [
 	"foames.foames_adapters.erpnext.floor.extend_snapshot",
@@ -103,13 +116,18 @@ foames_suggestion_rules = [
 	"foames.foames_adapters.erpnext.floor.running_without_job_card",
 	"foames.foames_adapters.erpnext.rollup.current_job_card_not_open",
 	"foames.foames_adapters.s4hana.rollup.confirmation_rejected",
+	"foames.foames_adapters.insights_hub.rollup.posting_rejected",
 ]
 foames_machine_job_changed = [
 	"foames.foames_adapters.erpnext.rollup.on_job_changed",
 	"foames.foames_adapters.erpnext.quality.on_job_changed",
 	"foames.foames_adapters.s4hana.rollup.on_job_changed",
+	"foames.foames_adapters.insights_hub.rollup.on_job_changed",
 ]
-foames_machine_state_changed = ["foames.foames_adapters.erpnext.workstation.on_state_changed"]
+foames_machine_state_changed = [
+	"foames.foames_adapters.erpnext.workstation.on_state_changed",
+	"foames.foames_adapters.insights_hub.rollup.on_state_changed",
+]
 
 # Process mining
 # --------------
@@ -127,6 +145,10 @@ scheduler_events = {
 		"foames.foames_adapters.doctype.s4hana_outbox.s4hana_outbox.process_outbox",
 		# Performs due postings to ERPNext; does nothing unless postings are enabled in ERPNext Adapter Settings.
 		"foames.foames_adapters.doctype.erpnext_outbox.erpnext_outbox.process_outbox",
+		# Sends due writes to Insights Hub; does nothing unless the Insights Hub adapter is enabled.
+		"foames.foames_adapters.doctype.insights_hub_outbox.insights_hub_outbox.process_outbox",
+		# Sends due writes to the other MES systems; does nothing without an enabled MES Connection.
+		"foames.foames_adapters.doctype.mes_outbox.mes_outbox.process_outbox",
 	],
 	"cron": {
 		"*/5 * * * *": [
@@ -134,11 +156,12 @@ scheduler_events = {
 			# Raises an Agent Suggestion for each Andon Call that misses its call type's targets.
 			"foames.foames_mes.doctype.andon_call.andon_call.escalate_andon_calls",
 		],
-		# Rolls machine counts up to ERPNext Job Cards and to S/4HANA confirmations; each does nothing
-		# unless enabled in its adapter's settings.
+		# Rolls machine counts up to ERPNext Job Cards, to S/4HANA confirmations and to Insights Hub time
+		# series; each does nothing unless enabled in its adapter's settings.
 		"*/10 * * * *": [
 			"foames.foames_adapters.erpnext.rollup.roll_up_all",
 			"foames.foames_adapters.s4hana.rollup.roll_up_all",
+			"foames.foames_adapters.insights_hub.rollup.roll_up_all",
 		],
 	},
 	"hourly": [

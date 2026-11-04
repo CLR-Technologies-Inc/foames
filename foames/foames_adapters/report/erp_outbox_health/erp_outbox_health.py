@@ -1,11 +1,12 @@
 # Copyright (c) 2026, CLR Technologies Inc. and contributors
 # For license information, please see license.txt
 
-"""One view of both posting outboxes: how many postings sit in each status per adapter, how old the
+"""One view of the posting outboxes: how many postings sit in each status per adapter, how old the
 oldest unposted one is, and what the last errors say.
 
-The ERPNext and S/4HANA outboxes are separate DocTypes with the same lifecycle, so the report reads
-whichever adapters are installed on the site and stacks them side by side.
+The ERPNext, S/4HANA and Insights Hub outboxes are separate DocTypes with the same lifecycle, so the
+report reads whichever adapters are installed on the site and stacks them side by side. The MES Outbox
+serves every other MES through one DocType; its rows are shown per connection.
 """
 
 import frappe
@@ -14,7 +15,14 @@ from frappe.utils import get_datetime, now_datetime
 
 from foames.foames_mes.report.utils import chart_of, date_window, summary_item
 
-OUTBOXES = (("ERPNext", "ERPNext Outbox"), ("S/4HANA", "S4HANA Outbox"))
+OUTBOXES = (
+	("ERPNext", "ERPNext Outbox"),
+	("S/4HANA", "S4HANA Outbox"),
+	("Insights Hub", "Insights Hub Outbox"),
+	("MES", "MES Outbox"),
+)
+# The MES Outbox holds postings of several systems; the connection tells them apart.
+PER_CONNECTION = {"MES Outbox": "connection"}
 STATUSES = ("Queued", "Sending", "Retry", "Unknown", "Failed", "Posted", "Cancelled")
 ATTENTION = ("Retry", "Unknown", "Failed")
 
@@ -27,55 +35,40 @@ def execute(filters=None):
 	for adapter, doctype in OUTBOXES:
 		if not frappe.db.table_exists(doctype):
 			continue
-		if filters.get("adapter") and filters.get("adapter") != adapter:
+		per_connection = PER_CONNECTION.get(doctype)
+		if filters.get("adapter") and filters.get("adapter") != adapter and not per_connection:
 			continue
 		if not frappe.has_permission(doctype, "read"):
 			continue
+		fields = ["name", "status", "operation", "attempts", "creation", "next_attempt_at", "last_error"]
+		if per_connection:
+			fields.append(per_connection)
 		conditions = [["creation", ">=", start], ["creation", "<", end]]
 		if filters.get("operation"):
 			conditions.append(["operation", "=", filters.get("operation")])
-		postings = frappe.get_all(
-			doctype,
-			filters=conditions,
-			fields=["name", "status", "operation", "attempts", "creation", "next_attempt_at", "last_error"],
-		)
+		postings = frappe.get_all(doctype, filters=conditions, fields=fields)
 		# Unposted work outside the window still needs attention, so it is read without the window.
 		backlog_conditions = [["status", "in", ("Queued", "Sending", "Retry", "Unknown", "Failed")]]
 		if filters.get("operation"):
 			backlog_conditions.append(["operation", "=", filters.get("operation")])
-		backlog = frappe.get_all(
-			doctype,
-			filters=backlog_conditions,
-			fields=["name", "status", "operation", "attempts", "creation", "next_attempt_at", "last_error"],
-		)
+		backlog = frappe.get_all(doctype, filters=backlog_conditions, fields=fields)
 		seen = {p.name for p in postings}
 		postings += [p for p in backlog if p.name not in seen]
-		for status in STATUSES:
-			group = [p for p in postings if p.status == status]
-			if not group:
+		connections = sorted({p.get(per_connection) or "" for p in postings}) if per_connection else [None]
+		for connection in connections:
+			label = connection or adapter
+			if filters.get("adapter") and filters.get("adapter") not in (adapter, label):
 				continue
-			oldest = min(get_datetime(p.creation) for p in group)
-			age = (now - oldest).total_seconds() / 60.0 if status not in ("Posted", "Cancelled") else None
-			errors = [p.last_error for p in group if p.last_error]
-			rows.append(
-				{
-					"adapter": adapter,
-					"outbox": doctype,
-					"status": status,
-					"count": len(group),
-					"oldest_minutes": age,
-					"max_attempts": max(p.attempts or 0 for p in group),
-					"next_attempt_at": min(
-						(p.next_attempt_at for p in group if p.next_attempt_at), default=None
-					),
-					"last_error": (errors[-1] or "")[:140] if errors else None,
-				}
+			rows, failed_total, waiting_total, oldest_wait = add_rows(
+				rows,
+				label,
+				doctype,
+				[p for p in postings if not per_connection or (p.get(per_connection) or "") == connection],
+				now,
+				failed_total,
+				waiting_total,
+				oldest_wait,
 			)
-			if status == "Failed":
-				failed_total += len(group)
-			if status in ("Queued", "Sending", "Retry", "Unknown"):
-				waiting_total += len(group)
-				oldest_wait = max(oldest_wait, age or 0)
 	return (
 		get_columns(),
 		rows,
@@ -87,6 +80,35 @@ def execute(filters=None):
 			summary_item(_("Oldest Waiting (min)"), oldest_wait, "Float"),
 		],
 	)
+
+
+def add_rows(rows, adapter, doctype, postings, now, failed_total, waiting_total, oldest_wait):
+	"""One row per status for one adapter (or one MES connection)."""
+	for status in STATUSES:
+		group = [p for p in postings if p.status == status]
+		if not group:
+			continue
+		oldest = min(get_datetime(p.creation) for p in group)
+		age = (now - oldest).total_seconds() / 60.0 if status not in ("Posted", "Cancelled") else None
+		errors = [p.last_error for p in group if p.last_error]
+		rows.append(
+			{
+				"adapter": adapter,
+				"outbox": doctype,
+				"status": status,
+				"count": len(group),
+				"oldest_minutes": age,
+				"max_attempts": max(p.attempts or 0 for p in group),
+				"next_attempt_at": min((p.next_attempt_at for p in group if p.next_attempt_at), default=None),
+				"last_error": (errors[-1] or "")[:140] if errors else None,
+			}
+		)
+		if status == "Failed":
+			failed_total += len(group)
+		if status in ("Queued", "Sending", "Retry", "Unknown"):
+			waiting_total += len(group)
+			oldest_wait = max(oldest_wait, age or 0)
+	return rows, failed_total, waiting_total, oldest_wait
 
 
 def get_columns():
