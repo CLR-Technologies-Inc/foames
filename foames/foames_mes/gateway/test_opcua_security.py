@@ -5,20 +5,39 @@
 asyncua is optional, so `apply_security` runs against stand-in modules and a stand-in client."""
 
 import asyncio
+import datetime as dt
 import sys
 import types
+import unittest
 from unittest import mock
 
 import frappe
 
-from foames.foames_mes.gateway import opcua
+from foames.foames_mes import site_cbom
+from foames.foames_mes.gateway import opcua, opcua_trust
 from foames.tests_compat import IntegrationTestCase
 
+try:
+	from cryptography.hazmat.primitives.serialization import Encoding
 
-def attach(name, *, private=True):
+	from foames.foames_mes.gateway.test_opcua_trust import NOW, make_cert
+except ImportError:  # pragma: no cover - Frappe depends on cryptography
+	Encoding = None
+
+
+def attach(name, *, private=True, content=None):
 	return frappe.get_doc(
-		{"doctype": "File", "file_name": name, "content": f"test {name}", "is_private": int(private)}
+		{
+			"doctype": "File",
+			"file_name": name,
+			"content": content if content is not None else f"test {name}",
+			"is_private": int(private),
+		}
 	).insert(ignore_permissions=True)
+
+
+def pem(cert) -> bytes:
+	return cert.public_bytes(Encoding.PEM)
 
 
 def settings(**values):
@@ -29,6 +48,7 @@ def settings(**values):
 		"opcua_client_certificate": None,
 		"opcua_private_key": None,
 		"opcua_server_certificate": None,
+		"opcua_trusted_certificates": None,
 		"opcua_application_uri": None,
 		"opcua_username": None,
 	}
@@ -43,9 +63,12 @@ class FakeClient:
 	def __init__(self):
 		self.calls = []
 		self.application_uri = "urn:freeopcua:client"
+		self.certificate_validator = None
 
 	async def set_security(self, *args, **kwargs):
-		self.calls.append(("set_security", args, kwargs))
+		# asyncua fetches and validates the server certificate inside set_security, so the hook must
+		# already be installed here; remember what it saw.
+		self.calls.append(("set_security", args, kwargs, self.certificate_validator))
 
 	def set_user(self, user):
 		self.calls.append(("set_user", user))
@@ -136,8 +159,9 @@ class TestOPCUASecurity(IntegrationTestCase):
 					),
 				)
 			)
-		[(name, args, kwargs), user, password] = client.calls
+		[(name, args, kwargs, validator), user, password] = client.calls
 		self.assertEqual(name, "set_security")
+		self.assertIsNone(validator)  # no trusted bundle: the server certificate is taken as presented
 		policies = modules["asyncua.crypto.security_policies"]
 		self.assertIs(args[0], policies.SecurityPolicyAes256Sha256RsaPss)
 		self.assertEqual(args[1:], (self.cert.get_full_path(), self.key.get_full_path()))
@@ -151,6 +175,114 @@ class TestOPCUASecurity(IntegrationTestCase):
 		asyncio.run(opcua.apply_security(client, settings(opcua_username="foames")))
 		self.assertEqual(client.calls, [("set_user", "foames"), ("set_password", "op-secret")])
 		self.assertEqual(client.application_uri, "urn:freeopcua:client")
+
+	def test_trusted_bundle_is_checked_when_the_settings_are_saved(self):
+		junk = attach("not-a-cert.pem", private=False, content="hello")
+		with self.assertRaisesRegex(frappe.ValidationError, "Trusted Certificates"):
+			opcua.security_config(self.secured(opcua_trusted_certificates=junk.file_url))
+		empty = attach("empty.pem", private=False, content="   ")
+		with self.assertRaisesRegex(frappe.ValidationError, "no certificate"):
+			opcua.security_config(self.secured(opcua_trusted_certificates=empty.file_url))
+
+	@unittest.skipUnless(Encoding, "cryptography is not installed")
+	def test_trusted_bundle_installs_a_validator_before_set_security(self):
+		ca, ca_key = make_cert("Plant CA", ca=True)
+		server, _ = make_cert("Line 1", issuer=(ca, ca_key), uri="urn:plant:line1")
+		stranger, _ = make_cert("Stranger", uri="urn:plant:line1")
+		bundle = attach("trusted.pem", private=False, content=pem(ca).decode())
+		client = FakeClient()
+		with mock.patch.dict(sys.modules, fake_asyncua()):
+			asyncio.run(
+				opcua.apply_security(client, self.secured(opcua_trusted_certificates=bundle.file_url))
+			)
+		(name, _args, _kwargs, validator) = client.calls[0]
+		self.assertEqual(name, "set_security")
+		self.assertIs(validator, client.certificate_validator)
+		self.assertEqual(len(validator.trusted), 1)
+		# The hook accepts the plant's server and refuses an unknown one, like asyncua will.
+		description = types.SimpleNamespace(ApplicationUri="urn:plant:line1")
+		asyncio.run(validator(server, description))
+		with self.assertRaises(opcua_trust.ServerCertificateRejected):
+			asyncio.run(validator(stranger, description))
+
+	@unittest.skipUnless(Encoding, "cryptography is not installed")
+	def test_trusted_bundle_needs_an_asyncua_with_the_hook(self):
+		ca, _ = make_cert("Plant CA", ca=True)
+		bundle = attach("trusted-old.pem", private=False, content=pem(ca).decode())
+		client = FakeClient()
+		del client.certificate_validator  # asyncua before 1.1 has no such attribute
+		with mock.patch.dict(sys.modules, fake_asyncua()):
+			with self.assertRaisesRegex(frappe.ValidationError, "asyncua 1.1"):
+				asyncio.run(
+					opcua.apply_security(client, self.secured(opcua_trusted_certificates=bundle.file_url))
+				)
+
+	@unittest.skipUnless(Encoding, "cryptography is not installed")
+	def test_site_cbom_reads_the_attached_certificates(self):
+		ca, ca_key = make_cert("Plant CA", ca=True)
+		gateway, _ = make_cert(
+			"FoaMES gateway", uri="urn:plant:foames", not_after=NOW + dt.timedelta(days=30)
+		)
+		server, _ = make_cert("Line 1", issuer=(ca, ca_key), uri="urn:plant:line1")
+		doc = frappe.get_single("Machine Data Settings")
+		original = {
+			f: doc.get(f)
+			for f in (
+				"opcua_security_mode",
+				"opcua_security_policy",
+				"opcua_client_certificate",
+				"opcua_private_key",
+				"opcua_server_certificate",
+				"opcua_trusted_certificates",
+			)
+		}
+		try:
+			doc.opcua_security_mode = "SignAndEncrypt"
+			doc.opcua_security_policy = "Aes256_Sha256_RsaPss"
+			doc.opcua_client_certificate = attach(
+				"site-gw.pem", private=False, content=pem(gateway).decode()
+			).file_url
+			doc.opcua_private_key = self.key.file_url
+			doc.opcua_server_certificate = attach(
+				"site-server.pem", private=False, content=pem(server).decode()
+			).file_url
+			doc.opcua_trusted_certificates = attach(
+				"site-ca.pem", private=False, content=pem(ca).decode()
+			).file_url
+			doc.save()
+			bom = site_cbom.build(now=NOW)
+		finally:
+			for field, value in original.items():
+				doc.set(field, value)
+			doc.save()
+		self.assertEqual(bom["bomFormat"], "CycloneDX")
+		by_ref = {c["bom-ref"]: c for c in bom["components"]}
+		client = by_ref["crypto:certificate:opcua-client"]
+		self.assertEqual(
+			client["cryptoProperties"]["certificateProperties"]["subjectName"], "CN=FoaMES gateway"
+		)
+		values = {p["name"]: p["value"] for p in client["properties"]}
+		self.assertEqual(values["foames:certificate:daysToExpiry"], "30")
+		self.assertEqual(
+			by_ref["crypto:certificate:opcua-server"]["cryptoProperties"]["certificateProperties"][
+				"issuerName"
+			],
+			"CN=Plant CA",
+		)
+		self.assertIn("crypto:certificate:opcua-trusted-1", by_ref)
+		suites = by_ref["crypto:protocol:opcua-secure-channel"]["cryptoProperties"]["protocolProperties"][
+			"cipherSuites"
+		]
+		self.assertEqual([s["name"] for s in suites], ["Aes256_Sha256_RsaPss"])
+		self.assertIn(
+			{"name": "foames:site", "value": frappe.local.site}, bom["metadata"]["component"]["properties"]
+		)
+
+	def test_site_cbom_without_opcua_security_still_builds(self):
+		bom = site_cbom.build()
+		refs = {c["bom-ref"] for c in bom["components"]}
+		self.assertIn("crypto:certificate:opcua-client", refs)
+		self.assertIn("crypto:algorithm:hmac-sha256", refs)  # the curated assets ship with the source
 
 	def test_saving_settings_validates_security(self):
 		doc = frappe.get_single("Machine Data Settings")

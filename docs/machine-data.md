@@ -24,12 +24,15 @@ The OPC UA gateway takes its message security from the **OPC UA Security** secti
 | Private Key Passphrase | Only if the key is encrypted. It is stored as a Frappe password field. |
 | Client Application URI | Must equal the `URI:` entry in the certificate's subjectAltName. Most servers reject a session whose application URI does not match its certificate. |
 | Server Certificate | Optional. The server's own certificate. When it is set, the gateway uses this one instead of the one the server sends, so a different server at the same address cannot stand in for it. |
+| Trusted Certificates | Optional. A PEM bundle, or one DER file, of the certificates the server's certificate must be or chain to: the plant CA, or the server certificates themselves. See [Validating the server](#validating-the-server). |
 
 Username and Password in the OPC UA section still give username authentication, and they work in every mode. With mode `None`, the password is protected only if the server's user token policy encrypts it, so use a secure mode wherever the server allows one.
 
 Saving Machine Data Settings with `Sign` or `SignAndEncrypt` but no certificate or key is refused, so a misconfiguration shows up on the form, not when the gateway starts.
 
 The algorithms behind each policy (RSA-OAEP and RSA signatures in the handshake, AES-CBC and HMAC-SHA256 on the messages) are listed per policy in the cryptography bill of materials, see [sbom.md](sbom.md#the-cryptography-bill-of-materials).
+
+The certificates a site has attached, with their subject, issuer, validity and key, are read into a site-level CBOM by `bench --site <site> execute foames.foames_mes.site_cbom.write`; see [sbom.md](sbom.md#the-site-cbom-with-the-deployed-certificates).
 
 ### Making a client certificate
 
@@ -46,6 +49,22 @@ openssl x509 -in foames-opcua.cert.pem -outform der -out foames-opcua.cert.der
 ```
 
 Attach `foames-opcua.cert.der` as the Client Certificate, attach `foames-opcua.key.pem` as a private file for the Client Private Key, and set Client Application URI to `urn:example.com:foames:opcua-gateway`. Use RSA 2048 for `Basic256Sha256` and `Aes128_Sha256_RsaOaep`. For `Aes256_Sha256_RsaPss` the server may require RSA 3072 or larger.
+
+### Validating the server
+
+Without Trusted Certificates, the gateway takes the server's certificate as the server presents it (or as pinned by Server Certificate) and logs that it does so. With a bundle attached, the gateway hands asyncua a certificate validator, and the connection is refused unless the server's certificate
+
+- is one of the certificates in the bundle, or chains to one through certificates in the bundle (a plant CA that signed the server certificate; an intermediate CA has to be in the bundle too),
+- is within its validity period, as is every certificate on that chain,
+- and carries the server's application URI, the one its endpoint announces, in its subjectAltName.
+
+A refused server shows up in the gateway's log with the reason: unknown certificate, expired on a date, or an application URI mismatch. Saving Machine Data Settings with a bundle that holds no certificate, or a file that is not PEM or DER, is refused. This needs asyncua 1.1 or later; with an older release the gateway stops at start with a message rather than running unvalidated. Revocation lists are not checked.
+
+To build the bundle, export the CA certificate from the server's certificate manager, or the server's own certificate for a self-signed one, and concatenate PEM files when there are several:
+
+```bash
+cat plant-ca.pem line1-opcua.pem > trusted.pem
+```
 
 ### Trusting the certificate on the server
 
