@@ -201,11 +201,16 @@ ASSET_NAME = "FoaMES Test Press"
 
 def ensure_asset() -> str:
 	"""The ERPNext Asset a machine points at through its Asset Reference, for Asset Repairs. A
-	draft (unsubmitted) asset of an existing-asset type, so no purchase documents or depreciation
-	are involved; Asset Repair only needs an asset that is not sold or scrapped."""
-	existing = frappe.db.get_value("Asset", {"asset_name": ASSET_NAME, "company": COMPANY}, "name")
+	submitted asset of the existing-asset type, so no purchase documents or depreciation are
+	involved; ERPNext only puts a submitted asset Out of Order while a repair is pending."""
+	existing = frappe.db.get_value(
+		"Asset", {"asset_name": ASSET_NAME, "company": COMPANY, "docstatus": ("<", 2)}, ["name", "docstatus"]
+	)
 	if existing:
-		return existing
+		name, docstatus = existing
+		if docstatus == 0:
+			frappe.get_doc("Asset", name).submit()
+		return name
 	if not frappe.db.exists("Location", ASSET_LOCATION):
 		frappe.get_doc({"doctype": "Location", "location_name": ASSET_LOCATION}).insert(
 			ignore_permissions=True
@@ -257,6 +262,7 @@ def ensure_asset() -> str:
 			"calculate_depreciation": 0,
 		}
 	).insert(ignore_permissions=True)
+	asset.submit()
 	return asset.name
 
 

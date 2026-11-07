@@ -452,16 +452,16 @@ def post_downtime_entry(payload: dict, marker: str) -> Result:
 
 
 def repair_outcome(name: str) -> dict:
-	"""What a posting reports about an Asset Repair: its state, ERPNext's downtime figure and what
-	the Asset shows now (a Pending repair puts it Out of Order)."""
+	"""What a posting reports about an Asset Repair: its state and ERPNext's downtime figure. The
+	Asset's own status follows in a job ERPNext runs once the change commits (Out of Order while a
+	repair is pending), so it is not part of the response."""
 	repair = frappe.db.get_value(
-		"Asset Repair", name, ["asset", "repair_status", "downtime", "docstatus"], as_dict=True
+		"Asset Repair", name, ["repair_status", "downtime", "docstatus"], as_dict=True
 	)
 	return {
 		"repair_status": repair.repair_status,
 		"downtime": repair.downtime,
 		"submitted": repair.docstatus == 1,
-		"asset_status": frappe.db.get_value("Asset", repair.asset, "status"),
 	}
 
 

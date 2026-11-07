@@ -748,7 +748,7 @@ class TestAssetRepairs(ERPNextTestCase):
 		description = frappe.db.get_value("Asset Repair", repair.name, "description")
 		self.assertIn(rules.repair_marker(order.name), description)
 		self.assertIn("Change the belt", description)
-		self.assertEqual(json.loads(record.response)["asset_status"], "Out of Order")
+		self.assertEqual(json.loads(record.response)["repair_status"], "Pending")
 
 		order = frappe.get_doc("Maintenance Work Order", order.name)
 		order.status = "Completed"

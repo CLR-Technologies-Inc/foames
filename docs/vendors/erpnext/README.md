@@ -266,7 +266,8 @@ with **Post Maintenance Work Orders to ERPNext** on, each one is mirrored as an 
 the machine's Asset, for machines that point at their ERPNext Asset through **Asset Reference**.
 
 Starting a work order (status In Progress) queues one `Asset Repair` posting with the status
-Pending and the start as the failure date, which is how ERPNext marks the Asset Out of Order.
+Pending and the start as the failure date, which is how ERPNext marks a submitted Asset Out of
+Order (in a job it runs once the repair is committed).
 Completing it queues a second posting that brings the same repair to Completed, with the
 completion time and the work order's findings as the actions performed; ERPNext then computes
 the downtime and sets the Asset's status back. Cancelling a started work order marks the repair
