@@ -277,7 +277,9 @@ machine is still running. The repair stays a draft unless **Submit Asset Repairs
 is on, so a person can add the costs and the consumed items ERPNext books on submission; a repair
 someone has already submitted in ERPNext is left alone. Postings for one work order run in order
 (their sequence group is the work order), and a work order on a machine with no Asset Reference
-is not posted.
+is not posted. Once a repair exists, its work order is finished on that repair's asset, even if
+the machine's Asset Reference was changed or cleared, or the setting turned off, in the meantime:
+a Pending repair left behind would keep the asset Out of Order.
 
 ## Quality inspections
 

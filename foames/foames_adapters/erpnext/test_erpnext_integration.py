@@ -782,16 +782,20 @@ class TestAssetRepairs(ERPNextTestCase):
 		order.status = "In Progress"
 		order.save()
 		self.run_outbox()
+		# The repair exists now, so it is finished on its own asset even though the machine no
+		# longer points at one and the setting has been turned off in the meantime.
+		frappe.db.set_value("Machine", self.machine.name, "asset_reference", None)
+		frappe.get_single("ERPNext Adapter Settings").update({"post_maintenance_to_erpnext": 0}).save()
 		order = frappe.get_doc("Maintenance Work Order", order.name)
 		order.status = "Cancelled"
 		order.save()
 		self.assertEqual(len(self.queued()), 2)
+		self.assertEqual(json.loads(self.outbox(self.queued()[1]).payload)["asset"], self.asset)
 		self.assertEqual(self.run_outbox(), 1)
 		(repair,) = self.repairs()
 		self.assertEqual((repair.repair_status, repair.docstatus), ("Cancelled", 0))
 		self.assertNotEqual(frappe.db.get_value("Asset", self.asset, "status"), "Out of Order")
 
-		frappe.get_single("ERPNext Adapter Settings").update({"post_maintenance_to_erpnext": 0}).save()
 		other = self.work_order()
 		other.status = "In Progress"
 		other.save()

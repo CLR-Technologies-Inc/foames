@@ -286,6 +286,8 @@ def prepare(operation: Operation, payload: dict) -> dict:
 			raise ValueError(f"Asset Repair repair_status must be one of {', '.join(REPAIR_STATUSES)}")
 		prepared["repair_status"] = status
 		completion = prepared.get("completion_date")
+		if status == "Completed" and completion in (None, ""):
+			raise ValueError("Asset Repair needs completion_date when repair_status is Completed")
 		if completion not in (None, "") and str(completion) < str(prepared["failure_date"]):
 			raise ValueError("Asset Repair needs failure_date before completion_date")
 		if prepared.get("submit") and status != "Completed":

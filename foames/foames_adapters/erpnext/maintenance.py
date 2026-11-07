@@ -50,29 +50,40 @@ def machine_assets(machines: list[str]) -> dict[str, str]:
 
 def on_update(doc, method=None) -> str | None:
 	"""Registered under `doc_events` for Maintenance Work Order. Returns the outbox record queued,
-	if any: nothing for an open work order, and nothing for a cancellation that never started."""
-	if doc.status not in REPAIR_STATUS_BY_WORK_ORDER_STATUS or not posting_enabled():
+	if any: nothing for an open work order, and nothing for a cancellation that never started.
+
+	A work order whose repair exists already is finished on that repair's asset, even when the
+	machine's Asset Reference changed or was cleared since, and even when the setting was turned
+	off since: a Pending repair left behind would keep the asset Out of Order in ERPNext."""
+	if doc.status not in REPAIR_STATUS_BY_WORK_ORDER_STATUS or not erpnext_installed():
 		return None
-	if doc.status == "Cancelled" and not posted_before(doc.name):
-		return None
-	asset = machine_assets([doc.machine]).get(doc.machine)
-	if not asset:
-		return None
+	asset = posted_asset(doc.name)
+	if asset is None:
+		if doc.status == "Cancelled" or not posting_enabled():
+			return None
+		asset = machine_assets([doc.machine]).get(doc.machine)
+		if not asset:
+			return None
 	return queue_repair(doc, asset)
 
 
-def posted_before(work_order: str) -> bool:
-	return bool(
-		frappe.db.exists(
-			"ERPNext Outbox",
-			{
-				"operation": OPERATION,
-				"reference_doctype": "Maintenance Work Order",
-				"reference_name": work_order,
-				"status": ("!=", "Cancelled"),
-			},
-		)
+def posted_asset(work_order: str) -> str | None:
+	"""The asset the work order's repair was queued for, from its latest live posting."""
+	rows = frappe.get_all(
+		"ERPNext Outbox",
+		filters={
+			"operation": OPERATION,
+			"reference_doctype": "Maintenance Work Order",
+			"reference_name": work_order,
+			"status": ("!=", "Cancelled"),
+		},
+		fields=["payload"],
+		order_by="creation desc",
+		limit=1,
 	)
+	if not rows:
+		return None
+	return (json.loads(rows[0].payload or "{}")).get("asset") or None
 
 
 def payload_for(doc, asset: str) -> dict:

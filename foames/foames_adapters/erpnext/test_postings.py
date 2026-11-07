@@ -240,6 +240,7 @@ class TestPrepare(unittest.TestCase):
 		bad = [
 			{"asset": "ACC-ASS-2026-00001"},
 			{**base, "repair_status": "Open"},
+			{**base, "repair_status": "Completed"},
 			{**base, "completion_date": "2026-11-04 07:00:00"},
 			{**base, "submit": True},
 			{**base, "workstation": "WS-1"},
