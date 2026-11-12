@@ -211,7 +211,9 @@ def sensitivity(w: Well, e: Economics):
 	for eff in (0.30, 0.40, 0.50):
 		w2 = replace(w, system_efficiency=eff)
 		ra, rc = evaluate(a, w2, e), evaluate(c, w2, e)
-		rows.append((f"System efficiency {int(eff * 100)}%", ra.npv_cost, rc.npv_cost, ra.npv_cost - rc.npv_cost))
+		rows.append(
+			(f"System efficiency {int(eff * 100)}%", ra.npv_cost, rc.npv_cost, ra.npv_cost - rc.npv_cost)
+		)
 	return rows
 
 
@@ -245,7 +247,9 @@ def main(argv: list[str]) -> int:
 			f"{r.solar_fraction:.0%} | {r.opex_year1:,.0f} | {r.npv_cost:,.0f} | {r.lcoe:.3f} | "
 			f"{r.co2_t:,.0f} | {'n/a' if pb is None else f'{pb:.1f}'} |"
 		)
-	print("\n| Sensitivity (A vs C) | NPC A | NPC C | A minus C (positive favours solar) |\n| --- | --- | --- | --- |")
+	print(
+		"\n| Sensitivity (A vs C) | NPC A | NPC C | A minus C (positive favours solar) |\n| --- | --- | --- | --- |"
+	)
 	for label, a, c, d in sens:
 		print(f"| {label} | {a:,.0f} | {c:,.0f} | {d:,.0f} |")
 	return 0
