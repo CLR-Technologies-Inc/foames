@@ -7,21 +7,25 @@ frappe.ui.form.on("Validation Execution", {
 	},
 	refresh(frm) {
 		if (frm.doc.docstatus === 0 && !frm.is_new()) {
-			const machine_rows = (frm.doc.results || []).filter((r) => r.source === "Machine Data");
+			const machine_rows = (frm.doc.results || []).filter(
+				(r) => r.source === "Machine Data"
+			);
 			if (machine_rows.length) {
 				frm.add_custom_button(__("Evaluate Machine Data"), () =>
 					frappe
 						.call(
 							"foames.foames_validation.doctype.validation_execution.validation_execution.evaluate",
-							{ name: frm.doc.name },
+							{ name: frm.doc.name }
 						)
-						.then(() => frm.reload_doc()),
+						.then(() => frm.reload_doc())
 				);
 			}
 		}
 		if (frm.doc.open_items && frm.doc.docstatus === 0) {
 			frm.dashboard.set_headline(
-				__("Open items: {0}", [frappe.utils.escape_html(frm.doc.open_items).replace(/\n/g, "; ")]),
+				__("Open items: {0}", [
+					frappe.utils.escape_html(frm.doc.open_items).replace(/\n/g, "; "),
+				])
 			);
 		}
 	},

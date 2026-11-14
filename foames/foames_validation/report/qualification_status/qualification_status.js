@@ -17,7 +17,12 @@ frappe.query_reports["Qualification Status"] = {
 			fieldtype: "Select",
 			options: ["", "Qualified", "Due Soon", "Expired", "Runs Pending", "Not Qualified"],
 		},
-		{ fieldname: "due_soon_days", label: __("Due Soon Within (Days)"), fieldtype: "Int", default: 30 },
+		{
+			fieldname: "due_soon_days",
+			label: __("Due Soon Within (Days)"),
+			fieldtype: "Int",
+			default: 30,
+		},
 	],
 	formatter(value, row, column, data, default_formatter) {
 		value = default_formatter(value, row, column, data);
