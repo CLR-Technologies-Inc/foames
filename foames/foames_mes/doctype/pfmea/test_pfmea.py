@@ -39,7 +39,7 @@ def make_pfmea(*rows, **overrides):
 	values = {
 		"doctype": "PFMEA",
 		"title": "Housing line",
-		"process": "T-LINE-FMEA",
+		"process_line": "T-LINE-FMEA",
 		"items": list(rows) or [row()],
 	}
 	values.update(overrides)
@@ -269,4 +269,6 @@ class TestPFMEA(IntegrationTestCase):
 
 		doc.status = "Obsolete"
 		doc.save()
-		self.assertFalse([r for r in risk_register({"process": "T-LINE-FMEA"})[1] if r["pfmea"] == doc.name])
+		self.assertFalse(
+			[r for r in risk_register({"process_line": "T-LINE-FMEA"})[1] if r["pfmea"] == doc.name]
+		)

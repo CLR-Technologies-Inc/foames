@@ -4,7 +4,7 @@
 frappe.query_reports["PFMEA Risk Register"] = {
 	filters: [
 		{ fieldname: "pfmea", label: __("PFMEA"), fieldtype: "Link", options: "PFMEA" },
-		{ fieldname: "process", label: __("Process / Line"), fieldtype: "Data" },
+		{ fieldname: "process_line", label: __("Process / Line"), fieldtype: "Data" },
 		{ fieldname: "machine", label: __("Machine"), fieldtype: "Link", options: "Machine" },
 		{
 			fieldname: "action_priority",

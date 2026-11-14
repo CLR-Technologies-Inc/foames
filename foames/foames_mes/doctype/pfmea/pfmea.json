@@ -7,7 +7,7 @@
  "field_order": [
   "naming_series",
   "title",
-  "process",
+  "process_line",
   "product",
   "cb_head",
   "status",
@@ -49,7 +49,7 @@
    "description": "The process analysed, for example Housing assembly line"
   },
   {
-   "fieldname": "process",
+   "fieldname": "process_line",
    "fieldtype": "Data",
    "label": "Process / Line",
    "in_list_view": 1,
@@ -254,6 +254,6 @@
  "autoname": "naming_series:",
  "title_field": "title",
  "show_title_field_in_link": 1,
- "search_fields": "process,product,status",
+ "search_fields": "process_line,product,status",
  "description": "A process FMEA: failure chains per process step rated by severity, occurrence and detection, with AIAG-VDA action priority, actions, the control plan and the occurrence the floor observes"
 }

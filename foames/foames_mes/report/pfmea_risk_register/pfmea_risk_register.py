@@ -54,8 +54,8 @@ def pfmea_rows(filters) -> list[dict]:
 		conditions["name"] = filters.pfmea
 	else:
 		conditions["status"] = ("!=", "Obsolete")
-	if filters.get("process"):
-		conditions["process"] = filters.process
+	if filters.get("process_line"):
+		conditions["process_line"] = filters.process_line
 	parents = {
 		p.name: p
 		for p in frappe.get_list(
