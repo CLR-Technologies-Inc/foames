@@ -1,0 +1,60 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 21:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "kind",
+  "from_component",
+  "to_component",
+  "via"
+ ],
+ "fields": [
+  {
+   "default": "Process",
+   "fieldname": "kind",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Kind",
+   "options": "Process\nSignal",
+   "reqd": 1
+  },
+  {
+   "fieldname": "from_component",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "From",
+   "options": "PID Component",
+   "reqd": 1
+  },
+  {
+   "fieldname": "to_component",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "To",
+   "options": "PID Component",
+   "reqd": 1
+  },
+  {
+   "description": "The line number for a process connection",
+   "fieldname": "via",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Via Line"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-11-14 21:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES PID",
+ "name": "PID Connection",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

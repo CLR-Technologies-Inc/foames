@@ -17,6 +17,7 @@ FoaMES is a single Frappe app that depends on the Frappe framework only. ERP sys
 | FoaMES MES | Shop-floor execution: monitoring, downtime, OEE and machine data |
 | FoaMES Adapters | The adapter contract and registry, and one adapter per supported ERP, MES or other manufacturing system (see [docs/vendors/](docs/vendors/README.md)) |
 | FoaMES Process Mining | Event logs from FoaMES and ERP records, XES and OCEL export, discovery, performance and conformance analysis |
+| FoaMES PID | The P&ID tag register (ISA-5.1 tags), DEXPI and CSV import, links from tags to live signals, the P&ID Viewer (see [docs/pid.md](docs/pid.md)) |
 
 FoaMES records never use Link fields to ERP DocTypes. They store an `External Reference` (ERP system, reference type, external ID) and the matching adapter resolves it. An adapter is available only when its ERP can be reached from the site. Adapters are registered through the `foames_erp_adapters` hook, so other apps can add more. See [docs/adapters.md](docs/adapters.md).
 

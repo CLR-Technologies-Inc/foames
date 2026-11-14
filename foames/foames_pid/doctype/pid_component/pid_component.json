@@ -1,0 +1,347 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "field:tag",
+ "creation": "2026-11-14 21:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "tag",
+  "component_type",
+  "component_class",
+  "description",
+  "cb_head",
+  "drawing",
+  "plant_area",
+  "parent_component",
+  "disabled",
+  "sb_isa",
+  "isa_meaning",
+  "measured_variable",
+  "cb_isa",
+  "functions",
+  "loop_number",
+  "sb_signal",
+  "machine",
+  "event_type",
+  "signal_name",
+  "cb_signal",
+  "signal_source",
+  "signal_address",
+  "historian_tag",
+  "sb_range",
+  "engineering_unit",
+  "cb_range",
+  "range_low",
+  "range_high",
+  "sb_more",
+  "external_reference",
+  "dexpi_id",
+  "cb_more",
+  "pos_x",
+  "pos_y",
+  "sb_attributes",
+  "attributes"
+ ],
+ "fields": [
+  {
+   "description": "The plant-wide tag: an ISA-5.1 instrument tag such as FIC-101, an equipment number such as P-101, or a line number",
+   "fieldname": "tag",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tag",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "component_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Type",
+   "options": "Equipment\nInstrument\nLine\nValve\nActuator\nOther",
+   "reqd": 1
+  },
+  {
+   "description": "What it is, for example CentrifugalPump, Tank, GlobeValve (the DEXPI class), or Field / CentralLocation for an instrument",
+   "fieldname": "component_class",
+   "fieldtype": "Data",
+   "label": "Class"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Description"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "drawing",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Drawing",
+   "options": "PID Drawing"
+  },
+  {
+   "fieldname": "plant_area",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Plant Area"
+  },
+  {
+   "description": "The equipment or line it belongs to; for a transmitter, the instrument function it serves",
+   "fieldname": "parent_component",
+   "fieldtype": "Link",
+   "label": "Located On",
+   "options": "PID Component"
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
+  },
+  {
+   "depends_on": "eval:['Instrument','Valve'].includes(doc.component_type)",
+   "fieldname": "sb_isa",
+   "fieldtype": "Section Break",
+   "label": "ISA-5.1 Identification"
+  },
+  {
+   "fieldname": "isa_meaning",
+   "fieldtype": "Data",
+   "label": "Meaning",
+   "read_only": 1
+  },
+  {
+   "fieldname": "measured_variable",
+   "fieldtype": "Data",
+   "label": "Measured Variable",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_isa",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "functions",
+   "fieldtype": "Data",
+   "label": "Functions",
+   "read_only": 1
+  },
+  {
+   "fieldname": "loop_number",
+   "fieldtype": "Data",
+   "label": "Loop Number"
+  },
+  {
+   "description": "Which Machine Events carry this tag's value. FoaMES only reads them; it never writes to the instrument.",
+   "fieldname": "sb_signal",
+   "fieldtype": "Section Break",
+   "label": "Live Signal"
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Machine",
+   "options": "Machine"
+  },
+  {
+   "description": "Measurement: a value (the instrument's reading). State: the machine's running state (equipment). Count: a counter. Alarm: alarms from this tag.",
+   "fieldname": "event_type",
+   "fieldtype": "Select",
+   "label": "Event Type",
+   "options": "\nMeasurement\nState\nCount\nAlarm"
+  },
+  {
+   "description": "The measurement name or counter name in the machine's events, as the gateway records it",
+   "fieldname": "signal_name",
+   "fieldtype": "Data",
+   "label": "Signal Name"
+  },
+  {
+   "fieldname": "cb_signal",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "signal_source",
+   "fieldtype": "Select",
+   "label": "Signal Source",
+   "options": "\nOPC UA\nSparkplug B\nMQTT\nWebhook\nHistorian\nOther"
+  },
+  {
+   "description": "OPC UA node id, Sparkplug metric path, MQTT topic or PLC address",
+   "fieldname": "signal_address",
+   "fieldtype": "Data",
+   "label": "Signal Address"
+  },
+  {
+   "description": "The point name in the plant historian, for people and agents that read history there",
+   "fieldname": "historian_tag",
+   "fieldtype": "Data",
+   "label": "Historian Tag"
+  },
+  {
+   "fieldname": "sb_range",
+   "fieldtype": "Section Break",
+   "label": "Range"
+  },
+  {
+   "fieldname": "engineering_unit",
+   "fieldtype": "Data",
+   "label": "Engineering Unit"
+  },
+  {
+   "fieldname": "cb_range",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Lower range value (LRV) of the instrument",
+   "fieldname": "range_low",
+   "fieldtype": "Float",
+   "label": "Range Low"
+  },
+  {
+   "description": "Upper range value (URV) of the instrument",
+   "fieldname": "range_high",
+   "fieldtype": "Float",
+   "label": "Range High"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "sb_more",
+   "fieldtype": "Section Break",
+   "label": "More"
+  },
+  {
+   "description": "The asset or equipment record in an ERP or maintenance system, through its adapter",
+   "fieldname": "external_reference",
+   "fieldtype": "Link",
+   "label": "ERP Reference",
+   "options": "External Reference"
+  },
+  {
+   "fieldname": "dexpi_id",
+   "fieldtype": "Data",
+   "label": "DEXPI ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_more",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Optional position on a manual drawing; the viewer lays out components without one",
+   "fieldname": "pos_x",
+   "fieldtype": "Float",
+   "label": "Layout X"
+  },
+  {
+   "fieldname": "pos_y",
+   "fieldtype": "Float",
+   "label": "Layout Y"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "sb_attributes",
+   "fieldtype": "Section Break",
+   "label": "Attributes"
+  },
+  {
+   "fieldname": "attributes",
+   "fieldtype": "Table",
+   "label": "Attributes",
+   "options": "PID Component Attribute"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 21:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES PID",
+ "name": "PID Component",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "FoaMES Engineer",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "FoaMES Integration",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "FoaMES Operator",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "FoaMES Quality",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "FoaMES Supervisor",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "FoaMES Maintenance",
+   "share": 1
+  }
+ ],
+ "search_fields": "description,component_type,drawing",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "tag",
+ "track_changes": 1
+}

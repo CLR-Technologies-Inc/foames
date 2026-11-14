@@ -2,7 +2,7 @@
 
 FoaMES speaks the Model Context Protocol (MCP), so an agent in Claude Desktop, Claude Code, Cursor or any other MCP client can read the plant floor and raise suggestions through tools, with no custom integration. The server exposes the public FoaMES API and nothing more: every tool is one whitelisted method that is already callable at `/api/method/...`, run as the user whose API key the agent holds, with that user's permissions.
 
-The 24 tools cover machines and their state, machine events, downtime, OEE, the floor snapshot, Agent Suggestions, process mining (event logs, discovery, conformance, export) and ERP reference reads through whichever adapters are registered on the site. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act.
+The 29 tools cover machines and their state, machine events, downtime, OEE, the floor snapshot, Agent Suggestions, the P&ID tag register and drawings, process mining (event logs, discovery, conformance, export) and ERP reference reads through whichever adapters are registered on the site. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act.
 
 ## Two ways to connect
 
@@ -69,6 +69,7 @@ Permissions are the DocType permissions of the user behind the key, checked by t
 | `foames_list_suggestions`, `foames_get_suggestion` | read on Agent Suggestion |
 | `foames_post_suggestion`, `foames_run_suggestion_rules` | create on Agent Suggestion (Operator, Engineer) |
 | `foames_set_current_job` | write on Machine (Operator, Engineer) |
+| `foames_pid_*` | read on PID Component / PID Drawing (every FoaMES role); `foames_pid_parse_tag` needs no record |
 | `foames_mining_*`, `foames_list_event_logs`, `foames_list_event_log_sources` | read on Process Event Log / Event Log Source |
 | `foames_list_erp_systems` | any logged-in user |
 | `foames_list_external_references`, `foames_lookup_erp_record` | read on External Reference (System Manager by default) |
@@ -93,6 +94,11 @@ Permissions are the DocType permissions of the user behind the key, checked by t
 | `foames_post_suggestion(title, category, suggestion, agent, severity, reference_doctype, reference_name, evidence, rule_key)` | Creates a suggestion; returns its name |
 | `foames_run_suggestion_rules(days)` | Runs the rules now; returns the names created |
 | `foames_set_current_job(machine, reference, at)` | Records the Job Card (an External Reference) a machine is working on, or ends it |
+| `foames_pid_list_components(drawing, component_type, machine, linked, search, limit)` | The P&ID tag register with ISA meaning, location and signal links ([pid.md](pid.md)) |
+| `foames_pid_get_component(tag)` | One tag with its live value and flag, what is located on it, its connections |
+| `foames_pid_get_drawing(drawing)` | A P&ID's components and its process and signal connections |
+| `foames_pid_parse_tag(tag)` | The ISA-5.1 reading of an instrument tag |
+| `foames_pid_suggest_links(drawing)` | Candidate tag-to-signal links with reasons; changes nothing |
 | `foames_mining_summary(event_log, since, until, sources)` | Event, case, variant and activity counts |
 | `foames_mining_events(..., limit)` | The events |
 | `foames_mining_discover(..., min_edge_count, dot)` | DFG, variants, throughput, durations, bottlenecks, rework |

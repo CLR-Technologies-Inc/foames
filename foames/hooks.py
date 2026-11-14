@@ -128,6 +128,8 @@ foames_suggestion_rules = [
 	"foames.foames_adapters.erpnext.rollup.current_job_card_not_open",
 	"foames.foames_adapters.s4hana.rollup.confirmation_rejected",
 	"foames.foames_adapters.insights_hub.rollup.posting_rejected",
+	# P&ID instruments linked to a machine that stopped reporting or read at a range limit.
+	"foames.foames_pid.rules.instrument_signals",
 ]
 foames_machine_job_changed = [
 	"foames.foames_adapters.erpnext.rollup.on_job_changed",

@@ -1,0 +1,240 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "field:drawing_number",
+ "creation": "2026-11-14 21:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "drawing_number",
+  "title",
+  "revision",
+  "cb_head",
+  "status",
+  "plant_area",
+  "sb_source",
+  "source_format",
+  "source_file",
+  "cb_source",
+  "dexpi_version",
+  "originating_system",
+  "imported_on",
+  "sb_contents",
+  "component_count",
+  "cb_contents",
+  "import_summary",
+  "sb_connections",
+  "connections",
+  "view"
+ ],
+ "fields": [
+  {
+   "description": "The P&ID's document number, as on its title block",
+   "fieldname": "drawing_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Drawing Number",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title"
+  },
+  {
+   "fieldname": "revision",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Revision"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Issued",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Draft\nIssued\nSuperseded"
+  },
+  {
+   "fieldname": "plant_area",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Plant Area"
+  },
+  {
+   "fieldname": "sb_source",
+   "fieldtype": "Section Break",
+   "label": "Source"
+  },
+  {
+   "default": "Manual",
+   "description": "DEXPI: import the tag register, connections and layout from a DEXPI file. Manual: enter the components yourself; the viewer lays them out.",
+   "fieldname": "source_format",
+   "fieldtype": "Select",
+   "label": "Source Format",
+   "options": "Manual\nDEXPI"
+  },
+  {
+   "depends_on": "eval:doc.source_format=='DEXPI'",
+   "description": "A DEXPI 1.x (Proteus XML) or 2.x P&ID exported by the P&ID tool. Save, then use Import DEXPI.",
+   "fieldname": "source_file",
+   "fieldtype": "Attach",
+   "label": "DEXPI File"
+  },
+  {
+   "fieldname": "cb_source",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "dexpi_version",
+   "fieldtype": "Data",
+   "label": "DEXPI Version",
+   "read_only": 1
+  },
+  {
+   "fieldname": "originating_system",
+   "fieldtype": "Data",
+   "label": "Originating System",
+   "read_only": 1
+  },
+  {
+   "fieldname": "imported_on",
+   "fieldtype": "Datetime",
+   "label": "Imported On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_contents",
+   "fieldtype": "Section Break",
+   "label": "Contents"
+  },
+  {
+   "fieldname": "component_count",
+   "fieldtype": "Int",
+   "label": "Tagged Components",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_contents",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "import_summary",
+   "fieldtype": "Small Text",
+   "label": "Last Import",
+   "read_only": 1
+  },
+  {
+   "description": "Process connections between equipment, along their lines, and signal connections from where an instrument measures to the instrument. Filled by the DEXPI import; add rows by hand for a manual drawing.",
+   "fieldname": "sb_connections",
+   "fieldtype": "Section Break",
+   "label": "Connections"
+  },
+  {
+   "fieldname": "connections",
+   "fieldtype": "Table",
+   "label": "Connections",
+   "options": "PID Connection"
+  },
+  {
+   "fieldname": "view",
+   "fieldtype": "JSON",
+   "hidden": 1,
+   "label": "Layout",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 21:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES PID",
+ "name": "PID Drawing",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "FoaMES Engineer",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "FoaMES Integration",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "FoaMES Operator",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "FoaMES Quality",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "FoaMES Supervisor",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "FoaMES Maintenance",
+   "share": 1
+  }
+ ],
+ "search_fields": "title,plant_area",
+ "show_title_field_in_link": 0,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "title",
+ "track_changes": 1
+}
