@@ -46,6 +46,7 @@ These ship in the app today. They are **alpha**: built against the vendors' publ
 | Körber Werum PAS-X MES | MES (REST profile) | [docs/vendors/koerber_pasx/](docs/vendors/koerber_pasx/README.md) |
 | Proficy Smart Factory MES (Velotic) | MES (REST profile) | [docs/vendors/proficy/](docs/vendors/proficy/README.md) |
 | Ignition (Inductive Automation) | SCADA, through Sparkplug B, OPC UA or a gateway script | [docs/vendors/ignition/](docs/vendors/ignition/README.md) |
+| Bluesky and Tiled (NSLS-II) | Lab and beamline data acquisition, through a bridge outside the app | [docs/vendors/bluesky/](docs/vendors/bluesky/README.md) |
 
 Any machine, PLC or SCADA system that can publish Sparkplug B, serve OPC UA, publish JSON over MQTT or post to a signed webhook can send machine data without a vendor-specific integration; see [docs/machine-data.md](docs/machine-data.md).
 

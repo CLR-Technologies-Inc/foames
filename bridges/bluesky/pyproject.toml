@@ -1,0 +1,24 @@
+[project]
+name = "foames-bluesky"
+description = "Bridge from Bluesky runs (live, Tiled or JSON Lines) to FoaMES Measurement events"
+authors = [{ name = "CLR Technologies Inc." }]
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+readme = "README.md"
+classifiers = ["License :: OSI Approved :: Apache Software License"]
+dynamic = ["version"]
+# The bridge itself needs only the standard library.
+dependencies = []
+
+[project.optional-dependencies]
+# Reading finished runs from a Tiled server.
+tiled = ["tiled[client]", "bluesky-tiled-plugins"]
+# Subscribing to a live RunEngine or a 0MQ / Kafka document stream.
+bluesky = ["bluesky"]
+
+[project.scripts]
+foames-bluesky = "foames_bluesky.__main__:main"
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
