@@ -11,7 +11,13 @@ frappe.ui.form.on("Cycle Time Standard", {
 		frm.add_custom_button(__("Project Quantity"), () => {
 			frappe.prompt(
 				[
-					{ fieldname: "quantity", fieldtype: "Float", label: __("Quantity"), reqd: 1, default: 100 },
+					{
+						fieldname: "quantity",
+						fieldtype: "Float",
+						label: __("Quantity"),
+						reqd: 1,
+						default: 100,
+					},
 					{
 						fieldname: "use_observed",
 						fieldtype: "Check",
