@@ -28,6 +28,8 @@ becomes one for the supervisor.
 
 from __future__ import annotations
 
+import math
+
 CAPTURES = ("Confirm", "Pass/Fail", "Number", "Text", "Choice")
 RESULTS_COMPLETE = ("Done", "Pass", "Fail", "Skipped")
 
@@ -151,7 +153,7 @@ def evaluate_capture(step: dict, value=None) -> dict:
 			number = float(text)
 		except (TypeError, ValueError):
 			raise StepError(f"{value!r} is not a number") from None
-		if number != number or number in (float("inf"), float("-inf")):
+		if not math.isfinite(number):
 			raise StepError(f"{value!r} is not a number")
 		lower, upper = limits_of(step)
 		if lower is None and upper is None:

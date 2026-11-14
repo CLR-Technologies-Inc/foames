@@ -237,7 +237,13 @@ def get_run(name: str) -> dict:
 
 
 @frappe.whitelist(methods=["POST"])
-def record_step(name: str, step_no: int, value=None, note: str | None = None, skip: bool = False) -> dict:
+def record_step(
+	name: str,
+	step_no: int,
+	value: str | int | float | None = None,
+	note: str | None = None,
+	skip: bool = False,
+) -> dict:
 	"""Record the result of a step: the operator's confirmation, check, value, text or answer.
 
 	Steps go in order, and a step waiting for its sign-off holds the ones after it. `skip` records an
