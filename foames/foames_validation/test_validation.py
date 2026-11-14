@@ -226,7 +226,8 @@ class TestValidation(IntegrationTestCase):
 
 	def test_capability_and_control_from_machine_data(self):
 		qualify("IQ")
-		measure(normal(40, 10.0, 0.08))
+		# seed 3 is a sample with no run-rule signal; with 8 Nelson rules a random sample can signal by chance
+		measure(normal(40, 10.0, 0.08, seed=3))
 		protocol = make_protocol(
 			"OQ",
 			criteria=[

@@ -62,7 +62,10 @@ class ValidationExecution(Document):
 		self.process_name = protocol.process_name
 		if not self.results:
 			for criterion in protocol.criteria:
-				self.append("results", {field: criterion.get(field) for field in COPIED_FIELDS})
+				self.append(
+					"results",
+					{**{field: criterion.get(field) for field in COPIED_FIELDS}, "result": q.PENDING},
+				)
 		if self.started_on and self.ended_on and get_datetime(self.ended_on) < get_datetime(self.started_on):
 			frappe.throw(_("Ended On cannot be before Started On"))
 		for row in self.results:
@@ -81,7 +84,7 @@ class ValidationExecution(Document):
 			row.result = q.NA
 			row.summary = _("Not applicable")
 			return
-		if row.result == q.NA:
+		if not row.result or row.result == q.NA:
 			row.result = q.PENDING
 		if row.check_type == "Pass/Fail":
 			outcome = q.evaluate(
