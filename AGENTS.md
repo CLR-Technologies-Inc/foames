@@ -83,6 +83,7 @@ foames/
     protocol.py               MCP/JSON-RPC server core (pure), tools.py the catalogue (pure)
     api.py                    the Streamable HTTP endpoint; reads.py whitelisted read methods
     bridge.py                 stdio bridge for desktop agents, standard library only
+bridges/<name>/               standalone packages that run beside a source system and post to the webhook (not installed on the bench); each has its own tests
 docs/                         human-facing guides; docs/agents/ holds run-time agent playbooks
 cla/                          the Individual and Corporate CLAs
 ```
