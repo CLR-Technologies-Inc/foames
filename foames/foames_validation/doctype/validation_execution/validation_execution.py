@@ -138,7 +138,7 @@ class ValidationExecution(Document):
 			try:
 				outcome = q.evaluate(criterion, {"values": [v for _t, v in readings]})
 			except ValueError as e:
-				frappe.throw(_("Row {0} ({1}): {2}").format(row.idx, row.criterion, e))
+				frappe.throw(_("Row {0} ({1}): {2}").format(row.idx, row.criterion, str(e)))
 			outcome["evidence"] = {
 				**outcome["evidence"],
 				"machine": machine,
