@@ -253,7 +253,7 @@ def suggest_links(drawing: str | None = None) -> list[dict]:
 
 
 @frappe.whitelist(methods=["POST"])
-def apply_links(links) -> list[str]:
+def apply_links(links: str | list) -> list[str]:
 	"""Apply suggestions a person chose: each {tag, machine, event_type, signal_name, signal_source,
 	signal_address}. Returns the tags updated."""
 	links = _load(links) or []

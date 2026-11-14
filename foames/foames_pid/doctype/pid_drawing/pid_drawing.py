@@ -42,7 +42,7 @@ class PIDDrawing(Document):
 		try:
 			diagram = dexpi.parse(content)
 		except dexpi.DexpiError as error:
-			frappe.throw(_("The DEXPI file could not be read: {0}").format(error))
+			frappe.throw(_("The DEXPI file could not be read: {0}").format(str(error)))
 		return self.apply_diagram(diagram)
 
 	def apply_diagram(self, diagram: dexpi.PlantDiagram) -> dict:
