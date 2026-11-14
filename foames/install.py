@@ -10,6 +10,7 @@ ROLES = (
 	"FoaMES Maintenance",
 	"FoaMES Quality",
 	"FoaMES Integration",
+	"FoaMES Safety",
 )
 
 

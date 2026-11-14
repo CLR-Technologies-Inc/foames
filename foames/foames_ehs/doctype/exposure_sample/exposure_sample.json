@@ -1,0 +1,47 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "started_at",
+  "minutes",
+  "value"
+ ],
+ "fields": [
+  {
+   "fieldname": "started_at",
+   "fieldtype": "Datetime",
+   "label": "Started At",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "minutes",
+   "fieldtype": "Float",
+   "label": "Minutes",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "value",
+   "fieldtype": "Float",
+   "label": "Value",
+   "reqd": 1,
+   "in_list_view": 1,
+   "precision": "4",
+   "description": "Concentration in the record's unit, or the sound level in dBA for noise"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES EHS",
+ "name": "Exposure Sample",
+ "owner": "Administrator",
+ "permissions": [],
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1
+}

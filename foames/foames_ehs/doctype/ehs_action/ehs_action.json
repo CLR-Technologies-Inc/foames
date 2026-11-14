@@ -1,0 +1,74 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "action",
+  "control_level",
+  "action_owner",
+  "cb_1",
+  "due_on",
+  "status",
+  "completed_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "action",
+   "fieldtype": "Small Text",
+   "label": "Action",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "control_level",
+   "fieldtype": "Select",
+   "label": "Control Level",
+   "options": "\nElimination\nSubstitution\nEngineering\nAdministrative\nPPE",
+   "in_list_view": 1,
+   "description": "Where the action sits in the hierarchy of controls"
+  },
+  {
+   "fieldname": "action_owner",
+   "fieldtype": "Link",
+   "label": "Owner",
+   "options": "User",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "cb_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "due_on",
+   "fieldtype": "Date",
+   "label": "Due On",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Open\nDone\nCancelled",
+   "default": "Open",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "completed_on",
+   "fieldtype": "Date",
+   "label": "Completed On"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES EHS",
+ "name": "EHS Action",
+ "owner": "Administrator",
+ "permissions": [],
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1
+}

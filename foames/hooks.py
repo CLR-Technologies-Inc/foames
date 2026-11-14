@@ -128,6 +128,8 @@ foames_suggestion_rules = [
 	"foames.foames_adapters.erpnext.rollup.current_job_card_not_open",
 	"foames.foames_adapters.s4hana.rollup.confirmation_rejected",
 	"foames.foames_adapters.insights_hub.rollup.posting_rejected",
+	# A machine reporting Running while an active permit holds locks on it.
+	"foames.foames_ehs.rules.running_under_lockout",
 ]
 foames_machine_job_changed = [
 	"foames.foames_adapters.erpnext.rollup.on_job_changed",
@@ -138,6 +140,8 @@ foames_machine_job_changed = [
 foames_machine_state_changed = [
 	"foames.foames_adapters.erpnext.workstation.on_state_changed",
 	"foames.foames_adapters.insights_hub.rollup.on_state_changed",
+	# Raises a Critical suggestion the moment a machine under an active lockout permit reports Running.
+	"foames.foames_ehs.rules.on_state_changed",
 ]
 
 # Process mining
@@ -179,6 +183,8 @@ scheduler_events = {
 		"foames.foames_mes.tasks.run_suggestion_rules",
 		# Reads every Maintenance Plan's meter and raises suggestions for plans coming due.
 		"foames.foames_mes.tasks.check_maintenance_plans",
+		# Expires permits to work, and raises suggestions for overdue safety actions, investigations and reviews.
+		"foames.foames_ehs.tasks.check_ehs",
 	],
 	"daily": [
 		"foames.foames_mes.tasks.compute_daily_oee",

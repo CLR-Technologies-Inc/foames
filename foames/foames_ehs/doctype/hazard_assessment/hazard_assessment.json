@@ -1,0 +1,297 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "title",
+  "hazard_type",
+  "machine",
+  "location",
+  "task",
+  "cb_head",
+  "status",
+  "reviewed_on",
+  "review_interval_days",
+  "next_review_on",
+  "sb_desc",
+  "description",
+  "sb_risk",
+  "likelihood",
+  "severity",
+  "cb_risk",
+  "risk_score",
+  "risk_level",
+  "sb_controls",
+  "controls",
+  "sb_residual",
+  "residual_likelihood",
+  "residual_severity",
+  "cb_residual",
+  "residual_score",
+  "residual_level",
+  "strongest_control"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "HAZ-.YYYY.-",
+   "default": "HAZ-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "hazard_type",
+   "fieldtype": "Select",
+   "label": "Hazard Type",
+   "options": "Mechanical\nElectrical\nChemical\nThermal\nNoise\nErgonomic\nRadiation\nBiological\nFire or Explosion\nPressure\nSlip, Trip or Fall\nEnvironmental\nOther",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location"
+  },
+  {
+   "fieldname": "task",
+   "fieldtype": "Data",
+   "label": "Task",
+   "description": "The job or step the hazard belongs to (job hazard analysis)"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nActive\nRetired",
+   "default": "Draft",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "reviewed_on",
+   "fieldtype": "Date",
+   "label": "Reviewed On",
+   "default": "Today"
+  },
+  {
+   "fieldname": "review_interval_days",
+   "fieldtype": "Int",
+   "label": "Review Every (Days)",
+   "default": "365"
+  },
+  {
+   "fieldname": "next_review_on",
+   "fieldtype": "Date",
+   "label": "Next Review",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "sb_desc",
+   "fieldtype": "Section Break",
+   "label": "Hazard"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description",
+   "reqd": 1,
+   "description": "What can go wrong, to whom, and how"
+  },
+  {
+   "fieldname": "sb_risk",
+   "fieldtype": "Section Break",
+   "label": "Risk Before Controls",
+   "description": "Likelihood and severity from 1 to 5"
+  },
+  {
+   "fieldname": "likelihood",
+   "fieldtype": "Int",
+   "label": "Likelihood (1-5)",
+   "reqd": 1,
+   "description": "1 rare, 2 unlikely, 3 possible, 4 likely, 5 almost certain"
+  },
+  {
+   "fieldname": "severity",
+   "fieldtype": "Int",
+   "label": "Severity (1-5)",
+   "reqd": 1,
+   "description": "1 negligible, 2 minor, 3 moderate, 4 major, 5 catastrophic"
+  },
+  {
+   "fieldname": "cb_risk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "risk_score",
+   "fieldtype": "Int",
+   "label": "Risk Score",
+   "read_only": 1
+  },
+  {
+   "fieldname": "risk_level",
+   "fieldtype": "Data",
+   "label": "Risk Level",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "sb_controls",
+   "fieldtype": "Section Break",
+   "label": "Controls"
+  },
+  {
+   "fieldname": "controls",
+   "fieldtype": "Table",
+   "label": "Controls",
+   "options": "Hazard Control"
+  },
+  {
+   "fieldname": "sb_residual",
+   "fieldtype": "Section Break",
+   "label": "Risk With Controls"
+  },
+  {
+   "fieldname": "residual_likelihood",
+   "fieldtype": "Int",
+   "label": "Residual Likelihood (1-5)"
+  },
+  {
+   "fieldname": "residual_severity",
+   "fieldtype": "Int",
+   "label": "Residual Severity (1-5)"
+  },
+  {
+   "fieldname": "cb_residual",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "residual_score",
+   "fieldtype": "Int",
+   "label": "Residual Score",
+   "read_only": 1
+  },
+  {
+   "fieldname": "residual_level",
+   "fieldtype": "Data",
+   "label": "Residual Level",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "strongest_control",
+   "fieldtype": "Data",
+   "label": "Strongest Control",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES EHS",
+ "name": "Hazard Assessment",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Safety",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "naming_series:",
+ "title_field": "title",
+ "show_title_field_in_link": 1,
+ "track_changes": 1,
+ "search_fields": "hazard_type,machine",
+ "description": "A hazard and its risk before and after controls, on the 5 x 5 matrix and the hierarchy of controls"
+}
