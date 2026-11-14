@@ -292,12 +292,16 @@ class TestCommissioning(IntegrationTestCase):
 		punch.status = "Closed"
 		with self.assertRaises(frappe.ValidationError):
 			punch.save()
+		# A refused save has already stamped the document, so work on a fresh copy.
+		punch = reload(punch)
+		punch.status = "Closed"
 		punch.action_taken = "Guard fitted"
 		punch.save()
 		self.assertEqual(punch.verified_by, "Administrator")
 		self.assertIsNotNone(punch.closed_on)
+		punch = reload(punch)
 		punch.status = "Open"
-		with self.assertRaises(frappe.ValidationError):
+		with self.assertRaisesRegex(frappe.ValidationError, "cannot be reopened"):
 			punch.save()
 
 	# Readiness, acceptance and handover
