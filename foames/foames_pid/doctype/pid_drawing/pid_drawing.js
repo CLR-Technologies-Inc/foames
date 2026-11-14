@@ -26,12 +26,12 @@ frappe.ui.form.on("PID Drawing", {
 		}
 		frm.add_custom_button(
 			__("Suggest signal links"),
-			() => foames_pid.suggest_links(frm.doc.name),
+			() => pid_suggest_links(frm.doc.name),
 			__("Tags")
 		);
 		frm.add_custom_button(
 			__("Export tag register"),
-			() => foames_pid.export_register(frm.doc.name),
+			() => pid_export_register(frm.doc.name),
 			__("Tags")
 		);
 		frm.add_custom_button(
@@ -42,9 +42,7 @@ frappe.ui.form.on("PID Drawing", {
 	},
 });
 
-window.foames_pid = window.foames_pid || {};
-
-foames_pid.export_register = function (drawing) {
+function pid_export_register(drawing) {
 	frappe.call("foames.foames_pid.api.export_tag_register", { drawing }).then((r) => {
 		const blob = new Blob([r.message || ""], { type: "text/csv" });
 		const a = document.createElement("a");
@@ -53,9 +51,9 @@ foames_pid.export_register = function (drawing) {
 		a.click();
 		URL.revokeObjectURL(a.href);
 	});
-};
+}
 
-foames_pid.suggest_links = function (drawing) {
+function pid_suggest_links(drawing) {
 	frappe.call("foames.foames_pid.api.suggest_links", { drawing }).then((r) => {
 		const links = r.message || [];
 		if (!links.length) {
@@ -93,10 +91,12 @@ foames_pid.suggest_links = function (drawing) {
 				});
 			},
 		});
-		d.fields_dict.table.$wrapper.html(`<table class="table table-sm">
-			<thead><tr><th></th><th>${__("Tag")}</th><th>${__("Machine")}</th><th>${__(
-				"Signal"
-			)}</th><th>${__("Why")}</th></tr></thead><tbody>${rows}</tbody></table>`);
+		const head = [__("Tag"), __("Machine"), __("Signal"), __("Why")]
+			.map((label) => `<th>${label}</th>`)
+			.join("");
+		d.fields_dict.table.$wrapper.html(
+			`<table class="table table-sm"><thead><tr><th></th>${head}</tr></thead><tbody>${rows}</tbody></table>`
+		);
 		d.show();
 	});
-};
+}
