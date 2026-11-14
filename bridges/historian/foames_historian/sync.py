@@ -37,7 +37,8 @@ class Checkpoint:
 		self.data: dict[str, dict] = {}
 		if path and os.path.exists(path):
 			try:
-				with open(path, encoding="utf-8") as f:
+				# The operator names the checkpoint file on the command line; this is not request input.
+				with open(path, encoding="utf-8") as f:  # nosemgrep
 					self.data = json.load(f).get("tags", {})
 			except (OSError, ValueError) as e:
 				raise HistorianError(f"cannot read the checkpoint {path}: {e}") from e

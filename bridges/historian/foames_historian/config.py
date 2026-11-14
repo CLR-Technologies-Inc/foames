@@ -50,7 +50,8 @@ _SQL_KEYS = {"type", "name", "driver", "connect", "password_env", "paramstyle"}
 def load(path: str, *, env=None, opener=None, driver_loader=None):
 	"""(source, tag map) from the file at `path`."""
 	try:
-		with open(path, encoding="utf-8") as f:
+		# The path is one the operator named on the command line of a local tool, not request input.
+		with open(path, encoding="utf-8") as f:  # nosemgrep
 			raw = json.load(f)
 	except (OSError, ValueError) as e:
 		raise HistorianError(f"cannot read the configuration {path}: {e}") from e

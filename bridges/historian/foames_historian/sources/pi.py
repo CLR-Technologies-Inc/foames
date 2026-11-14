@@ -168,5 +168,5 @@ def _items(answer, tag):
 		raise HistorianError(f"PI Web API answered something unexpected for {tag!r}")
 	errors = answer.get("Errors")
 	if errors:
-		raise HistorianError(f"PI Web API refused {tag!r}: {'; '.join(map(str, errors))[:300]}")
+		raise HistorianError(f"PI Web API refused {tag!r}: {'; '.join(str(e) for e in errors)[:300]}")
 	return answer.get("Items") or []
