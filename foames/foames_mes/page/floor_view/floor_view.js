@@ -195,12 +195,14 @@ function work_instruction_badge(run) {
 	const step = run.current_step
 		? __("step {0} of {1}", [run.current_step, run.steps_total])
 		: __("ready to complete");
-	return `<div class="wi-run ${frappe.utils.escape_html(run.status)}" data-run="${frappe.utils.escape_html(
-		run.name
-	)}" title="${frappe.utils.escape_html(run.current_title || "")}">
+	return `<div class="wi-run ${frappe.utils.escape_html(
+		run.status
+	)}" data-run="${frappe.utils.escape_html(run.name)}" title="${frappe.utils.escape_html(
+		run.current_title || ""
+	)}">
 		${__("WI")}: ${frappe.utils.escape_html(run.title || run.work_instruction)} · ${step}${
-			run.status === "On Hold" ? " · " + __("On Hold") : ""
-		}
+		run.status === "On Hold" ? " · " + __("On Hold") : ""
+	}
 	</div>`;
 }
 
@@ -230,7 +232,9 @@ function start_work_instruction_dialog(view) {
 				const $area = dialog.fields_dict.instructions.$wrapper;
 				if (!rows.length) {
 					$area.html(
-						`<p class="text-muted">${__("No released work instructions apply here.")}</p>`
+						`<p class="text-muted">${__(
+							"No released work instructions apply here."
+						)}</p>`
 					);
 					return;
 				}
@@ -241,21 +245,19 @@ function start_work_instruction_dialog(view) {
 								wi
 							) => `<div class="flex justify-between align-center" style="padding:6px 0;border-bottom:1px solid var(--border-color)">
 							<div><b>${frappe.utils.escape_html(wi.title)}</b>
-								<div class="text-muted small">${frappe.utils.escape_html(wi.instruction_code)} ${__(
-									"rev"
-								)} ${wi.revision}${
-									wi.operation
-										? " · " + frappe.utils.escape_html(wi.operation)
-										: ""
-								}${
-									wi.estimated_minutes
-										? " · " +
-											__("about {0} min", [Math.round(wi.estimated_minutes)])
-										: ""
-								} · ${__(wi.scope)}</div></div>
-							<button class="btn btn-sm btn-primary" data-wi="${frappe.utils.escape_html(
-								wi.name
-							)}">${__("Start")}</button></div>`
+								<div class="text-muted small">${frappe.utils.escape_html(wi.instruction_code)} ${__("rev")} ${
+								wi.revision
+							}${
+								wi.operation ? " · " + frappe.utils.escape_html(wi.operation) : ""
+							}${
+								wi.estimated_minutes
+									? " · " +
+									  __("about {0} min", [Math.round(wi.estimated_minutes)])
+									: ""
+							} · ${__(wi.scope)}</div></div>
+							<button class="btn btn-sm btn-primary" data-wi="${frappe.utils.escape_html(wi.name)}">${__(
+								"Start"
+							)}</button></div>`
 						)
 						.join("")
 				);
@@ -347,9 +349,9 @@ class WorkInstructionRunner {
 			)}</b>: ${esc(run.safety_notes)}</div>`;
 		}
 		if (run.status === "On Hold") {
-			header += `<div class="alert alert-danger" style="margin-top:8px">${__("On hold")}: ${esc(
-				run.hold_reason || ""
-			)}</div>`;
+			header += `<div class="alert alert-danger" style="margin-top:8px">${__(
+				"On hold"
+			)}: ${esc(run.hold_reason || "")}</div>`;
 		}
 		this.dialog.fields_dict.body.$wrapper.html(`${header}
 			<div class="row" style="margin-top:8px">
@@ -399,12 +401,12 @@ class WorkInstructionRunner {
 			step.attachment
 				? `<div><a href="${esc(step.attachment)}" target="_blank" rel="noopener">${__(
 						"Open attachment"
-					)}</a></div>`
+				  )}</a></div>`
 				: "",
 			step.video_url
 				? `<div><a href="${esc(step.video_url)}" target="_blank" rel="noopener">${__(
 						"Watch video"
-					)}</a></div>`
+				  )}</a></div>`
 				: "",
 		].join("");
 		const limits = [
@@ -419,7 +421,9 @@ class WorkInstructionRunner {
 				step.capture === "Number"
 					? `<div class="text-muted small">${limits ? __("Limits") + " " + limits : ""}${
 							step.unit ? " " + esc(step.unit) : ""
-						}${step.target_value ? " · " + __("target {0}", [step.target_value]) : ""}</div>`
+					  }${
+							step.target_value ? " · " + __("target {0}", [step.target_value]) : ""
+					  }</div>`
 					: ""
 			}
 			<div class="wi-input" style="margin-top:8px"></div>`);
@@ -428,7 +432,10 @@ class WorkInstructionRunner {
 			$step
 				.find(".wi-input")
 				.html(
-					`<div class="alert alert-info">${__("Waiting for a sign-off by {0}. Ask someone else with that role to sign it off.", [esc(step.sign_off_role)])}</div>`
+					`<div class="alert alert-info">${__(
+						"Waiting for a sign-off by {0}. Ask someone else with that role to sign it off.",
+						[esc(step.sign_off_role)]
+					)}</div>`
 				);
 			if (
 				frappe.user.has_role(step.sign_off_role) &&
