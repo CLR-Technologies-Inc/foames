@@ -102,12 +102,22 @@ class TestSafetyIncident(IntegrationTestCase):
 		self.assertEqual(open_safety_suggestions("Safety Incident", minor.name), [])
 
 		incident.append("actions", {"action": "Fit an interlocked guard", "control_level": "Engineering"})
+		incident.save()
+		self.assertEqual(incident.status, "Actions Open")
+
+		# A failed save leaves the in-memory document stale, so each attempt starts from the database.
+		attempt = frappe.get_doc("Safety Incident", incident.name)
+		attempt.status = "Closed"
+		with self.assertRaisesRegex(frappe.ValidationError, "root cause"):
+			attempt.save()
+		attempt = frappe.get_doc("Safety Incident", incident.name)
+		attempt.status = "Closed"
+		attempt.root_cause = "Guard could be bypassed to clear jams"
+		with self.assertRaisesRegex(frappe.ValidationError, "Finish or cancel"):
+			attempt.save()
+		incident = frappe.get_doc("Safety Incident", incident.name)
 		incident.status = "Closed"
-		with self.assertRaises(frappe.ValidationError):
-			incident.save()  # no root cause yet
 		incident.root_cause = "Guard could be bypassed to clear jams"
-		with self.assertRaises(frappe.ValidationError):
-			incident.save()  # an action is still open
 		incident.actions[0].status = "Done"
 		incident.save()
 		self.assertEqual(getdate(incident.actions[0].completed_on), getdate())
@@ -189,15 +199,15 @@ class TestSafetyPermit(IntegrationTestCase):
 	def test_close_needs_locks_removed_and_never_reopens(self):
 		permit = make_permit()
 		permit.status = "Closed"
-		with self.assertRaises(frappe.ValidationError):
+		with self.assertRaisesRegex(frappe.ValidationError, "has not been removed"):
 			permit.save()
-		permit.reload()
+		permit = frappe.get_doc("Safety Permit", permit.name)
 		permit.isolation_points[0].removed_on = now_datetime()
 		permit.status = "Closed"
 		permit.save()
 		self.assertIsNotNone(permit.closed_on)
 		permit.status = "Active"
-		with self.assertRaises(frappe.ValidationError):
+		with self.assertRaisesRegex(frappe.ValidationError, "cannot be reopened"):
 			permit.save()
 
 	def test_running_under_lockout_is_flagged_at_once(self):
