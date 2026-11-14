@@ -1,0 +1,402 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 21:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "title",
+  "line",
+  "commissioning_lead",
+  "cb_head",
+  "status",
+  "planned_start",
+  "planned_handover",
+  "percent_complete",
+  "cancelled",
+  "sb_scope",
+  "items",
+  "sb_rules",
+  "require_fat",
+  "require_mechanical_completion",
+  "require_pre_commissioning",
+  "require_loop_checks",
+  "cb_rules",
+  "require_sat",
+  "require_functional_test",
+  "require_performance_test",
+  "enforce_sequence",
+  "enable_machines_on_handover",
+  "sb_progress",
+  "tests_passed",
+  "loop_checks_passed",
+  "cb_progress",
+  "open_punch_a",
+  "open_punch_b",
+  "open_punch_c",
+  "sb_blockers",
+  "blocker_count",
+  "blockers",
+  "sb_handover",
+  "operations_acceptor",
+  "operations_accepted_on",
+  "maintenance_acceptor",
+  "maintenance_accepted_on",
+  "cb_handover",
+  "handed_over_on",
+  "handed_over_by",
+  "handover_notes",
+  "qualification_doctype",
+  "qualification_name"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "CPK-.YYYY.-",
+   "default": "CPK-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "line",
+   "fieldtype": "Data",
+   "label": "Line",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "commissioning_lead",
+   "fieldtype": "Link",
+   "label": "Commissioning Lead",
+   "options": "User"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Planning\nIn Progress\nReady for Handover\nHanded Over\nCancelled",
+   "default": "Planning",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "planned_start",
+   "fieldtype": "Date",
+   "label": "Planned Start"
+  },
+  {
+   "fieldname": "planned_handover",
+   "fieldtype": "Date",
+   "label": "Planned Handover",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "percent_complete",
+   "fieldtype": "Percent",
+   "label": "Complete",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "cancelled",
+   "fieldtype": "Check",
+   "label": "Cancelled",
+   "default": "0",
+   "description": "Stop the package; it then never blocks or raises suggestions"
+  },
+  {
+   "fieldname": "sb_scope",
+   "fieldtype": "Section Break",
+   "label": "Scope"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Equipment",
+   "options": "Commissioning Package Item"
+  },
+  {
+   "fieldname": "sb_rules",
+   "fieldtype": "Section Break",
+   "label": "Required Tests and Rules",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "require_fat",
+   "fieldtype": "Check",
+   "label": "Require FAT",
+   "default": "1"
+  },
+  {
+   "fieldname": "require_mechanical_completion",
+   "fieldtype": "Check",
+   "label": "Require Mechanical Completion",
+   "default": "1"
+  },
+  {
+   "fieldname": "require_pre_commissioning",
+   "fieldtype": "Check",
+   "label": "Require Pre-Commissioning",
+   "default": "0"
+  },
+  {
+   "fieldname": "require_loop_checks",
+   "fieldtype": "Check",
+   "label": "Require Loop Checks",
+   "default": "0",
+   "description": "At least one loop check must exist and every loop check must pass"
+  },
+  {
+   "fieldname": "cb_rules",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "require_sat",
+   "fieldtype": "Check",
+   "label": "Require SAT",
+   "default": "1"
+  },
+  {
+   "fieldname": "require_functional_test",
+   "fieldtype": "Check",
+   "label": "Require Functional Test",
+   "default": "0"
+  },
+  {
+   "fieldname": "require_performance_test",
+   "fieldtype": "Check",
+   "label": "Require Performance Test",
+   "default": "0"
+  },
+  {
+   "fieldname": "enforce_sequence",
+   "fieldtype": "Check",
+   "label": "Enforce Test Sequence",
+   "default": "1",
+   "description": "A test cannot start while a test of an earlier stage on the same equipment has not passed"
+  },
+  {
+   "fieldname": "enable_machines_on_handover",
+   "fieldtype": "Check",
+   "label": "Enable Machines on Handover",
+   "default": "1",
+   "description": "Machines in scope that are disabled while being commissioned are enabled at handover"
+  },
+  {
+   "fieldname": "sb_progress",
+   "fieldtype": "Section Break",
+   "label": "Progress"
+  },
+  {
+   "fieldname": "tests_passed",
+   "fieldtype": "Data",
+   "label": "Tests Passed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "loop_checks_passed",
+   "fieldtype": "Data",
+   "label": "Loop Checks Passed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_progress",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "open_punch_a",
+   "fieldtype": "Int",
+   "label": "Open Punch A",
+   "read_only": 1
+  },
+  {
+   "fieldname": "open_punch_b",
+   "fieldtype": "Int",
+   "label": "Open Punch B",
+   "read_only": 1
+  },
+  {
+   "fieldname": "open_punch_c",
+   "fieldtype": "Int",
+   "label": "Open Punch C",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_blockers",
+   "fieldtype": "Section Break",
+   "label": "Handover Blockers",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "blocker_count",
+   "fieldtype": "Int",
+   "label": "Blockers",
+   "read_only": 1
+  },
+  {
+   "fieldname": "blockers",
+   "fieldtype": "Small Text",
+   "label": "What Blocks Handover",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_handover",
+   "fieldtype": "Section Break",
+   "label": "Handover"
+  },
+  {
+   "fieldname": "operations_acceptor",
+   "fieldtype": "Link",
+   "label": "Accepts for Operations",
+   "options": "User"
+  },
+  {
+   "fieldname": "operations_accepted_on",
+   "fieldtype": "Datetime",
+   "label": "Operations Accepted On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "maintenance_acceptor",
+   "fieldtype": "Link",
+   "label": "Accepts for Maintenance",
+   "options": "User"
+  },
+  {
+   "fieldname": "maintenance_accepted_on",
+   "fieldtype": "Datetime",
+   "label": "Maintenance Accepted On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_handover",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "handed_over_on",
+   "fieldtype": "Datetime",
+   "label": "Handed Over On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "handed_over_by",
+   "fieldtype": "Link",
+   "label": "Handed Over By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "handover_notes",
+   "fieldtype": "Small Text",
+   "label": "Handover Notes"
+  },
+  {
+   "fieldname": "qualification_doctype",
+   "fieldtype": "Link",
+   "label": "Qualification Type",
+   "options": "DocType",
+   "description": "The validation or qualification record that follows commissioning, when there is one"
+  },
+  {
+   "fieldname": "qualification_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Qualification Record",
+   "options": "qualification_doctype"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 21:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Commissioning",
+ "name": "Commissioning Package",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "title",
+ "show_title_field_in_link": 1,
+ "search_fields": "title,line",
+ "description": "The equipment of one commissioning job, from FAT to handover"
+}

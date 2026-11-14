@@ -1,0 +1,271 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 21:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "package",
+  "test_type",
+  "template",
+  "title",
+  "cb_head",
+  "status",
+  "equipment_tag",
+  "machine",
+  "location",
+  "planned_on",
+  "cancelled",
+  "sb_steps",
+  "steps",
+  "sb_signoff",
+  "started_on",
+  "performed_by",
+  "completed_on",
+  "cb_signoff",
+  "witness_required",
+  "witnessed_by",
+  "witness_company",
+  "witnessed_on",
+  "sb_notes",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "CTS-.YYYY.-",
+   "default": "CTS-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "package",
+   "fieldtype": "Link",
+   "label": "Package",
+   "options": "Commissioning Package",
+   "reqd": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "test_type",
+   "fieldtype": "Select",
+   "label": "Test Type",
+   "options": "FAT\nMechanical Completion\nPre-Commissioning\nSAT\nFunctional Test\nPerformance Test",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "template",
+   "fieldtype": "Link",
+   "label": "Template",
+   "options": "Commissioning Checklist Template",
+   "description": "Copies the template's checks into an empty test"
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Not Started\nIn Progress\nAwaiting Sign-off\nPassed\nFailed\nCancelled",
+   "default": "Not Started",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "equipment_tag",
+   "fieldtype": "Data",
+   "label": "Equipment Tag",
+   "in_standard_filter": 1,
+   "description": "Blank for a test of the whole package"
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "read_only": 1
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location",
+   "description": "Where the test runs, for example the vendor's works for a FAT"
+  },
+  {
+   "fieldname": "planned_on",
+   "fieldtype": "Date",
+   "label": "Planned On"
+  },
+  {
+   "fieldname": "cancelled",
+   "fieldtype": "Check",
+   "label": "Cancelled",
+   "default": "0"
+  },
+  {
+   "fieldname": "sb_steps",
+   "fieldtype": "Section Break",
+   "label": "Steps"
+  },
+  {
+   "fieldname": "steps",
+   "fieldtype": "Table",
+   "label": "Steps",
+   "options": "Commissioning Test Step"
+  },
+  {
+   "fieldname": "sb_signoff",
+   "fieldtype": "Section Break",
+   "label": "Sign-off"
+  },
+  {
+   "fieldname": "started_on",
+   "fieldtype": "Datetime",
+   "label": "Started On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "performed_by",
+   "fieldtype": "Link",
+   "label": "Performed By",
+   "options": "User"
+  },
+  {
+   "fieldname": "completed_on",
+   "fieldtype": "Datetime",
+   "label": "Completed On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_signoff",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "witness_required",
+   "fieldtype": "Check",
+   "label": "Witness Required",
+   "default": "0"
+  },
+  {
+   "fieldname": "witnessed_by",
+   "fieldtype": "Data",
+   "label": "Witnessed By",
+   "description": "The witness's name; often the customer's or the vendor's representative"
+  },
+  {
+   "fieldname": "witness_company",
+   "fieldtype": "Data",
+   "label": "Witness Company"
+  },
+  {
+   "fieldname": "witnessed_on",
+   "fieldtype": "Datetime",
+   "label": "Witnessed On"
+  },
+  {
+   "fieldname": "sb_notes",
+   "fieldtype": "Section Break",
+   "label": "Notes",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 21:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Commissioning",
+ "name": "Commissioning Test",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "title",
+ "search_fields": "package,test_type,equipment_tag",
+ "description": "One FAT, SAT or other commissioning test with its steps and sign-offs"
+}

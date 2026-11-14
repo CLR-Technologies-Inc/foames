@@ -147,6 +147,13 @@ foames_machine_state_changed = [
 #
 # foames_process_event_extractors = ["myapp.mining.job_events"]
 
+# Commissioning
+# -------------
+# Other apps take part in equipment handover through these hooks. Each entry is a dotted path.
+#
+# foames_commissioning_readiness_checks = ["myapp.qualification.blockers"]  # (package) -> list of blocker dicts
+# foames_commissioning_handed_over = ["myapp.qualification.on_handover"]  # (package) after handover
+
 # Scheduled Tasks
 # ---------------
 
@@ -184,6 +191,8 @@ scheduler_events = {
 		"foames.foames_mes.tasks.compute_daily_oee",
 		# Looks up External References that are still Unverified or Missing in their ERP.
 		"foames.foames_kernel.tasks.refresh_external_references",
+		# Raises suggestions for overdue commissioning punch items and packages past their planned handover.
+		"foames.foames_commissioning.tasks.check_commissioning",
 	],
 }
 

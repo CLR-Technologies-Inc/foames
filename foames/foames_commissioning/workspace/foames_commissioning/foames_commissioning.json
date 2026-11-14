@@ -1,0 +1,201 @@
+{
+ "app": "foames",
+ "charts": [],
+ "content": "[{\"id\": \"cmHdr0001A\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Commissioning</b></span>\", \"col\": 12}}, {\"id\": \"cmCard000A\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Category A Punch Items\", \"col\": 3}}, {\"id\": \"cmCard001A\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Punch Items\", \"col\": 3}}, {\"id\": \"cmCard002A\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Packages in Commissioning\", \"col\": 3}}, {\"id\": \"cmCard003A\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Packages Ready for Handover\", \"col\": 3}}, {\"id\": \"cmSpacer1A\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"cmHdr0002A\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Shortcuts</b></span>\", \"col\": 12}}, {\"id\": \"cmShort00A\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Commissioning Packages\", \"col\": 4}}, {\"id\": \"cmShort01A\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Punch List\", \"col\": 4}}, {\"id\": \"cmShort02A\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Commissioning Status\", \"col\": 4}}, {\"id\": \"cmShort03A\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Commissioning Tests\", \"col\": 4}}, {\"id\": \"cmShort04A\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Loop Checks\", \"col\": 4}}, {\"id\": \"cmShort05A\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Checklist Templates\", \"col\": 4}}, {\"id\": \"cmSpacer2A\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"cmHdr0003A\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Reports and Masters</b></span>\", \"col\": 12}}, {\"id\": \"cmCardBrk1\", \"type\": \"card\", \"data\": {\"card_name\": \"Commissioning\", \"col\": 4}}, {\"id\": \"cmCardBrk2\", \"type\": \"card\", \"data\": {\"card_name\": \"Reports\", \"col\": 4}}]",
+ "creation": "2026-11-14 21:30:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "tool",
+ "idx": 0,
+ "indicator_color": "blue",
+ "is_hidden": 0,
+ "label": "FoaMES Commissioning",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Commissioning",
+   "link_count": 5,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Commissioning Package",
+   "link_count": 0,
+   "link_to": "Commissioning Package",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Commissioning Test",
+   "link_count": 0,
+   "link_to": "Commissioning Test",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Loop Check",
+   "link_count": 0,
+   "link_to": "Loop Check",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Punch Item",
+   "link_count": 0,
+   "link_to": "Punch Item",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Commissioning Checklist Template",
+   "link_count": 0,
+   "link_to": "Commissioning Checklist Template",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Reports",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Punch List",
+   "link_count": 0,
+   "link_to": "Punch List",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Commissioning Status",
+   "link_count": 0,
+   "link_to": "Commissioning Status",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-11-14 21:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Commissioning",
+ "name": "FoaMES Commissioning",
+ "number_cards": [
+  {
+   "label": "Open Category A Punch Items",
+   "number_card_name": "Open Category A Punch Items"
+  },
+  {
+   "label": "Open Punch Items",
+   "number_card_name": "Open Punch Items"
+  },
+  {
+   "label": "Packages in Commissioning",
+   "number_card_name": "Packages in Commissioning"
+  },
+  {
+   "label": "Packages Ready for Handover",
+   "number_card_name": "Packages Ready for Handover"
+  }
+ ],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "",
+ "roles": [
+  {
+   "role": "FoaMES Engineer"
+  },
+  {
+   "role": "FoaMES Maintenance"
+  },
+  {
+   "role": "FoaMES Quality"
+  },
+  {
+   "role": "FoaMES Supervisor"
+  }
+ ],
+ "sequence_id": 25.0,
+ "shortcuts": [
+  {
+   "color": "Blue",
+   "doc_view": "List",
+   "label": "Commissioning Packages",
+   "link_to": "Commissioning Package",
+   "type": "DocType",
+   "stats_filter": "{\"status\": [\"in\", [\"Planning\", \"In Progress\", \"Ready for Handover\"]]}"
+  },
+  {
+   "color": "Red",
+   "doc_view": "",
+   "label": "Punch List",
+   "link_to": "Punch List",
+   "report_ref_doctype": "Punch Item",
+   "type": "Report"
+  },
+  {
+   "color": "Green",
+   "doc_view": "",
+   "label": "Commissioning Status",
+   "link_to": "Commissioning Status",
+   "report_ref_doctype": "Commissioning Package",
+   "type": "Report"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "label": "Commissioning Tests",
+   "link_to": "Commissioning Test",
+   "type": "DocType"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "label": "Loop Checks",
+   "link_to": "Loop Check",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Checklist Templates",
+   "link_to": "Commissioning Checklist Template",
+   "type": "DocType"
+  }
+ ],
+ "title": "FoaMES Commissioning"
+}
