@@ -20,7 +20,7 @@ function sop_prompt(frm, method, label, title, required) {
 			const key = method === "retire" ? "reason" : "comment";
 			sop_call(frm, method, { [key]: values.text });
 		},
-		title,
+		title
 	);
 }
 
@@ -33,22 +33,22 @@ frappe.ui.form.on("Standard Operating Procedure", {
 
 		if (status === "Draft" && can_write) {
 			frm.add_custom_button(__("Send for Review"), () =>
-				sop_call(frm, "submit_for_review"),
+				sop_call(frm, "submit_for_review")
 			).addClass("btn-primary");
 		}
 		if (status === "In Review") {
 			frm.add_custom_button(__("Sign"), () =>
-				sop_prompt(frm, "sign", __("Comment"), __("Sign this revision"), false),
+				sop_prompt(frm, "sign", __("Comment"), __("Sign this revision"), false)
 			).addClass("btn-primary");
 			frm.add_custom_button(__("Reject"), () =>
-				sop_prompt(frm, "reject", __("Reason"), __("Send back to Draft"), true),
+				sop_prompt(frm, "reject", __("Reason"), __("Send back to Draft"), true)
 			);
 		}
 		if (status === "Effective") {
 			frm.add_custom_button(
 				__("Acknowledge"),
 				() => sop_call(frm, "acknowledge"),
-				__("Training"),
+				__("Training")
 			);
 			if (can_write) {
 				frm.add_custom_button(
@@ -74,12 +74,12 @@ frappe.ui.form.on("Standard Operating Procedure", {
 								{ fieldname: "note", fieldtype: "Small Text", label: __("Note") },
 							],
 							(values) => sop_call(frm, "record_training", values),
-							__("Record Training"),
+							__("Record Training")
 						),
-					__("Training"),
+					__("Training")
 				);
 				frm.add_custom_button(__("Record Periodic Review"), () =>
-					sop_prompt(frm, "record_review", __("Comment"), __("Still current"), false),
+					sop_prompt(frm, "record_review", __("Comment"), __("Still current"), false)
 				);
 			}
 		}
@@ -88,13 +88,13 @@ frappe.ui.form.on("Standard Operating Procedure", {
 				frappe
 					.call({ method: SOP_METHOD + "new_revision", args: { name: frm.doc.name } })
 					.then((r) =>
-						frappe.set_route("Form", "Standard Operating Procedure", r.message),
-					),
+						frappe.set_route("Form", "Standard Operating Procedure", r.message)
+					)
 			);
 		}
 		if (["Draft", "Approved", "Effective"].includes(status) && can_write) {
 			frm.add_custom_button(__("Retire"), () =>
-				sop_prompt(frm, "retire", __("Reason"), __("Retire this SOP"), true),
+				sop_prompt(frm, "retire", __("Reason"), __("Retire this SOP"), true)
 			);
 		}
 		const colour = {
