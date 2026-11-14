@@ -1,0 +1,259 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "title",
+  "process",
+  "product",
+  "cb_head",
+  "status",
+  "revision",
+  "process_responsibility",
+  "sb_planning",
+  "scope",
+  "team",
+  "cb_planning",
+  "start_date",
+  "revision_date",
+  "observation_days",
+  "sb_items",
+  "items",
+  "sb_summary",
+  "high_count",
+  "medium_count",
+  "cb_summary",
+  "low_count",
+  "open_actions",
+  "cb_summary_2",
+  "last_observed"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "PFMEA-.#####",
+   "default": "PFMEA-.#####",
+   "hidden": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "The process analysed, for example Housing assembly line"
+  },
+  {
+   "fieldname": "process",
+   "fieldtype": "Data",
+   "label": "Process / Line",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "product",
+   "fieldtype": "Data",
+   "label": "Product / Part"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nIn Review\nReleased\nObsolete",
+   "default": "Draft",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "Released PFMEAs are observed daily and raise suggestions"
+  },
+  {
+   "fieldname": "revision",
+   "fieldtype": "Data",
+   "label": "Revision",
+   "default": "A"
+  },
+  {
+   "fieldname": "process_responsibility",
+   "fieldtype": "Link",
+   "label": "Process Responsibility",
+   "options": "User"
+  },
+  {
+   "fieldname": "sb_planning",
+   "fieldtype": "Section Break",
+   "label": "Planning",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "scope",
+   "fieldtype": "Small Text",
+   "label": "Scope",
+   "description": "What is in and out of the analysis"
+  },
+  {
+   "fieldname": "team",
+   "fieldtype": "Small Text",
+   "label": "Team"
+  },
+  {
+   "fieldname": "cb_planning",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date"
+  },
+  {
+   "fieldname": "revision_date",
+   "fieldtype": "Date",
+   "label": "Revision Date"
+  },
+  {
+   "fieldname": "observation_days",
+   "fieldtype": "Int",
+   "label": "Observe Last (Days)",
+   "default": "90",
+   "description": "The window the floor's records are read over to check occurrence"
+  },
+  {
+   "fieldname": "sb_items",
+   "fieldtype": "Section Break",
+   "label": "Failure Modes"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Failure Modes",
+   "options": "PFMEA Item"
+  },
+  {
+   "fieldname": "sb_summary",
+   "fieldtype": "Section Break",
+   "label": "Summary"
+  },
+  {
+   "fieldname": "high_count",
+   "fieldtype": "Int",
+   "label": "High Priority",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "medium_count",
+   "fieldtype": "Int",
+   "label": "Medium Priority",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_summary",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "low_count",
+   "fieldtype": "Int",
+   "label": "Low Priority",
+   "read_only": 1
+  },
+  {
+   "fieldname": "open_actions",
+   "fieldtype": "Int",
+   "label": "Open Actions",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "cb_summary_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_observed",
+   "fieldtype": "Datetime",
+   "label": "Last Observed",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "PFMEA",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "title",
+ "show_title_field_in_link": 1,
+ "search_fields": "process,product,status",
+ "description": "A process FMEA: failure chains per process step rated by severity, occurrence and detection, with AIAG-VDA action priority, actions, the control plan and the occurrence the floor observes"
+}

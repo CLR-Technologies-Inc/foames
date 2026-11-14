@@ -184,6 +184,8 @@ scheduler_events = {
 		"foames.foames_mes.tasks.compute_daily_oee",
 		# Looks up External References that are still Unverified or Missing in their ERP.
 		"foames.foames_kernel.tasks.refresh_external_references",
+		# Reads the floor for every Released PFMEA and raises review suggestions where it disagrees.
+		"foames.foames_mes.tasks.check_pfmeas",
 	],
 }
 
