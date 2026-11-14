@@ -102,6 +102,15 @@ doc_events["Job Card"] = {
 	],
 }
 
+# Permissions
+# -----------
+# A Private recognition is seen only by the person recognized, the giver and supervisors.
+
+has_permission = {"Recognition": "foames.foames_mes.doctype.recognition.recognition.has_permission"}
+permission_query_conditions = {
+	"Recognition": "foames.foames_mes.doctype.recognition.recognition.get_permission_query_conditions"
+}
+
 # Machine data and the floor
 # --------------------------
 # Other apps extend the MES module through these hooks. Each entry is a dotted path.
@@ -174,6 +183,9 @@ scheduler_events = {
 			"foames.foames_adapters.s4hana.rollup.roll_up_all",
 			"foames.foames_adapters.insights_hub.rollup.roll_up_all",
 		],
+		# Monday 06:00, after the daily OEE run has closed Sunday: highlights per line for the week
+		# that just ended; does nothing when turned off.
+		"0 6 * * 1": ["foames.foames_mes.tasks.recognize_team_highlights"],
 	},
 	"hourly": [
 		"foames.foames_mes.tasks.run_suggestion_rules",
@@ -184,6 +196,8 @@ scheduler_events = {
 		"foames.foames_mes.tasks.compute_daily_oee",
 		# Looks up External References that are still Unverified or Missing in their ERP.
 		"foames.foames_kernel.tasks.refresh_external_references",
+		# Recognizes people for the milestones they reached; does nothing when turned off.
+		"foames.foames_mes.tasks.recognize_milestones",
 	],
 }
 

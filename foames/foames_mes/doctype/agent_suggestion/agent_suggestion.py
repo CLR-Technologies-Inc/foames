@@ -19,6 +19,12 @@ class AgentSuggestion(Document):
 		if not self.rule_key:
 			self.rule_key = f"{self.agent or 'manual'}:{self.name or frappe.generate_hash(length=10)}"
 
+	def on_update(self):
+		if self.status == "Done" and self.credited_to:
+			from foames.foames_mes.doctype.recognition.recognition import credit_idea
+
+			credit_idea(self)
+
 
 def raise_suggestions(findings: list[dict], agent: str = "foames-rules") -> list[str]:
 	"""Insert findings whose rule_key is not already open. A finding whose key belongs to a resolved

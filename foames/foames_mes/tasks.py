@@ -60,3 +60,17 @@ def check_maintenance_plans():
 	from foames.foames_mes.doctype.maintenance_plan.maintenance_plan import check_maintenance_plans as check
 
 	return check()
+
+
+def recognize_milestones():
+	"""Scheduled daily: recognize people for the milestones they reached."""
+	from foames.foames_mes.doctype.recognition.recognition import recognize_milestones as recognize
+
+	return recognize()
+
+
+def recognize_team_highlights():
+	"""Scheduled weekly: highlights per line for the last complete week."""
+	from foames.foames_mes.doctype.recognition.recognition import recognize_team_highlights as recognize
+
+	return recognize()

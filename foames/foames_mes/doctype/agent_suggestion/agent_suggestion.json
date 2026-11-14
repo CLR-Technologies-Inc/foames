@@ -12,6 +12,7 @@
   "cb_head",
   "status",
   "agent",
+  "credited_to",
   "reference_doctype",
   "reference_name",
   "sb_body",
@@ -78,6 +79,13 @@
    "in_list_view": 1
   },
   {
+   "fieldname": "credited_to",
+   "fieldtype": "Link",
+   "label": "Idea From",
+   "options": "User",
+   "description": "The person whose idea this is. When the suggestion is Done, FoaMES recognizes them for it"
+  },
+  {
    "fieldname": "reference_doctype",
    "fieldtype": "Link",
    "label": "Reference DocType",
@@ -140,7 +148,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-11-04 19:00:00.000000",
+ "modified": "2026-11-14 21:30:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES MES",
  "name": "Agent Suggestion",
