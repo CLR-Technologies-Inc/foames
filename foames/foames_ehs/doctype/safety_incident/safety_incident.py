@@ -108,7 +108,7 @@ def report_near_miss(
 	machine: str | None = None,
 	location: str | None = None,
 	potential_severity: int | None = None,
-	occurred_on=None,
+	occurred_on: str | None = None,
 ) -> str:
 	"""Report a near miss in one call, from a tablet on the floor, an andon station or an agent.
 	The caller needs permission to create Safety Incidents (operators have it)."""
