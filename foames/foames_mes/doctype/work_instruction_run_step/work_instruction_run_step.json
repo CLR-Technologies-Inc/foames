@@ -1,0 +1,317 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 21:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "step_no",
+  "title",
+  "capture",
+  "optional",
+  "estimated_minutes",
+  "cb_step",
+  "sign_off_role",
+  "stop_on_fail",
+  "sb_content",
+  "instruction",
+  "image",
+  "cb_media",
+  "attachment",
+  "video_url",
+  "sb_capture",
+  "unit",
+  "has_lower_limit",
+  "lower_limit",
+  "target_value",
+  "has_upper_limit",
+  "upper_limit",
+  "cb_capture",
+  "choices",
+  "failing_choices",
+  "post_measurement",
+  "measurement_name",
+  "sb_result",
+  "result",
+  "value_text",
+  "value_number",
+  "note",
+  "machine_event",
+  "cb_result",
+  "completed_at",
+  "completed_by",
+  "signed_off_at",
+  "signed_off_by"
+ ],
+ "fields": [
+  {
+   "fieldname": "step_no",
+   "fieldtype": "Int",
+   "label": "Step",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 3,
+   "read_only": 1
+  },
+  {
+   "fieldname": "capture",
+   "fieldtype": "Select",
+   "label": "Capture",
+   "options": "Confirm\nPass/Fail\nNumber\nText\nChoice",
+   "default": "Confirm",
+   "in_list_view": 1,
+   "columns": 2,
+   "description": "What the operator records: a confirmation, a pass or fail check, a number, text, or one of a list of answers",
+   "read_only": 1
+  },
+  {
+   "fieldname": "optional",
+   "fieldtype": "Check",
+   "label": "Optional",
+   "default": "0",
+   "description": "The operator may skip this step",
+   "read_only": 1
+  },
+  {
+   "fieldname": "estimated_minutes",
+   "fieldtype": "Float",
+   "label": "Estimated (min)",
+   "precision": "1",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_step",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sign_off_role",
+   "fieldtype": "Link",
+   "label": "Sign-off Role",
+   "options": "Role",
+   "description": "A second person with this role must sign the step off before the next step; not the person who did it",
+   "read_only": 1
+  },
+  {
+   "fieldname": "stop_on_fail",
+   "fieldtype": "Check",
+   "label": "Stop on Fail",
+   "default": "0",
+   "description": "A failed result puts the run on hold until a supervisor records a disposition",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_content",
+   "fieldtype": "Section Break",
+   "label": "Instruction"
+  },
+  {
+   "fieldname": "instruction",
+   "fieldtype": "Text Editor",
+   "label": "Instruction",
+   "read_only": 1
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Image",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_media",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Attachment",
+   "description": "A drawing, a PDF or a video file",
+   "read_only": 1
+  },
+  {
+   "fieldname": "video_url",
+   "fieldtype": "Data",
+   "label": "Video URL",
+   "options": "URL",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_capture",
+   "fieldtype": "Section Break",
+   "label": "Capture",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "unit",
+   "fieldtype": "Data",
+   "label": "Unit",
+   "depends_on": "eval:doc.capture=='Number'",
+   "read_only": 1
+  },
+  {
+   "fieldname": "has_lower_limit",
+   "fieldtype": "Check",
+   "label": "Has Lower Limit",
+   "default": "0",
+   "depends_on": "eval:doc.capture=='Number'",
+   "read_only": 1
+  },
+  {
+   "fieldname": "lower_limit",
+   "fieldtype": "Float",
+   "label": "Lower Limit",
+   "depends_on": "eval:doc.has_lower_limit",
+   "read_only": 1
+  },
+  {
+   "fieldname": "target_value",
+   "fieldtype": "Float",
+   "label": "Target",
+   "depends_on": "eval:doc.capture=='Number'",
+   "read_only": 1
+  },
+  {
+   "fieldname": "has_upper_limit",
+   "fieldtype": "Check",
+   "label": "Has Upper Limit",
+   "default": "0",
+   "depends_on": "eval:doc.capture=='Number'",
+   "read_only": 1
+  },
+  {
+   "fieldname": "upper_limit",
+   "fieldtype": "Float",
+   "label": "Upper Limit",
+   "depends_on": "eval:doc.has_upper_limit",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_capture",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "choices",
+   "fieldtype": "Small Text",
+   "label": "Answers",
+   "depends_on": "eval:doc.capture=='Choice'",
+   "description": "One answer per line",
+   "read_only": 1
+  },
+  {
+   "fieldname": "failing_choices",
+   "fieldtype": "Small Text",
+   "label": "Failing Answers",
+   "depends_on": "eval:doc.capture=='Choice'",
+   "description": "Answers, one per line, that fail the step",
+   "read_only": 1
+  },
+  {
+   "fieldname": "post_measurement",
+   "fieldtype": "Check",
+   "label": "Post as Measurement",
+   "default": "0",
+   "depends_on": "eval:doc.capture=='Number'",
+   "description": "Also record the value as a Measurement event on the run's machine, so SPC charts it",
+   "read_only": 1
+  },
+  {
+   "fieldname": "measurement_name",
+   "fieldtype": "Data",
+   "label": "Measurement Name",
+   "depends_on": "eval:doc.post_measurement",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_result",
+   "fieldtype": "Section Break",
+   "label": "Result"
+  },
+  {
+   "fieldname": "result",
+   "fieldtype": "Select",
+   "label": "Result",
+   "options": "\nDone\nPass\nFail\nSkipped",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "value_text",
+   "fieldtype": "Small Text",
+   "label": "Recorded",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "value_number",
+   "fieldtype": "Float",
+   "label": "Value",
+   "read_only": 1
+  },
+  {
+   "fieldname": "note",
+   "fieldtype": "Small Text",
+   "label": "Note",
+   "read_only": 1
+  },
+  {
+   "fieldname": "machine_event",
+   "fieldtype": "Link",
+   "label": "Machine Event",
+   "options": "Machine Event",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_result",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "completed_at",
+   "fieldtype": "Datetime",
+   "label": "Recorded At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "completed_by",
+   "fieldtype": "Link",
+   "label": "Recorded By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "signed_off_at",
+   "fieldtype": "Datetime",
+   "label": "Signed Off At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "signed_off_by",
+   "fieldtype": "Link",
+   "label": "Signed Off By",
+   "options": "User",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "istable": 1,
+ "editable_grid": 0,
+ "links": [],
+ "modified": "2026-11-14 21:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Work Instruction Run Step",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}
