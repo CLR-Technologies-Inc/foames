@@ -122,12 +122,15 @@ doc_events["Job Card"] = {
 foames_floor_snapshot_extensions = [
 	"foames.foames_adapters.erpnext.floor.extend_snapshot",
 	"foames.foames_adapters.erpnext.rollup.mark_current_job_cards",
+	# Each machine's current and next operations from the published Production Schedule.
+	"foames.foames_mes.doctype.production_schedule.production_schedule.extend_snapshot",
 ]
 foames_suggestion_rules = [
 	"foames.foames_adapters.erpnext.floor.running_without_job_card",
 	"foames.foames_adapters.erpnext.rollup.current_job_card_not_open",
 	"foames.foames_adapters.s4hana.rollup.confirmation_rejected",
 	"foames.foames_adapters.insights_hub.rollup.posting_rejected",
+	"foames.foames_mes.doctype.production_schedule.production_schedule.behind_schedule",
 ]
 foames_machine_job_changed = [
 	"foames.foames_adapters.erpnext.rollup.on_job_changed",
@@ -138,6 +141,21 @@ foames_machine_job_changed = [
 foames_machine_state_changed = [
 	"foames.foames_adapters.erpnext.workstation.on_state_changed",
 	"foames.foames_adapters.insights_hub.rollup.on_state_changed",
+]
+
+# Production scheduling
+# ---------------------
+# Demand sources fill a Production Schedule's rows ("Get Operations"). Each dotted path is called with
+# (start, end, line) and returns a list of Production Schedule Job values. The ERPNext adapter adds its
+# open Job Cards; it only reads ERPNext.
+#
+# Cycle time estimators answer how many seconds one unit takes on a machine when a row gives no run
+# time or cycle time. Each is called with (row: dict, machine: dict) and returns seconds or None; the
+# first answer wins, and the machine's Ideal Cycle Seconds is the fallback.
+# foames_cycle_time_estimators = ["myapp.timing.seconds_per_unit"]
+
+foames_schedule_demand_sources = [
+	"foames.foames_adapters.erpnext.schedule.demand",
 ]
 
 # Process mining

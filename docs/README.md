@@ -25,6 +25,7 @@ Start with [overview.md](overview.md) for what FoaMES records, then [installatio
 | [floor-view.md](floor-view.md) | The Floor View page, machine states, the downtime workflow, Agent Suggestions and the built-in rules, the floor snapshot |
 | [oee.md](oee.md) | How OEE is computed, setting a machine up for it, shift patterns, the daily OEE Period, OEE on demand, a worked example |
 | [andon.md](andon.md) | Andon calls: call types and their targets, the status flow, escalation into suggestions, the Floor View button, the API, the Andon Response report |
+| [scheduling.md](scheduling.md) | Production scheduling: finite-capacity plans from shift calendars, maintenance and cycle times, dispatching rules, publishing, the Gantt view, the behind-schedule rule, demand from an ERP and cycle-time hooks |
 | [maintenance.md](maintenance.md) | Preventive maintenance: plans by calendar, run hours or counts, work orders, the hourly check and its suggestions, the Maintenance Due List |
 | [dashboards.md](dashboards.md) | The role workspaces, number cards, dashboard charts and the script reports: OEE by machine, line and shift, downtime Pareto, MTBF and MTTR, suggestion status, outbox health, process throughput, andon response, the maintenance due list |
 
