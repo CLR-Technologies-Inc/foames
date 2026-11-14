@@ -345,6 +345,13 @@ def calibrate(
 	return replace(standard, elements=elements), notes
 
 
+def _number(value, default: float) -> float:
+	"""A float, or the default when the value is missing. Zero stays zero, so validation sees it."""
+	if value is None or value == "":
+		return default
+	return float(value)
+
+
 def standard_from_dict(data: dict) -> Standard:
 	"""A Standard from plain values (a saved document's dict or an API body)."""
 	elements = tuple(
@@ -354,13 +361,13 @@ def standard_from_dict(data: dict) -> Standard:
 			seconds=float(row.get("seconds") or 0),
 			per=row.get("per") or "Cycle",
 			internal=bool(row.get("internal")),
-			every=float(row.get("every_n_cycles") or row.get("every") or 1),
+			every=_number(row.get("every_n_cycles", row.get("every")), 1.0),
 		)
 		for row in data.get("elements") or []
 	)
 	return Standard(
 		elements=elements,
-		parts_per_cycle=float(data.get("parts_per_cycle") or 1),
+		parts_per_cycle=_number(data.get("parts_per_cycle"), 1.0),
 		allowance_percent=float(data.get("allowance_percent") or 0),
 		labor_rate=float(data.get("labor_rate") or 0),
 		machine_rate=float(data.get("machine_rate") or 0),

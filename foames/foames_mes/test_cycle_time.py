@@ -269,6 +269,21 @@ class TestFromDict(unittest.TestCase):
 		self.assertAlmostEqual(breakdown(std).cycle, 12 * 1.15 + 40)
 
 
+class TestFromDictKeepsZero(unittest.TestCase):
+	def test_zero_is_not_replaced_by_the_default(self):
+		std = standard_from_dict(
+			{
+				"parts_per_cycle": 0,
+				"elements": [{"element_name": "Cut", "kind": "Automatic", "seconds": 5, "every_n_cycles": 0}],
+			}
+		)
+		self.assertEqual(std.parts_per_cycle, 0.0)
+		self.assertEqual(std.elements[0].every, 0.0)
+		text = " ".join(problems(std))
+		self.assertIn("parts per cycle", text)
+		self.assertIn("every N cycles", text)
+
+
 class TestPurity(unittest.TestCase):
 	def test_imports_nothing_from_frappe(self):
 		import foames.foames_mes.cycle_time as module

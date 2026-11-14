@@ -17,6 +17,10 @@ from foames.foames_mes.cycle_time import breakdown, problems, standard_from_dict
 class CycleTimeStandard(Document):
 	def validate(self):
 		self.validate_references()
+		for row in self.elements:
+			# An empty Every N Cycles means every cycle.
+			if not row.every_n_cycles:
+				row.every_n_cycles = 1
 		standard = self.as_standard()
 		errors = problems(standard)
 		if errors:
