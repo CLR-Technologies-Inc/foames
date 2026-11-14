@@ -9,7 +9,7 @@ frappe.ui.form.on("Production Schedule", {
 			frm.add_custom_button(
 				__("Get Operations"),
 				() => frm.call("get_operations", { replace: 1 }).then(() => frm.reload_doc()),
-				__("Plan"),
+				__("Plan")
 			);
 			frm.add_custom_button(
 				__("Build"),
@@ -27,7 +27,7 @@ frappe.ui.form.on("Production Schedule", {
 								k.unscheduled || (k.late_jobs || []).length ? "orange" : "green",
 						});
 					}),
-				__("Plan"),
+				__("Plan")
 			);
 			if (frm.doc.built_on) {
 				frm.add_custom_button(
@@ -35,11 +35,11 @@ frappe.ui.form.on("Production Schedule", {
 					() =>
 						frappe.confirm(
 							__(
-								"Publish this schedule? The one published before it for the same line is superseded.",
+								"Publish this schedule? The one published before it for the same line is superseded."
 							),
-							() => frm.call("publish").then(() => frm.reload_doc()),
+							() => frm.call("publish").then(() => frm.reload_doc())
 						),
-					__("Plan"),
+					__("Plan")
 				);
 			}
 		}
@@ -47,7 +47,7 @@ frappe.ui.form.on("Production Schedule", {
 			frm.add_custom_button(__("Copy to New Draft"), () =>
 				frm
 					.call("copy_to_draft")
-					.then((r) => frappe.set_route("Form", "Production Schedule", r.message)),
+					.then((r) => frappe.set_route("Form", "Production Schedule", r.message))
 			);
 		}
 		if (frm.doc.built_on) {
