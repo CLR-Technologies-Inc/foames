@@ -68,6 +68,8 @@ class TestPFMEA(IntegrationTestCase):
 		doc.status = "Released"
 		with self.assertRaises(frappe.ValidationError):
 			doc.save()
+		doc.reload()
+		doc.status = "Released"
 		doc.items[0].occurrence, doc.items[0].detection = 3, 6
 		doc.save()
 		self.assertTrue(doc.revision_date)
@@ -177,6 +179,7 @@ class TestPFMEA(IntegrationTestCase):
 				{
 					"doctype": "Agent Suggestion",
 					"title": key,
+					"suggestion": "An SPC signal",
 					"category": "Quality",
 					"severity": "Warning",
 					"rule_key": key,

@@ -191,7 +191,8 @@ def observe(name: str, now=None) -> list[dict]:
 	out = []
 	for item in items:
 		observed = observe_item(item, since, now)
-		stored = {k: v for k, v in observed.items() if k != "latest_signal_at"}
+		# Numeric columns are NOT NULL; a row with nothing to observe stores zeros (no observed occurrence).
+		stored = {k: v or 0 for k, v in observed.items() if k != "latest_signal_at"}
 		stored["observed_on"] = now
 		frappe.db.set_value("PFMEA Item", item.name, stored, update_modified=False)
 		out.append({**item, **observed, "row": item.name, "observed_since": since})
