@@ -177,7 +177,7 @@ def _label(item: dict) -> str:
 
 
 def _key(pfmea: str, item: dict, *parts) -> str:
-	return ":".join(["pfmea", pfmea, str(item.get("row") or item.get("idx")), *map(str, parts)])
+	return ":".join(["pfmea", pfmea, str(item.get("row") or item.get("idx")), *(str(p) for p in parts)])
 
 
 def findings(pfmea: dict, items: list[dict], today: date | datetime) -> list[dict]:
@@ -207,12 +207,15 @@ def findings(pfmea: dict, items: list[dict], today: date | datetime) -> list[dic
 					"rule_key": _key(name, item, "occurrence", int(observed)),
 					"severity": "Critical" if ap_now == "H" else "Warning",
 					"title": f"{label} occurs more often than {title} rates it",
-					"suggestion": (
-						f"The floor recorded {item.get('observed_incidents', 0):,.0f} incidents in "
-						f"{item.get('observed_units', 0):,.0f} units ({item.get('observed_per_thousand', 0):.3g} per "
-						f"thousand), which supports occurrence {int(observed)}; the PFMEA rates it {int(rated)}. "
-						f"At the observed occurrence the action priority is {PRIORITY_LABELS.get(ap_now, 'unknown')}. "
-						"Review the prevention controls and the occurrence rating with the FMEA team."
+					"suggestion": " ".join(
+						[
+							f"The floor recorded {item.get('observed_incidents', 0):,.0f} incidents in",
+							f"{item.get('observed_units', 0):,.0f} units",
+							f"({item.get('observed_per_thousand', 0):.3g} per thousand),",
+							f"which supports occurrence {int(observed)}; the PFMEA rates it {int(rated)}.",
+							f"At the observed occurrence the action priority is {PRIORITY_LABELS.get(ap_now, 'unknown')}.",
+							"Review the prevention controls and the occurrence rating with the FMEA team.",
+						]
 					),
 					"evidence": {
 						"row": item.get("row"),
@@ -232,11 +235,14 @@ def findings(pfmea: dict, items: list[dict], today: date | datetime) -> list[dic
 					"rule_key": _key(name, item, "spc"),
 					"severity": "Critical" if int(item.get("severity") or 0) >= 9 else "Warning",
 					"title": f"SPC signals on {item.get('measurement_name')} for {label}",
-					"suggestion": (
-						f"{item['spc_signals']} SPC signal(s) on {item.get('measurement_name')} "
-						f"at {item.get('machine') or 'the line'} since {item.get('observed_since')}. The PFMEA "
-						f"relies on it as a control for this failure mode (detection {item.get('detection')}). "
-						"Check the cause, apply the reaction plan, and review the occurrence and detection ratings."
+					"suggestion": " ".join(
+						[
+							f"{item['spc_signals']} SPC signal(s) on {item.get('measurement_name')}",
+							f"at {item.get('machine') or 'the line'} since {item.get('observed_since')}.",
+							"The PFMEA relies on it as a control for this failure mode",
+							f"(detection {item.get('detection')}).",
+							"Check the cause, apply the reaction plan, and review the occurrence and detection ratings.",
+						]
 					),
 					"evidence": {
 						"row": item.get("row"),
@@ -253,10 +259,13 @@ def findings(pfmea: dict, items: list[dict], today: date | datetime) -> list[dic
 					"rule_key": _key(name, item, "high-without-action"),
 					"severity": "Warning",
 					"title": f"High action priority without an action: {label}",
-					"suggestion": (
-						f"{title} rates this chain S{item.get('severity')} O{item.get('occurrence')} "
-						f"D{item.get('detection')}, High priority. Identify a prevention or detection action, "
-						"or record why none is taken (status Not Implemented with the reason)."
+					"suggestion": " ".join(
+						[
+							f"{title} rates this chain S{item.get('severity')} O{item.get('occurrence')}",
+							f"D{item.get('detection')}, High priority.",
+							"Identify a prevention or detection action, or record why none is taken",
+							"(status Not Implemented with the reason).",
+						]
 					),
 					"evidence": {"row": item.get("row"), "action_priority": ap},
 				}
@@ -273,15 +282,17 @@ def findings(pfmea: dict, items: list[dict], today: date | datetime) -> list[dic
 						"rule_key": _key(name, item, "overdue", target.isoformat()),
 						"severity": "Warning" if ap != "H" else "Critical",
 						"title": f"PFMEA action overdue: {label}",
-						"suggestion": (
-							f"The action for {label} in {title} was due on {target.isoformat()} and is "
-							f"{item.get('action_status') or 'Open'}"
-							+ (
-								f"; it is assigned to {item['responsible']}"
-								if item.get("responsible")
-								else ""
-							)
-							+ ". Complete it and re-rate the chain, or move the target date."
+						"suggestion": " ".join(
+							[
+								f"The action for {label} in {title} was due on {target.isoformat()}",
+								f"and is {item.get('action_status') or 'Open'}"
+								+ (
+									f"; it is assigned to {item['responsible']}."
+									if item.get("responsible")
+									else "."
+								),
+								"Complete it and re-rate the chain, or move the target date.",
+							]
 						),
 						"evidence": {"row": item.get("row"), "target_date": target.isoformat()},
 					}
