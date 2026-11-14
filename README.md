@@ -88,6 +88,7 @@ The full guide, including roles, the scheduler, running the gateways and a smoke
 | [docs/oee.md](docs/oee.md) | How OEE is computed, shift patterns, and how to set a machine up for it |
 | [docs/andon.md](docs/andon.md) | Andon calls for help at a machine: call types and targets, escalation, the API, the response report |
 | [docs/spc.md](docs/spc.md) | Control charts (I-MR, X-bar R) and Nelson / Western Electric run rules on machine measurements |
+| [docs/validation.md](docs/validation.md) | Equipment qualification (IQ, OQ, PQ) and process validation (PPQ, CPV) with acceptance criteria, capability from machine data, evidence, deviations and requalification |
 | [docs/dashboards.md](docs/dashboards.md) | Role workspaces, dashboards, number cards and the script reports (OEE trends, downtime Pareto, MTBF and MTTR, suggestions, outbox health, process throughput) |
 | [docs/sbom.md](docs/sbom.md) | The CycloneDX 1.7 SBOM and cryptography bill of materials published with every release |
 | [docs/process-mining.md](docs/process-mining.md) | Event logs, discovery, conformance, XES and OCEL export |

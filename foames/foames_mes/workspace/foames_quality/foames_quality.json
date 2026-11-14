@@ -18,7 +18,7 @@
    "label": "Process Throughput per Day"
   }
  ],
- "content": "[{\"id\": \"HpOibO83BY\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>This Week</b></span>\", \"col\": 12}}, {\"id\": \"ADwUdygKis\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Quality Rate Last 7 Days\", \"col\": 3}}, {\"id\": \"nmDrmri3Tg\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Scrap Last 7 Days\", \"col\": 3}}, {\"id\": \"uNTdUqxlx7\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Quality Suggestions\", \"col\": 3}}, {\"id\": \"ys1ZRdKDOX\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Suggestions\", \"col\": 3}}, {\"id\": \"QJAzIMbYNp\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"4fU63bS4nR\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Quality Rate</b></span>\", \"col\": 12}}, {\"id\": \"lvmDsBEx94\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Quality Rate Trend by Machine\", \"col\": 12}}, {\"id\": \"QL2LAe8PIB\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hj_w-OTHOd\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Suggestions and Flow</b></span>\", \"col\": 12}}, {\"id\": \"FAEXTZUPjq\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Open Suggestions by Category\", \"col\": 4}}, {\"id\": \"Qr3iWmZHc6\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Suggestion Status by Category\", \"col\": 8}}, {\"id\": \"o5BEHTXJlb\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Process Throughput per Day\", \"col\": 12}}, {\"id\": \"e0F4Mz4uMI\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"YTR05Z6eP3\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Shortcuts</b></span>\", \"col\": 12}}, {\"id\": \"3Y_M6OKskZ\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Open Quality Suggestions\", \"col\": 4}}, {\"id\": \"RdVkHbV2i5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"OEE Periods\", \"col\": 4}}, {\"id\": \"2K4Oqf_4NZ\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"OEE Trend\", \"col\": 4}}, {\"id\": \"dstnqlhCRX\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Process Event Logs\", \"col\": 4}}, {\"id\": \"YRvvnaiODY\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Process Throughput\", \"col\": 4}}, {\"id\": \"5HpULlgY6A\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Quality Dashboard\", \"col\": 4}}, {\"id\": \"2jzgtSD7SV\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"WUDIn1DyMe\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Reports and Masters</b></span>\", \"col\": 12}}, {\"id\": \"ZvOQCPbDOC\", \"type\": \"card\", \"data\": {\"card_name\": \"Quality\", \"col\": 4}}, {\"id\": \"m3N7V1rt6p\", \"type\": \"card\", \"data\": {\"card_name\": \"Process Mining\", \"col\": 4}}, {\"id\": \"_7NhsIY4TF\", \"type\": \"card\", \"data\": {\"card_name\": \"Floor\", \"col\": 4}}]",
+ "content": "[{\"id\": \"HpOibO83BY\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>This Week</b></span>\", \"col\": 12}}, {\"id\": \"ADwUdygKis\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Quality Rate Last 7 Days\", \"col\": 3}}, {\"id\": \"nmDrmri3Tg\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Scrap Last 7 Days\", \"col\": 3}}, {\"id\": \"uNTdUqxlx7\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Quality Suggestions\", \"col\": 3}}, {\"id\": \"ys1ZRdKDOX\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Suggestions\", \"col\": 3}}, {\"id\": \"QJAzIMbYNp\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"4fU63bS4nR\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Quality Rate</b></span>\", \"col\": 12}}, {\"id\": \"lvmDsBEx94\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Quality Rate Trend by Machine\", \"col\": 12}}, {\"id\": \"QL2LAe8PIB\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hj_w-OTHOd\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Suggestions and Flow</b></span>\", \"col\": 12}}, {\"id\": \"FAEXTZUPjq\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Open Suggestions by Category\", \"col\": 4}}, {\"id\": \"Qr3iWmZHc6\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Suggestion Status by Category\", \"col\": 8}}, {\"id\": \"o5BEHTXJlb\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Process Throughput per Day\", \"col\": 12}}, {\"id\": \"e0F4Mz4uMI\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"YTR05Z6eP3\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Shortcuts</b></span>\", \"col\": 12}}, {\"id\": \"3Y_M6OKskZ\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Open Quality Suggestions\", \"col\": 4}}, {\"id\": \"RdVkHbV2i5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"OEE Periods\", \"col\": 4}}, {\"id\": \"2K4Oqf_4NZ\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"OEE Trend\", \"col\": 4}}, {\"id\": \"dstnqlhCRX\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Process Event Logs\", \"col\": 4}}, {\"id\": \"YRvvnaiODY\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Process Throughput\", \"col\": 4}}, {\"id\": \"5HpULlgY6A\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Quality Dashboard\", \"col\": 4}}, {\"id\": \"2jzgtSD7SV\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"WUDIn1DyMe\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Reports and Masters</b></span>\", \"col\": 12}}, {\"id\": \"ZvOQCPbDOC\", \"type\": \"card\", \"data\": {\"card_name\": \"Quality\", \"col\": 4}}, {\"id\": \"m3N7V1rt6p\", \"type\": \"card\", \"data\": {\"card_name\": \"Process Mining\", \"col\": 4}}, {\"id\": \"_7NhsIY4TF\", \"type\": \"card\", \"data\": {\"card_name\": \"Floor\", \"col\": 4}}, {\"id\": \"vQ7pL2nXa9\", \"type\": \"card\", \"data\": {\"card_name\": \"Validation\", \"col\": 4}}]",
  "creation": "2026-10-31 12:00:00.000000",
  "custom_blocks": [],
  "docstatus": 0,
@@ -186,9 +186,50 @@
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Validation",
+   "link_count": 3,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Validation Protocol",
+   "link_count": 0,
+   "link_to": "Validation Protocol",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Validation Execution",
+   "link_count": 0,
+   "link_to": "Validation Execution",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Qualification Status",
+   "link_count": 0,
+   "link_to": "Qualification Status",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2026-11-03 20:30:00.000000",
+ "modified": "2026-11-14 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES MES",
  "name": "FoaMES Quality",

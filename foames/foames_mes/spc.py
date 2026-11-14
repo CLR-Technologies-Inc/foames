@@ -361,3 +361,59 @@ def findings(
 				}
 			)
 	return out
+
+
+# --------------------------------------------------------------------- capability
+
+
+def capability(values, lsl: float | None = None, usl: float | None = None, sigma_within=None) -> dict:
+	"""Process capability and performance of readings against specification limits.
+
+	Cp and Cpk use the within-subgroup sigma (MR-bar / d2 of the readings in order, unless
+	`sigma_within` is given, for example the R-bar / d2 of an X-bar R chart); Pp and Ppk use the
+	overall sample standard deviation. Cp and Pp need both limits; Cpk and Ppk take the nearer of the
+	limits given. An index is None when it cannot be computed (no limit on that side, or no spread).
+	`out_of_spec` counts readings beyond a limit, which is what a person checks first."""
+	values = [float(v) for v in values]
+	n = len(values)
+	if n < 2:
+		raise ValueError("capability needs at least two readings")
+	if lsl is not None and usl is not None and usl <= lsl:
+		raise ValueError("the upper specification limit must be above the lower one")
+	mean = statistics.fmean(values)
+	overall = statistics.stdev(values)
+	if sigma_within is None:
+		sigma_within = statistics.fmean(abs(b - a) for a, b in pairwise(values)) / d2(2)
+
+	def indices(sigma):
+		if not sigma or sigma <= 0:
+			return None, None, None, None
+		upper = (usl - mean) / (3 * sigma) if usl is not None else None
+		lower = (mean - lsl) / (3 * sigma) if lsl is not None else None
+		spread = (usl - lsl) / (6 * sigma) if lsl is not None and usl is not None else None
+		sides = [x for x in (upper, lower) if x is not None]
+		return spread, (min(sides) if sides else None), upper, lower
+
+	cp, cpk, cpu, cpl = indices(sigma_within)
+	pp, ppk, ppu, ppl = indices(overall)
+	return {
+		"n": n,
+		"mean": mean,
+		"minimum": min(values),
+		"maximum": max(values),
+		"sigma_within": sigma_within,
+		"sigma_overall": overall,
+		"lsl": lsl,
+		"usl": usl,
+		"cp": cp,
+		"cpk": cpk,
+		"cpu": cpu,
+		"cpl": cpl,
+		"pp": pp,
+		"ppk": ppk,
+		"ppu": ppu,
+		"ppl": ppl,
+		"out_of_spec": sum(
+			1 for v in values if (lsl is not None and v < lsl) or (usl is not None and v > usl)
+		),
+	}

@@ -184,6 +184,8 @@ scheduler_events = {
 		"foames.foames_mes.tasks.compute_daily_oee",
 		# Looks up External References that are still Unverified or Missing in their ERP.
 		"foames.foames_kernel.tasks.refresh_external_references",
+		# Raises suggestions for equipment and process qualifications that are due soon or expired.
+		"foames.foames_validation.tasks.check_requalification",
 	],
 }
 
