@@ -45,7 +45,7 @@ class CycleTimeStandard(Document):
 			if kind and kind != expected:
 				frappe.throw(
 					_("{0} must be an External Reference of type {1}, not {2}").format(
-						self.meta.get_label(field), expected, kind
+						_(self.meta.get_label(field)), _(expected), kind
 					)
 				)
 

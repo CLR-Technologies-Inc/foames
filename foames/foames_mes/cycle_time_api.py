@@ -95,11 +95,11 @@ def project_time(
 	standard: str | None = None,
 	machine: str | None = None,
 	quantity: float = 1,
-	changes=None,
+	changes: str | list | None = None,
 	annual_quantity: float | None = None,
 	use_observed: int = 0,
-	since=None,
-	until=None,
+	since: str | None = None,
+	until: str | None = None,
 	days: int | None = None,
 	min_cycles: float | None = None,
 ) -> dict:
@@ -128,7 +128,7 @@ def project_time(
 
 
 @frappe.whitelist(methods=["GET", "POST"])
-def project_operations(operations, use_observed: int = 0, days: int | None = None) -> dict:
+def project_operations(operations: str | list, use_observed: int = 0, days: int | None = None) -> dict:
 	"""Projections for many operations at once, for a scheduler.
 
 	`operations` is a list of `{"key", "standard" or "machine", "quantity"}`; `key` is echoed back
@@ -169,7 +169,11 @@ def project_operations(operations, use_observed: int = 0, days: int | None = Non
 
 @frappe.whitelist(methods=["GET"])
 def compare_with_observed(
-	standard: str | None = None, machine: str | None = None, since=None, until=None, days: int | None = None
+	standard: str | None = None,
+	machine: str | None = None,
+	since: str | None = None,
+	until: str | None = None,
+	days: int | None = None,
 ) -> dict:
 	"""The standard's one-cycle times next to what its machine did in the window, with variances."""
 	name = resolve_standard(standard, machine)
@@ -192,7 +196,11 @@ def compare_with_observed(
 
 @frappe.whitelist(methods=["GET"])
 def get_observed_cycle(
-	machine: str, since=None, until=None, days: int | None = None, parts_per_cycle: float = 1
+	machine: str,
+	since: str | None = None,
+	until: str | None = None,
+	days: int | None = None,
+	parts_per_cycle: float = 1,
 ) -> dict:
 	"""Observed automatic time and idle time per cycle on a machine, without a standard."""
 	frappe.has_permission("Machine Event", "read", throw=True)
