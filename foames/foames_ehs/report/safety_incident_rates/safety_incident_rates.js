@@ -20,7 +20,7 @@ frappe.query_reports["Safety Incident Rates"] = {
 			label: __("Hours Worked"),
 			fieldtype: "Float",
 			description: __(
-				"Total hours worked by everyone covered in the period; the rates are per 200,000 hours",
+				"Total hours worked by everyone covered in the period; the rates are per 200,000 hours"
 			),
 		},
 		{ fieldname: "machine", label: __("Machine"), fieldtype: "Link", options: "Machine" },
