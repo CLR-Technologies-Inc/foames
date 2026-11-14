@@ -15,7 +15,8 @@ import json
 def jsonl_documents(path):
 	"""(name, doc) pairs from a JSON Lines file with one `[name, doc]` array per line, the format
 	suitcase-jsonl writes. Blank lines are skipped."""
-	with open(path, encoding="utf-8") as handle:
+	# The path is one the operator named on the command line of a local tool, not request input.
+	with open(path, encoding="utf-8") as handle:  # nosemgrep
 		for number, line in enumerate(handle, 1):
 			line = line.strip()
 			if not line:
