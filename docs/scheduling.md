@@ -13,7 +13,7 @@ Scheduling only plans. It does not start jobs, change machine state or write to 
 | Working time of each machine | Its [Shift Pattern](oee.md#shift-patterns) (shifts and non-working days), else its Shift Start and Scheduled Minutes per Day, else the whole day. Back-to-back shifts form one stretch of working time. |
 | Blocked time | Open Maintenance Work Orders (from their start when In Progress, else from their due time, for the plan's Estimated Minutes) and Downtime Records entered ahead with a start and an end. |
 | Machines a row may use | The row's Machines list; else every machine of its Machine Type; else every machine in the schedule's scope (its Line, or all enabled machines). |
-| Setup and run time | Setup Minutes from the row. Run time is the row's Run Minutes; else Quantity times a cycle time from, in order, the row's Cycle Seconds, the first `foames_cycle_time_estimators` hook that answers, and the machine's Ideal Cycle Seconds. A machine with no cycle time for a row is left out for that row and listed under Problems. |
+| Setup and run time | Setup Minutes from the row. Run time is the row's Run Minutes; else Quantity times the row's Cycle Seconds; else the machine-occupied minutes from the machine's default Cycle Time Standard, when cycle time projections are installed; else Quantity times a cycle time from the first `foames_cycle_time_estimators` hook that answers, or the machine's Ideal Cycle Seconds. A machine with no cycle time for a row is left out for that row and listed under Problems. |
 | Order inside a job | Operations of one job run in Sequence order, each starting after the previous one ends plus its Transfer Minutes (move, cure or queue time). |
 
 The heuristic is forward list scheduling, as most MES and APS tools do it:
@@ -83,7 +83,7 @@ def open_operations(start, end, line):
 
 ## Cycle time estimates
 
-When a row has neither Run Minutes nor Cycle Seconds, the `foames_cycle_time_estimators` hooks are asked before the machine's Ideal Cycle Seconds. Each is called with the row (as a dict) and the machine row (name, line, machine type, ideal cycle seconds, shift settings) and returns seconds per unit, or None to pass. Use it to feed measured or projected cycle times, for example manual against automatic time per operation, into the plan.
+When a row has neither Run Minutes nor Cycle Seconds and no Cycle Time Standard answers for the machine, the `foames_cycle_time_estimators` hooks are asked before the machine's Ideal Cycle Seconds. Each is called with the row (as a dict) and the machine row (name, line, machine type, ideal cycle seconds, shift settings) and returns seconds per unit, or None to pass. Use it to feed measured or projected cycle times, for example manual against automatic time per operation, into the plan.
 
 ```python
 foames_cycle_time_estimators = ["myapp.timing.seconds_per_unit"]

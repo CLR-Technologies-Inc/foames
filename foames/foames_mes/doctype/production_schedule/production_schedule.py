@@ -308,21 +308,43 @@ def blocked_time(machine: str, start, end) -> list[tuple]:
 def operation_minutes(row, machine) -> tuple[float, float] | None:
 	"""(setup, run) minutes of a row on a machine, or None when no cycle time is known.
 
-	The run time is the row's Run Minutes; else its quantity times a cycle time taken, in order, from
-	the row, from the first `foames_cycle_time_estimators` hook that answers, and from the machine's
-	Ideal Cycle Seconds."""
+	The run time is the row's Run Minutes; else its quantity times the row's Cycle Seconds; else the
+	machine-occupied minutes of the machine's default Cycle Time Standard, when cycle time projections
+	are installed; else its quantity times a cycle time from the first `foames_cycle_time_estimators`
+	hook that answers, or from the machine's Ideal Cycle Seconds."""
 	setup = flt(row.setup_minutes)
 	if row.run_minutes:
 		return setup, flt(row.run_minutes)
 	quantity = flt(row.quantity)
 	if quantity <= 0:
 		return setup, 0.0
-	seconds = (
-		flt(row.cycle_seconds) or estimated_cycle_seconds(row, machine) or flt(machine.ideal_cycle_seconds)
-	)
+	if flt(row.cycle_seconds):
+		return setup, quantity * flt(row.cycle_seconds) / 60.0
+	projected = projected_minutes(row, machine, quantity)
+	if projected is not None:
+		return setup, projected
+	seconds = estimated_cycle_seconds(row, machine) or flt(machine.ideal_cycle_seconds)
 	if not seconds:
 		return None
 	return setup, quantity * seconds / 60.0
+
+
+def projected_minutes(row, machine, quantity: float) -> float | None:
+	"""Machine-occupied minutes from the machine's default Cycle Time Standard, when the cycle time
+	projections module is installed and the machine has one; None otherwise."""
+	try:
+		from foames.foames_mes.cycle_time_api import project_operations
+	except ImportError:
+		return None
+	try:
+		answer = project_operations([{"key": row.name, "machine": machine.name, "quantity": quantity}])
+	except Exception:
+		frappe.clear_last_message()
+		return None
+	rows = (answer or {}).get("operations") or []
+	if not rows or rows[0].get("error") or rows[0].get("elapsed_minutes") is None:
+		return None
+	return flt(rows[0]["elapsed_minutes"])
 
 
 def estimated_cycle_seconds(row, machine) -> float | None:
