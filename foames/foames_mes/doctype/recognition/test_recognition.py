@@ -177,7 +177,10 @@ class TestRecognition(IntegrationTestCase):
 			)
 		)
 		week = start.isoformat()
-		self.assertEqual(keys, {f"team:T-REC-LINE:{week}:oee-up", f"team:T-REC-LINE:{week}:zero-scrap"})
+		# 72 vs 60 OEE, no scrap, and quality from 97.6% (480 good, 12 scrap) to 100%.
+		self.assertEqual(
+			keys, {f"team:T-REC-LINE:{week}:{code}" for code in ("oee-up", "zero-scrap", "quality-up")}
+		)
 		self.assertFalse(
 			[
 				n
