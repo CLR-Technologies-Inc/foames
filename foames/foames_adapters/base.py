@@ -25,6 +25,7 @@ REFERENCE_TYPES = (
 	"Bill of Materials",
 	"Routing",
 	"Workstation",
+	"Asset",
 )
 
 

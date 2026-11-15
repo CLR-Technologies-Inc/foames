@@ -670,6 +670,142 @@ class TestDowntimeEntries(ERPNextTestCase):
 		self.assertEqual(frappe.db.count("Downtime Entry", {"workstation": self.fixtures.WORKSTATION}), 0)
 
 
+class TestAssetRepairs(ERPNextTestCase):
+	"""A Maintenance Work Order that starts becomes an ERPNext Asset Repair on the machine's Asset,
+	and the repair follows the work order to completion or cancellation."""
+
+	def setUp(self):
+		super().setUp()
+		from foames.foames_mes.doctype.maintenance_plan.test_maintenance_plan import make_plan
+		from foames.foames_mes.doctype.oee_period.test_oee_period import make_machine
+
+		settings = frappe.get_single("ERPNext Adapter Settings")
+		self.restore = {
+			"post_maintenance_to_erpnext": settings.post_maintenance_to_erpnext,
+			"submit_asset_repairs": settings.submit_asset_repairs,
+		}
+		settings.update({"post_maintenance_to_erpnext": 1, "submit_asset_repairs": 1}).save()
+		self.addCleanup(self.restore_settings)
+		self.asset = self.fixtures.ensure_asset()
+		reference = get_reference("Asset", self.asset, ADAPTER_KEY)
+		self.machine = make_machine("FOAMES-TEST-MWO-SYNC", asset_reference=reference)
+		frappe.db.set_value("Machine", self.machine.name, "asset_reference", reference)
+		self.clear_repairs()
+		self.addCleanup(self.clear_repairs)
+		self.plan = make_plan(self.machine.name, title="Change the belt")
+
+	def restore_settings(self):
+		frappe.get_single("ERPNext Adapter Settings").update(self.restore).save()
+		frappe.db.commit()  # nosemgrep
+
+	def clear_repairs(self):
+		"""The outbox commits, so repairs outlive the test's rollback; a submitted one is cancelled
+		first, as ERPNext requires."""
+		for name, docstatus in frappe.get_all(
+			"Asset Repair", {"asset": self.asset}, ["name", "docstatus"], as_list=True
+		):
+			if docstatus == 1:
+				frappe.get_doc("Asset Repair", name).cancel()
+			frappe.delete_doc("Asset Repair", name, ignore_permissions=True, force=True)
+		frappe.db.commit()  # nosemgrep
+
+	def work_order(self, **values):
+		return frappe.get_doc(
+			{"doctype": "Maintenance Work Order", "maintenance_plan": self.plan.name, **values}
+		).insert()
+
+	def queued(self):
+		return frappe.get_all(
+			"ERPNext Outbox", {"operation": "Asset Repair"}, pluck="name", order_by="creation"
+		)
+
+	def repairs(self):
+		return frappe.get_all(
+			"Asset Repair",
+			{"asset": self.asset},
+			["name", "repair_status", "docstatus", "failure_date", "completion_date", "actions_performed"],
+		)
+
+	def test_a_started_work_order_becomes_a_repair_that_follows_it_to_completion(self):
+		order = self.work_order()
+		self.assertEqual(self.queued(), [])
+
+		order.status = "In Progress"
+		order.started_on = add_to_date(now_datetime(), hours=-2)
+		order.save()
+		self.assertEqual(len(self.queued()), 1)
+		# Saving the same state again queues nothing new.
+		frappe.get_doc("Maintenance Work Order", order.name).save()
+		self.assertEqual(len(self.queued()), 1)
+		self.assertEqual(self.run_outbox(), 1)
+		record = self.outbox(self.queued()[0])
+		self.assertEqual(record.status, "Posted", record.last_error)
+		(repair,) = self.repairs()
+		self.assertEqual(repair.repair_status, "Pending")
+		self.assertEqual(repair.docstatus, 0)
+		self.assertEqual(get_datetime(repair.failure_date), get_datetime(order.started_on))
+		self.assertEqual(frappe.db.get_value("Asset", self.asset, "status"), "Out of Order")
+		description = frappe.db.get_value("Asset Repair", repair.name, "description")
+		self.assertIn(rules.repair_marker(order.name), description)
+		self.assertIn("Change the belt", description)
+		self.assertEqual(json.loads(record.response)["repair_status"], "Pending")
+
+		order = frappe.get_doc("Maintenance Work Order", order.name)
+		order.status = "Completed"
+		order.completed_on = add_to_date(order.started_on, minutes=90)
+		order.findings = "Belt replaced, tension set"
+		order.save()
+		self.assertEqual(len(self.queued()), 2)
+		self.assertEqual(self.run_outbox(), 1)
+		(repair,) = self.repairs()
+		self.assertEqual(repair.repair_status, "Completed")
+		self.assertEqual(repair.docstatus, 1)
+		self.assertEqual(get_datetime(repair.completion_date), get_datetime(order.completed_on))
+		self.assertEqual(repair.actions_performed, "Belt replaced, tension set")
+		self.assertTrue(frappe.db.get_value("Asset Repair", repair.name, "downtime"))
+		self.assertNotEqual(frappe.db.get_value("Asset", self.asset, "status"), "Out of Order")
+		# A replay finds the submitted repair and leaves it alone.
+		again = enqueue(
+			"Asset Repair",
+			json.loads(self.outbox(self.queued()[1]).payload),
+			"maintenance:replay",
+			reference_doctype="Maintenance Work Order",
+			reference_name=order.name,
+		)
+		self.run_outbox()
+		self.assertEqual(self.outbox(again).status, "Posted")
+		self.assertEqual(len(self.repairs()), 1)
+
+	def test_a_cancelled_work_order_cancels_its_repair_or_posts_nothing(self):
+		never_started = self.work_order()
+		never_started.status = "Cancelled"
+		never_started.save()
+		self.assertEqual(self.queued(), [])
+
+		order = self.work_order()
+		order.status = "In Progress"
+		order.save()
+		self.run_outbox()
+		# The repair exists now, so it is finished on its own asset even though the machine no
+		# longer points at one and the setting has been turned off in the meantime.
+		frappe.db.set_value("Machine", self.machine.name, "asset_reference", None)
+		frappe.get_single("ERPNext Adapter Settings").update({"post_maintenance_to_erpnext": 0}).save()
+		order = frappe.get_doc("Maintenance Work Order", order.name)
+		order.status = "Cancelled"
+		order.save()
+		self.assertEqual(len(self.queued()), 2)
+		self.assertEqual(json.loads(self.outbox(self.queued()[1]).payload)["asset"], self.asset)
+		self.assertEqual(self.run_outbox(), 1)
+		(repair,) = self.repairs()
+		self.assertEqual((repair.repair_status, repair.docstatus), ("Cancelled", 0))
+		self.assertNotEqual(frappe.db.get_value("Asset", self.asset, "status"), "Out of Order")
+
+		other = self.work_order()
+		other.status = "In Progress"
+		other.save()
+		self.assertEqual(len(self.queued()), 2)
+
+
 class TestTraceability(ERPNextTestCase):
 	"""The batch and serial numbers a Manufacture entry gives the finished good, and the External
 	References FoaMES keeps for them."""

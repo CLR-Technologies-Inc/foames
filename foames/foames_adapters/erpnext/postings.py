@@ -57,6 +57,8 @@ STOP_REASON_BY_CATEGORY = {
 	"Breakdown": "Machine malfunction",
 	"Planned": "Unplanned machine maintenance",
 }
+# The states ERPNext's Asset Repair knows; a Pending repair puts the Asset out of order.
+REPAIR_STATUSES = ("Pending", "Completed", "Cancelled")
 # The documents a Quality Inspection from the floor can be about, and the inspection type each
 # gets unless the payload says otherwise (a Job Card is inspected in process, a Manufacture entry
 # as the finished good comes in).
@@ -143,6 +145,19 @@ OPERATIONS: dict[str, Operation] = {
 		optional=("operator", "stop_reason", "remarks", "downtime_record"),
 		doctype="Downtime Entry",
 	),
+	"Asset Repair": Operation(
+		label="Asset Repair",
+		required=("asset", "failure_date"),
+		optional=(
+			"completion_date",
+			"repair_status",
+			"description",
+			"actions_performed",
+			"maintenance_work_order",
+			"submit",
+		),
+		doctype="Asset Repair",
+	),
 	"Quality Inspection": Operation(
 		label="Quality Inspection",
 		required=("reference_type", "reference_name"),
@@ -185,6 +200,12 @@ def downtime_marker(downtime_record: str) -> str:
 	"""The marker that ties an ERPNext Downtime Entry to its FoaMES Downtime Record, whatever
 	posting created or last changed it."""
 	return marker(f"downtime-record:{downtime_record}")
+
+
+def repair_marker(maintenance_work_order: str) -> str:
+	"""The marker that ties an ERPNext Asset Repair to its FoaMES Maintenance Work Order, whatever
+	posting created or last changed it."""
+	return marker(f"maintenance-work-order:{maintenance_work_order}")
 
 
 def marker(idempotency_key: str) -> str:
@@ -259,6 +280,18 @@ def prepare(operation: Operation, payload: dict) -> dict:
 		raise ValueError(f"Workstation Status must be one of {', '.join(WORKSTATION_STATUSES)}")
 	if operation.label == "Downtime Entry" and str(prepared["from_time"]) >= str(prepared["to_time"]):
 		raise ValueError("Downtime Entry needs from_time before to_time")
+	if operation.label == "Asset Repair":
+		status = prepared.get("repair_status") or "Pending"
+		if status not in REPAIR_STATUSES:
+			raise ValueError(f"Asset Repair repair_status must be one of {', '.join(REPAIR_STATUSES)}")
+		prepared["repair_status"] = status
+		completion = prepared.get("completion_date")
+		if status == "Completed" and completion in (None, ""):
+			raise ValueError("Asset Repair needs completion_date when repair_status is Completed")
+		if completion not in (None, "") and str(completion) < str(prepared["failure_date"]):
+			raise ValueError("Asset Repair needs failure_date before completion_date")
+		if prepared.get("submit") and status != "Completed":
+			raise ValueError("Asset Repair can only be submitted when repair_status is Completed")
 	if operation.label == "Quality Inspection":
 		if prepared["reference_type"] not in INSPECTION_REFERENCE_TYPES:
 			raise ValueError(

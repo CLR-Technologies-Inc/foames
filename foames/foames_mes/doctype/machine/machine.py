@@ -17,6 +17,7 @@ from frappe.utils import get_datetime, now_datetime
 REFERENCE_TYPES = {
 	"workstation_reference": "Workstation",
 	"location_reference": "Location",
+	"asset_reference": "Asset",
 	"current_job_reference": "Job Card",
 }
 

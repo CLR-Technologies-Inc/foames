@@ -38,6 +38,7 @@ ERPNEXT_DOCTYPES = {
 	"Bill of Materials": ("BOM", "item"),
 	"Routing": ("Routing", "routing_name"),
 	"Workstation": ("Workstation", "workstation_name"),
+	"Asset": ("Asset", "asset_name"),
 }
 
 # The reverse map, for document events coming from ERPNext.

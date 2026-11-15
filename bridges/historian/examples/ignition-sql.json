@@ -1,0 +1,14 @@
+{
+	"source": {
+		"type": "ignition-sql",
+		"name": "ignition-hist",
+		"driver": "psycopg",
+		"connect": {"host": "historian-db.example.com", "dbname": "ignition", "user": "foames_read"},
+		"gateway": "plant-gateway"
+	},
+	"tags": [
+		{"tag": "[default]Line1/Press1/Temperature", "machine": "press-1", "name": "temperature"},
+		{"tag": "[default]Line1/Press1/Good", "machine": "press-1", "type": "Count", "counter": "good"},
+		{"tag": "[default]Line1/Press1/StateCode", "machine": "press-1", "type": "State", "states": {"0": "Down", "1": "Running", "2": "Idle", "3": "Setup"}}
+	]
+}
