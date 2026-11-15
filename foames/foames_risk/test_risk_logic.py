@@ -278,6 +278,12 @@ class TestFindings(unittest.TestCase):
 		)
 		self.assertEqual(kinds(findings(r, TODAY)), ["evidence", "indicator", "source", "target"])
 
+	def test_titles_fit(self):
+		r = open_risk(title="x" * 300, within_tolerance=False, next_review_on=date(2026, 1, 1))
+		for f in findings(r, TODAY):
+			self.assertLessEqual(len(f["title"]), 140)
+			self.assertTrue(f["title"].startswith("Risk RISK-2026-00001: "))
+
 	def test_findings_point_at_the_risk(self):
 		f = findings(open_risk(next_review_on=date(2026, 1, 1)), TODAY)[0]
 		self.assertEqual(f["reference_doctype"], "Enterprise Risk")

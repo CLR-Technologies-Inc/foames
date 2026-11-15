@@ -285,6 +285,31 @@ def heat_map(risks: list[dict], which: str = "residual") -> list[list[int]]:
 	return grid
 
 
+# The short form of each finding, for the suggestion's title (at most 140 characters).
+FINDING_TITLES = {
+	"tolerance": "above tolerance, not accepted",
+	"review": "review overdue",
+	"hierarchy": "relies only on lower-order controls",
+	"verify": "control verification overdue",
+	"ineffective": "control failed or ineffective",
+	"evidence": "control evidence no longer holds",
+	"indicator": "key risk indicator breached",
+	"target": "target date missed",
+	"source": "linked assessment rates higher",
+}
+TITLE_LENGTH = 140
+
+
+def suggestion_title(name: str, title: str, kind: str) -> str:
+	"""'Risk <name>: <short finding> (<risk title>)', shortened to fit the suggestion's title."""
+	head = f"Risk {name}: {FINDING_TITLES[kind]}"
+	full = f"{head} ({title})" if title and title != name else head
+	if len(full) <= TITLE_LENGTH:
+		return full
+	room = TITLE_LENGTH - len(head) - 4
+	return f"{head} ({title[:room].rstrip()}…)" if room > 8 else head[:TITLE_LENGTH]
+
+
 def rule_key(kind: str, name: str, extra: str = "") -> str:
 	return f"risk:{kind}:{name}" + (f":{extra}" if extra else "")
 
@@ -310,7 +335,7 @@ def findings(risk: dict, today: date) -> list[dict]:
 		out.append(
 			{
 				**base,
-				"title": f"Risk {name}: {text}",
+				"title": suggestion_title(name, title, kind),
 				"severity": severity,
 				"suggestion": f"<p>{title}: {text}.</p>",
 				"evidence": evidence,

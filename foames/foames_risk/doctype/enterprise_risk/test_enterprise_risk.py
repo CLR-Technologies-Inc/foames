@@ -207,6 +207,8 @@ class TestEnterpriseRisk(IntegrationTestCase):
 		doc.status = "Closed"
 		with as_user(ENGINEER), self.assertRaises(frappe.ValidationError):
 			doc.save()
+		doc.reload()
+		doc.status = "Closed"
 		doc.closure_note = "Process retired"
 		with as_user(ENGINEER):
 			doc.save()
