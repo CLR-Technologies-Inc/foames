@@ -31,7 +31,7 @@ from frappe import _
 
 from foames.foames_topology import graph as topo
 from foames.foames_topology import ingest as ingest_rules
-from foames.foames_topology import store
+from foames.foames_topology import model, store
 
 WRITER_ROLES = ("System Manager", "FoaMES Engineer", "FoaMES Integration")
 
@@ -110,7 +110,11 @@ def overlay(assets=None, source_doctype=None, source_names=None, tenant=None):
 		by_source = {
 			n["source_name"]: n["id"]
 			for n in graph.nodes.values()
-			if n["source_doctype"] == source_doctype and (not names or n["source_name"] in names)
+			# Only the physical asset: a machine's event stream and KPI name the Machine as their
+			# source too.
+			if n["layer"] == model.PHYSICAL
+			and n["source_doctype"] == source_doctype
+			and (not names or n["source_name"] in names)
 		}
 		result = topo.overlay(graph, set(by_source.values()))
 		return {source: result[node_id] for source, node_id in by_source.items() if node_id in result}
