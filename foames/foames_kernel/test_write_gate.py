@@ -88,6 +88,7 @@ class TestWriteGate(IntegrationTestCase):
 		# hold, so that the tests that run next see a read-write test site.
 		for doctype in ("ERPNext Outbox", "Pending Write", "Write Audit Log", "Connector Write Policy"):
 			frappe.db.delete(doctype)
+		frappe.db.delete("Machine", {"name": ("like", "T-RO-%")})
 		set_mode(read_only_mode=0, new_connectors_read_only=0)
 		frappe.db.commit()  # nosemgrep
 		super().tearDown()
