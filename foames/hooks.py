@@ -1,3 +1,6 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 app_name = "foames"
 app_title = "FoaMES"
 app_publisher = "CLR Technologies Inc."
