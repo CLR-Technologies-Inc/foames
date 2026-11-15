@@ -98,6 +98,12 @@ class NPIProgram(Document):
 			for d in self.deliverables
 		]
 
+	def criteria_rows(self):
+		return [
+			{"stage": c.stage, "kind": c.kind, "criterion": c.criterion, "required": c.required, "met": c.met}
+			for c in self.criteria
+		]
+
 	@frappe.whitelist()
 	def record_gate_decision(
 		self,

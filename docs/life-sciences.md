@@ -100,7 +100,7 @@ A Product Requirements Document (numbered `REQ-`) lists requirements with an ID 
 | CQA | a QTPP element (or another top-level requirement) | The analytical method and its acceptance criteria |
 | Regulatory, Business | (top level) | As stated |
 
-Saving refuses duplicate IDs, a parent that is not in the document and a refinement at the wrong level. Submitting is approval and must be done by someone other than the person who prepared the document. After approval only the trace columns change as the work is done (design output, verification reference and status, validation reference); a change to a requirement is an amendment, which makes the next revision.
+Saving refuses duplicate IDs, a parent that is not in the document and a refinement at the wrong level. Submitting is approval and must be done by someone other than the person who prepared the document. After approval only the trace columns change as the work is done (design output, verification reference and status, validation reference), and FoaMES Quality records them, since changing a submitted document takes submit permission; a change to a requirement is an amendment, which makes the next revision.
 
 **Trace Matrix** on the form, and `get_requirements_trace`, show every requirement with what it refines, its children, design output, verification and validation, and its gaps: a user need or QTPP element that nothing refines, a user need with no validation, a design input or CQA without acceptance criteria, verification method or design output, and anything not yet verified or failed. The form keeps the percentage verified, the percentage refined and the count of requirements with gaps current.
 

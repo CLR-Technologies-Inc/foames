@@ -359,7 +359,7 @@ class TestRequirementsAndTransfer(IntegrationTestCase):
 		self.assertEqual(prd.approved_by, QUALITY)
 		prd.requirements[1].verification_status = "Passed"
 		prd.requirements[1].verification_reference = "VER-001"
-		with as_user(ENGINEER):
+		with as_user(QUALITY):
 			prd.save()
 		prd.reload()
 		self.assertEqual(prd.percent_verified, 100)
