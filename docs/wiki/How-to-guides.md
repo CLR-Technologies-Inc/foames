@@ -33,7 +33,7 @@ How-to guides are recipes for people who already run FoaMES and need to get one 
 
 | Guide | Use it to |
 | --- | --- |
-| [Connect an agent CLI or harness](How-to-Connect-an-agent-CLI-or-harness) | Connect Claude Code, Codex CLI, Gemini CLI, Cursor, any MCP client or a custom harness to a FoaMES site |
+| [Connect an agent CLI or harness](How-to-Connect-an-agent-CLI-or-harness) | Connect Claude Code, Codex CLI, Google Antigravity, Gemini CLI, Cursor, any MCP client or a custom harness to a FoaMES site |
 | [Seed a dev site for agent tests](How-to-Seed-a-dev-site-for-agent-tests) | Fill a dev site with a shift of invented machine data for agents to analyse |
 | [Run the agent benchmark](How-to-Run-the-agent-benchmark) | Compare coding agents on the six FoaMES tasks, read the results and pick a model |
 | [Add your own agent to the benchmark](How-to-Add-your-own-agent-to-the-benchmark) | Benchmark a harness, model or script that is not configured yet |

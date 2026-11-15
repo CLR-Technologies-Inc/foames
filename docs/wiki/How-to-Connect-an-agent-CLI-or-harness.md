@@ -42,9 +42,33 @@ args = ["/path/to/bridge.py"]
 env = { FOAMES_URL = "https://mes.example.com", FOAMES_API_KEY = "<api_key>", FOAMES_API_SECRET = "<api_secret>" }
 ```
 
-### Gemini CLI
+### Google Antigravity (the `agy` CLI, the IDE and the app)
 
-In `~/.gemini/settings.json` (or `.gemini/settings.json` in a project), over HTTP:
+Google's [Antigravity CLI migration guide](https://antigravity.google/docs/cli/gcli-migration/) presents the Antigravity CLI, command `agy`, as the successor to Gemini CLI. It keeps Gemini CLI's conventions, such as `GEMINI.md`, and offers to migrate a Gemini CLI setup the first time `agy` runs (or with `agy plugin import gemini`). The Antigravity CLI, IDE and app all read MCP servers from the same file ([Antigravity MCP docs](https://antigravity.google/docs/mcp/)):
+
+| Scope | File |
+| --- | --- |
+| All projects | `~/.gemini/config/mcp_config.json` |
+| One workspace | `<workspace>/.agents/mcp_config.json` |
+
+Antigravity talks to remote servers over Streamable HTTP and accepts custom headers, so connect over HTTP directly:
+
+```json
+{
+  "mcpServers": {
+    "foames": {
+      "serverUrl": "https://mes.example.com/api/method/foames.foames_mcp.api.mcp",
+      "headers": { "Authorization": "token <api_key>:<api_secret>" }
+    }
+  }
+}
+```
+
+Note the key is `serverUrl` (or `url`). Gemini CLI's `httpUrl` is not accepted. In the CLI, `/mcp` opens the server manager. In the IDE, open the agent panel's **…** menu, then **MCP Servers**, **Manage MCP Servers**, **View raw config**. In the app, go to **Customizations**, **Installed**, **MCP Servers**.
+
+### Gemini CLI (legacy)
+
+If you still run Gemini CLI, it reads `~/.gemini/settings.json` (or `.gemini/settings.json` in a project):
 
 ```json
 {
@@ -56,6 +80,8 @@ In `~/.gemini/settings.json` (or `.gemini/settings.json` in a project), over HTT
   }
 }
 ```
+
+When you move to Antigravity, its migration writes this entry into `mcp_config.json` and renames `httpUrl` to `serverUrl`. Google's Antigravity pages that we checked (November 2026) do not give an end-of-support date for Gemini CLI. Several third-party migration guides report that it has been retired in favour of Antigravity. Prefer Antigravity for new setups.
 
 ### Cursor, Claude Desktop, VS Code and other desktop clients
 

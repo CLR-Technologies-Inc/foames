@@ -36,7 +36,8 @@ Permissions are those of the key's user. See [Roles and permissions](Reference-R
 | Client | Where | Transport |
 | --- | --- | --- |
 | Claude Code | `claude mcp add --transport http foames <endpoint> --header "Authorization: token ..."` | HTTP |
-| Gemini CLI | `~/.gemini/settings.json`, `mcpServers.foames.httpUrl` and `headers` | HTTP |
+| Google Antigravity (CLI `agy`, IDE, app) | `~/.gemini/config/mcp_config.json` or `.agents/mcp_config.json`, `mcpServers.foames.serverUrl` and `headers` | HTTP |
+| Gemini CLI (legacy) | `~/.gemini/settings.json`, `mcpServers.foames.httpUrl` and `headers` | HTTP |
 | Codex CLI | `~/.codex/config.toml`, `[mcp_servers.foames]` with `command`, `args`, `env` | stdio bridge |
 | Claude Desktop | `claude_desktop_config.json`, `mcpServers.foames` with `command`, `args`, `env` | stdio bridge |
 | Cursor | `~/.cursor/mcp.json`, same shape as Claude Desktop | stdio bridge |

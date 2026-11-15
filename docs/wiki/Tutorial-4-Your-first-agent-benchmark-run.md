@@ -1,4 +1,4 @@
-In this tutorial you will go from nothing to a scored test of your own coding agent on FoaMES. You will check that the benchmark's grader works, run one task with an agent of your choice inside a sandbox, and read its score. Any CLI or harness works: Claude Code, Codex CLI, Gemini CLI, OpenCode, Aider, or a script of your own.
+In this tutorial you will go from nothing to a scored test of your own coding agent on FoaMES. You will check that the benchmark's grader works, run one task with an agent of your choice inside a sandbox, and read its score. Any CLI or harness works: Claude Code, Codex CLI, Gemini CLI, OpenCode, Aider, Google Antigravity (added as your own agent), or a script of your own.
 
 **You need:** Git, Python 3.10 or later, and Docker (recommended) on Linux, macOS or Windows. Your agent's CLI and an API key for it, or a local model. **You do not need a Frappe site**: the six benchmark tasks run with plain Python.
 
