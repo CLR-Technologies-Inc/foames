@@ -10,7 +10,8 @@ optional shebang line) with:
     # SPDX-License-Identifier: Apache-2.0
 
 (`//` instead of `#` in JavaScript). Files that came from a third party and keep their own notice
-are listed in THIRD_PARTY below. No file may point at a `license.txt`: the license is in LICENSE.
+are listed in THIRD_PARTY below. No source file may point at a `license.txt`: the license is in
+LICENSE. (Documentation may mention it, to explain the old header.)
 
 Standard library only. Run from the repository root:
 
@@ -57,11 +58,11 @@ def problems(root: Path, files: list[str]) -> list[str]:
 			text = path.read_text(encoding="utf-8")
 		except UnicodeDecodeError:
 			continue
-		if DANGLING.search(text) and name != ".github/scripts/check_license_headers.py":
-			found.append(f"{name}: refers to a license.txt; the license is in LICENSE")
 		checked = path.suffix in SUFFIXES or path.name in NAMES
 		if not checked or name in THIRD_PARTY or not text.strip():
 			continue
+		if DANGLING.search(text) and name != ".github/scripts/check_license_headers.py":
+			found.append(f"{name}: refers to a license.txt; the license is in LICENSE")
 		comment = "//" if path.suffix == ".js" else "#"
 		if not HEADERS[comment].match(text):
 			found.append(f"{name}: missing the Apache-2.0 license header")
