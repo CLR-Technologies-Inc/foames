@@ -45,7 +45,8 @@ def main(argv=None) -> int:
 			site=args.site_name,
 		)
 	else:
-		stream = sys.stdin if args.log == "-" else open(args.log, encoding="utf-8")
+		# The operator names the file on the command line.
+		stream = sys.stdin if args.log == "-" else open(args.log, encoding="utf-8")  # nosemgrep
 		with stream:
 			events, skipped = agents.read_events(stream)
 		if skipped:

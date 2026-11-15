@@ -55,7 +55,12 @@ def _graph(tenant=None, layers=None, provider=None, include_disabled=0):
 
 
 @frappe.whitelist()
-def get_graph(tenant=None, layers=None, provider=None, include_disabled=0):
+def get_graph(
+	tenant: str | None = None,
+	layers: str | list | None = None,
+	provider: str | None = None,
+	include_disabled: int | str = 0,
+):
 	graph = _graph(tenant, layers, provider, include_disabled)
 	out = topo.graph_dict(graph)
 	out["last_sync_at"] = frappe.db.get_single_value("Topology Settings", "last_sync_at")
@@ -63,29 +68,34 @@ def get_graph(tenant=None, layers=None, provider=None, include_disabled=0):
 
 
 @frappe.whitelist()
-def get_mermaid(tenant=None, layers=None, provider=None, direction="TB"):
+def get_mermaid(
+	tenant: str | None = None,
+	layers: str | list | None = None,
+	provider: str | None = None,
+	direction: str = "TB",
+):
 	if direction not in ("TB", "TD", "BT", "LR", "RL"):
 		frappe.throw(_("direction must be TB, TD, BT, LR or RL"))
 	return topo.to_mermaid(_graph(tenant, layers, provider), direction=direction)
 
 
 @frappe.whitelist()
-def grafana(tenant=None, layers=None, provider=None):
+def grafana(tenant: str | None = None, layers: str | list | None = None, provider: str | None = None):
 	return topo.to_grafana(_graph(tenant, layers, provider))
 
 
 @frappe.whitelist()
-def grafana_nodes(tenant=None, layers=None, provider=None):
+def grafana_nodes(tenant: str | None = None, layers: str | list | None = None, provider: str | None = None):
 	return grafana(tenant, layers, provider)["nodes"]
 
 
 @frappe.whitelist()
-def grafana_edges(tenant=None, layers=None, provider=None):
+def grafana_edges(tenant: str | None = None, layers: str | list | None = None, provider: str | None = None):
 	return grafana(tenant, layers, provider)["edges"]
 
 
 @frappe.whitelist()
-def trace(asset, direction="downstream", tenant=None):
+def trace(asset: str, direction: str = "downstream", tenant: str | None = None):
 	graph = _graph(tenant)
 	if asset not in graph.nodes:
 		frappe.throw(
@@ -98,7 +108,12 @@ def trace(asset, direction="downstream", tenant=None):
 
 
 @frappe.whitelist()
-def overlay(assets=None, source_doctype=None, source_names=None, tenant=None):
+def overlay(
+	assets: str | list | None = None,
+	source_doctype: str | None = None,
+	source_names: str | list | None = None,
+	tenant: str | None = None,
+):
 	"""Per physical asset: status, data health and bound signals.
 
 	Either assets (asset ids) or source_doctype with source_names (for example "PID Component"
@@ -123,7 +138,7 @@ def overlay(assets=None, source_doctype=None, source_names=None, tenant=None):
 
 
 @frappe.whitelist(methods=["POST"])
-def ingest(report=None, **fields):
+def ingest(report: dict | str | None = None, **fields):
 	"""Write a collector report. Body: the report object (see ingest.py) as JSON, either as it is
 	or under a "report" key."""
 	if not set(WRITER_ROLES) & set(frappe.get_roles()):

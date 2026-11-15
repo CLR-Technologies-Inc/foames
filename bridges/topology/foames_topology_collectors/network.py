@@ -38,7 +38,8 @@ def _time(value, fallback):
 def read_status(path: str | None = None) -> dict:
 	"""The status JSON, from a file (for tests and air-gapped runs) or the tailscale CLI."""
 	if path:
-		with open(path, encoding="utf-8") as f:
+		# The operator names the file on the command line.
+		with open(path, encoding="utf-8") as f:  # nosemgrep
 			return json.load(f)
 	out = subprocess.run(["tailscale", "status", "--json"], check=True, capture_output=True, text=True)
 	return json.loads(out.stdout)
