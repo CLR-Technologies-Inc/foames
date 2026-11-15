@@ -352,6 +352,7 @@ class TestRequirementsAndTransfer(IntegrationTestCase):
 		self.assertEqual(prd.percent_verified, 0)
 		with as_user(ENGINEER), self.assertRaises(REFUSED):
 			prd.submit()
+		prd.reload()
 		with as_user(QUALITY):
 			prd.submit()
 		prd.reload()
@@ -390,6 +391,7 @@ class TestRequirementsAndTransfer(IntegrationTestCase):
 		self.assertEqual(len(draft.deliverables), 9)
 		with as_user(ENGINEER), self.assertRaises(REFUSED):
 			draft.submit()
+		draft.reload()
 		prd = make_prd()
 		draft.product_requirements = prd.name
 		draft.attributes[0].requirement_id = "CQA-9"
@@ -420,6 +422,7 @@ class TestRequirementsAndTransfer(IntegrationTestCase):
 		self.assertEqual(assessment.receiving_n, 3)
 		with as_user(ENGINEER), self.assertRaises(REFUSED):
 			assessment.submit()
+		assessment.reload()
 		with as_user(QUALITY):
 			assessment.submit()
 		with as_user(ENGINEER):

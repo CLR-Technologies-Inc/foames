@@ -9,6 +9,8 @@ program lead calls; the rules are in foames.foames_life_sciences.npi. The decisi
 cannot be edited by hand, and the version history (track changes) keeps every decision.
 """
 
+from datetime import date
+
 import frappe
 from frappe import _
 from frappe.model.document import Document
@@ -97,7 +99,13 @@ class NPIProgram(Document):
 		]
 
 	@frappe.whitelist()
-	def record_gate_decision(self, decision, conditions=None, conditions_due=None, phase_review=None):
+	def record_gate_decision(
+		self,
+		decision: str,
+		conditions: str | None = None,
+		conditions_due: str | date | None = None,
+		phase_review: str | None = None,
+	):
 		"""Record a gate decision on the current stage and move the program accordingly.
 
 		A program with a phase review board takes its decisions only from a Phase Review closed by
@@ -157,7 +165,7 @@ class NPIProgram(Document):
 		return {"current_stage": self.current_stage, "status": self.status}
 
 	@frappe.whitelist()
-	def close_gate_conditions(self, stage):
+	def close_gate_conditions(self, stage: str):
 		"""Mark the conditions of a Conditional Go as met."""
 		self.check_permission("write")
 		chair = (

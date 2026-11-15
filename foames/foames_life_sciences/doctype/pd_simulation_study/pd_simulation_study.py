@@ -109,7 +109,7 @@ class PDSimulationStudy(Document):
 
 	# -- actions -----------------------------------------------------------------------------
 	@frappe.whitelist()
-	def generate_design(self, overwrite=0):
+	def generate_design(self, overwrite: int | str = 0):
 		"""Replace the run grid with the chosen design, in actual units."""
 		self.check_permission("write")
 		if any(run.get(c) not in (None, "") for run in self.runs for c in RESULT_COLUMNS) and not cint(
@@ -216,8 +216,10 @@ class PDSimulationStudy(Document):
 		self.what_if_results = json.dumps(result, indent=1)
 		self.probability_all_in_limits = 100.0 * result["probability_all_in_limits"]
 		lines = [
-			f"{r['response']}: mean {r['mean']:.4g}, 90% of runs in [{r['p05']:.4g}, {r['p95']:.4g}], "
-			f"{100 * r['probability_in_limits']:.1f}% within limits"
+			(
+				f"{r['response']}: mean {r['mean']:.4g}, 90% of runs in [{r['p05']:.4g}, {r['p95']:.4g}], "
+				f"{100 * r['probability_in_limits']:.1f}% within limits"
+			)
 			+ (f", predicted Ppk {r['predicted_ppk']:.2f}" if r["predicted_ppk"] is not None else "")
 			for r in result["responses"]
 		]
@@ -231,7 +233,7 @@ class PDSimulationStudy(Document):
 		return result
 
 	@frappe.whitelist()
-	def get_design_space(self, x_factor, y_factor, steps=21):
+	def get_design_space(self, x_factor: str, y_factor: str, steps: int | str = 21):
 		"""The design-space grid over two factors, the others at nominal. Not stored."""
 		self.check_permission("read")
 		names = [f.factor for f in self.factors]
