@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """A hazard with its risk before and after controls, on the 5 x 5 matrix, and the controls ranked on
 the hierarchy of controls. Only controls marked In Place count towards the strongest control."""

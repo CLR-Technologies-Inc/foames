@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """EHS on a site: incidents and their suggestions, permits to work and the lockout check against
 machine state, hazard assessments, exposure records, the hourly check and the rates report."""

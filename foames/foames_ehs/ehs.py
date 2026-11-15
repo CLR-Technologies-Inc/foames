@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Environmental health and safety as pure logic: incident classification and rates, the 5 x 5 risk
 matrix and the hierarchy of controls, exposure arithmetic, permit-to-work rules and the findings

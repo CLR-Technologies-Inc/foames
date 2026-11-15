@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Industrial hygiene monitoring: an 8-hour time-weighted average, or a noise dose, against its limit
 and action level. A result at or above the action level raises an Agent Suggestion."""

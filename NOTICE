@@ -15,3 +15,9 @@ Prior art and credits
   in response to that issue. FoaMES is an independent implementation and contains
   no Floorgraph code. If any Floorgraph code is reused in the future, its MIT
   copyright and permission notice will be included with it.
+
+- Bluesky (https://github.com/bluesky/bluesky) and Tiled
+  (https://github.com/bluesky/tiled), BSD-3-Clause, Brookhaven Science
+  Associates. The Bluesky bridge in bridges/bluesky reads their published
+  document model and client API; it contains none of their code, and they are
+  not bundled.
