@@ -196,7 +196,7 @@ class TestSchedules(unittest.TestCase):
 		)
 		self.assertEqual(grid[0][0], 2)
 		self.assertEqual(grid[4][4], 1)
-		self.assertEqual(sum(map(sum, grid)), 3)
+		self.assertEqual(sum(sum(row) for row in grid), 3)
 
 
 def open_risk(**overrides):
