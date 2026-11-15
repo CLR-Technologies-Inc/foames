@@ -57,4 +57,5 @@ The FoaMES Maintenance workspace shows three number cards (plans overdue, plans 
 
 - `foames.foames_mes.maintenance` holds the arithmetic (`assess`, `projected_due`, `findings`) with no Frappe dependency.
 - `foames.foames_mes.doctype.maintenance_plan.maintenance_plan.make_work_order(plan)` is whitelisted: it opens a work order for the plan, or returns the one already open.
+- With ERPNext on the same site, a work order that starts can be mirrored as an ERPNext Asset Repair on the machine's Asset; see [the ERPNext adapter](vendors/erpnext/README.md#maintenance-work-orders).
 - An external agent can read plans and work orders through the standard REST API (`/api/resource/Maintenance Plan`) and the due list through `frappe.desk.query_report.run` with `report_name="Maintenance Due List"`.

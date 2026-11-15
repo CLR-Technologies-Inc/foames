@@ -1,0 +1,13 @@
+{
+ "id": "process-mining-analysis",
+ "title": "Analyse a welding cell's event log",
+ "tier": "pure",
+ "complexity": "medium",
+ "trl_bands": ["1-3", "4-6"],
+ "dimension": "Process analysis: variants, cycle times, rework, bottleneck, open cases; reproducibility",
+ "hidden": {"functional": ["test_functional.py"], "invariant": ["test_invariants.py"]},
+ "regression": ["foames/foames_process_mining/test_process_mining_logic.py"],
+ "allowed_paths": ["analysis/*", "answers.json"],
+ "deliverables": ["answers.json", "analysis/analyze.py"],
+ "budget": {"usd": 1.0, "seconds": 900}
+}

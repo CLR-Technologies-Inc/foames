@@ -1,0 +1,16 @@
+{
+	"source": {
+		"type": "pi",
+		"name": "pi-main",
+		"url": "https://pi.example.com/piwebapi",
+		"auth": "basic",
+		"username": "svc-foames-read"
+	},
+	"tags": [
+		{"tag": "\\\\PISRV01\\Press1.Temperature", "machine": "press-1", "name": "temperature"},
+		{"tag": "\\\\PISRV01\\Press1.Temperature", "machine": "press-1", "name": "temperature.mean_1m", "interval": "1m", "aggregate": "mean"},
+		{"tag": "\\\\PISRV01\\Press1.GoodCount", "machine": "press-1", "type": "Count", "counter": "good"},
+		{"tag": "\\\\PISRV01\\Press1.Status", "machine": "press-1", "type": "State", "states": {"Running": "Running", "Stopped": "Down", "Changeover": "Setup"}},
+		{"tag": "\\\\AF01\\Plant\\Line1\\Press1|Energy", "machine": "press-1", "type": "Count", "counter": "energy_kwh"}
+	]
+}
