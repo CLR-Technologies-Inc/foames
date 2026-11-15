@@ -3,7 +3,12 @@
 
 frappe.query_reports["Risk Register"] = {
 	filters: [
-		{ fieldname: "category", label: __("Category"), fieldtype: "Link", options: "Risk Category" },
+		{
+			fieldname: "category",
+			label: __("Category"),
+			fieldtype: "Link",
+			options: "Risk Category",
+		},
 		{
 			fieldname: "status",
 			label: __("Status"),

@@ -3,7 +3,8 @@
 
 frappe.ui.form.on("Risk Template", {
 	refresh(frm) {
-		if (frm.is_new() || frm.doc.disabled || !frappe.model.can_create("Enterprise Risk")) return;
+		if (frm.is_new() || frm.doc.disabled || !frappe.model.can_create("Enterprise Risk"))
+			return;
 		frm.add_custom_button(__("Create Risk"), () =>
 			frappe
 				.call(

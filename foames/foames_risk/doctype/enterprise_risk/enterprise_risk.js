@@ -35,7 +35,8 @@ frappe.ui.form.on("Enterprise Risk", {
 				)
 			);
 			const can_accept =
-				frappe.user.has_role("FoaMES Supervisor") || frappe.user.has_role("System Manager");
+				frappe.user.has_role("FoaMES Supervisor") ||
+				frappe.user.has_role("System Manager");
 			const accepted =
 				frm.doc.accepted_by && frm.doc.accepted_score === frm.doc.residual_score;
 			if (can_accept && !accepted) {
@@ -65,7 +66,8 @@ frappe.ui.form.on("Enterprise Risk", {
 		}
 		frm.add_custom_button(
 			__("Register"),
-			() => frappe.set_route("query-report", "Risk Register", { category: frm.doc.category }),
+			() =>
+				frappe.set_route("query-report", "Risk Register", { category: frm.doc.category }),
 			__("View")
 		);
 		frm.add_custom_button(

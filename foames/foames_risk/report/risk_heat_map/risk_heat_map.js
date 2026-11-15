@@ -18,7 +18,12 @@ frappe.query_reports["Risk Heat Map"] = {
 			options: "Residual\nInherent",
 			default: "Residual",
 		},
-		{ fieldname: "category", label: __("Category"), fieldtype: "Link", options: "Risk Category" },
+		{
+			fieldname: "category",
+			label: __("Category"),
+			fieldtype: "Link",
+			options: "Risk Category",
+		},
 	],
 	formatter(value, row, column, data, default_formatter) {
 		value = default_formatter(value, row, column, data);
