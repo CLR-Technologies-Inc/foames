@@ -1,0 +1,168 @@
+name: Docker smoke test
+
+# Runs the Docker steps the wiki documents, as written, so the pages can say they are tested:
+# the dev bench (docs/dev-bench.md, How-to-Contribute) and the benchmark sandbox (Tutorial 4,
+# How-to-Run-the-agent-benchmark, How-to-Add-your-own-agent-to-the-benchmark). No API keys are
+# used: the sandboxed runs use the built-in reference agent, and the agent CLIs are only checked
+# to be installed in the image.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docker/**"
+      - "benchmarks/**"
+      - "docs/wiki/**"
+      - "docs/dev-bench.md"
+      - ".github/workflows/docker-smoke.yml"
+  pull_request:
+    paths:
+      - "docker/**"
+      - "benchmarks/**"
+      - "docs/wiki/**"
+      - "docs/dev-bench.md"
+      - ".github/workflows/docker-smoke.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: docker-smoke-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  dev-bench:
+    name: Dev bench (cp .env.example, bench.sh up, bench.sh test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Clone
+        uses: actions/checkout@v4
+
+      - name: cd docker && cp .env.example .env
+        working-directory: docker
+        run: cp .env.example .env
+
+      - name: ./bench.sh up
+        working-directory: docker
+        run: ./bench.sh up
+
+      - name: ./bench.sh test
+        working-directory: docker
+        run: ./bench.sh test
+
+      - name: ./bench.sh bench migrate
+        working-directory: docker
+        run: ./bench.sh bench migrate
+
+      - name: Service logs on failure
+        if: failure()
+        working-directory: docker
+        run: docker compose logs --no-color --tail 200 || true
+
+      - name: ./bench.sh reset
+        if: always()
+        working-directory: docker
+        run: ./bench.sh reset
+
+  benchmark-sandbox:
+    name: Benchmark sandbox (Tutorial 4 and the benchmark how-tos)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Clone
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: pip install -e .
+        working-directory: benchmarks
+        run: pip install -e .
+
+      - name: foames-bench list
+        working-directory: benchmarks
+        run: foames-bench list
+
+      - name: foames-bench validate
+        working-directory: benchmarks
+        run: foames-bench validate --out runs/validate
+
+      - name: docker build -t foames-bench-agent sandbox
+        working-directory: benchmarks
+        run: docker build -t foames-bench-agent sandbox
+
+      - name: The image has Claude Code, Codex CLI, Gemini CLI and OpenCode
+        run: |
+          for exe in claude codex gemini opencode; do
+            docker run --rm --entrypoint sh foames-bench-agent -c "command -v $exe"
+          done
+
+      - name: foames-bench agents
+        working-directory: benchmarks
+        run: foames-bench agents
+
+      - name: foames-bench run in the Docker sandbox (reference agent, no API keys)
+        working-directory: benchmarks
+        run: foames-bench run --tasks counter-reset --agents reference --reps 1 --sandbox docker --cap-usd 2 --out runs/smoke
+
+      - name: foames-bench report
+        working-directory: benchmarks
+        run: |
+          foames-bench report runs/smoke
+          python - <<'PY'
+          import json
+          rows = [json.loads(l) for l in open("runs/smoke/results.jsonl")]
+          assert rows and all(r["scores"]["success"] for r in rows), rows
+          print("reference run succeeded")
+          PY
+
+      # Built-in agents skip the sandbox, so a command agent that calls no model checks the Docker
+      # path itself: the agent runs in the container, then the hidden tests run there too.
+      - name: A command agent in the Docker sandbox, graded inside the container
+        working-directory: benchmarks
+        run: |
+          cat > /tmp/smoke-agents.json <<'JSON'
+          {"agents": [{"name": "smoke-shell", "harness": "sh", "tier": "oss",
+            "command": ["sh", "-c", "pwd; ls; echo 'Smoke test: no change made.' > BENCH_NOTES.md"],
+            "usage_parser": "none", "fixed_cost_usd": 0.0}]}
+          JSON
+          foames-bench --agents-file /tmp/smoke-agents.json agents
+          foames-bench --agents-file /tmp/smoke-agents.json run --tasks counter-reset --agents smoke-shell --reps 1 --sandbox docker --out runs/smoke-docker
+          python - <<'PY'
+          import json
+          rows = [json.loads(l) for l in open("runs/smoke-docker/results.jsonl")]
+          assert len(rows) == 1, rows
+          r = rows[0]
+          assert r["sandbox"] == "docker", r["sandbox"]
+          assert r["exit_code"] == 0 and not r["timed_out"], (r["exit_code"], r["timed_out"])
+          tests = r["graded"]["hidden"]["functional"]["tests"]
+          assert tests, "no hidden tests ran in the sandbox"
+          assert not r["scores"]["success"], "a no-change agent must not succeed"
+          print(f"docker sandbox ran the agent and {len(tests)} hidden functional tests")
+          PY
+          cat runs/smoke-docker/counter-reset/smoke-shell/rep-1/agent.stdout
+
+      - name: foames-bench prepare and grade (a hand run)
+        working-directory: benchmarks
+        run: |
+          foames-bench prepare --task oee-unknown-time --dest /tmp/ws
+          test -f /tmp/oee-unknown-time.prompt.md
+          foames-bench grade --task oee-unknown-time --workspace /tmp/ws --seconds 412 --cost-usd 0.38
+
+      - name: foames-bench recommend, matrix, estimate
+        working-directory: benchmarks
+        run: |
+          foames-bench matrix
+          foames-bench recommend --trl 5 --complexity medium --results runs/smoke
+          foames-bench estimate --agents 3 --tasks 6 --reps 2 --per-run 1.00
+
+      - name: docker build with PIP_AGENTS (How-to-Add-your-own-agent)
+        working-directory: benchmarks
+        run: |
+          docker build -t foames-bench-agent-pip --build-arg PIP_AGENTS="aider-chat" sandbox
+          docker run --rm --entrypoint sh foames-bench-agent-pip -c "command -v aider"

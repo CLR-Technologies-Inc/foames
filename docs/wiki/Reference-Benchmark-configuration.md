@@ -8,7 +8,7 @@ Run as `foames-bench <command>` after `pip install -e .` in `benchmarks/`, or `p
 | --- | --- | --- |
 | `list` | `--tier pure\|frappe\|all` | Lists the tasks |
 | `agents` | | Lists configured agents and whether each CLI and sandbox is available |
-| `validate` | `--tasks`, `--tier`, `--repo`, `--out`, `--sandbox` options | Runs the reference and no-op agents on each task; every reference must pass and every no-op fail |
+| `validate` | `--tasks`, `--tier`, `--repo`, `--out` | Runs the reference and no-op agents on each task; every reference must pass and every no-op fail |
 | `run` | `--agents`, `--tasks`, `--tier`, `--reps` (1), `--repo`, `--out`, `--keep-workspaces`, `--cap-usd`, `--sandbox`, `--sandbox-image`, `--sandbox-network` | Runs tasks × agents × repetitions |
 | `report` | `run_dir` | Writes `summary.md`, `summary.json`, `summary.csv` and prints the tables |
 | `prepare` | `--task`, `--dest`, `--repo` | Makes one workspace (and `<dest parent>/<task>.prompt.md`) for a hand run |
