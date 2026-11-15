@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """How recognition shows on the floor, what FoaMES recognizes on its own, and who opted out.
 Read it through foames.foames_mes.doctype.recognition.recognition.recognition_settings, which fills
