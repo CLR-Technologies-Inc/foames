@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Work Instruction and Work Instruction Run on a site: revisions and release, starting a run,
 recording steps in order, the two-person sign-off, holds, measurements for SPC, failed-step and

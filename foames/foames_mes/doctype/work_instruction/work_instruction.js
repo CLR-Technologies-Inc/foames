@@ -1,5 +1,5 @@
-// Copyright (c) 2026, CLR Technologies Inc. and contributors
-// For license information, please see license.txt
+// Copyright (c) 2026 CLR Technologies Inc. and contributors
+// SPDX-License-Identifier: Apache-2.0
 
 const WI_METHODS = "foames.foames_mes.doctype.work_instruction.work_instruction";
 const WI_RELEASE_ROLES = ["FoaMES Engineer", "FoaMES Quality", "System Manager"];

@@ -31,6 +31,9 @@ jobs:
       - name: Bluesky bridge
         working-directory: bridges/bluesky
         run: python -m unittest discover -s tests -v
+      - name: Historian bridge
+        working-directory: bridges/historian
+        run: python -m unittest discover -s tests -v
 
   tests:
     runs-on: ubuntu-latest
