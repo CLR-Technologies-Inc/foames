@@ -19,6 +19,7 @@ Everything specific to one vendor's product lives here, one folder per vendor. T
 | Proficy Smart Factory MES (Velotic) | MES / MOM, on the [shared REST framework](../mes-adapters.md) | [proficy/](proficy/README.md) | Key, connection style, what the profile ships, system notes |
 | Ignition | SCADA | [ignition/](ignition/README.md) | Connecting an Ignition gateway through Sparkplug B, OPC UA or a gateway script |
 | Bluesky and Tiled | Lab and beamline data acquisition, through a bridge | [bluesky/](bluesky/README.md) | Bluesky runs, live or from a Tiled catalog, as Measurement events with run provenance, for SPC |
+| Process historians: AVEVA PI, InfluxDB, Ignition Tag Historian, TimescaleDB and SQL | Historian, read-only, through a bridge | [historian/](historian/README.md) | Tag history as Measurement, Count, State and Message events, raw or aggregated, with incremental sync and backfill |
 
 A vendor's folder here has the same name as its package under `foames/foames_adapters/`, so the guide and the code are found the same way. A vendor with no adapter package (a SCADA product that connects through a gateway) has a folder here only; one served by a bridge outside the app has its code under `bridges/<vendor>/`.
 

@@ -1,0 +1,17 @@
+{
+	"source": {
+		"type": "timescaledb",
+		"name": "tsdb",
+		"driver": "psycopg",
+		"connect": {"host": "tsdb.example.com", "dbname": "telemetry", "user": "foames_read"},
+		"table": "tag_history",
+		"time_column": "time",
+		"tag_column": "tag",
+		"value_column": "value",
+		"quality_column": "quality"
+	},
+	"tags": [
+		{"tag": "reactor1.jacket_temp", "machine": "reactor-1", "name": "jacket_temp"},
+		{"tag": "reactor1.jacket_temp", "machine": "reactor-1", "name": "jacket_temp.mean_1m", "interval": "1m"}
+	]
+}

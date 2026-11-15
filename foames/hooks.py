@@ -1,3 +1,6 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 app_name = "foames"
 app_title = "FoaMES"
 app_publisher = "CLR Technologies Inc."
@@ -68,6 +71,8 @@ _erpnext_reference_sync = {
 doc_events = {
 	# A closed Downtime Record becomes an ERPNext Downtime Entry when the adapter is told to post them.
 	"Downtime Record": {"on_update": "foames.foames_adapters.erpnext.downtime.on_update"},
+	# A started Maintenance Work Order becomes an ERPNext Asset Repair on the machine's Asset.
+	"Maintenance Work Order": {"on_update": "foames.foames_adapters.erpnext.maintenance.on_update"},
 } | {
 	doctype: _erpnext_reference_sync
 	for doctype in (
@@ -83,6 +88,7 @@ doc_events = {
 		"BOM",
 		"Routing",
 		"Workstation",
+		"Asset",
 	)
 }
 # A Manufacture entry FoaMES left as a draft gets its serial numbers when a person submits it.
@@ -186,6 +192,9 @@ scheduler_events = {
 		"foames.foames_kernel.tasks.refresh_external_references",
 		# Reads the floor for every Released PFMEA and raises review suggestions where it disagrees.
 		"foames.foames_mes.tasks.check_pfmeas",
+		# Makes approved SOP revisions effective on their date and raises suggestions for SOP reviews
+		# coming due and for people not trained on the current revision in time.
+		"foames.foames_mes.doctype.standard_operating_procedure.standard_operating_procedure.check_sops",
 	],
 }
 

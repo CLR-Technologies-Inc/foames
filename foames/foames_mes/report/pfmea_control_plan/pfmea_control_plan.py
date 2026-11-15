@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """The control plan a PFMEA implies: one line per failure chain, in operation order, with the
 characteristic, its special characteristic class, the specification, the prevention and detection

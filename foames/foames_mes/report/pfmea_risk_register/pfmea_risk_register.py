@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Every failure chain across the PFMEAs a user can read, ranked by AIAG-VDA action priority, then
 severity, occurrence and detection: the ratings, what the floor observed, and the state of each
