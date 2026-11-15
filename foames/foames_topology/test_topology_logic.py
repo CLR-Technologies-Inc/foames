@@ -16,7 +16,9 @@ NOW = datetime(2026, 11, 15, 12, 0, 0)
 HERE = os.path.dirname(__file__)
 
 
-def asset(asset_id, layer, kind, parent=None, status="OK", last_seen=None, tenant="Plant A", provider="test", **kw):
+def asset(
+	asset_id, layer, kind, parent=None, status="OK", last_seen=None, tenant="Plant A", provider="test", **kw
+):
 	return {
 		"asset_id": asset_id,
 		"title": kw.pop("title", asset_id),
@@ -36,7 +38,14 @@ def link(a, link_type, b, tenant="Plant A"):
 
 
 def bind(signal, physical, direction="Read", tag=None, **kw):
-	return {"signal": signal, "physical_asset": physical, "direction": direction, "tag": tag, "tenant": "Plant A", **kw}
+	return {
+		"signal": signal,
+		"physical_asset": physical,
+		"direction": direction,
+		"tag": tag,
+		"tenant": "Plant A",
+		**kw,
+	}
 
 
 def plant():
@@ -83,12 +92,18 @@ class TestVocabulary(unittest.TestCase):
 			folder = doctype.lower().replace(" ", "_")
 			with open(os.path.join(HERE, "doctype", folder, folder + ".json")) as f:
 				meta = json.load(f)
-			return [o for o in next(x for x in meta["fields"] if x["fieldname"] == field)["options"].split("\n") if o]
+			return [
+				o
+				for o in next(x for x in meta["fields"] if x["fieldname"] == field)["options"].split("\n")
+				if o
+			]
 
 		self.assertEqual(options("Topology Asset", "layer"), list(model.LAYERS))
 		self.assertEqual(options("Topology Asset", "kind"), list(model.KINDS))
 		self.assertEqual(options("Topology Asset", "status"), list(model.STATUSES))
-		self.assertEqual(options("Topology Link", "link_type"), [t for t in model.LINK_TYPES if t != "Contains"])
+		self.assertEqual(
+			options("Topology Link", "link_type"), [t for t in model.LINK_TYPES if t != "Contains"]
+		)
 		self.assertEqual(options("Topology Link", "layer"), list(model.EDGE_LAYERS))
 		self.assertEqual(options("Signal Binding", "direction"), list(model.DIRECTIONS))
 
@@ -143,7 +158,10 @@ class TestBuild(unittest.TestCase):
 	def test_only_streaming_kinds_go_stale(self):
 		old = NOW - timedelta(days=1)
 		g = topo.build_graph(
-			[asset("k", "Data", "KPI", last_seen=old), asset("t", "Data", "Agent Task", status="Down", last_seen=old)],
+			[
+				asset("k", "Data", "KPI", last_seen=old),
+				asset("t", "Data", "Agent Task", status="Down", last_seen=old),
+			],
 			[],
 			[],
 			now=NOW,
@@ -181,7 +199,9 @@ class TestBuild(unittest.TestCase):
 		assets[3]["disabled"] = 1  # PT-102 retired
 		g = topo.build_graph(assets, links, bindings, now=NOW)
 		self.assertNotIn("pid:PT-102", g.nodes)
-		self.assertIn("pid:PT-102", topo.build_graph(assets, links, bindings, now=NOW, include_disabled=True).nodes)
+		self.assertIn(
+			"pid:PT-102", topo.build_graph(assets, links, bindings, now=NOW, include_disabled=True).nodes
+		)
 
 
 class TestFilter(unittest.TestCase):
@@ -239,13 +259,22 @@ class TestFindings(unittest.TestCase):
 	def test_write_binding_is_reported(self):
 		assets, links, bindings = plant()
 		bindings.append(bind("signal:TT-101", "machine:P-201", "Write"))
-		self.assertIn(("write-binding", "machine:P-201"), self.rules(topo.build_graph(assets, links, bindings, now=NOW)))
+		self.assertIn(
+			("write-binding", "machine:P-201"), self.rules(topo.build_graph(assets, links, bindings, now=NOW))
+		)
 
 
 class TestTrace(unittest.TestCase):
 	def test_machine_downstream_reaches_kpi_and_erp(self):
 		t = topo.trace(build(), "machine:R-101", "downstream")
-		for node in ("pid:TT-101", "signal:TT-101", "connector:opc-ua", "events:R-101", "kpi:oee:R-101", "erp:JC-1"):
+		for node in (
+			"pid:TT-101",
+			"signal:TT-101",
+			"connector:opc-ua",
+			"events:R-101",
+			"kpi:oee:R-101",
+			"erp:JC-1",
+		):
 			self.assertIn(node, t["nodes"])
 		self.assertNotIn("machine:P-201", t["nodes"])
 		self.assertEqual(t["depth"]["machine:R-101"], 0)
@@ -257,7 +286,11 @@ class TestTrace(unittest.TestCase):
 		self.assertNotIn("erp:JC-1", t["nodes"])
 
 	def test_host_downstream_reaches_its_agents(self):
-		assets = [asset("host:h", "Physical", "Host"), asset("agent:a", "Data", "Agent"), asset("task:t", "Data", "Agent Task")]
+		assets = [
+			asset("host:h", "Physical", "Host"),
+			asset("agent:a", "Data", "Agent"),
+			asset("task:t", "Data", "Agent Task"),
+		]
 		links = [link("agent:a", "Runs On", "host:h"), link("agent:a", "Delegates", "task:t")]
 		t = topo.trace(topo.build_graph(assets, links, [], now=NOW), "host:h")
 		self.assertEqual(t["nodes"], ["host:h", "agent:a", "task:t"])
@@ -391,7 +424,14 @@ class TestIngest(unittest.TestCase):
 		self.assertIn("by hand", out["rejected"][0]["reason"])
 
 	def test_tenant_rules(self):
-		existing = {"host:gw1": {"provider": "network-collector", "tenant": "Plant B", "managed": 1, "layer": "Physical"}}
+		existing = {
+			"host:gw1": {
+				"provider": "network-collector",
+				"tenant": "Plant B",
+				"managed": 1,
+				"layer": "Physical",
+			}
+		}
 		out = ingest.normalize_report(self.report(), existing)
 		reasons = [r["reason"] for r in out["rejected"]]
 		self.assertTrue(any("tenant Plant B" in r for r in reasons))
@@ -412,8 +452,10 @@ class TestIngest(unittest.TestCase):
 
 	def test_unknown_ends_and_bad_items(self):
 		r = self.report(
-			links=[{"from_asset": "agent:planner", "to_asset": "host:missing", "link_type": "Runs On"},
-			       {"from_asset": "agent:planner", "to_asset": "host:gw1", "link_type": "Contains"}],
+			links=[
+				{"from_asset": "agent:planner", "to_asset": "host:missing", "link_type": "Runs On"},
+				{"from_asset": "agent:planner", "to_asset": "host:gw1", "link_type": "Contains"},
+			],
 		)
 		r["assets"].append({"asset_id": "", "kind": "Host"})
 		r["assets"].append({"asset_id": "x", "layer": "Business"})
@@ -421,7 +463,9 @@ class TestIngest(unittest.TestCase):
 		self.assertEqual(len(out["rejected"]), 4)
 
 	def test_unknown_kind_becomes_other_and_needs_layer(self):
-		out = ingest.normalize_report(self.report(assets=[{"asset_id": "x", "kind": "Spaceship", "layer": "Data"}], links=[]), {})
+		out = ingest.normalize_report(
+			self.report(assets=[{"asset_id": "x", "kind": "Spaceship", "layer": "Data"}], links=[]), {}
+		)
 		self.assertEqual(out["assets"][0]["kind"], "Other")
 
 	def test_size_limit(self):

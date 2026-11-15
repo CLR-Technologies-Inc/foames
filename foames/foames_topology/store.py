@@ -31,7 +31,17 @@ ASSET_FIELDS = [
 	"source_doctype",
 	"source_name",
 ]
-LINK_FIELDS = ["link_key", "from_asset", "to_asset", "link_type", "status", "last_seen", "disabled", "tenant", "provider"]
+LINK_FIELDS = [
+	"link_key",
+	"from_asset",
+	"to_asset",
+	"link_type",
+	"status",
+	"last_seen",
+	"disabled",
+	"tenant",
+	"provider",
+]
 BINDING_FIELDS = [
 	"binding_key",
 	"signal",
@@ -95,7 +105,10 @@ def existing_assets(asset_ids):
 		{"name": ("in", list(asset_ids))},
 		["name", "provider", "tenant", "managed", "layer"],
 	)
-	return {r.name: {"provider": r.provider, "tenant": r.tenant, "managed": r.managed, "layer": r.layer} for r in rows}
+	return {
+		r.name: {"provider": r.provider, "tenant": r.tenant, "managed": r.managed, "layer": r.layer}
+		for r in rows
+	}
 
 
 def _same(doc, values):

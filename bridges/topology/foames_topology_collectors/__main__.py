@@ -39,7 +39,10 @@ def main(argv=None) -> int:
 
 	if args.collector == "network":
 		report = network.report_from_status(
-			network.read_status(args.status_file), provider=args.provider, tenant=args.tenant, site=args.site_name
+			network.read_status(args.status_file),
+			provider=args.provider,
+			tenant=args.tenant,
+			site=args.site_name,
 		)
 	else:
 		stream = sys.stdin if args.log == "-" else open(args.log, encoding="utf-8")
@@ -47,7 +50,9 @@ def main(argv=None) -> int:
 			events, skipped = agents.read_events(stream)
 		if skipped:
 			print(f"skipped {skipped} lines that are not agent events", file=sys.stderr)
-		report = agents.report_from_events(events, provider=args.provider, tenant=args.tenant, window_hours=args.window_hours)
+		report = agents.report_from_events(
+			events, provider=args.provider, tenant=args.tenant, window_hours=args.window_hours
+		)
 
 	if args.dry_run or not args.url:
 		json.dump(report, sys.stdout, indent=1, default=str)

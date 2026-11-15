@@ -85,7 +85,9 @@ def read_events(lines):
 	return events, skipped
 
 
-def report_from_events(events, *, provider: str, tenant: str | None = None, window_hours: float = 24, now: datetime | None = None) -> dict:
+def report_from_events(
+	events, *, provider: str, tenant: str | None = None, window_hours: float = 24, now: datetime | None = None
+) -> dict:
 	now = now or datetime.now(timezone.utc).replace(tzinfo=None)
 	since = now - timedelta(hours=window_hours) if window_hours else None
 	latest = {}
@@ -110,7 +112,11 @@ def report_from_events(events, *, provider: str, tenant: str | None = None, wind
 		asset_id = _id("agent", name)
 		current = agents_seen.get(asset_id)
 		if current is None or at >= current["_at"]:
-			agents_seen[asset_id] = {"_at": at, "status": status or (current or {}).get("status") or "Idle", "host": host or (current or {}).get("host")}
+			agents_seen[asset_id] = {
+				"_at": at,
+				"status": status or (current or {}).get("status") or "Idle",
+				"host": host or (current or {}).get("host"),
+			}
 		elif host and not current.get("host"):
 			current["host"] = host
 		return asset_id

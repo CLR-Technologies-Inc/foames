@@ -26,7 +26,18 @@ def ingest_url(site: str) -> str:
 	return site if site.endswith(INGEST_PATH) else site + INGEST_PATH
 
 
-def send(report: dict, site: str, api_key: str, api_secret: str, *, timeout=30, retries=4, backoff=1.0, opener=None, sleep=time.sleep) -> dict:
+def send(
+	report: dict,
+	site: str,
+	api_key: str,
+	api_secret: str,
+	*,
+	timeout=30,
+	retries=4,
+	backoff=1.0,
+	opener=None,
+	sleep=time.sleep,
+) -> dict:
 	opener = opener or urllib.request.urlopen
 	body = json.dumps({"report": report}, default=str).encode()
 	request = urllib.request.Request(

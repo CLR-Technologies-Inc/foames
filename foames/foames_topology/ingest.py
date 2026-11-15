@@ -114,7 +114,9 @@ def normalize_report(report: dict, existing: dict, *, writable_tenants=None) -> 
 			if not tenant_ok(tenant):
 				raise ValueError(f"tenant {tenant} is not one you may write")
 			clean = {k: item.get(k) for k in ASSET_FIELDS if item.get(k) not in (None, "")}
-			clean.update(asset_id=asset_id, kind=kind, layer=layer, status=status, tenant=tenant, provider=provider)
+			clean.update(
+				asset_id=asset_id, kind=kind, layer=layer, status=status, tenant=tenant, provider=provider
+			)
 			assets[asset_id] = clean
 			tenant_of[asset_id] = tenant
 		except ValueError as e:
@@ -203,7 +205,11 @@ def normalize_report(report: dict, existing: dict, *, writable_tenants=None) -> 
 			)
 		except ValueError as e:
 			rejected.append(
-				{"type": "binding", "id": f"{item.get('signal')}→{item.get('physical_asset')}", "reason": str(e)}
+				{
+					"type": "binding",
+					"id": f"{item.get('signal')}→{item.get('physical_asset')}",
+					"reason": str(e),
+				}
 			)
 
 	return {

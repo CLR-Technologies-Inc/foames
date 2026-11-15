@@ -23,11 +23,7 @@ class TopologyLink(Document):
 
 def check_same_tenant(a, b, tenant):
 	"""The tenant a link or binding between a and b belongs to. Refuses one that joins two tenants."""
-	tenants = {
-		t
-		for t in frappe.get_all("Topology Asset", {"name": ("in", [a, b])}, pluck="tenant")
-		if t
-	}
+	tenants = {t for t in frappe.get_all("Topology Asset", {"name": ("in", [a, b])}, pluck="tenant") if t}
 	if len(tenants) > 1:
 		frappe.throw(_("{0} and {1} belong to different tenants").format(a, b))
 	asset_tenant = next(iter(tenants), None)

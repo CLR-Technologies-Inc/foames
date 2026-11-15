@@ -255,7 +255,13 @@ def _node_map(mes, machines):
 		mes.link(connector, "Data Flow", f"events:{row.machine}")
 
 
-_PID_KIND = {"Equipment": "Equipment", "Instrument": "Instrument", "Line": "Piping", "Valve": "Valve", "Actuator": "Equipment"}
+_PID_KIND = {
+	"Equipment": "Equipment",
+	"Instrument": "Instrument",
+	"Line": "Piping",
+	"Valve": "Valve",
+	"Actuator": "Equipment",
+}
 
 
 def _pid(pid, mes, machines):
@@ -302,7 +308,9 @@ def _pid(pid, mes, machines):
 			f"signal:pid:{c.name}",
 			title=f"{c.tag or c.name} signal",
 			layer="Data",
-			kind="Historian Point" if c.signal_source == "Historian" or (c.historian_tag and not c.signal_address) else "Signal",
+			kind="Historian Point"
+			if c.signal_source == "Historian" or (c.historian_tag and not c.signal_address)
+			else "Signal",
 			attributes={"address": address, "historian_tag": c.historian_tag} if address else None,
 		)
 		latest = _latest_event(c.machine, c.event_type, c.signal_name) if c.machine else None

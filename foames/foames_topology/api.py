@@ -88,7 +88,9 @@ def grafana_edges(tenant=None, layers=None, provider=None):
 def trace(asset, direction="downstream", tenant=None):
 	graph = _graph(tenant)
 	if asset not in graph.nodes:
-		frappe.throw(_("Topology Asset {0} is not in the graph you can see").format(asset), frappe.DoesNotExistError)
+		frappe.throw(
+			_("Topology Asset {0} is not in the graph you can see").format(asset), frappe.DoesNotExistError
+		)
 	try:
 		return topo.trace(graph, asset, direction)
 	except ValueError as e:
@@ -121,7 +123,10 @@ def ingest(report=None, **fields):
 	"""Write a collector report. Body: the report object (see ingest.py) as JSON, either as it is
 	or under a "report" key."""
 	if not set(WRITER_ROLES) & set(frappe.get_roles()):
-		frappe.throw(_("Only FoaMES Integration, FoaMES Engineer or System Manager may report topology"), frappe.PermissionError)
+		frappe.throw(
+			_("Only FoaMES Integration, FoaMES Engineer or System Manager may report topology"),
+			frappe.PermissionError,
+		)
 	if report is None:
 		fields.pop("cmd", None)
 		report = fields
@@ -146,7 +151,9 @@ def apply_report(report, *, writable_tenants):
 	except (AttributeError, TypeError):
 		frappe.throw(_("The report must be an object with lists of assets, links and bindings"))
 	try:
-		clean = ingest_rules.normalize_report(report, store.existing_assets(named), writable_tenants=writable_tenants)
+		clean = ingest_rules.normalize_report(
+			report, store.existing_assets(named), writable_tenants=writable_tenants
+		)
 	except ingest_rules.ReportError as e:
 		frappe.throw(_(str(e)))
 	counts = {"inserted": 0, "updated": 0, "unchanged": 0, "skipped": 0}

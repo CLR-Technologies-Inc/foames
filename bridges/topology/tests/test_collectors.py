@@ -22,7 +22,9 @@ def example(name):
 
 class TestNetwork(unittest.TestCase):
 	def report(self, **kw):
-		return network.report_from_status(network.read_status(example("tailscale-status.json")), provider="net", now=NOW, **kw)
+		return network.report_from_status(
+			network.read_status(example("tailscale-status.json")), provider="net", now=NOW, **kw
+		)
 
 	def test_hosts_and_tailnet(self):
 		r = self.report()
@@ -63,14 +65,18 @@ class TestAgents(unittest.TestCase):
 		self.assertIn(("task:T-10", "Delegates", "task:T-11"), links)
 		self.assertIn(("agent:planner", "Delegates", "task:T-11"), links)
 		self.assertIn(("agent:planner", "Runs On", "host:gpu-box"), links)
-		self.assertEqual(r["bindings"], [{"signal": "task:T-12", "physical_asset": "machine:P-201", "direction": "Write"}])
+		self.assertEqual(
+			r["bindings"], [{"signal": "task:T-12", "physical_asset": "machine:P-201", "direction": "Write"}]
+		)
 
 	def test_window(self):
 		r = self.report(window_hours=1)
 		self.assertEqual(r["assets"], [])
 
 	def test_bad_lines_are_skipped(self):
-		events, skipped = agents.read_events(["not json", "[]", '{"agent": "a"}', '{"agent": "a", "task": 1}', ""])
+		events, skipped = agents.read_events(
+			["not json", "[]", '{"agent": "a"}', '{"agent": "a", "task": 1}', ""]
+		)
 		self.assertEqual((len(events), skipped), (1, 3))
 
 
@@ -125,7 +131,16 @@ class TestCli(unittest.TestCase):
 	def test_dry_run(self):
 		out = io.StringIO()
 		with redirect_stdout(out):
-			code = cli.main(["network", "--provider", "net", "--status-file", example("tailscale-status.json"), "--dry-run"])
+			code = cli.main(
+				[
+					"network",
+					"--provider",
+					"net",
+					"--status-file",
+					example("tailscale-status.json"),
+					"--dry-run",
+				]
+			)
 		self.assertEqual(code, 0)
 		self.assertEqual(json.loads(out.getvalue())["provider"], "net")
 

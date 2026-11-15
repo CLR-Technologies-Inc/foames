@@ -19,7 +19,9 @@ def tenant(name):
 
 
 def make_asset(asset_id, layer, kind, **kw):
-	return frappe.get_doc({"doctype": "Topology Asset", "asset_id": asset_id, "layer": layer, "kind": kind, **kw}).insert()
+	return frappe.get_doc(
+		{"doctype": "Topology Asset", "asset_id": asset_id, "layer": layer, "kind": kind, **kw}
+	).insert()
 
 
 class TestRecords(IntegrationTestCase):
@@ -39,8 +41,12 @@ class TestRecords(IntegrationTestCase):
 		make_asset("t-topo:m", "Physical", "Machine")
 		make_asset("t-topo:s", "Data", "Signal")
 		with self.assertRaises(frappe.ValidationError):
-			frappe.get_doc({"doctype": "Signal Binding", "signal": "t-topo:m", "physical_asset": "t-topo:s"}).insert()
-		b = frappe.get_doc({"doctype": "Signal Binding", "signal": "t-topo:s", "physical_asset": "t-topo:m"}).insert()
+			frappe.get_doc(
+				{"doctype": "Signal Binding", "signal": "t-topo:m", "physical_asset": "t-topo:s"}
+			).insert()
+		b = frappe.get_doc(
+			{"doctype": "Signal Binding", "signal": "t-topo:s", "physical_asset": "t-topo:m"}
+		).insert()
 		self.assertEqual(b.binding_key, "t-topo:s|Read|t-topo:m")
 
 	def test_link_across_tenants_is_refused(self):
@@ -48,14 +54,24 @@ class TestRecords(IntegrationTestCase):
 		make_asset("t-topo:y", "Physical", "Machine", tenant=tenant("T-Topo B"))
 		with self.assertRaises(frappe.ValidationError):
 			frappe.get_doc(
-				{"doctype": "Topology Link", "from_asset": "t-topo:x", "to_asset": "t-topo:y", "link_type": "Pipe"}
+				{
+					"doctype": "Topology Link",
+					"from_asset": "t-topo:x",
+					"to_asset": "t-topo:y",
+					"link_type": "Pipe",
+				}
 			).insert()
 
 	def test_link_takes_its_assets_tenant_and_layer(self):
 		make_asset("t-topo:p", "Physical", "Machine", tenant=tenant("T-Topo A"))
 		make_asset("t-topo:q", "Physical", "Machine", tenant="T-Topo A")
 		link = frappe.get_doc(
-			{"doctype": "Topology Link", "from_asset": "t-topo:p", "to_asset": "t-topo:q", "link_type": "Pipe"}
+			{
+				"doctype": "Topology Link",
+				"from_asset": "t-topo:p",
+				"to_asset": "t-topo:q",
+				"link_type": "Pipe",
+			}
 		).insert()
 		self.assertEqual(link.tenant, "T-Topo A")
 		self.assertEqual(link.layer, "Physical")
@@ -69,17 +85,27 @@ class TestSync(IntegrationTestCase):
 		settings = frappe.get_single("Machine Data Settings")
 		settings.append(
 			"node_map",
-			{"machine": "T-TOPO-1", "source": "OPC UA", "node_id": "ns=2;s=T1.Temp", "event_type": "Measurement", "name_or_counter": "temp"},
+			{
+				"machine": "T-TOPO-1",
+				"source": "OPC UA",
+				"node_id": "ns=2;s=T1.Temp",
+				"event_type": "Measurement",
+				"name_or_counter": "temp",
+			},
 		)
 		settings.save()
 		frappe.clear_document_cache("Machine Data Settings", "Machine Data Settings")
 
 	def test_machines_and_signals_become_the_graph(self):
 		sync.sync()
-		self.assertEqual(frappe.db.get_value("Topology Asset", "machine:T-TOPO-1", "parent_asset"), "line:T-TOPO-LINE")
+		self.assertEqual(
+			frappe.db.get_value("Topology Asset", "machine:T-TOPO-1", "parent_asset"), "line:T-TOPO-LINE"
+		)
 		signal = "signal:opc-ua:ns=2;s=T1.Temp"
 		self.assertTrue(frappe.db.exists("Topology Asset", signal))
-		self.assertTrue(frappe.db.exists("Signal Binding", {"signal": signal, "physical_asset": "machine:T-TOPO-1"}))
+		self.assertTrue(
+			frappe.db.exists("Signal Binding", {"signal": signal, "physical_asset": "machine:T-TOPO-1"})
+		)
 		trace = api.trace("machine:T-TOPO-1", "downstream")
 		self.assertIn("connector:opc-ua", trace["nodes"])
 		self.assertIn("events:T-TOPO-1", trace["nodes"])
@@ -137,7 +163,9 @@ class TestIngestAndIsolation(IntegrationTestCase):
 		self.assertEqual(len(other["rejected"]), 2)
 		self.assertEqual(other["skipped"], 1)  # the link the first provider owns
 		self.assertEqual(
-			frappe.db.get_value("Topology Link", {"link_key": "t-topo:agent|Runs On|t-topo:host"}, "provider"),
+			frappe.db.get_value(
+				"Topology Link", {"link_key": "t-topo:agent|Runs On|t-topo:host"}, "provider"
+			),
 			"t-topo-collector",
 		)
 
@@ -156,7 +184,12 @@ class TestIngestAndIsolation(IntegrationTestCase):
 		make_asset("t-topo:shared", "Data", "Connector")
 		user = make_user("t-topo-a@example.com", "FoaMES Operator")
 		frappe.get_doc(
-			{"doctype": "User Permission", "user": user.name, "allow": "Topology Tenant", "for_value": "T-Topo A"}
+			{
+				"doctype": "User Permission",
+				"user": user.name,
+				"allow": "Topology Tenant",
+				"for_value": "T-Topo A",
+			}
 		).insert(ignore_permissions=True)
 		with as_user(user.name):
 			ids = {n["id"] for n in api.get_graph()["nodes"]}

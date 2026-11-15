@@ -329,11 +329,11 @@ def trace(graph: Graph, start: str, direction: str = "downstream", max_depth: in
 			steps += [(e, e["target"]) for e in graph.out_edges(current, model.LINEAGE_TYPES)]
 			if node["layer"] == model.PHYSICAL:
 				steps += [(e, e["target"]) for e in graph.out_edges(current, ("Contains",))]
-				steps += [(e, e["source"]) for e in graph.in_edges(current, bound_types + ("Runs On",))]
+				steps += [(e, e["source"]) for e in graph.in_edges(current, (*bound_types, "Runs On"))]
 		else:
 			steps += [(e, e["source"]) for e in graph.in_edges(current, model.LINEAGE_TYPES)]
 			if node["layer"] == model.DATA:
-				steps += [(e, e["target"]) for e in graph.out_edges(current, bound_types + ("Runs On",))]
+				steps += [(e, e["target"]) for e in graph.out_edges(current, (*bound_types, "Runs On"))]
 		for edge, nxt in steps:
 			if nxt not in graph.nodes:
 				continue
@@ -342,7 +342,13 @@ def trace(graph: Graph, start: str, direction: str = "downstream", max_depth: in
 				depth[nxt] = depth[current] + 1
 				order.append(nxt)
 				queue.append(nxt)
-	return {"start": start, "direction": direction, "nodes": order, "edges": sorted(set(used)), "depth": depth}
+	return {
+		"start": start,
+		"direction": direction,
+		"nodes": order,
+		"edges": sorted(set(used)),
+		"depth": depth,
+	}
 
 
 # Layout
@@ -387,17 +393,20 @@ def layout(graph: Graph) -> dict:
 	seen = set()
 	for root in roots:
 		place(root, 0, seen)
-	max_depth = max(depth_of.values(), default=0)
 	data_rows = _data_depths(graph)
 	data_height = (max(data_rows.values(), default=-1) + 1) * DATA_ROW
 	for node_id, (x, _) in list(pos.items()):
 		pos[node_id] = (x, data_height + 60 + depth_of[node_id] * PHYSICAL_ROW)
 
-	bound_types = tuple(model.DIRECTIONS.values()) + ("Runs On",)
+	bound_types = (*model.DIRECTIONS.values(), "Runs On")
 	rows = defaultdict(list)
 	for node_id in sorted(data_rows, key=lambda n: (data_rows[n], n)):
 		anchors = [pos[e["target"]][0] for e in graph.out_edges(node_id, bound_types) if e["target"] in pos]
-		anchors += [pos[e["source"]][0] for e in graph.in_edges(node_id) if e["source"] in pos and e["source"] in data_rows]
+		anchors += [
+			pos[e["source"]][0]
+			for e in graph.in_edges(node_id)
+			if e["source"] in pos and e["source"] in data_rows
+		]
 		x = sum(anchors) / len(anchors) if anchors else next_x[0]
 		if not anchors:
 			next_x[0] += COLUMN
@@ -405,7 +414,7 @@ def layout(graph: Graph) -> dict:
 		pos[node_id] = (x, data_height - (row + 1) * DATA_ROW + 30)
 		rows[row].append(node_id)
 	# Spread nodes on the same data row that landed on top of each other.
-	for row, ids in rows.items():
+	for ids in rows.values():
 		ids.sort(key=lambda n: (pos[n][0], n))
 		last = None
 		for node_id in ids:
@@ -619,7 +628,11 @@ def overlay(graph: Graph, physical_ids=None) -> dict:
 			s = graph.nodes.get(e["source"])
 			if s is None:
 				continue
-			feeds = [graph.nodes[x["target"]]["title"] for x in graph.out_edges(s["id"], model.LINEAGE_TYPES) if x["target"] in graph.nodes]
+			feeds = [
+				graph.nodes[x["target"]]["title"]
+				for x in graph.out_edges(s["id"], model.LINEAGE_TYPES)
+				if x["target"] in graph.nodes
+			]
 			signals.append(
 				{
 					"id": s["id"],

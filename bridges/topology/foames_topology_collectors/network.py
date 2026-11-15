@@ -44,7 +44,14 @@ def read_status(path: str | None = None) -> dict:
 	return json.loads(out.stdout)
 
 
-def report_from_status(status: dict, *, provider: str, tenant: str | None = None, site: str | None = None, now: datetime | None = None) -> dict:
+def report_from_status(
+	status: dict,
+	*,
+	provider: str,
+	tenant: str | None = None,
+	site: str | None = None,
+	now: datetime | None = None,
+) -> dict:
 	now = now or datetime.now(timezone.utc).replace(tzinfo=None)
 	stamp = now.strftime("%Y-%m-%d %H:%M:%S")
 	tailnet = (status.get("CurrentTailnet") or {}).get("Name") or status.get("MagicDNSSuffix") or "tailnet"

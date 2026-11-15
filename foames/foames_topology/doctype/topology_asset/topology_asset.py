@@ -35,7 +35,9 @@ class TopologyAsset(Document):
 			if current in seen:
 				frappe.throw(_("Part Of would make a loop through {0}").format(current))
 			seen.add(current)
-			parent = frappe.db.get_value("Topology Asset", current, ["parent_asset", "tenant", "layer"], as_dict=True)
+			parent = frappe.db.get_value(
+				"Topology Asset", current, ["parent_asset", "tenant", "layer"], as_dict=True
+			)
 			if parent is None:
 				break
 			if current == self.parent_asset:
