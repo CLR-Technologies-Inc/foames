@@ -18,9 +18,17 @@ frappe.ui.form.on("PD Simulation Study", {
 			},
 			__("Study")
 		);
-		frm.add_custom_button(__("Fit Models"), () => frm.call("fit_models").then(() => frm.reload_doc()), __("Study"));
+		frm.add_custom_button(
+			__("Fit Models"),
+			() => frm.call("fit_models").then(() => frm.reload_doc()),
+			__("Study")
+		);
 		if (!frm.doc.model_results) return;
-		frm.add_custom_button(__("Run What-If"), () => frm.call("run_what_if").then(() => frm.reload_doc()), __("Study"));
+		frm.add_custom_button(
+			__("Run What-If"),
+			() => frm.call("run_what_if").then(() => frm.reload_doc()),
+			__("Study")
+		);
 		frm.add_custom_button(
 			__("Design Space"),
 			() => {
@@ -28,8 +36,22 @@ frappe.ui.form.on("PD Simulation Study", {
 				const d = new frappe.ui.Dialog({
 					title: __("Design Space"),
 					fields: [
-						{ fieldname: "x_factor", fieldtype: "Select", label: __("X Factor"), options: names, reqd: 1, default: names[0] },
-						{ fieldname: "y_factor", fieldtype: "Select", label: __("Y Factor"), options: names, reqd: 1, default: names[1] },
+						{
+							fieldname: "x_factor",
+							fieldtype: "Select",
+							label: __("X Factor"),
+							options: names,
+							reqd: 1,
+							default: names[0],
+						},
+						{
+							fieldname: "y_factor",
+							fieldtype: "Select",
+							label: __("Y Factor"),
+							options: names,
+							reqd: 1,
+							default: names[1],
+						},
 						{ fieldname: "steps", fieldtype: "Int", label: __("Steps"), default: 21 },
 						{ fieldname: "out", fieldtype: "HTML" },
 					],
@@ -42,14 +64,28 @@ frappe.ui.form.on("PD Simulation Study", {
 								.reverse()
 								.map(
 									(row, i) =>
-										`<tr><th>${frappe.format(s.y_values[s.y_values.length - 1 - i], { fieldtype: "Float" })}</th>` +
-										row.map((v) => `<td style="background:${v ? "var(--green-200)" : "var(--red-100)"};width:12px"></td>`).join("") +
+										`<tr><th>${frappe.format(
+											s.y_values[s.y_values.length - 1 - i],
+											{ fieldtype: "Float" }
+										)}</th>` +
+										row
+											.map(
+												(v) =>
+													`<td style="background:${
+														v ? "var(--green-200)" : "var(--red-100)"
+													};width:12px"></td>`
+											)
+											.join("") +
 										"</tr>"
 								)
 								.join("");
 							d.fields_dict.out.$wrapper.html(
-								`<p>${__("Inside")}: ${s.percent_inside.toFixed(1)}% (${frappe.utils.escape_html(s.y_factor)} ${__("up")}, ` +
-									`${frappe.utils.escape_html(s.x_factor)} ${__("across")} ${s.x_values[0]} to ${s.x_values[s.x_values.length - 1]})</p>` +
+								`<p>${__("Inside")}: ${s.percent_inside.toFixed(
+									1
+								)}% (${frappe.utils.escape_html(s.y_factor)} ${__("up")}, ` +
+									`${frappe.utils.escape_html(s.x_factor)} ${__("across")} ${
+										s.x_values[0]
+									} to ${s.x_values[s.x_values.length - 1]})</p>` +
 									`<table class="table-sm">${cells}</table>`
 							);
 						});

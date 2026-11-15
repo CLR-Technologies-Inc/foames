@@ -15,7 +15,11 @@ frappe.ui.form.on("NPI Program", {
 						options: ["Go", "Conditional Go", "Recycle", "Hold", "Kill"],
 						reqd: 1,
 					},
-					{ fieldname: "conditions", fieldtype: "Small Text", label: __("Conditions or Rationale") },
+					{
+						fieldname: "conditions",
+						fieldtype: "Small Text",
+						label: __("Conditions or Rationale"),
+					},
 					{
 						fieldname: "conditions_due",
 						fieldtype: "Date",
@@ -39,7 +43,10 @@ frappe.ui.form.on("NPI Program", {
 		open.forEach((g) =>
 			frm.add_custom_button(
 				__("Close {0} Conditions", [__(g.stage)]),
-				() => frm.call("close_gate_conditions", { stage: g.stage }).then(() => frm.reload_doc()),
+				() =>
+					frm
+						.call("close_gate_conditions", { stage: g.stage })
+						.then(() => frm.reload_doc()),
 				__("Gates")
 			)
 		);
@@ -53,9 +60,9 @@ frappe.ui.form.on("NPI Program", {
 				)
 				.join("");
 			frm.dashboard.set_headline_alert(
-				`<table class="table table-sm"><tr><th>${__("Stage")}</th><th>${__("Done")}</th><th>${__(
-					"Required open"
-				)}</th></tr>${rows}</table>`
+				`<table class="table table-sm"><tr><th>${__("Stage")}</th><th>${__(
+					"Done"
+				)}</th><th>${__("Required open")}</th></tr>${rows}</table>`
 			);
 		});
 	},
