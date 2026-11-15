@@ -1,4 +1,7 @@
 # foames
+
+[![GitHub stars](https://img.shields.io/github/stars/CLR-Technologies-Inc/foames?style=social)](https://github.com/CLR-Technologies-Inc/foames/stargazers)
+
 Free Opensource Agentic MES
 
 FOA MES is intended to be the visual technical MES you've always wanted. Simplified views over standard shop operations, integrated yields, core visuals in dashboards...WHAT A DREAM! 
@@ -120,3 +123,13 @@ GitHub Actions runs the tests on Frappe v15 and v16 without an ERP, and on Frapp
 Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
 
 Copyright 2026 CLR Technologies Inc.
+
+## Star History
+
+<a href="https://www.star-history.com/#CLR-Technologies-Inc/foames&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=CLR-Technologies-Inc/foames&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=CLR-Technologies-Inc/foames&type=Date" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=CLR-Technologies-Inc/foames&type=Date" />
+  </picture>
+</a>
