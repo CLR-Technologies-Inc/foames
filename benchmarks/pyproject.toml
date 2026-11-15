@@ -1,0 +1,24 @@
+[project]
+name = "foames-agent-bench"
+version = "0.1.0"
+description = "Benchmark of coding agents on FoaMES manufacturing tasks: hidden tests, manufacturing invariants, time and cost"
+authors = [{ name = "CLR Technologies Inc." }]
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+inspect = ["inspect-ai", "inspect-swe"]
+
+[project.scripts]
+foames-bench = "foames_bench.cli:main"
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["foames_bench"]
+
+[tool.setuptools.package-data]
+foames_bench = ["stubs/frappe/*.py"]

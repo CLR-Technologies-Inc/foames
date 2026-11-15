@@ -1,0 +1,24 @@
+[project]
+name = "foames-historian"
+description = "Read-only bridge from process historians (PI Web API, InfluxDB, Ignition, TimescaleDB and SQL) to FoaMES machine events"
+authors = [{ name = "CLR Technologies Inc." }]
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+readme = "README.md"
+classifiers = ["License :: OSI Approved :: Apache Software License"]
+dynamic = ["version"]
+# PI Web API, InfluxDB and Ignition WebDev need only the standard library.
+dependencies = []
+
+[project.optional-dependencies]
+# Database drivers for the SQL sources; install the one for your historian's database.
+postgres = ["psycopg[binary]"]   # TimescaleDB, or an Ignition historian on PostgreSQL
+mysql = ["pymysql"]              # an Ignition historian on MySQL or MariaDB
+mssql = ["pyodbc"]               # an Ignition historian on SQL Server (needs the ODBC driver)
+
+[project.scripts]
+foames-historian = "foames_historian.__main__:main"
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"

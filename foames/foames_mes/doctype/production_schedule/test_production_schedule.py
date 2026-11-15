@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Production Schedule on a site: building from shift windows and cycle times, maintenance blocks,
 a machine that keeps the job it is running, publishing, the floor snapshot and the behind-schedule

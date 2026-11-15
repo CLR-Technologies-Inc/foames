@@ -1,0 +1,59 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 21:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "machine",
+  "line",
+  "external_reference",
+  "note"
+ ],
+ "fields": [
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "line",
+   "fieldtype": "Data",
+   "label": "Line",
+   "in_list_view": 1,
+   "columns": 2,
+   "description": "Covers every machine on this line"
+  },
+  {
+   "fieldname": "external_reference",
+   "fieldtype": "Link",
+   "label": "Process Reference",
+   "options": "External Reference",
+   "in_list_view": 1,
+   "columns": 3,
+   "description": "An operation, routing step or workstation in the ERP, as an External Reference"
+  },
+  {
+   "fieldname": "note",
+   "fieldtype": "Data",
+   "label": "Note",
+   "in_list_view": 1,
+   "columns": 3
+  }
+ ],
+ "istable": 1,
+ "editable_grid": 1,
+ "name": "SOP Applicability",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "description": "Where an SOP applies: a machine, every machine on a line, or a process step in the ERP",
+ "modified": "2026-11-14 21:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "owner": "Administrator"
+}
