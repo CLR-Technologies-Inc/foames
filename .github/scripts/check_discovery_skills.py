@@ -76,7 +76,7 @@ FENCE = re.compile(r"^```[^\n]*\n(.*?)^```", re.DOTALL | re.MULTILINE)
 
 # Things that look like a real credential. Placeholders in angle brackets and environment
 # variable references do not match.
-SECRETS = {
+LEAK_PATTERNS = {
 	"private key": re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
 	"AWS access key id": re.compile(r"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b"),
 	"GitHub token": re.compile(r"\bgh[pousr]_[A-Za-z0-9]{30,}\b"),
@@ -151,7 +151,7 @@ def link_problems(path: Path, text: str) -> list[str]:
 
 def content_problems(path: Path, text: str) -> list[str]:
 	out = []
-	for kind, pattern in SECRETS.items():
+	for kind, pattern in LEAK_PATTERNS.items():
 		if pattern.search(text):
 			out.append(f"{path}: looks like it holds a {kind}")
 	for block in FENCE.findall(text):
