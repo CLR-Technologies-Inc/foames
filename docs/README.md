@@ -28,6 +28,7 @@ Start with [overview.md](overview.md) for what FoaMES records, then [installatio
 | [maintenance.md](maintenance.md) | Preventive maintenance: plans by calendar, run hours or counts, work orders, the hourly check and its suggestions, the Maintenance Due List |
 | [spc.md](spc.md) | Control charts and run rules on machine measurements, and the suggestions they raise |
 | [validation.md](validation.md) | Equipment qualification (IQ, OQ, PQ) and process validation (PPQ, CPV): protocols, acceptance criteria, capability from machine data, executions with evidence and deviations, approval, requalification |
+| [sops.md](sops.md) | Standard operating procedures as controlled documents: revisions, sign-off, effective dates, periodic review, operator acknowledgement and training, the SOP Training Matrix |
 | [dashboards.md](dashboards.md) | The role workspaces, number cards, dashboard charts and the script reports: OEE by machine, line and shift, downtime Pareto, MTBF and MTTR, suggestion status, outbox health, process throughput, andon response, the maintenance due list |
 
 ## For agents and integrators

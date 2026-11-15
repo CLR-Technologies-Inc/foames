@@ -1,0 +1,13 @@
+{
+	"source": {
+		"type": "influxdb",
+		"name": "influx-plant",
+		"url": "https://influx.example.com",
+		"database": "plant",
+		"auth": "token"
+	},
+	"tags": [
+		{"tag": "machine_data/temperature?machine=oven-2", "machine": "oven-2", "name": "temperature"},
+		{"tag": "machine_data/temperature?machine=oven-2", "machine": "oven-2", "name": "temperature.max_5m", "interval": "5m", "aggregate": "max"}
+	]
+}
