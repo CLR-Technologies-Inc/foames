@@ -77,3 +77,5 @@ For Claude Desktop, Cursor and other clients that start a local process, use the
 ```
 
 The full list of tools is on [MCP tools](Reference-MCP-tools). Why agents only suggest is explained in [Agents suggest, people act](Explanation-Agents-suggest-people-act).
+
+To connect a different CLI or your own harness, see [Connect an agent CLI or harness](How-to-Connect-an-agent-CLI-or-harness). To test agents that change FoaMES code rather than use it, continue with [Tutorial 4: Your first agent benchmark run](Tutorial-4-Your-first-agent-benchmark-run).

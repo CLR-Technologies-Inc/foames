@@ -10,7 +10,7 @@ A profile ships only paths the vendor publishes as a stable public API. Anything
 
 1. **Create credentials in the other system.** For Tulip, create an API bot in the instance's account settings; it gives a key and secret used as Basic authentication.
 2. **Create an MES Connection** and pick its **Adapter** (for Tulip, `TULIP`). Fill in **Base URL** (for Tulip, `https://<instance>.tulip.co`), **Site / Plant / Tenant** if the profile uses one, and the authentication. Set a **Test Path** to a small read and press **Test Connection** until it says *Connected to ...*.
-3. **Add Entity Mappings** for the reference types you need. Each row has a **Path**, a **Lookup** style (Path, Query, OData or JSON Filter), **Key Fields** and a **Label Field**. Tulip has no fixed order or material model: map each type to the Tulip Table that holds it, at `api/v3/tables/<table id>/records`.
+3. **Add Entity Mappings** for the reference types you need. Each row has a **Path**, a **Lookup** style (Path, Query, OData or JSON Filter), **Key Fields** and a **Label Field**. Tulip has no fixed order or item model: map each type to the Tulip Table that holds it, at `api/v3/tables/<table id>/records`.
 4. **Tick Enabled.**
 5. **Make sure the scheduler is enabled**, because writes are sent by it.
 

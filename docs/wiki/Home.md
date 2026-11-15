@@ -25,9 +25,17 @@ Everything below is on the `main` branch and is described in this wiki.
 - **Process mining**: event logs, discovery, conformance, XES and OCEL 2.0 export.
 - **An MCP server**, so Claude, Cursor or any MCP client can read the floor and raise suggestions under a normal user's permissions.
 - **Adapters** for ERPNext, SAP S/4HANA, Siemens Insights Hub and eleven MES and frontline platforms (including Tulip), all alpha.
+- **An agent benchmark** that scores any coding agent (Claude Code, Codex, Gemini CLI, OpenCode, Aider or your own harness) on FoaMES tasks, in a sandbox, against the manufacturing invariants, with time, tokens and cost.
 - **Role workspaces, dashboards and reports** for operators, supervisors, maintenance, quality and integration staff.
 
 Features that are still being reviewed are listed on [[Upcoming features|Upcoming-features]]. They are not on `main` yet and may change.
+
+## Starting with agents
+
+If you are here to test AI agents, there are two paths, and neither needs a real plant:
+
+- **Agents that use FoaMES** (read the floor, analyse OEE, raise suggestions): [Tutorial 3](Tutorial-3-Your-first-agent-over-MCP), then [Connect an agent CLI or harness](How-to-Connect-an-agent-CLI-or-harness) and [Seed a dev site for agent tests](How-to-Seed-a-dev-site-for-agent-tests).
+- **Agents that develop FoaMES** (fix bugs, add features, write specifications): [Tutorial 4](Tutorial-4-Your-first-agent-benchmark-run), which needs no site, then [Run the agent benchmark](How-to-Run-the-agent-benchmark).
 
 ## Where things live
 
