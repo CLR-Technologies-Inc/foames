@@ -83,7 +83,13 @@ class TestWriteGate(IntegrationTestCase):
 
 	def tearDown(self):
 		frappe.set_user("Administrator")
+		# The gate commits as it holds and releases (an outbox's claim does), so the read-only
+		# policies these tests create outlive the test's rollback. Remove them, with the rows they
+		# hold, so that the tests that run next see a read-write test site.
+		for doctype in ("ERPNext Outbox", "Pending Write", "Write Audit Log", "Connector Write Policy"):
+			frappe.db.delete(doctype)
 		set_mode(read_only_mode=0, new_connectors_read_only=0)
+		frappe.db.commit()  # nosemgrep
 		super().tearDown()
 
 	def sign(
