@@ -8,6 +8,7 @@ Scaffolds for case studies of manufacturing improvements measured with FoaMES. E
 | Process | [process-manufacturing.md](process-manufacturing.md) | Yield, batch cycle time and specific energy on a batch or continuous unit, measured with totaliser counters and SPC |
 | Operational and logistics | [logistics-ev-adoption.md](logistics-ev-adoption.md) | Moving a yard, shuttle or regional fleet to battery-electric trucks, measured as availability, charging loss and energy per load |
 | Operational and logistics | [logistics-autonomous-trucking.md](logistics-autonomous-trucking.md) | Autonomous yard, shuttle or line-haul trucks, measured as intervention rate, time to resume, availability and dwell |
+| Process | [oilfield-pumpjack-solar-tea.md](oilfield-pumpjack-solar-tea.md) | Techno-economic comparison of standard and solar-supported pumpjacks, with a runnable model ([pumpjack_tea.py](pumpjack_tea.py)), measured as specific energy and solar share |
 
 ## Rules for a study
 

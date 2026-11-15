@@ -1,0 +1,356 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 21:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "sop_code",
+  "revision",
+  "title",
+  "category",
+  "cb_head",
+  "status",
+  "document_owner",
+  "prepared_by",
+  "supersedes",
+  "superseded_by",
+  "sb_content",
+  "purpose",
+  "scope",
+  "responsibilities",
+  "procedure",
+  "references",
+  "attachment",
+  "change_summary",
+  "sb_applies",
+  "applies_to",
+  "sb_approval",
+  "approvals",
+  "sb_effect",
+  "effective_on",
+  "review_interval_months",
+  "last_reviewed_on",
+  "cb_effect",
+  "next_review_on",
+  "review_status",
+  "retired_on",
+  "retire_reason",
+  "sb_training",
+  "requires_acknowledgement",
+  "training_roles",
+  "cb_training",
+  "acknowledge_within_days"
+ ],
+ "fields": [
+  {
+   "fieldname": "sop_code",
+   "fieldtype": "Data",
+   "label": "SOP Code",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "set_only_once": 1,
+   "description": "The document number all revisions share, for example SOP-PRS-004"
+  },
+  {
+   "fieldname": "revision",
+   "fieldtype": "Int",
+   "label": "Revision",
+   "read_only": 1,
+   "in_list_view": 1,
+   "description": "Numbered from 1 when the revision is created"
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Select",
+   "label": "Category",
+   "options": "Operations\nQuality\nSafety\nMaintenance\nEngineering\nOther",
+   "default": "Operations",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nIn Review\nApproved\nEffective\nSuperseded\nObsolete",
+   "default": "Draft",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "document_owner",
+   "fieldtype": "Link",
+   "label": "Document Owner",
+   "options": "User",
+   "description": "Keeps the SOP current and leads its periodic review"
+  },
+  {
+   "fieldname": "prepared_by",
+   "fieldtype": "Link",
+   "label": "Prepared By",
+   "options": "User",
+   "read_only": 1,
+   "description": "Who created this revision. They cannot sign it"
+  },
+  {
+   "fieldname": "supersedes",
+   "fieldtype": "Link",
+   "label": "Supersedes",
+   "options": "Standard Operating Procedure",
+   "read_only": 1
+  },
+  {
+   "fieldname": "superseded_by",
+   "fieldtype": "Link",
+   "label": "Superseded By",
+   "options": "Standard Operating Procedure",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_content",
+   "fieldtype": "Section Break",
+   "label": "Procedure"
+  },
+  {
+   "fieldname": "purpose",
+   "fieldtype": "Small Text",
+   "label": "Purpose"
+  },
+  {
+   "fieldname": "scope",
+   "fieldtype": "Small Text",
+   "label": "Scope"
+  },
+  {
+   "fieldname": "responsibilities",
+   "fieldtype": "Small Text",
+   "label": "Responsibilities"
+  },
+  {
+   "fieldname": "procedure",
+   "fieldtype": "Text Editor",
+   "label": "Procedure",
+   "reqd": 1
+  },
+  {
+   "fieldname": "references",
+   "fieldtype": "Small Text",
+   "label": "References",
+   "description": "Related SOPs, standards, drawings, safety data sheets"
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Controlled Copy",
+   "description": "The approved document file, when the SOP is kept as a file"
+  },
+  {
+   "fieldname": "change_summary",
+   "fieldtype": "Small Text",
+   "label": "Change Summary",
+   "description": "What changed from the previous revision and why. Required from revision 2"
+  },
+  {
+   "fieldname": "sb_applies",
+   "fieldtype": "Section Break",
+   "label": "Applies To",
+   "description": "Leave empty for a site-wide SOP"
+  },
+  {
+   "fieldname": "applies_to",
+   "fieldtype": "Table",
+   "label": "Applies To",
+   "options": "SOP Applicability"
+  },
+  {
+   "fieldname": "sb_approval",
+   "fieldtype": "Section Break",
+   "label": "Sign-off"
+  },
+  {
+   "fieldname": "approvals",
+   "fieldtype": "Table",
+   "label": "Approvals",
+   "options": "SOP Approval",
+   "description": "Every row must be signed, each by a different person holding the role, and never by the author"
+  },
+  {
+   "fieldname": "sb_effect",
+   "fieldtype": "Section Break",
+   "label": "Effect and Review"
+  },
+  {
+   "fieldname": "effective_on",
+   "fieldtype": "Date",
+   "label": "Effective On",
+   "description": "Takes effect on this date once approved. Empty: on approval"
+  },
+  {
+   "fieldname": "review_interval_months",
+   "fieldtype": "Int",
+   "label": "Review Every (Months)",
+   "default": "12",
+   "description": "0 for no periodic review"
+  },
+  {
+   "fieldname": "last_reviewed_on",
+   "fieldtype": "Date",
+   "label": "Last Reviewed On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_effect",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "next_review_on",
+   "fieldtype": "Date",
+   "label": "Next Review On",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "review_status",
+   "fieldtype": "Select",
+   "label": "Review Status",
+   "options": "\nCurrent\nReview Due Soon\nReview Overdue",
+   "read_only": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "retired_on",
+   "fieldtype": "Date",
+   "label": "Retired On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "retire_reason",
+   "fieldtype": "Small Text",
+   "label": "Retire Reason",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_training",
+   "fieldtype": "Section Break",
+   "label": "Training"
+  },
+  {
+   "fieldname": "requires_acknowledgement",
+   "fieldtype": "Check",
+   "label": "Requires Acknowledgement",
+   "default": "1",
+   "description": "People in the training roles must read and acknowledge each new revision"
+  },
+  {
+   "fieldname": "training_roles",
+   "fieldtype": "Table MultiSelect",
+   "label": "Training Roles",
+   "options": "SOP Training Role",
+   "depends_on": "requires_acknowledgement"
+  },
+  {
+   "fieldname": "cb_training",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "acknowledge_within_days",
+   "fieldtype": "Int",
+   "label": "Acknowledge Within (Days)",
+   "default": "14",
+   "depends_on": "requires_acknowledgement"
+  }
+ ],
+ "naming_rule": "By script",
+ "name": "Standard Operating Procedure",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Integration",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "title_field": "title",
+ "show_title_field_in_link": 0,
+ "search_fields": "sop_code,title,status",
+ "description": "One revision of a controlled standard operating procedure",
+ "modified": "2026-11-14 21:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "owner": "Administrator"
+}
