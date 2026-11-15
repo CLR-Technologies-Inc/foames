@@ -187,6 +187,8 @@ scheduler_events = {
 		"foames.foames_mes.tasks.compute_daily_oee",
 		# Looks up External References that are still Unverified or Missing in their ERP.
 		"foames.foames_kernel.tasks.refresh_external_references",
+		# Raises suggestions for NPI gates that are due or overdue and for overdue gate conditions.
+		"foames.foames_lifesci.tasks.check_npi_gates",
 		# Makes approved SOP revisions effective on their date and raises suggestions for SOP reviews
 		# coming due and for people not trained on the current revision in time.
 		"foames.foames_mes.doctype.standard_operating_procedure.standard_operating_procedure.check_sops",

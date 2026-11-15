@@ -1,0 +1,147 @@
+{
+ "actions": [],
+ "creation": "2026-11-15 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "parameter",
+  "step",
+  "unit_of_measure",
+  "criticality",
+  "limits",
+  "set_point",
+  "cb_ranges",
+  "nor_low",
+  "nor_high",
+  "par_low",
+  "par_high",
+  "sb_scale",
+  "scale_dependent",
+  "scale_rule",
+  "receiving_set_point",
+  "cb_scale",
+  "justification"
+ ],
+ "fields": [
+  {
+   "fieldname": "parameter",
+   "fieldtype": "Data",
+   "label": "Parameter",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "step",
+   "fieldtype": "Data",
+   "label": "Process Step",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "unit_of_measure",
+   "fieldtype": "Data",
+   "label": "Unit",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "criticality",
+   "fieldtype": "Select",
+   "label": "Criticality",
+   "options": "CPP\nKPP\nNon-critical",
+   "default": "Non-critical",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "limits",
+   "fieldtype": "Select",
+   "label": "Ranges",
+   "options": "Lower and Upper\nLower Only\nUpper Only\nNone",
+   "default": "Lower and Upper",
+   "description": "Which sides of the NOR and PAR are set"
+  },
+  {
+   "fieldname": "set_point",
+   "fieldtype": "Float",
+   "label": "Set Point",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "cb_ranges",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "nor_low",
+   "fieldtype": "Float",
+   "label": "NOR Low",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "nor_high",
+   "fieldtype": "Float",
+   "label": "NOR High",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "par_low",
+   "fieldtype": "Float",
+   "label": "PAR Low"
+  },
+  {
+   "fieldname": "par_high",
+   "fieldtype": "Float",
+   "label": "PAR High"
+  },
+  {
+   "fieldname": "sb_scale",
+   "fieldtype": "Section Break",
+   "label": "Scale"
+  },
+  {
+   "fieldname": "scale_dependent",
+   "fieldtype": "Check",
+   "label": "Scale Dependent"
+  },
+  {
+   "fieldname": "scale_rule",
+   "fieldtype": "Select",
+   "label": "Scale Rule",
+   "options": "\nScale Independent\nLinear with Volume\nConstant P/V\nConstant Tip Speed\nConstant kLa\nConstant vvm\nConstant Superficial Gas Velocity\nConstant Residence Time\nOther (Justify)"
+  },
+  {
+   "fieldname": "receiving_set_point",
+   "fieldtype": "Float",
+   "label": "Receiving Set Point",
+   "read_only": 1,
+   "description": "Computed for rules that scale with volume alone; geometry-dependent rules use the scale-up calculator"
+  },
+  {
+   "fieldname": "cb_scale",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "justification",
+   "fieldtype": "Small Text",
+   "label": "Justification",
+   "description": "Why it is critical or not, and the source of the ranges (development report, DoE, prior knowledge)"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Life Sciences",
+ "name": "Tech Transfer Parameter",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1,
+ "permissions": []
+}

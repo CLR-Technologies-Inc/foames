@@ -1,0 +1,137 @@
+{
+ "actions": [],
+ "creation": "2026-11-15 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "attribute",
+  "unit_of_measure",
+  "criticality",
+  "requirement_id",
+  "analytical_method",
+  "cb_limits",
+  "limits",
+  "lower",
+  "upper",
+  "sb_comparability",
+  "approach",
+  "margin",
+  "cb_comparability",
+  "k",
+  "coverage"
+ ],
+ "fields": [
+  {
+   "fieldname": "attribute",
+   "fieldtype": "Data",
+   "label": "Attribute",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "unit_of_measure",
+   "fieldtype": "Data",
+   "label": "Unit",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "criticality",
+   "fieldtype": "Select",
+   "label": "Criticality",
+   "options": "CQA\nNon-critical",
+   "default": "CQA",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "requirement_id",
+   "fieldtype": "Data",
+   "label": "Requirement ID",
+   "description": "The CQA or design input in the linked product requirements document"
+  },
+  {
+   "fieldname": "analytical_method",
+   "fieldtype": "Data",
+   "label": "Analytical Method",
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "cb_limits",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "limits",
+   "fieldtype": "Select",
+   "label": "Acceptance Limits",
+   "options": "Lower and Upper\nLower Only\nUpper Only\nNone",
+   "default": "Lower and Upper"
+  },
+  {
+   "fieldname": "lower",
+   "fieldtype": "Float",
+   "label": "Lower Limit",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "upper",
+   "fieldtype": "Float",
+   "label": "Upper Limit",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "sb_comparability",
+   "fieldtype": "Section Break",
+   "label": "Comparability"
+  },
+  {
+   "fieldname": "approach",
+   "fieldtype": "Select",
+   "label": "Comparability Approach",
+   "options": "\nEquivalence (TOST)\nQuality Range\nMin-Max\nDescriptive",
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "margin",
+   "fieldtype": "Float",
+   "label": "Equivalence Margin",
+   "description": "For TOST: the largest difference in means that is not practically meaningful, in the attribute's unit"
+  },
+  {
+   "fieldname": "cb_comparability",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "k",
+   "fieldtype": "Float",
+   "label": "Quality Range k",
+   "default": "3",
+   "description": "Quality range: sending mean +/- k standard deviations"
+  },
+  {
+   "fieldname": "coverage",
+   "fieldtype": "Percent",
+   "label": "Required Coverage",
+   "default": "90",
+   "description": "Quality range: share of receiving batches that must fall in the range"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Life Sciences",
+ "name": "Tech Transfer Attribute",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1,
+ "permissions": []
+}

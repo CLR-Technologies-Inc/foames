@@ -1,0 +1,84 @@
+{
+ "actions": [],
+ "creation": "2026-11-15 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "response",
+  "symbol",
+  "unit_of_measure",
+  "cqa",
+  "limits",
+  "lower",
+  "upper"
+ ],
+ "fields": [
+  {
+   "fieldname": "response",
+   "fieldtype": "Data",
+   "label": "Response",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "symbol",
+   "fieldtype": "Data",
+   "label": "Symbol",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 1,
+   "description": "y1 to y4, in row order"
+  },
+  {
+   "fieldname": "unit_of_measure",
+   "fieldtype": "Data",
+   "label": "Unit",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "cqa",
+   "fieldtype": "Check",
+   "label": "CQA",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "limits",
+   "fieldtype": "Select",
+   "label": "Limits",
+   "options": "Lower and Upper\nLower Only\nUpper Only\nNone",
+   "default": "None",
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "lower",
+   "fieldtype": "Float",
+   "label": "Lower Limit",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "upper",
+   "fieldtype": "Float",
+   "label": "Upper Limit",
+   "in_list_view": 1,
+   "columns": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Life Sciences",
+ "name": "PD Response",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1,
+ "permissions": []
+}

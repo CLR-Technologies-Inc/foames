@@ -2,7 +2,7 @@
 
 FoaMES speaks the Model Context Protocol (MCP), so an agent in Claude Desktop, Claude Code, Cursor or any other MCP client can read the plant floor and raise suggestions through tools, with no custom integration. The server exposes the public FoaMES API and nothing more: every tool is one whitelisted method that is already callable at `/api/method/...`, run as the user whose API key the agent holds, with that user's permissions.
 
-The 24 tools cover machines and their state, machine events, downtime, OEE, the floor snapshot, Agent Suggestions, process mining (event logs, discovery, conformance, export) and ERP reference reads through whichever adapters are registered on the site. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act.
+The 29 tools cover machines and their state, machine events, downtime, OEE, the floor snapshot, Agent Suggestions, process mining (event logs, discovery, conformance, export), life-sciences programs (NPI status, requirement tracing, tech transfer packages, PD studies, scale-up) and ERP reference reads through whichever adapters are registered on the site. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act.
 
 ## Two ways to connect
 
@@ -72,6 +72,9 @@ Permissions are the DocType permissions of the user behind the key, checked by t
 | `foames_mining_*`, `foames_list_event_logs`, `foames_list_event_log_sources` | read on Process Event Log / Event Log Source |
 | `foames_list_erp_systems` | any logged-in user |
 | `foames_list_external_references`, `foames_lookup_erp_record` | read on External Reference (System Manager by default) |
+| `foames_get_npi_status` | read on NPI Program (Engineer, Quality, Supervisor, Operator) |
+| `foames_get_requirements_trace`, `foames_get_tech_transfer_package`, `foames_get_pd_study` | read on Product Requirements Document / Tech Transfer Package / PD Simulation Study |
+| `foames_scale_up` | any logged-in user (arithmetic only) |
 
 `foames_get_machine` returns the sections the user may read and leaves the others out, so an Operator sees the machine and its downtime but not sections they lack the role for.
 
@@ -102,6 +105,11 @@ Permissions are the DocType permissions of the user behind the key, checked by t
 | `foames_list_erp_systems()` | Registered adapters, availability, default system, reference types |
 | `foames_list_external_references(erp_system, reference_type, status, limit)` | External References with resolution status |
 | `foames_lookup_erp_record(reference_type, external_id, erp_system)` | One ERP record through its adapter; creates nothing |
+| `foames_get_npi_status(program, include_closed)` | NPI programs: stage, status, next gate, open required deliverables, open gate conditions ([life-sciences.md](life-sciences.md)) |
+| `foames_get_requirements_trace(document)` | A PRD's trace matrix, gaps and coverage |
+| `foames_get_tech_transfer_package(package)` | CPPs with NOR and PAR, CQAs with limits and comparability outcome, deliverables, what blocks approval |
+| `foames_get_pd_study(study)` | A PD simulation study's factors, runs, fitted models and last what-if |
+| `foames_scale_up(small_volume_l, large_volume_l, impeller_diameter_m, rpm, ...)` | Stirred-vessel scale-up for constant P/V, tip speed, Re and mixing time, with kLa |
 
 Every tool carries its input schema and annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`) in `tools/list`, so a client can show which tools write. The server's `initialize` response includes the agent instructions from [agents/floor-agent.md](agents/floor-agent.md) in short form.
 

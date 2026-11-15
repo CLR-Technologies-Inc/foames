@@ -23,10 +23,18 @@ OEE = "foames.foames_mes.doctype.oee_period.oee_period"
 MINING = "foames.foames_process_mining.api"
 ADAPTERS = "foames.foames_adapters"
 READS = "foames.foames_mcp.reads"
+LIFESCI = "foames.foames_lifesci.api"
 
 # Packages a tool's method may live in. The catalogue test holds every tool to this list, so a
 # tool cannot quietly reach a method outside the public API.
-ALLOWED_METHOD_PREFIXES = (MES_API, OEE, MINING, ADAPTERS + ".get_available_erp_systems", READS)
+ALLOWED_METHOD_PREFIXES = (
+	MES_API,
+	OEE,
+	MINING,
+	ADAPTERS + ".get_available_erp_systems",
+	READS,
+	LIFESCI,
+)
 
 INSTRUCTIONS = """FoaMES is a manufacturing execution system. These tools read the plant floor and \
 raise suggestions. Rules: suggest, never act (releases, holds, dispositions and ERP postings are done \
@@ -364,6 +372,75 @@ TOOLS: list[Tool] = [
 				"erp_system": _s("ERP system key; defaults to the site's default ERP system"),
 			},
 			["reference_type", "external_id"],
+		),
+	),
+	# Life sciences: NPI, product requirements, tech transfer and PD simulation ---------------
+	Tool(
+		name="foames_get_npi_status",
+		title="Get NPI program status",
+		description="New product introduction programs: current stage (Concept, Feasibility, Development, Verification & Validation, Transfer, Launch), status, the next gate and its target date, required deliverables of the current stage still open, open Conditional Go conditions and the decisions so far. Active and on-hold programs unless include_closed. Gate decisions are made by people; report readiness, do not decide. Needs read on NPI Program.",
+		method=f"{LIFESCI}.get_npi_status",
+		input_schema=_schema(
+			{
+				"program": _s("Only this NPI Program (its name, for example NPI-2026-00001)"),
+				"include_closed": _b("Include launched and cancelled programs (default false)"),
+			}
+		),
+	),
+	Tool(
+		name="foames_get_requirements_trace",
+		title="Get the requirements trace matrix",
+		description="The trace matrix of a product requirements document (PRD): each user need, design input, QTPP element or CQA with what it refines, its design output, verification and validation, the gaps (no acceptance criteria, not verified, failed) and the coverage figures. Needs read on Product Requirements Document.",
+		method=f"{LIFESCI}.get_requirements_trace",
+		input_schema=_schema({"document": _s("The Product Requirements Document name")}, ["document"]),
+	),
+	Tool(
+		name="foames_get_tech_transfer_package",
+		title="Get a tech transfer package",
+		description="An MSAT tech transfer package: sending and receiving site, scale, every process parameter with criticality (CPP, KPP), set point, NOR and PAR and scale rule, every quality attribute with limits and comparability approach and the latest comparability outcome, the transfer deliverables and, for a draft, what still blocks approval. Needs read on Tech Transfer Package.",
+		method=f"{LIFESCI}.get_tech_transfer_package",
+		input_schema=_schema({"package": _s("The Tech Transfer Package name")}, ["package"]),
+	),
+	Tool(
+		name="foames_get_pd_study",
+		title="Get a PD simulation study",
+		description="A process development study: factors with ranges and operating distributions, responses with limits, the runs and their results, the fitted response-surface models (coefficients in coded units, R squared, RMSE) and the last Monte Carlo what-if. Needs read on PD Simulation Study.",
+		method=f"{LIFESCI}.get_pd_study",
+		input_schema=_schema({"study": _s("The PD Simulation Study name")}, ["study"]),
+	),
+	Tool(
+		name="foames_scale_up",
+		title="Scale up a stirred vessel",
+		description="Stirred, aerated vessel scale-up under geometric similarity: for constant P/V, tip speed, Reynolds number and mixing time, the large-scale impeller speed, power, P/V, tip speed, Re, vvm, superficial gas velocity and kLa (van 't Riet), with ratios to the small scale. Arithmetic only; an estimate for engineering judgment.",
+		method=f"{LIFESCI}.scale_up",
+		input_schema=_schema(
+			{
+				"small_volume_l": {"type": "number", "description": "Small-scale working volume, litres"},
+				"large_volume_l": {"type": "number", "description": "Large-scale working volume, litres"},
+				"impeller_diameter_m": {
+					"type": "number",
+					"description": "Small-scale impeller diameter, metres",
+				},
+				"rpm": {"type": "number", "description": "Small-scale impeller speed, rpm"},
+				"power_number": {
+					"type": "number",
+					"description": "Impeller power number (default 5, Rushton turbine)",
+				},
+				"density": {"type": "number", "description": "Broth density, kg/m3 (default 1000)"},
+				"viscosity": {"type": "number", "description": "Broth viscosity, Pa s (default 0.001)"},
+				"tank_diameter_m": {
+					"type": "number",
+					"description": "Small-scale vessel diameter, metres (for gas velocity and kLa)",
+				},
+				"gas_l_min": {"type": "number", "description": "Small-scale gas flow, L/min"},
+				"gas_rule": _s(
+					"How gas flow scales", enum=["Constant vvm", "Constant Superficial Gas Velocity"]
+				),
+				"kla_correlation": _s(
+					"kLa correlation", enum=["Coalescing (van 't Riet)", "Non-coalescing (van 't Riet)"]
+				),
+			},
+			["small_volume_l", "large_volume_l", "impeller_diameter_m", "rpm"],
 		),
 	),
 ]
