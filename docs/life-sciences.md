@@ -5,7 +5,7 @@ This module is for biopharma and medical device plants. It covers the work that 
 - **New product introduction (NPI):** taking a new drug, biologic, device or combination product from concept through design, development and verification into commercial manufacturing, as a stage-gate program.
 - **Manufacturing science and technology (MSAT):** the process engineering that transfers a process to a new site or scale, keeps it in a state of control, and supports GMP production on the floor.
 
-It adds four things, all in the `FoaMES Life Sciences` module (`foames/foames_lifesci`):
+It adds four things, all in the `FoaMES Life Sciences` module (`foames/foames_life_sciences`):
 
 | Record | What it holds |
 | --- | --- |
@@ -56,7 +56,7 @@ The stages are Concept, Feasibility, Development, Verification & Validation, Tra
 | Hold | The program is On Hold in the stage; a later decision on the same gate resumes it |
 | Kill | The program is Cancelled |
 
-Every decision keeps who made it and when, and the version history keeps earlier decisions on a recycled gate. A daily job (`foames.foames_lifesci.tasks.check_npi_gates`) raises an Agent Suggestion when the current gate is overdue, or due within 14 days with required deliverables still open, and when the conditions of a Conditional Go are past their due date.
+Every decision keeps who made it and when, and the version history keeps earlier decisions on a recycled gate. A daily job (`foames.foames_life_sciences.tasks.check_npi_gates`) raises an Agent Suggestion when the current gate is overdue, or due within 14 days with required deliverables still open, and when the conditions of a Conditional Go are past their due date.
 
 ## Product requirements and the trace matrix
 
@@ -109,7 +109,7 @@ A PD Simulation Study holds one designed experiment and what is learned from it.
 
 ### Scale-up calculator
 
-`foames.foames_lifesci.api.scale_up` (MCP tool `foames_scale_up`) works out a stirred, aerated vessel at a larger volume under geometric similarity. For constant P/V, constant tip speed, constant Reynolds number and constant mixing time it gives the large-scale impeller speed and what the other criteria become (power, P/V, tip speed, Re, vvm, superficial gas velocity and kLa), with ratios to the small scale, so the trade-off is visible. Gas flow follows constant vvm or constant superficial velocity; kLa uses van 't Riet's correlations (Ind. Eng. Chem. Process Des. Dev. 18 (1979) 357) for coalescing or non-coalescing broths. Inputs are in litres, metres, rpm, kg/m3, Pa s and L/min. The results are estimates for engineering judgment, not a validated scale-up; check the regime (Re above 10,000 for a constant power number) and heat removal, since jacket area per volume falls with scale.
+`foames.foames_life_sciences.api.scale_up` (MCP tool `foames_scale_up`) works out a stirred, aerated vessel at a larger volume under geometric similarity. For constant P/V, constant tip speed, constant Reynolds number and constant mixing time it gives the large-scale impeller speed and what the other criteria become (power, P/V, tip speed, Re, vvm, superficial gas velocity and kLa), with ratios to the small scale, so the trade-off is visible. Gas flow follows constant vvm or constant superficial velocity; kLa uses van 't Riet's correlations (Ind. Eng. Chem. Process Des. Dev. 18 (1979) 357) for coalescing or non-coalescing broths. Inputs are in litres, metres, rpm, kg/m3, Pa s and L/min. The results are estimates for engineering judgment, not a validated scale-up; check the regime (Re above 10,000 for a constant power number) and heat removal, since jacket area per volume falls with scale.
 
 ## Roles
 
@@ -122,7 +122,7 @@ A PD Simulation Study holds one designed experiment and what is learned from it.
 
 ## API and MCP
 
-| Method (`foames.foames_lifesci.api.*`) | MCP tool | Returns |
+| Method (`foames.foames_life_sciences.api.*`) | MCP tool | Returns |
 | --- | --- | --- |
 | `get_npi_status(program, include_closed)` | `foames_get_npi_status` | Stage, status, next gate, required deliverables open, open conditions, decisions |
 | `get_requirements_trace(document)` | `foames_get_requirements_trace` | The trace matrix, gaps and coverage |
@@ -134,4 +134,4 @@ All of them read. The actions that change records (gate decisions, generating a 
 
 ## Code
 
-The rules and the arithmetic import nothing from Frappe and are tested without a site: `npi.py` (stages, templates, gate rules, findings), `requirements.py` (structure and the trace matrix), `transfer.py` (package checks, comparability), `stats.py` (t distribution, summaries, a linear solver), `doe.py` (designs, fits, what-if, design space) and `scaleup.py`. `python -m unittest foames.foames_lifesci.test_lifesci_logic` runs them; `test_lifesci.py` covers the DocTypes on a site.
+The rules and the arithmetic import nothing from Frappe and are tested without a site: `npi.py` (stages, templates, gate rules, findings), `requirements.py` (structure and the trace matrix), `transfer.py` (package checks, comparability), `stats.py` (t distribution, summaries, a linear solver), `doe.py` (designs, fits, what-if, design space) and `scaleup.py`. `python -m unittest foames.foames_life_sciences.test_lifesci_logic` runs them; `test_lifesci.py` covers the DocTypes on a site.

@@ -5,7 +5,7 @@
 
 A new program gets one gate per stage and the deliverable template for its product type. The
 current stage and status move only through `record_gate_decision`, which a reviewer other than the
-program lead calls; the rules are in foames.foames_lifesci.npi. The decision fields of a gate
+program lead calls; the rules are in foames.foames_life_sciences.npi. The decision fields of a gate
 cannot be edited by hand, and the version history (track changes) keeps every decision.
 """
 
@@ -14,7 +14,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import getdate, now_datetime
 
-from foames.foames_lifesci import npi
+from foames.foames_life_sciences import npi
 
 DECIDERS = ("FoaMES Quality", "FoaMES Supervisor", "System Manager")
 GATE_SYSTEM_FIELDS = (

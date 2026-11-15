@@ -9,7 +9,7 @@ import math
 import unittest
 from datetime import date
 
-from foames.foames_lifesci import doe, npi, requirements, scaleup, stats, transfer
+from foames.foames_life_sciences import doe, npi, requirements, scaleup, stats, transfer
 
 
 class TestStats(unittest.TestCase):

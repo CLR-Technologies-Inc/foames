@@ -11,7 +11,7 @@ import json
 import frappe
 from frappe.utils import cint, flt
 
-from foames.foames_lifesci import npi, scaleup
+from foames.foames_life_sciences import npi, scaleup
 
 
 def _program_status(doc) -> dict:

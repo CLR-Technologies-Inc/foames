@@ -6,7 +6,7 @@
 Submitting is approval, by someone other than the person who prepared it. After approval only the
 trace columns of each requirement (design output, verification, validation) change, as the work
 is done; a change to the requirements themselves is an amendment, a new revision. The coverage
-figures are kept current on every save. The rules are in foames.foames_lifesci.requirements.
+figures are kept current on every save. The rules are in foames.foames_life_sciences.requirements.
 """
 
 import frappe
@@ -14,7 +14,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import now_datetime
 
-from foames.foames_lifesci import requirements
+from foames.foames_life_sciences import requirements
 
 TRACE_FIELDS = (
 	"req_id",

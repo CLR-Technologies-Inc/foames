@@ -30,7 +30,7 @@ import itertools
 import math
 import random
 
-from foames.foames_lifesci import stats
+from foames.foames_life_sciences import stats
 
 DESIGNS = (
 	"Full Factorial",

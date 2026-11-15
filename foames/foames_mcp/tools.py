@@ -23,7 +23,7 @@ OEE = "foames.foames_mes.doctype.oee_period.oee_period"
 MINING = "foames.foames_process_mining.api"
 ADAPTERS = "foames.foames_adapters"
 READS = "foames.foames_mcp.reads"
-LIFESCI = "foames.foames_lifesci.api"
+LIFESCI = "foames.foames_life_sciences.api"
 
 # Packages a tool's method may live in. The catalogue test holds every tool to this list, so a
 # tool cannot quietly reach a method outside the public API.

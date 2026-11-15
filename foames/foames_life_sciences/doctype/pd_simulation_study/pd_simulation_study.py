@@ -7,7 +7,7 @@ The engineer lists the factors (with their studied range and, for what-if, how t
 operation) and the responses (with limits), generates a design, runs the experiments and enters
 the results in the run grid. The study then fits a response-surface model per response, runs a
 Monte Carlo what-if around the nominal settings and maps the design space over any two factors.
-The arithmetic is in foames.foames_lifesci.doe; this class only moves data between the record and
+The arithmetic is in foames.foames_life_sciences.doe; this class only moves data between the record and
 those functions. Nothing here reads production data or changes a process.
 """
 
@@ -18,7 +18,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cint, flt
 
-from foames.foames_lifesci import doe
+from foames.foames_life_sciences import doe
 
 RESULT_COLUMNS = tuple(f"y{i}" for i in range(1, doe.MAX_RESPONSES + 1))
 FACTOR_COLUMNS = tuple(f"x{i}" for i in range(1, doe.MAX_FACTORS + 1))

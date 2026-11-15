@@ -7,7 +7,7 @@ Conditional Go conditions past their due date."""
 import frappe
 from frappe.utils import getdate, nowdate
 
-from foames.foames_lifesci import npi
+from foames.foames_life_sciences import npi
 from foames.foames_mes.doctype.agent_suggestion.agent_suggestion import raise_suggestions
 
 

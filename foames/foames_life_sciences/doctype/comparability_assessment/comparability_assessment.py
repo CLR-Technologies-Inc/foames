@@ -5,7 +5,7 @@
 
 The approach, margin and limits come from the attribute's row in the tech transfer package, so the
 rule is fixed before the data is in. Every save recomputes the outcome with
-foames.foames_lifesci.transfer.assess_comparability. Submitting records the review; it needs an
+foames.foames_life_sciences.transfer.assess_comparability. Submitting records the review; it needs an
 approved package, a decisive outcome (not Insufficient Data) and a reviewer other than the person
 who entered the results.
 """
@@ -15,7 +15,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, now_datetime
 
-from foames.foames_lifesci import transfer
+from foames.foames_life_sciences import transfer
 
 
 class ComparabilityAssessment(Document):

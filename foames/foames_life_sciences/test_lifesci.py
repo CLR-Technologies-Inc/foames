@@ -9,8 +9,8 @@ import json
 import frappe
 from frappe.utils import add_days, getdate, nowdate
 
-from foames.foames_lifesci import api
-from foames.foames_lifesci.tasks import check_npi_gates
+from foames.foames_life_sciences import api
+from foames.foames_life_sciences.tasks import check_npi_gates
 from foames.tests_compat import IntegrationTestCase
 from foames.tests_helpers import as_user, make_user
 

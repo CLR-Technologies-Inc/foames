@@ -4,7 +4,7 @@
 """An MSAT tech transfer package.
 
 A draft may be incomplete; its problems are shown on save. Submitting is approval: it is refused
-while the package has problems (foames.foames_lifesci.transfer.package_problems), when a CQA names
+while the package has problems (foames.foames_life_sciences.transfer.package_problems), when a CQA names
 a requirement the linked PRD does not have, or when the approver prepared the package. After
 approval only the deliverables' progress changes; a change to the process is an amendment.
 """
@@ -14,7 +14,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, now_datetime
 
-from foames.foames_lifesci import transfer
+from foames.foames_life_sciences import transfer
 
 PARAMETER_FIELDS = (
 	"parameter",

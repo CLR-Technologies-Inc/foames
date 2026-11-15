@@ -29,7 +29,7 @@ from __future__ import annotations
 
 import math
 
-from foames.foames_lifesci import stats
+from foames.foames_life_sciences import stats
 
 LIMITS = ("Lower and Upper", "Lower Only", "Upper Only", "None")
 PARAMETER_CRITICALITY = ("CPP", "KPP", "Non-critical")
