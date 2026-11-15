@@ -1,3 +1,6 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 name: CI
 
 on:
@@ -33,6 +36,9 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Topology collectors
         working-directory: bridges/topology
+        run: python -m unittest discover -s tests -v
+      - name: Historian bridge
+        working-directory: bridges/historian
         run: python -m unittest discover -s tests -v
 
   tests:

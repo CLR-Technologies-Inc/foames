@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """A directed link between two topology assets: a pipe, wiring or network link on the physical
 layer, a data flow, derivation, posting or delegation on the data layer, or an agent running on

@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Puts the data layer on Floor View: the floor snapshot gains a "topology" section with, per
 machine, its data health and the signals bound to it (and to the instruments on it).

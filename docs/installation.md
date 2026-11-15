@@ -21,6 +21,17 @@ bench get-app https://github.com/CLR-Technologies-Inc/foames
 bench --site $SITE install-app foames
 ```
 
+### Install on Frappe Cloud
+
+Add the app to a bench group from its GitHub URL, `https://github.com/CLR-Technologies-Inc/foames`, branch `main`, then install it on a site. Frappe Cloud checks the app's supported Frappe versions against the bench before it accepts the app. FoaMES declares them in `pyproject.toml`:
+
+```toml
+[tool.bench.frappe-dependencies]
+frappe = ">=15.0.0-dev,<17.0.0-dev"
+```
+
+That range accepts Frappe v15 and v16 benches, the two lines CI tests, and refuses the `develop` branch (v17 pre-releases). See Frappe Cloud's guide to [custom apps](https://docs.frappe.io/cloud/benches/custom-app).
+
 Installing an ERP on the same site is independent of FoaMES. Install it before or after; an adapter checks for its ERP at run time, not at install time.
 
 Installation creates six roles before the DocTypes are synced:

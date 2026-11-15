@@ -1,5 +1,5 @@
-// Copyright (c) 2026, CLR Technologies Inc. and contributors
-// For license information, please see license.txt
+// Copyright (c) 2026 CLR Technologies Inc. and contributors
+// SPDX-License-Identifier: Apache-2.0
 
 // The live topology: the physical layer along the bottom, the data layer drawn over it, and the
 // bindings between them. Everything is generated from the graph API; nothing here is drawn by hand.
