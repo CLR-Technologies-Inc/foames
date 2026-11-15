@@ -15,6 +15,7 @@ FoaMES is an ERP-agnostic manufacturing execution system built as a single Frapp
 | FoaMES Adapters | `foames/foames_adapters` | The adapter contract and registry, one subpackage per vendor (each with its own `AGENTS.md`), the shared Integration workspace |
 | FoaMES Process Mining | `foames/foames_process_mining` | Event Log Source, Process Event Log, the event extractors, the XES and OCEL exports, discovery and conformance analysis, and their API |
 | MCP server | `foames/foames_mcp` | The MCP tool catalogue, the Streamable HTTP endpoint, the stdio bridge, read methods for agents |
+| FoaMES Risk | `foames/foames_risk` | Enterprise Risk (+ Risk Control, Risk Link, Risk Indicator, Risk Review), Risk Category, Risk Template (+ Risk Template Control), Risk Settings, the Risk Register and Risk Heat Map reports, the FoaMES Risk workspace; the rules are pure, in `risk.py` |
 
 Frappe v15 and v16 are both supported; Python 3.10 or later. License: Apache-2.0, copyright CLR Technologies Inc. Contributions need the CLA described in [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -85,6 +86,12 @@ foames/
     protocol.py               MCP/JSON-RPC server core (pure), tools.py the catalogue (pure)
     api.py                    the Streamable HTTP endpoint; reads.py whitelisted read methods
     bridge.py                 stdio bridge for desktop agents, standard library only
+  foames_risk/
+    risk.py  templates.py     pure: scores, rating bands, tolerance, the hierarchy of controls, review and
+                              verification dates, the findings; the starting categories and templates
+    register.py  tasks.py     settings, linkable record types, source ratings, evidence checks, the daily check_risks
+    doctype/  report/  workspace/   Enterprise Risk and its tables, Risk Category, Risk Template, Risk Settings;
+                              Risk Register, Risk Heat Map; the FoaMES Risk workspace
 bridges/<name>/               standalone packages that run beside a source system and post to the webhook (not installed on the bench); each has its own tests
 docs/                         human-facing guides; docs/agents/ holds run-time agent playbooks
 cla/                          the Individual and Corporate CLAs
@@ -116,6 +123,8 @@ Code entry points you call rather than hook:
 | `foames.foames_process_mining.extractors.build_event_log(since, until, sources=None)` | An `EventLog` from the built-in extractors, the enabled Event Log Sources and the hook extractors |
 | `foames.foames_process_mining.discovery.discover_dfg(log)` and `conformance.check_conformance(log, model)` | Process-mining analysis without a site |
 
+The risk register has hooks of its own (`foames_risk_linkable_doctypes`, `foames_risk_source_readers`, `foames_risk_source_values`, `foames_risk_evidence_checks`), described in [docs/risk-management.md](docs/risk-management.md#extending-it).
+
 ## HTTP API surface
 
 Whitelisted methods, called as `/api/method/<dotted path>`. Authentication is Frappe's: session cookie, or `Authorization: token <api_key>:<api_secret>`. These are the core methods. Each vendor adapter's endpoints, with their permissions, are in its own `AGENTS.md`.
@@ -136,6 +145,9 @@ Whitelisted methods, called as `/api/method/<dotted path>`. Authentication is Fr
 | `foames.foames_process_mining.api.summary`, `events`, `discover`, `check_conformance`, `export` | GET or POST | read on Process Event Log | Process mining over a saved `event_log` or a log built from `since`, `until` and `sources`; `discover` takes `dot=1`, `check_conformance` takes `model`, `export` takes `fmt=xes` or `ocel` |
 | `foames.foames_mcp.reads.*` | GET | read on the DocType listed | Agent-friendly reads: machines, events, downtime, OEE periods, suggestions, ERP systems and references, event logs |
 | `foames.foames_mcp.api.mcp` | POST | logged in; each tool checks its own | The MCP endpoint (Streamable HTTP) |
+| `foames.foames_risk.doctype.enterprise_risk.enterprise_risk.create_from_template` / `create_from_source` | POST | create on Enterprise Risk | A new risk from a Risk Template (`template`, `title`, `machine`), or summarising a hazard assessment or PFMEA (`doctype`, `name`) linked as its Source |
+| `foames.foames_risk.doctype.enterprise_risk.enterprise_risk.record_review` | POST | write on Enterprise Risk | Record the periodic review (`name`, `notes`) |
+| `foames.foames_risk.doctype.enterprise_risk.enterprise_risk.accept_residual_risk` | POST | FoaMES Supervisor or System Manager | Management accepts the residual risk at its current score (`name`, `justification`) |
 
 Document methods callable with `frm.call` or `run_doc_method`: `External Reference.resolve`, `Event Log Source.preview`, `Process Event Log.extract`, `discover`, `check_against`, `export_file`.
 
