@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """End-to-end tests against an ERPNext installed on the same site. They skip elsewhere; CI runs
 them in the "Frappe v16 + ERPNext" job.

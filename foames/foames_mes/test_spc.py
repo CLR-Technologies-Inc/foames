@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Control chart limits, the Nelson and Western Electric run rules, and SPC findings. No Frappe site
 needed. The reference data and limits are ops-library's (02-quality-and-statistics/tools/data)."""

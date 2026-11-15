@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Test fixtures for a site that has ERPNext installed: a company, a raw material with stock, a
 finished good with a BOM and one operation, a workstation, and Work Orders on demand.

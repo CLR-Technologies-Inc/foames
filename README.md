@@ -112,11 +112,11 @@ GitHub Actions runs the tests on Frappe v15 and v16 without an ERP, and on Frapp
 ## Prior art and credits
 
 - [frappe/erpnext#50827](https://github.com/frappe/erpnext/issues/50827) asked for real-time machine monitoring, plant floor visibility, downtime tracking, OEE, work order and job card tracking, and PLC/IoT integration in ERPNext. It was closed as a product in its own right, and FoaMES takes up that requirement list.
-- The counter-delta, owed-count and coverage ideas follow public MES practice, including the FactorySemantics MES design notes.
+- The counter-delta, owed-count and coverage ideas follow public MES practice, including the [FactorySemantics MES](https://github.com/factorysemantics/factorysemantics-mes) design notes (Apache-2.0).
 - [Floorgraph](https://github.com/s1dharthpv/floorgraph) by [s1dharthpv](https://github.com/s1dharthpv) (MIT) is an earlier shop-floor execution app for ERPNext built in response to that issue. FoaMES is an independent implementation. If any Floorgraph code is ever reused, its MIT notice will ship with it.
 
 ## License
 
-Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE). Every source file carries an `SPDX-License-Identifier: Apache-2.0` header; [docs/licensing.md](docs/licensing.md) explains the headers and the license of each dependency.
 
-Copyright 2026 CLR Technologies Inc.
+Copyright 2026 CLR Technologies Inc. and contributors.

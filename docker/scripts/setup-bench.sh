@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 # Creates the Frappe bench and the test site inside the bench container. Safe to run again: every
 # step is skipped when its result already exists, so a second run only refreshes requirements.
 #

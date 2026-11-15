@@ -11,6 +11,7 @@ Start with [overview.md](overview.md) for what FoaMES records, then [installatio
 | [adapters.md](adapters.md) | External References, running without an ERP, writing an adapter for another ERP (vendor-neutral) |
 | [machine-data.md](machine-data.md) | How machine events reach FoaMES: the signed webhook, MQTT, OPC UA and Sparkplug B, the event shape, counter rules |
 | [sbom.md](sbom.md) | The CycloneDX 1.7 SBOM: where to get it, what is in it (dependencies, the cryptography bill of materials, connected services), building and validating it |
+| [licensing.md](licensing.md) | The Apache-2.0 license, the source file header, and the license of each dependency and borrowed idea |
 
 ## Vendors
 

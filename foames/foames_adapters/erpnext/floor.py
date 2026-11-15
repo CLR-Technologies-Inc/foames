@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """ERPNext work on the floor: the open Job Cards and Work Orders of each machine's workstation,
 added to the floor snapshot, and a rule built on them.
