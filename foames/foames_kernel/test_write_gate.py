@@ -121,6 +121,8 @@ class TestWriteGate(IntegrationTestCase):
 		doc.read_only = 0
 		with self.assertRaisesRegex(frappe.ValidationError, "change control"):
 			doc.save()
+		doc = frappe.get_doc("Connector Write Policy", "NEEDS_CC")
+		doc.read_only = 0
 		doc.approval_reference = "CC-2026-114"
 		doc.save()
 		self.assertFalse(write_gate.is_read_only("NEEDS_CC"))

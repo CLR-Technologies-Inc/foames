@@ -94,10 +94,10 @@
   },
   {
    "fieldname": "reference_name",
-   "fieldtype": "Dynamic Link",
+   "fieldtype": "Data",
    "label": "Reference",
-   "options": "reference_doctype",
-   "read_only": 1
+   "read_only": 1,
+   "description": "Name of the record, kept as text so the audit record never blocks deleting it."
   },
   {
    "fieldname": "context_section",
@@ -135,9 +135,8 @@
   },
   {
    "fieldname": "machine",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "label": "Machine",
-   "options": "Machine",
    "in_standard_filter": 1,
    "read_only": 1
   },
