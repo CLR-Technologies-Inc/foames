@@ -1,7 +1,7 @@
 # Copyright (c) 2026 CLR Technologies Inc. and contributors
 # SPDX-License-Identifier: Apache-2.0
 
-"""Read methods for NPI programs, PRDs, tech transfer packages and PD studies, and the scale-up
+"""Read methods for NPI programs and their phase reviews, product requirements, tech transfer packages and PD studies, and the scale-up
 calculator, for the MCP server and external agents. Every method reads; none changes a record."""
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ import json
 import frappe
 from frappe.utils import cint, flt
 
-from foames.foames_life_sciences import npi, scaleup
+from foames.foames_life_sciences import npi, phase_review, scaleup
 
 
 def _program_status(doc) -> dict:
@@ -49,6 +49,25 @@ def _program_status(doc) -> dict:
 			}
 			for g in doc.gates
 			if g.decision
+		],
+		"phase_review_board": doc.phase_review_board,
+		"entry_criteria_open": phase_review.unmet_criteria(doc.criteria_rows(), doc.current_stage, "Entry"),
+		"exit_criteria_open": phase_review.unmet_criteria(doc.criteria_rows(), doc.current_stage, "Exit"),
+		"phase_reviews": [
+			{
+				"name": r.name,
+				"stage": r.stage,
+				"review_type": r.review_type,
+				"held_on": str(r.held_on) if r.held_on else None,
+				"decision": r.decision or None,
+				"closed": r.docstatus == 1,
+			}
+			for r in frappe.get_all(
+				"Phase Review",
+				filters={"npi_program": doc.name, "docstatus": ("<", 2)},
+				fields=["name", "stage", "review_type", "held_on", "decision", "docstatus"],
+				order_by="creation asc",
+			)
 		],
 		"product_requirements": doc.product_requirements,
 		"tech_transfer_package": doc.tech_transfer_package,

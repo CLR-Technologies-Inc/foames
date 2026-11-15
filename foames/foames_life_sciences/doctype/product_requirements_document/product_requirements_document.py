@@ -1,7 +1,7 @@
 # Copyright (c) 2026 CLR Technologies Inc. and contributors
 # SPDX-License-Identifier: Apache-2.0
 
-"""A product requirements document (PRD) and its trace matrix.
+"""A product requirements document and its trace matrix.
 
 Submitting is approval, by someone other than the person who prepared it. After approval only the
 trace columns of each requirement (design output, verification, validation) change, as the work
@@ -49,7 +49,9 @@ class ProductRequirementsDocument(Document):
 
 	def before_submit(self):
 		if frappe.session.user == self.prepared_by:
-			frappe.throw(_("A PRD is approved by someone other than the person who prepared it"))
+			frappe.throw(
+				_("A requirements document is approved by someone other than the person who prepared it")
+			)
 
 	def on_submit(self):
 		self.db_set({"approved_by": frappe.session.user, "approved_on": now_datetime()})

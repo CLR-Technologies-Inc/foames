@@ -5,16 +5,17 @@ This module is for biopharma and medical device plants. It covers the work that 
 - **New product introduction (NPI):** taking a new drug, biologic, device or combination product from concept through design, development and verification into commercial manufacturing, as a stage-gate program.
 - **Manufacturing science and technology (MSAT):** the process engineering that transfers a process to a new site or scale, keeps it in a state of control, and supports GMP production on the floor.
 
-It adds four things, all in the `FoaMES Life Sciences` module (`foames/foames_life_sciences`):
+It adds five things, all in the `FoaMES Life Sciences` module (`foames/foames_life_sciences`):
 
 | Record | What it holds |
 | --- | --- |
-| **NPI Program** | Six stages, a gate at the end of each, and the deliverables each gate needs. Gate decisions are recorded by a reviewer, not edited. |
-| **Product Requirements Document (PRD)** | User needs and design inputs (devices), or QTPP elements and CQAs (drugs and biologics), with their trace to design outputs, verification and validation. |
+| **NPI Program** | Six stages, a gate at the end of each, the deliverables and the entry and exit criteria each gate needs. Gate decisions are recorded, not edited. |
+| **Phase Review Board** and **Phase Review** (the Phase Review Discipline, PRD) | The governance of how a product goes to market: a board with a Chair who holds decision authority, voting members and a quorum, and a formal phase review at each gate with attendance, votes, the decision, minutes and actions, ending in the launch readiness and post-launch reviews. |
+| **Product Requirements Document** | User needs and design inputs (devices), or QTPP elements and CQAs (drugs and biologics), with their trace to design outputs, verification and validation. |
 | **Tech Transfer Package** and **Comparability Assessment** | The process as the receiving site needs it: CPPs with normal operating and proven acceptable ranges, CQAs with acceptance limits, the transfer deliverables, and a statistical comparability check per CQA. |
 | **PD Simulation Study** | Process development (PD) simulation: a designed experiment, response-surface models, a Monte Carlo what-if, a design-space map, and a scale-up calculator. |
 
-"PRD" is read here as the **product requirements document**. If your organisation uses the letters for process research and development, that work lives in the PD Simulation Study and the Tech Transfer Package.
+**PRD** here means the **Phase Review Discipline**: the decision process that governs every NPI gate and the decision to go to market. The **product requirements document** is a separate record, the requirements and their trace matrix, and is always written out in full to keep the two apart. Its records are numbered `REQ-`.
 
 The module records and calculates; people decide. No gate opens, no package is approved and no process setting changes without a person doing it, in line with the invariant that agents suggest and people act ([AGENTS.md](../AGENTS.md)). The inputs to the simulations are the ranges and results people enter. Approvals are an audit trail with separation of duties, not a validated 21 CFR Part 11 electronic signature; a site that needs one adds re-authentication and its own computer system validation on top.
 
@@ -36,17 +37,21 @@ The structure follows the published guidance below. FoaMES does not claim compli
 
 Create an NPI Program with a title, the product, its type and a program lead. The product type picks the deliverable template:
 
-- **Medical Device, In Vitro Diagnostic:** design controls: intended use and user needs, the design and development plan, hazard analysis, the PRD (design inputs), design reviews, design outputs, DFM, design and process FMEA, design verification, design validation and usability, the device master record (medical device file), equipment IQ/OQ/PQ, process validation, the design history file, post-market surveillance.
+- **Medical Device, In Vitro Diagnostic:** design controls: intended use and user needs, the design and development plan, hazard analysis, the product requirements document (design inputs), design reviews, design outputs, DFM, design and process FMEA, design verification, design validation and usability, the device master record (medical device file), equipment IQ/OQ/PQ, process validation, the design history file, post-market surveillance.
 - **Drug Substance, Drug Product, Biologic, Cell and Gene Therapy:** QbD and transfer: the QTPP, CQAs, quality risk assessment, process characterization by DoE, scale-down model qualification, the control strategy, analytical method validation, stability, engineering batches, the tech transfer package, method transfer, PPQ, comparability, batch records, CPV and established conditions.
 - **Combination Product:** both lists, in stage order, without duplicates.
 
 The template is a starting point. Add rows, remove them, or mark an item Not Applicable with a note, so the program matches your procedure. Each deliverable can point at the record that is the evidence (a Validation Protocol, a Standard Operating Procedure, a PFMEA, a PRD or any other DocType) through Document Type and Document.
 
-The stages are Concept, Feasibility, Development, Verification & Validation, Transfer and Launch. Set each gate's target date in the Gates table. The current stage and the program status are read-only; they move only through **Record Gate Decision** on the form (or `record_gate_decision` on the document), which:
+The stages are Concept, Feasibility, Development, Verification & Validation, Transfer and Launch. Set each gate's target date in the Gates table. Each stage also has **entry criteria** (the program is ready to be reviewed, for example the review package went to the board in time) and **exit criteria** (the stage has achieved what the next one depends on), filled from a template that ends with the go-to-market criteria: regulatory clearance, manufacturing and supply ready for the forecast, launch plan, pricing, labeling, channel and sales training, service and vigilance ready, and launch stock released. Tick each criterion as it is met and say where the evidence is.
 
-- is recorded by FoaMES Quality or FoaMES Supervisor, and never by the program lead;
-- refuses Go and Conditional Go while a required deliverable of the stage is neither Complete nor Not Applicable, listing what is open;
+The current stage and the program status are read-only. Every decision, wherever it is made:
+
+- is never made by the program lead;
+- refuses Go and Conditional Go while a required deliverable of the stage is neither Complete nor Not Applicable, or a required exit criterion is not met, listing what is open;
 - needs written conditions and a due date for a Conditional Go, and a rationale for Recycle, Hold and Kill.
+
+A program with a **phase review board** takes its decisions only from a Phase Review closed by the board's Chair (see below). A program without one is decided with **Record Gate Decision** on the form (or `record_gate_decision` on the document) by FoaMES Quality or FoaMES Supervisor, for small programs and sites that keep their board outside FoaMES.
 
 | Decision | Effect |
 | --- | --- |
@@ -56,11 +61,37 @@ The stages are Concept, Feasibility, Development, Verification & Validation, Tra
 | Hold | The program is On Hold in the stage; a later decision on the same gate resumes it |
 | Kill | The program is Cancelled |
 
-Every decision keeps who made it and when, and the version history keeps earlier decisions on a recycled gate. A daily job (`foames.foames_life_sciences.tasks.check_npi_gates`) raises an Agent Suggestion when the current gate is overdue, or due within 14 days with required deliverables still open, and when the conditions of a Conditional Go are past their due date.
+Every decision keeps who made it, when, and the phase review it came from, and the version history keeps earlier decisions on a recycled gate. A daily job (`foames.foames_life_sciences.tasks.check_npi_gates`) raises an Agent Suggestion when the current gate is overdue, or due within 14 days with required deliverables still open, when the conditions of a Conditional Go are past their due date, and when an action from a closed phase review is past due.
+
+## Phase Review Discipline (PRD)
+
+The phase review discipline is how the organisation decides, at each gate, whether a product goes on, goes back, stops, or goes to market. It follows the phase review process of PACE (Product And Cycle-time Excellence; M. E. McGrath, *Setting the PACE in Product Development*) and Cooper's stage-gate.
+
+**Phase Review Board.** A named board, usually one per portfolio or business unit, with its members and their function (quality, regulatory, R&D, manufacturing, marketing, finance) and a board role:
+
+| Board role | Votes | Decision authority |
+| --- | --- | --- |
+| Chair | Yes | Closes the review with the decision |
+| Member | Yes | No |
+| Advisor, Secretary | No | No; recorded as attending |
+
+A board needs exactly one Chair and a quorum of voting members it can reach. Set the board on the NPI Program to put the program under it.
+
+**Phase Review.** Open one from the program (**New Phase Review**) for its current stage. It takes the board and its members as attendees, and the review type from the stage: a Phase Review for the first four gates, the **Launch Readiness Review** at the Transfer gate (the go-to-market decision) and the **Post-Launch Review** at the Launch gate, which hands the product to the sustaining organisation. Record the date held, who was present, each voting member's vote, the minutes and the action items, and the Chair's decision with its conditions or rationale.
+
+Submitting closes the review. It is refused unless:
+
+- the Chair submits it (decision authority);
+- the Chair was present and a quorum of voting members was present, each with a recorded vote;
+- the stage's required entry criteria are met, and for Go or Conditional Go its exit criteria and required deliverables too;
+- a decision that differs from the board's majority vote carries a rationale;
+- the program is still in the stage the review was opened for.
+
+On submission the decision is recorded on the program's gate with a link to the review, the program moves, and the criteria as they stood are kept on the review. After submission only the action items change (owner, due date, status). Gate conditions of a Conditional Go are closed by the Chair or by FoaMES Quality or Supervisor.
 
 ## Product requirements and the trace matrix
 
-A Product Requirements Document lists requirements with an ID (for example `UN-001`, `DI-004`, `CQA-2`), a level and, for a refining requirement, the ID it refines:
+A Product Requirements Document (numbered `REQ-`) lists requirements with an ID (for example `UN-001`, `DI-004`, `CQA-2`), a level and, for a refining requirement, the ID it refines:
 
 | Level | Refines | Typical verification |
 | --- | --- | --- |
@@ -69,7 +100,7 @@ A Product Requirements Document lists requirements with an ID (for example `UN-0
 | CQA | a QTPP element (or another top-level requirement) | The analytical method and its acceptance criteria |
 | Regulatory, Business | (top level) | As stated |
 
-Saving refuses duplicate IDs, a parent that is not in the document and a refinement at the wrong level. Submitting is approval and must be done by someone other than the person who prepared the PRD. After approval only the trace columns change as the work is done (design output, verification reference and status, validation reference); a change to a requirement is an amendment, which makes the next revision.
+Saving refuses duplicate IDs, a parent that is not in the document and a refinement at the wrong level. Submitting is approval and must be done by someone other than the person who prepared the document. After approval only the trace columns change as the work is done (design output, verification reference and status, validation reference); a change to a requirement is an amendment, which makes the next revision.
 
 **Trace Matrix** on the form, and `get_requirements_trace`, show every requirement with what it refines, its children, design output, verification and validation, and its gaps: a user need or QTPP element that nothing refines, a user need with no validation, a design input or CQA without acceptance criteria, verification method or design output, and anything not yet verified or failed. The form keeps the percentage verified, the percentage refined and the count of requirements with gaps current.
 
@@ -78,10 +109,10 @@ Saving refuses duplicate IDs, a parent that is not in the document and a refinem
 A Tech Transfer Package describes one process for one transfer (site to site, scale-up or scale-down, development to commercial, to or from a contract manufacturer, line transfer):
 
 - **Process parameters**, each with its step, unit, criticality (CPP, KPP or non-critical), set point, normal operating range (NOR) and proven acceptable range (PAR), and, when it depends on scale, its scale rule. Set Ranges to say which sides are set; a CPP or KPP needs them. For a rule that depends on volume alone (scale independent, linear with volume, constant vvm or residence time) the receiving set point is computed from the scale ratio; the geometry-dependent rules (constant P/V, tip speed, kLa, gas velocity) are worked out with the scale-up calculator below.
-- **Quality attributes**, each with its unit, criticality (CQA or not), acceptance limits, the analytical method, the PRD requirement it carries and the comparability approach (equivalence by TOST with a margin, quality range with k and coverage, min-max, or descriptive).
+- **Quality attributes**, each with its unit, criticality (CQA or not), acceptance limits, the analytical method, the product requirement it carries and the comparability approach (equivalence by TOST with a margin, quality range with k and coverage, min-max, or descriptive).
 - **Deliverables**, filled with the usual transfer list (plan and protocol, gap analysis of equipment, facility, materials and utilities, risk assessment, analytical method transfer, training, engineering batch, PPQ, comparability, transfer report) and tracked after approval.
 
-A draft shows what still blocks approval each time it is saved. Submitting is approval by FoaMES Quality, and is refused while a NOR lies outside its PAR, a set point outside its NOR, a CPP has no ranges, a scale-dependent parameter has no rule, a CQA has no limits, method or approach, an equivalence test has no margin, a parameter or attribute is listed twice, or a CQA names a requirement the linked PRD does not have. The approver must not be the person who prepared the package.
+A draft shows what still blocks approval each time it is saved. Submitting is approval by FoaMES Quality, and is refused while a NOR lies outside its PAR, a set point outside its NOR, a CPP has no ranges, a scale-dependent parameter has no rule, a CQA has no limits, method or approach, an equivalence test has no margin, a parameter or attribute is listed twice, or a CQA names a requirement the linked requirements document does not have. The approver must not be the person who prepared the package.
 
 ## Comparability
 
@@ -113,25 +144,27 @@ A PD Simulation Study holds one designed experiment and what is learned from it.
 
 ## Roles
 
-| Role | NPI Program | PRD, Tech Transfer Package, Comparability | PD Simulation Study |
+| Role | NPI Program, Phase Review | Product Requirements, Tech Transfer Package, Comparability | PD Simulation Study |
 | --- | --- | --- | --- |
-| FoaMES Engineer | create, edit | create, edit drafts | create, edit, run |
-| FoaMES Quality | create, edit, gate decisions | create, edit, approve (submit) | create, edit, run |
-| FoaMES Supervisor | create, edit, gate decisions | read | read |
-| FoaMES Operator, Maintenance | read | read the tech transfer package (Operator) | none |
+| FoaMES Engineer | create, edit programs and phase reviews; read boards | create, edit drafts | create, edit, run |
+| FoaMES Quality | as Engineer, plus gate decisions without a board, and boards | create, edit, approve (submit) | create, edit, run |
+| FoaMES Supervisor | as Quality | read | read |
+| FoaMES Operator, Maintenance | read programs | read the tech transfer package (Operator) | none |
+
+On a board-governed program the Chair decides whatever their FoaMES role, as long as they can submit a Phase Review (Engineer, Quality or Supervisor).
 
 ## API and MCP
 
 | Method (`foames.foames_life_sciences.api.*`) | MCP tool | Returns |
 | --- | --- | --- |
-| `get_npi_status(program, include_closed)` | `foames_get_npi_status` | Stage, status, next gate, required deliverables open, open conditions, decisions |
+| `get_npi_status(program, include_closed)` | `foames_get_npi_status` | Stage, status, next gate, required deliverables and entry and exit criteria open, board and phase reviews, open conditions, decisions |
 | `get_requirements_trace(document)` | `foames_get_requirements_trace` | The trace matrix, gaps and coverage |
 | `get_tech_transfer_package(package)` | `foames_get_tech_transfer_package` | Parameters, attributes with comparability outcomes, deliverables, open problems |
 | `get_pd_study(study)` | `foames_get_pd_study` | Factors, responses, runs, models and the last what-if |
 | `scale_up(...)` | `foames_scale_up` | The scale-up table |
 
-All of them read. The actions that change records (gate decisions, generating a design, fitting, the what-if) are document methods called from the form or the REST API by a person with the role.
+All of them read. The actions that change records (gate decisions, closing a phase review, generating a design, fitting, the what-if) are document methods called from the form or the REST API by a person with the role.
 
 ## Code
 
-The rules and the arithmetic import nothing from Frappe and are tested without a site: `npi.py` (stages, templates, gate rules, findings), `requirements.py` (structure and the trace matrix), `transfer.py` (package checks, comparability), `stats.py` (t distribution, summaries, a linear solver), `doe.py` (designs, fits, what-if, design space) and `scaleup.py`. `python -m unittest foames.foames_life_sciences.test_lifesci_logic` runs them; `test_lifesci.py` covers the DocTypes on a site.
+The rules and the arithmetic import nothing from Frappe and are tested without a site: `npi.py` (stages, templates, gate rules, findings), `phase_review.py` (boards, criteria, votes, review closing rules), `requirements.py` (structure and the trace matrix), `transfer.py` (package checks, comparability), `stats.py` (t distribution, summaries, a linear solver), `doe.py` (designs, fits, what-if, design space) and `scaleup.py`. `python -m unittest foames.foames_life_sciences.test_lifesci_logic` runs them; `test_lifesci.py` covers the DocTypes on a site.

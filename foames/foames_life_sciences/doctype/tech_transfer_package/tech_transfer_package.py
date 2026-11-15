@@ -5,7 +5,7 @@
 
 A draft may be incomplete; its problems are shown on save. Submitting is approval: it is refused
 while the package has problems (foames.foames_life_sciences.transfer.package_problems), when a CQA names
-a requirement the linked PRD does not have, or when the approver prepared the package. After
+a requirement the linked requirements document does not have, or when the approver prepared the package. After
 approval only the deliverables' progress changes; a change to the process is an amendment.
 """
 

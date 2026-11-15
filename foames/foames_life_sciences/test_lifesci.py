@@ -1,7 +1,7 @@
 # Copyright (c) 2026 CLR Technologies Inc. and contributors
 # SPDX-License-Identifier: Apache-2.0
 
-"""Life sciences on a Frappe site: NPI gates and their suggestions, PRD approval and tracing, tech
+"""Life sciences on a Frappe site: NPI gates and their suggestions, phase reviews, requirements approval and tracing, tech
 transfer approval, comparability review, PD studies end to end, and the read API."""
 
 import json
@@ -18,6 +18,9 @@ ENGINEER = "ls-engineer@example.com"
 LEAD = "ls-lead@example.com"
 QUALITY = "ls-quality@example.com"
 OPERATOR = "ls-operator@example.com"
+CHAIR = "ls-chair@example.com"
+MEMBER_1 = "ls-member-1@example.com"
+MEMBER_2 = "ls-member-2@example.com"
 # Refused by a rule (ValidationError) or by the role permissions (PermissionError).
 REFUSED = (frappe.ValidationError, frappe.PermissionError)
 
@@ -39,6 +42,9 @@ def complete_stage(program, stage):
 	for row in program.deliverables:
 		if row.stage == stage:
 			row.status = "Complete"
+	for row in program.criteria:
+		if row.stage == stage:
+			row.met = 1
 	with as_user(ENGINEER):
 		program.save()
 
@@ -46,7 +52,7 @@ def complete_stage(program, stage):
 def make_prd(**overrides):
 	values = {
 		"doctype": "Product Requirements Document",
-		"title": "mAb drug product PRD",
+		"title": "mAb drug product requirements",
 		"product_name": "mAb-1",
 		"product_type": "Biologic",
 		"requirements": [
@@ -195,6 +201,19 @@ class TestNPIProgram(IntegrationTestCase):
 		with as_user(QUALITY), self.assertRaises(frappe.ValidationError):
 			program.record_gate_decision("Go")
 
+	def test_go_needs_exit_criteria(self):
+		program = make_program()
+		for row in program.deliverables:
+			if row.stage == "Concept":
+				row.status = "Complete"
+		with as_user(ENGINEER):
+			program.save()
+		with as_user(QUALITY), self.assertRaises(frappe.ValidationError):
+			program.record_gate_decision("Go")
+		self.assertIn(
+			"Go-to-market ready", " ".join(c.criterion for c in program.criteria if c.stage == "Transfer")
+		)
+
 	def test_overdue_gate_raises_a_suggestion(self):
 		program = make_program()
 		program.gates[0].target_date = add_days(nowdate(), -2)
@@ -215,6 +234,106 @@ class TestNPIProgram(IntegrationTestCase):
 		self.assertTrue(rows[0]["current_stage_progress"]["missing_required"])
 		with as_user(OPERATOR):
 			self.assertEqual(api.get_npi_status(program.name)[0]["name"], program.name)
+
+
+def make_board(quorum=3):
+	return frappe.get_doc(
+		{
+			"doctype": "Phase Review Board",
+			"board_name": "Device portfolio board",
+			"quorum": quorum,
+			"members": [
+				{"user": CHAIR, "board_role": "Chair", "function": "General management"},
+				{"user": MEMBER_1, "board_role": "Member", "function": "Quality"},
+				{"user": MEMBER_2, "board_role": "Member", "function": "Marketing"},
+				{"user": ENGINEER, "board_role": "Advisor", "function": "R&D"},
+			],
+		}
+	).insert()
+
+
+class TestPhaseReview(IntegrationTestCase):
+	def setUp(self):
+		super().setUp()
+		make_user(ENGINEER, "FoaMES Engineer")
+		make_user(LEAD, "FoaMES Engineer")
+		make_user(QUALITY, "FoaMES Quality")
+		for user in (CHAIR, MEMBER_1, MEMBER_2):
+			make_user(user, "FoaMES Engineer")
+		self.board = make_board()
+
+	def open_review(self, program, **votes):
+		with as_user(ENGINEER):
+			review = frappe.get_doc({"doctype": "Phase Review", "npi_program": program.name}).insert()
+		for a in review.attendees:
+			a.present = 1
+			a.vote = votes.get(a.user)
+		with as_user(ENGINEER):
+			review.save()
+		return review
+
+	def test_board_needs_a_chair_and_a_reachable_quorum(self):
+		self.assertEqual(self.board.chair, CHAIR)
+		with self.assertRaises(frappe.ValidationError):
+			frappe.get_doc(
+				{
+					"doctype": "Phase Review Board",
+					"board_name": "No chair",
+					"quorum": 2,
+					"members": [{"user": MEMBER_1, "board_role": "Member"}],
+				}
+			).insert()
+
+	def test_gate_decisions_go_through_the_board(self):
+		program = make_program(phase_review_board=self.board.name)
+		complete_stage(program, "Concept")
+		program.reload()
+		with as_user(QUALITY), self.assertRaises(frappe.ValidationError):
+			program.record_gate_decision("Go")
+		review = self.open_review(program, **{CHAIR: "Go", MEMBER_1: "Go", MEMBER_2: "Recycle"})
+		self.assertEqual(review.stage, "Concept")
+		self.assertEqual(review.chair, CHAIR)
+		self.assertEqual(len(review.attendees), 4)
+		self.assertEqual(review.vote_summary, "Go: 2, Recycle: 1")
+		review.decision = "Go"
+		with as_user(ENGINEER):
+			review.save()
+		with as_user(MEMBER_1), self.assertRaises(frappe.ValidationError):
+			review.submit()
+		review.reload()
+		with as_user(CHAIR):
+			review.submit()
+		program.reload()
+		self.assertEqual(program.current_stage, "Feasibility")
+		self.assertEqual(program.gates[0].phase_review, review.name)
+		self.assertEqual(program.gates[0].decided_by, CHAIR)
+		self.assertIn("[x] Exit", review.criteria_at_review)
+
+	def test_review_refused_without_quorum_or_entry_criteria(self):
+		program = make_program(phase_review_board=self.board.name)
+		review = self.open_review(program, **{CHAIR: "Recycle", MEMBER_1: "Recycle"})
+		for a in review.attendees:
+			if a.user == MEMBER_2:
+				a.present = 0
+		review.decision = "Recycle"
+		review.rationale = "Business case not ready"
+		with as_user(ENGINEER):
+			review.save()
+		with as_user(CHAIR), self.assertRaises(frappe.ValidationError):
+			review.submit()
+		with as_user(ENGINEER), self.assertRaises(frappe.ValidationError):
+			frappe.get_doc(
+				{"doctype": "Phase Review", "npi_program": make_program(title="No board").name}
+			).insert()
+
+	def test_status_api_lists_reviews_and_criteria(self):
+		program = make_program(phase_review_board=self.board.name)
+		self.open_review(program)
+		with as_user(ENGINEER):
+			status = api.get_npi_status(program.name)[0]
+		self.assertEqual(status["phase_review_board"], self.board.name)
+		self.assertTrue(status["entry_criteria_open"])
+		self.assertEqual(len(status["phase_reviews"]), 1)
 
 
 class TestRequirementsAndTransfer(IntegrationTestCase):

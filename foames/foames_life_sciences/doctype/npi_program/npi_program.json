@@ -15,10 +15,13 @@
   "status",
   "product_requirements",
   "tech_transfer_package",
+  "phase_review_board",
   "sb_description",
   "description",
   "sb_gates",
   "gates",
+  "sb_criteria",
+  "criteria",
   "sb_deliverables",
   "deliverables"
  ],
@@ -106,6 +109,13 @@
    "options": "Tech Transfer Package"
   },
   {
+   "fieldname": "phase_review_board",
+   "fieldtype": "Link",
+   "label": "Phase Review Board",
+   "options": "Phase Review Board",
+   "description": "When set, gate decisions are made only by a Phase Review of this board, closed by its Chair"
+  },
+  {
    "fieldname": "sb_description",
    "fieldtype": "Section Break",
    "label": "Description",
@@ -127,6 +137,18 @@
    "label": "Gates",
    "options": "NPI Gate",
    "description": "One gate per stage. Gate decisions are recorded with the Record Gate Decision action, by a reviewer other than the program lead."
+  },
+  {
+   "fieldname": "sb_criteria",
+   "fieldtype": "Section Break",
+   "label": "Phase Review Criteria"
+  },
+  {
+   "fieldname": "criteria",
+   "fieldtype": "Table",
+   "label": "Criteria",
+   "options": "NPI Phase Criterion",
+   "description": "Entry and exit criteria of each phase review, filled from the template. Go and Conditional Go need the stage's required exit criteria met; a phase review needs its entry criteria met."
   },
   {
    "fieldname": "sb_deliverables",

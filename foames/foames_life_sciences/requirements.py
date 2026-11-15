@@ -1,7 +1,7 @@
 # Copyright (c) 2026 CLR Technologies Inc. and contributors
 # SPDX-License-Identifier: Apache-2.0
 
-"""Product requirements (PRD) and their trace matrix. No Frappe dependency.
+"""Product requirements and their trace matrix. No Frappe dependency.
 
 A product requirements document holds requirements at levels that refine one another:
 

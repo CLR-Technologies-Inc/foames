@@ -1,42 +1,50 @@
 // Copyright (c) 2026 CLR Technologies Inc. and contributors
 // SPDX-License-Identifier: Apache-2.0
 
+function record_decision(frm) {
+	const d = new frappe.ui.Dialog({
+		title: __("{0} gate", [__(frm.doc.current_stage)]),
+		fields: [
+			{
+				fieldname: "decision",
+				fieldtype: "Select",
+				label: __("Decision"),
+				options: ["Go", "Conditional Go", "Recycle", "Hold", "Kill"],
+				reqd: 1,
+			},
+			{
+				fieldname: "conditions",
+				fieldtype: "Small Text",
+				label: __("Conditions or Rationale"),
+			},
+			{
+				fieldname: "conditions_due",
+				fieldtype: "Date",
+				label: __("Conditions Due"),
+				depends_on: "eval:doc.decision=='Conditional Go'",
+			},
+		],
+		primary_action_label: __("Record"),
+		primary_action(values) {
+			frm.call("record_gate_decision", values).then(() => {
+				d.hide();
+				frm.reload_doc();
+			});
+		},
+	});
+	d.show();
+}
+
 frappe.ui.form.on("NPI Program", {
 	refresh(frm) {
 		if (frm.is_new() || ["Launched", "Cancelled"].includes(frm.doc.status)) return;
-		frm.add_custom_button(__("Record Gate Decision"), () => {
-			const d = new frappe.ui.Dialog({
-				title: __("{0} gate", [__(frm.doc.current_stage)]),
-				fields: [
-					{
-						fieldname: "decision",
-						fieldtype: "Select",
-						label: __("Decision"),
-						options: ["Go", "Conditional Go", "Recycle", "Hold", "Kill"],
-						reqd: 1,
-					},
-					{
-						fieldname: "conditions",
-						fieldtype: "Small Text",
-						label: __("Conditions or Rationale"),
-					},
-					{
-						fieldname: "conditions_due",
-						fieldtype: "Date",
-						label: __("Conditions Due"),
-						depends_on: "eval:doc.decision=='Conditional Go'",
-					},
-				],
-				primary_action_label: __("Record"),
-				primary_action(values) {
-					frm.call("record_gate_decision", values).then(() => {
-						d.hide();
-						frm.reload_doc();
-					});
-				},
-			});
-			d.show();
-		});
+		if (frm.doc.phase_review_board) {
+			frm.add_custom_button(__("New Phase Review"), () =>
+				frappe.new_doc("Phase Review", { npi_program: frm.doc.name })
+			);
+		} else {
+			frm.add_custom_button(__("Record Gate Decision"), () => record_decision(frm));
+		}
 		const open = (frm.doc.gates || []).filter(
 			(g) => g.decision === "Conditional Go" && !g.conditions_closed
 		);

@@ -15,6 +15,7 @@ from frappe.model.document import Document
 from frappe.utils import getdate, now_datetime
 
 from foames.foames_life_sciences import npi
+from foames.foames_life_sciences import phase_review as prd
 
 DECIDERS = ("FoaMES Quality", "FoaMES Supervisor", "System Manager")
 GATE_SYSTEM_FIELDS = (
@@ -26,6 +27,7 @@ GATE_SYSTEM_FIELDS = (
 	"conditions_closed",
 	"closed_by",
 	"closed_on",
+	"phase_review",
 )
 
 
@@ -39,6 +41,11 @@ class NPIProgram(Document):
 				for stage, name, required in npi.template_for(self.product_type):
 					self.append(
 						"deliverables", {"stage": stage, "deliverable": name, "required": int(required)}
+					)
+			if not self.criteria:
+				for stage, kind, criterion in prd.criteria_template():
+					self.append(
+						"criteria", {"stage": stage, "kind": kind, "criterion": criterion, "required": 1}
 					)
 			for gate in self.gates:
 				self.clear_decision(gate)
@@ -90,14 +97,29 @@ class NPIProgram(Document):
 		]
 
 	@frappe.whitelist()
-	def record_gate_decision(self, decision, conditions=None, conditions_due=None):
-		"""Record a gate decision on the current stage and move the program accordingly."""
-		self.check_permission("write")
-		if not set(DECIDERS) & set(frappe.get_roles()):
-			frappe.throw(
-				_("Gate decisions are recorded by FoaMES Quality or FoaMES Supervisor"),
-				frappe.PermissionError,
-			)
+	def record_gate_decision(self, decision, conditions=None, conditions_due=None, phase_review=None):
+		"""Record a gate decision on the current stage and move the program accordingly.
+
+		A program with a phase review board takes its decisions only from a Phase Review closed by
+		the board's Chair (which passes `phase_review`); without a board, FoaMES Quality or
+		FoaMES Supervisor records them here."""
+		if phase_review:
+			if frappe.db.get_value("Phase Review", phase_review, "npi_program") != self.name:
+				frappe.throw(_("{0} is not a phase review of {1}").format(phase_review, self.name))
+			self.flags.ignore_permissions = True
+		else:
+			self.check_permission("write")
+			if self.phase_review_board:
+				frappe.throw(
+					_("Gate decisions of {0} are made in a Phase Review of {1}").format(
+						self.name, self.phase_review_board
+					)
+				)
+			if not set(DECIDERS) & set(frappe.get_roles()):
+				frappe.throw(
+					_("Gate decisions are recorded by FoaMES Quality or FoaMES Supervisor"),
+					frappe.PermissionError,
+				)
 		due = getdate(conditions_due) if conditions_due else None
 		problems = npi.decision_problems(
 			program_status=self.status,
@@ -110,6 +132,10 @@ class NPIProgram(Document):
 			decided_by=frappe.session.user,
 			program_lead=self.program_lead,
 		)
+		if decision in npi.PASSING:
+			unmet = prd.unmet_criteria(self.criteria_rows(), self.current_stage, "Exit")
+			if unmet:
+				problems.append(_("Exit criteria not met: {0}").format("; ".join(unmet)))
 		if problems:
 			frappe.throw("<br>".join(problems), title=_("Gate decision refused"))
 		gate = self.gate(self.current_stage)
@@ -123,6 +149,7 @@ class NPIProgram(Document):
 				"conditions_closed": 0,
 				"closed_by": None,
 				"closed_on": None,
+				"phase_review": phase_review,
 			}
 		)
 		self.current_stage, self.status = npi.apply_decision(self.current_stage, decision)
@@ -133,7 +160,12 @@ class NPIProgram(Document):
 	def close_gate_conditions(self, stage):
 		"""Mark the conditions of a Conditional Go as met."""
 		self.check_permission("write")
-		if not set(DECIDERS) & set(frappe.get_roles()):
+		chair = (
+			frappe.db.get_value("Phase Review Board", self.phase_review_board, "chair")
+			if self.phase_review_board
+			else None
+		)
+		if frappe.session.user != chair and not set(DECIDERS) & set(frappe.get_roles()):
 			frappe.throw(
 				_("Gate conditions are closed by FoaMES Quality or FoaMES Supervisor"), frappe.PermissionError
 			)
@@ -149,6 +181,7 @@ class NPIProgram(Document):
 			self.save()
 		finally:
 			self.flags.gate_decision = False
+			self.flags.ignore_permissions = False
 
 	@frappe.whitelist()
 	def get_stage_progress(self):

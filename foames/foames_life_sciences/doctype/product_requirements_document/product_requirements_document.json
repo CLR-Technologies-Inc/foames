@@ -31,8 +31,8 @@
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
-   "options": "PRD-.YYYY.-",
-   "default": "PRD-.YYYY.-",
+   "options": "REQ-.YYYY.-",
+   "default": "REQ-.YYYY.-",
    "hidden": 1,
    "reqd": 1
   },

@@ -1,13 +1,13 @@
 # Copyright (c) 2026 CLR Technologies Inc. and contributors
 # SPDX-License-Identifier: Apache-2.0
 
-"""Scheduler entry point: suggestions for NPI gates that are due or overdue with work open, and for
-Conditional Go conditions past their due date."""
+"""Scheduler entry point: suggestions for NPI gates that are due or overdue with work open, for
+Conditional Go conditions past their due date, and for phase review actions past due."""
 
 import frappe
 from frappe.utils import getdate, nowdate
 
-from foames.foames_life_sciences import npi
+from foames.foames_life_sciences import npi, phase_review
 from foames.foames_mes.doctype.agent_suggestion.agent_suggestion import raise_suggestions
 
 
@@ -37,5 +37,18 @@ def check_npi_gates(today=None):
 		}
 		for finding in npi.gate_findings(program, gates, doc.deliverable_rows(), today):
 			finding.update({"reference_doctype": "NPI Program", "reference_name": doc.name})
+			findings.append(finding)
+	for review in frappe.get_all(
+		"Phase Review", filters={"docstatus": 1}, fields=["name", "stage", "npi_program"]
+	):
+		actions = frappe.get_all(
+			"Phase Review Action",
+			filters={"parent": review.name, "parenttype": "Phase Review", "status": "Open"},
+			fields=["idx", "action", "owner_user", "due_date", "status"],
+		)
+		for a in actions:
+			a["due_date"] = getdate(a["due_date"]) if a.get("due_date") else None
+		for finding in phase_review.action_findings(review, actions, today):
+			finding.update({"reference_doctype": "Phase Review", "reference_name": review.name})
 			findings.append(finding)
 	return raise_suggestions(findings, agent="foames-npi")

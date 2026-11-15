@@ -378,7 +378,7 @@ TOOLS: list[Tool] = [
 	Tool(
 		name="foames_get_npi_status",
 		title="Get NPI program status",
-		description="New product introduction programs: current stage (Concept, Feasibility, Development, Verification & Validation, Transfer, Launch), status, the next gate and its target date, required deliverables of the current stage still open, open Conditional Go conditions and the decisions so far. Active and on-hold programs unless include_closed. Gate decisions are made by people; report readiness, do not decide. Needs read on NPI Program.",
+		description="New product introduction programs: current stage (Concept, Feasibility, Development, Verification & Validation, Transfer, Launch), status, the next gate and its target date, required deliverables and phase review entry and exit criteria of the current stage still open, the phase review board and the phase reviews held (Phase Review Discipline), open Conditional Go conditions and the decisions so far. Active and on-hold programs unless include_closed. Gate decisions are made by people (the board's Chair where a board governs the program); report readiness, do not decide. Needs read on NPI Program.",
 		method=f"{LIFESCI}.get_npi_status",
 		input_schema=_schema(
 			{
@@ -390,7 +390,7 @@ TOOLS: list[Tool] = [
 	Tool(
 		name="foames_get_requirements_trace",
 		title="Get the requirements trace matrix",
-		description="The trace matrix of a product requirements document (PRD): each user need, design input, QTPP element or CQA with what it refines, its design output, verification and validation, the gaps (no acceptance criteria, not verified, failed) and the coverage figures. Needs read on Product Requirements Document.",
+		description="The trace matrix of a product requirements document: each user need, design input, QTPP element or CQA with what it refines, its design output, verification and validation, the gaps (no acceptance criteria, not verified, failed) and the coverage figures. Needs read on Product Requirements Document.",
 		method=f"{LIFESCI}.get_requirements_trace",
 		input_schema=_schema({"document": _s("The Product Requirements Document name")}, ["document"]),
 	),

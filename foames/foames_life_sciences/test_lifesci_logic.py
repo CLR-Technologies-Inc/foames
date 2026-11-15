@@ -9,7 +9,7 @@ import math
 import unittest
 from datetime import date
 
-from foames.foames_life_sciences import doe, npi, requirements, scaleup, stats, transfer
+from foames.foames_life_sciences import doe, npi, phase_review, requirements, scaleup, stats, transfer
 
 
 class TestStats(unittest.TestCase):
@@ -51,7 +51,7 @@ class TestStageGates(unittest.TestCase):
 			deliverable("Concept", "User needs", "Complete"),
 			deliverable("Concept", "Plan", "In Progress"),
 			deliverable("Concept", "Nice to have", "Not Started", required=False),
-			deliverable("Feasibility", "PRD"),
+			deliverable("Feasibility", "Requirements"),
 		]
 		problems = npi.decision_problems(
 			program_status="Active",
@@ -113,7 +113,7 @@ class TestStageGates(unittest.TestCase):
 			},
 			{"stage": "Feasibility", "target_date": date(2026, 11, 20)},
 		]
-		rows = [deliverable("Feasibility", "PRD")]
+		rows = [deliverable("Feasibility", "Requirements")]
 		found = npi.gate_findings(program, gates, rows, date(2026, 11, 15))
 		keys = sorted(f["rule_key"] for f in found)
 		self.assertEqual(
@@ -127,6 +127,145 @@ class TestStageGates(unittest.TestCase):
 		)
 		overdue = npi.gate_findings(program, gates, [], date(2026, 11, 25))
 		self.assertEqual(overdue[0]["severity"], "Warning")
+
+
+def member(user, role="Member", present=1, vote=None):
+	return {"user": user, "board_role": role, "present": present, "vote": vote}
+
+
+class TestPhaseReviewDiscipline(unittest.TestCase):
+	def criteria(self, met=True):
+		return [
+			{"stage": s, "kind": k, "criterion": c, "required": 1, "met": met}
+			for s, k, c in phase_review.criteria_template()
+		]
+
+	def test_template_has_entry_and_exit_for_every_stage_and_go_to_market(self):
+		rows = phase_review.criteria_template()
+		for stage in npi.STAGES:
+			kinds = {k for s, k, _ in rows if s == stage}
+			self.assertEqual(kinds, {"Entry", "Exit"}, stage)
+		transfer_exit = [c for s, k, c in rows if s == "Transfer" and k == "Exit"]
+		self.assertTrue(any(c.startswith("Go-to-market ready") for c in transfer_exit))
+		self.assertEqual(phase_review.REVIEW_TYPE_FOR_STAGE["Transfer"], "Launch Readiness Review")
+
+	def test_board(self):
+		good = [member("c@x", "Chair"), member("m1@x"), member("m2@x"), member("a@x", "Advisor")]
+		self.assertEqual(phase_review.board_problems(good, 3), [])
+		problems = phase_review.board_problems([member("m1@x"), member("m1@x"), member("a@x", "Advisor")], 3)
+		text = " | ".join(problems)
+		self.assertIn("only once", text)
+		self.assertIn("exactly one Chair", text)
+		self.assertIn("larger than the voting members", text)
+
+	def test_tally(self):
+		attendees = [
+			member("c@x", "Chair", vote="Go"),
+			member("m1@x", vote="Go"),
+			member("m2@x", vote="Recycle"),
+			member("m3@x", present=0, vote="Kill"),
+			member("a@x", "Advisor", vote="Kill"),
+			member("m4@x", vote="Abstain"),
+		]
+		self.assertEqual(phase_review.tally(attendees), {"counts": {"Go": 2, "Recycle": 1}, "majority": "Go"})
+		self.assertIsNone(
+			phase_review.tally([member("c@x", "Chair", vote="Go"), member("m@x", vote="Hold")])["majority"]
+		)
+
+	def test_review_closes_only_with_chair_quorum_and_criteria(self):
+		attendees = [member("c@x", "Chair", vote="Go"), member("m1@x", vote="Go"), member("m2@x", vote="Go")]
+		ok = phase_review.review_problems(
+			stage="Concept",
+			decision="Go",
+			attendees=attendees,
+			quorum=3,
+			criteria=self.criteria(),
+			decided_by="c@x",
+		)
+		self.assertEqual(ok, [])
+		problems = phase_review.review_problems(
+			stage="Concept",
+			decision="Go",
+			attendees=[member("c@x", "Chair", present=0), member("m1@x", vote="Go"), member("m2@x")],
+			quorum=3,
+			criteria=self.criteria(met=False),
+			decided_by="m1@x",
+		)
+		text = " | ".join(problems)
+		for expected in (
+			"Chair, who holds decision authority, is not recorded",
+			"No quorum: 2",
+			"without a recorded vote: m2@x",
+			"Entry criteria not met",
+			"Exit criteria not met",
+		):
+			self.assertIn(expected, text)
+		self.assertIn(
+			"Only the Chair",
+			phase_review.review_problems(
+				stage="Concept",
+				decision="Go",
+				attendees=attendees,
+				quorum=3,
+				criteria=self.criteria(),
+				decided_by="m1@x",
+			)[0],
+		)
+
+	def test_recycle_needs_entry_only_and_majority_override_needs_rationale(self):
+		criteria = [
+			{"stage": "Concept", "kind": "Entry", "criterion": "Package issued", "met": 1},
+			{"stage": "Concept", "kind": "Exit", "criterion": "Business case", "met": 0},
+		]
+		attendees = [member("c@x", "Chair", vote="Go"), member("m1@x", vote="Go"), member("m2@x", vote="Go")]
+		problems = phase_review.review_problems(
+			stage="Concept",
+			decision="Recycle",
+			attendees=attendees,
+			quorum=3,
+			criteria=criteria,
+			decided_by="c@x",
+		)
+		self.assertEqual(len(problems), 1)
+		self.assertIn("majority vote (Go)", problems[0])
+		self.assertEqual(
+			phase_review.review_problems(
+				stage="Concept",
+				decision="Recycle",
+				attendees=attendees,
+				quorum=3,
+				criteria=criteria,
+				decided_by="c@x",
+				rationale="Business case not approved by finance",
+			),
+			[],
+		)
+		self.assertTrue(
+			phase_review.review_problems(
+				stage="Concept",
+				decision=None,
+				attendees=attendees,
+				quorum=3,
+				criteria=criteria,
+				decided_by="c@x",
+			)
+		)
+
+	def test_action_findings(self):
+		review = {"name": "PHR-1", "stage": "Concept", "npi_program": "NPI-1"}
+		actions = [
+			{
+				"idx": 1,
+				"action": "Update the forecast",
+				"status": "Open",
+				"due_date": date(2026, 11, 1),
+				"owner_user": "m@x",
+			},
+			{"idx": 2, "action": "Done thing", "status": "Done", "due_date": date(2026, 11, 1)},
+			{"idx": 3, "action": "Later", "status": "Open", "due_date": date(2026, 12, 1)},
+		]
+		found = phase_review.action_findings(review, actions, date(2026, 11, 15))
+		self.assertEqual([f["rule_key"] for f in found], ["phase-review-action:PHR-1:1:2026-11-01"])
 
 
 def req(rid, level, parent=None, **values):

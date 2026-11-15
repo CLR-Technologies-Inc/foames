@@ -105,8 +105,8 @@ Permissions are the DocType permissions of the user behind the key, checked by t
 | `foames_list_erp_systems()` | Registered adapters, availability, default system, reference types |
 | `foames_list_external_references(erp_system, reference_type, status, limit)` | External References with resolution status |
 | `foames_lookup_erp_record(reference_type, external_id, erp_system)` | One ERP record through its adapter; creates nothing |
-| `foames_get_npi_status(program, include_closed)` | NPI programs: stage, status, next gate, open required deliverables, open gate conditions ([life-sciences.md](life-sciences.md)) |
-| `foames_get_requirements_trace(document)` | A PRD's trace matrix, gaps and coverage |
+| `foames_get_npi_status(program, include_closed)` | NPI programs: stage, status, next gate, open required deliverables and phase review criteria, phase reviews held, open gate conditions ([life-sciences.md](life-sciences.md)) |
+| `foames_get_requirements_trace(document)` | A product requirements document's trace matrix, gaps and coverage |
 | `foames_get_tech_transfer_package(package)` | CPPs with NOR and PAR, CQAs with limits and comparability outcome, deliverables, what blocks approval |
 | `foames_get_pd_study(study)` | A PD simulation study's factors, runs, fitted models and last what-if |
 | `foames_scale_up(small_volume_l, large_volume_l, impeller_diameter_m, rpm, ...)` | Stirred-vessel scale-up for constant P/V, tip speed, Re and mixing time, with kLa |
