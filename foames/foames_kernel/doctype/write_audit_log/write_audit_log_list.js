@@ -14,7 +14,7 @@ frappe.listview_settings["Write Audit Log"] = {
 								v.broken.length,
 								v.entries,
 								v.broken.join(", "),
-							])
+						  ])
 				);
 			})
 		);

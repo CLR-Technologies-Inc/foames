@@ -28,8 +28,8 @@ frappe.ui.form.on("Pending Write", {
 						v.signature_ok === null
 							? __("not signed")
 							: v.signature_ok
-								? __("intact")
-								: __("DOES NOT MATCH");
+							? __("intact")
+							: __("DOES NOT MATCH");
 					frappe.msgprint(
 						__("Payload: {0}. Signature: {1}.", [
 							v.payload_ok ? __("intact") : __("DOES NOT MATCH"),
