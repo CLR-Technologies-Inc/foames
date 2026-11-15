@@ -137,18 +137,27 @@ const DATA_HEALTH = { fresh: "#2e7d32", stale: "#f9a825", "no data": "#9e9e9e", 
 
 function data_badge(entry) {
 	if (!entry || !entry.signals) {
-		return `<div class="data"><i style="background:#9e9e9e"></i>${__("No signals bound")}</div>`;
+		return `<div class="data"><i style="background:#9e9e9e"></i>${__(
+			"No signals bound"
+		)}</div>`;
 	}
 	const parts = [__("{0} signals", [entry.signals])];
 	if (entry.stale) parts.push(__("{0} stale", [entry.stale]));
 	if (entry.no_data) parts.push(__("{0} no data", [entry.no_data]));
 	const title = (entry.detail || [])
-		.map((s) => `${s.tag || s.title}: ${s.value == null ? "" : s.value + " " + (s.unit || "")} (${s.health})`)
+		.map(
+			(s) =>
+				`${s.tag || s.title}: ${s.value == null ? "" : s.value + " " + (s.unit || "")} (${
+					s.health
+				})`
+		)
 		.join("\n");
 	return `<div class="data" title="${frappe.utils.escape_html(title)}"><i style="background:${
 		DATA_HEALTH[entry.health] || "#9e9e9e"
 	}"></i>${parts.join(" · ")}${
-		entry.feeds && entry.feeds.length ? " → " + frappe.utils.escape_html(entry.feeds.join(", ")) : ""
+		entry.feeds && entry.feeds.length
+			? " → " + frappe.utils.escape_html(entry.feeds.join(", "))
+			: ""
 	}</div>`;
 }
 

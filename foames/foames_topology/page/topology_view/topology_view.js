@@ -22,7 +22,9 @@ frappe.pages["topology-view"].on_page_load = function (wrapper) {
 	);
 	if (frappe.user.has_role(["System Manager", "FoaMES Engineer"])) {
 		page.add_inner_button(__("Sync now"), () =>
-			frappe.call({ method: "foames.foames_topology.api.sync_now", freeze: true }).then(() => view.refresh())
+			frappe
+				.call({ method: "foames.foames_topology.api.sync_now", freeze: true })
+				.then(() => view.refresh())
 		);
 	}
 	view.refresh();
@@ -124,7 +126,11 @@ class TopologyView {
 		const nodes = data.nodes.filter((n) => this.show[n.layer] && pos[n.id]);
 		const shown = new Set(nodes.map((n) => n.id));
 		const edges = data.edges.filter(
-			(e) => this.show[e.layer] && shown.has(e.source) && shown.has(e.target) && e.type !== "Contains"
+			(e) =>
+				this.show[e.layer] &&
+				shown.has(e.source) &&
+				shown.has(e.target) &&
+				e.type !== "Contains"
 		);
 		const W = 150,
 			H = 44;
@@ -138,7 +144,9 @@ class TopologyView {
 		const center = (id) => [pos[id].x + W / 2, pos[id].y + H / 2];
 
 		const physicalTop = Math.min(
-			...data.nodes.filter((n) => n.layer === "Physical" && pos[n.id]).map((n) => pos[n.id].y),
+			...data.nodes
+				.filter((n) => n.layer === "Physical" && pos[n.id])
+				.map((n) => pos[n.id].y),
 			maxY
 		);
 		let svg = `<svg viewBox="${minX} 0 ${maxX - minX} ${maxY}" style="height:${Math.min(
@@ -147,9 +155,12 @@ class TopologyView {
 		)}px">
 			<defs><marker id="foames-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
 			<path d="M 0 0 L 10 5 L 0 10 z" fill="#888"/></marker></defs>`;
-		if (this.show.Data) svg += `<text class="band" x="${minX + 8}" y="16">${__("Data layer")}</text>`;
+		if (this.show.Data)
+			svg += `<text class="band" x="${minX + 8}" y="16">${__("Data layer")}</text>`;
 		if (this.show.Physical && physicalTop < maxY)
-			svg += `<line x1="${minX}" x2="${maxX}" y1="${physicalTop - 20}" y2="${physicalTop - 20}" stroke="var(--border-color)" stroke-dasharray="6 4"/>
+			svg += `<line x1="${minX}" x2="${maxX}" y1="${physicalTop - 20}" y2="${
+				physicalTop - 20
+			}" stroke="var(--border-color)" stroke-dasharray="6 4"/>
 				<text class="band" x="${minX + 8}" y="${physicalTop - 26}">${__("Physical layer")}</text>`;
 
 		for (const e of edges) {
@@ -158,8 +169,12 @@ class TopologyView {
 			const dim = litEdges && !litEdges.has(e.id) ? "dim" : "";
 			const dash = e.layer === "Binding" ? 'stroke-dasharray="4 3"' : "";
 			const arrow = e.layer === "Physical" ? "" : 'marker-end="url(#foames-arrow)"';
-			svg += `<g class="edge ${dim}"><title>${esc(e.type)}${e.tag ? " " + esc(e.tag) : ""}</title>
-				<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${EDGE[e.layer]}" stroke-width="1.5" ${dash} ${arrow}/></g>`;
+			svg += `<g class="edge ${dim}"><title>${esc(e.type)}${
+				e.tag ? " " + esc(e.tag) : ""
+			}</title>
+				<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${
+				EDGE[e.layer]
+			}" stroke-width="1.5" ${dash} ${arrow}/></g>`;
 		}
 		for (const n of nodes) {
 			const p = pos[n.id];
@@ -170,7 +185,9 @@ class TopologyView {
 					: STATUS[n.status] || STATUS.Unknown;
 			const title = (n.title || n.id).slice(0, 22);
 			const badge = n.health
-				? `<circle cx="${p.x + W - 8}" cy="${p.y + 8}" r="5" fill="${HEALTH[n.health]}" stroke="#fff"/>`
+				? `<circle cx="${p.x + W - 8}" cy="${p.y + 8}" r="5" fill="${
+						HEALTH[n.health]
+				  }" stroke="#fff"/>`
 				: "";
 			svg += `<g class="node ${dim}" data-id="${esc(n.id)}">
 				<title>${esc(n.id)} · ${esc(n.kind)} · ${esc(n.status)}${n.health ? " · " + esc(n.health) : ""}${
@@ -193,23 +210,37 @@ class TopologyView {
 			.join("");
 		const findings = (data.findings || [])
 			.slice(0, 50)
-			.map((f) => `<div class="finding ${f.severity}"><b>${esc(f.rule)}</b> · ${esc(f.message)}</div>`)
+			.map(
+				(f) =>
+					`<div class="finding ${f.severity}"><b>${esc(f.rule)}</b> · ${esc(
+						f.message
+					)}</div>`
+			)
 			.join("");
 		this.$body.find(".content").remove();
 		this.$body.append(`<div class="content">
 			<p class="legend">${__("Data health")}: ${legend} &nbsp; ${__("Links")}: ${edgeLegend}</p>
 			${
 				this.trace
-					? `<p>${__("Tracing {0} {1}", [esc(this.trace.direction), esc(this.trace.start)])} · <a class="clear-trace">${__(
-							"Clear"
-					  )}</a></p>`
+					? `<p>${__("Tracing {0} {1}", [
+							esc(this.trace.direction),
+							esc(this.trace.start),
+					  ])} · <a class="clear-trace">${__("Clear")}</a></p>`
 					: ""
 			}
-			${nodes.length ? svg : `<p>${__("Nothing in the graph yet. Create Machines, or press Sync now.")}</p>`}
+			${
+				nodes.length
+					? svg
+					: `<p>${__(
+							"Nothing in the graph yet. Create Machines, or press Sync now."
+					  )}</p>`
+			}
 			<h4 style="margin-top:16px">${__("Findings")} (${(data.findings || []).length})</h4>
 			${findings || `<p class="text-muted">${__("None")}</p>`}
 			<p class="text-muted small">${__("As of")} ${frappe.datetime.str_to_user(data.as_of)}${
-			data.last_sync_at ? " · " + __("Last sync") + " " + frappe.datetime.prettyDate(data.last_sync_at) : ""
+			data.last_sync_at
+				? " · " + __("Last sync") + " " + frappe.datetime.prettyDate(data.last_sync_at)
+				: ""
 		}</p>
 		</div>`);
 		this.$body.find(".clear-trace").on("click", () => {
