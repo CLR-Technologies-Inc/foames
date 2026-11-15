@@ -31,6 +31,9 @@ jobs:
       - name: Bluesky bridge
         working-directory: bridges/bluesky
         run: python -m unittest discover -s tests -v
+      - name: Topology collectors
+        working-directory: bridges/topology
+        run: python -m unittest discover -s tests -v
 
   tests:
     runs-on: ubuntu-latest

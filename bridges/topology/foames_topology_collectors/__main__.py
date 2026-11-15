@@ -1,0 +1,67 @@
+# Copyright (c) 2026, CLR Technologies Inc. and contributors
+# For license information, please see license.txt
+
+"""foames-topology-collect network|agents …
+
+	foames-topology-collect network --provider network-collector --site-name "Plant A" \
+		--url https://foames.example.com
+	foames-topology-collect agents --provider agent-events --log agents.jsonl --url …
+
+The API key and secret come from FOAMES_API_KEY and FOAMES_API_SECRET. With --dry-run the report
+is printed instead of sent. Run it from cron or a systemd timer to keep the graph current."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+
+from foames_topology_collectors import agents, network, sender
+
+
+def main(argv=None) -> int:
+	parser = argparse.ArgumentParser(prog="foames-topology-collect")
+	sub = parser.add_subparsers(dest="collector", required=True)
+	for name in ("network", "agents"):
+		p = sub.add_parser(name)
+		p.add_argument("--provider", required=True, help="the provider name this collector reports as")
+		p.add_argument("--tenant", help="the Topology Tenant the items belong to (empty: shared)")
+		p.add_argument("--url", help="the FoaMES site URL")
+		p.add_argument("--dry-run", action="store_true", help="print the report instead of sending it")
+		if name == "network":
+			p.add_argument("--status-file", help="read `tailscale status --json` output from this file")
+			p.add_argument("--site-name", help="a Site asset the hosts are Part Of")
+		else:
+			p.add_argument("--log", required=True, help="the JSON Lines event log ('-' for stdin)")
+			p.add_argument("--window-hours", type=float, default=24, help="only tasks seen in this window")
+	args = parser.parse_args(argv)
+
+	if args.collector == "network":
+		report = network.report_from_status(
+			network.read_status(args.status_file), provider=args.provider, tenant=args.tenant, site=args.site_name
+		)
+	else:
+		stream = sys.stdin if args.log == "-" else open(args.log, encoding="utf-8")
+		with stream:
+			events, skipped = agents.read_events(stream)
+		if skipped:
+			print(f"skipped {skipped} lines that are not agent events", file=sys.stderr)
+		report = agents.report_from_events(events, provider=args.provider, tenant=args.tenant, window_hours=args.window_hours)
+
+	if args.dry_run or not args.url:
+		json.dump(report, sys.stdout, indent=1, default=str)
+		print()
+		return 0
+	key, secret = os.environ.get("FOAMES_API_KEY"), os.environ.get("FOAMES_API_SECRET")
+	if not key or not secret:
+		print("set FOAMES_API_KEY and FOAMES_API_SECRET", file=sys.stderr)
+		return 2
+	result = sender.send(report, args.url, key, secret)
+	json.dump(result, sys.stdout, indent=1, default=str)
+	print()
+	return 1 if result.get("rejected") else 0
+
+
+if __name__ == "__main__":
+	sys.exit(main())

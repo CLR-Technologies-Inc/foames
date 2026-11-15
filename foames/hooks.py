@@ -122,6 +122,8 @@ doc_events["Job Card"] = {
 foames_floor_snapshot_extensions = [
 	"foames.foames_adapters.erpnext.floor.extend_snapshot",
 	"foames.foames_adapters.erpnext.rollup.mark_current_job_cards",
+	# The data layer on Floor View: bound signals and their freshness per machine.
+	"foames.foames_topology.floor.extend_snapshot",
 ]
 foames_suggestion_rules = [
 	"foames.foames_adapters.erpnext.floor.running_without_job_card",
@@ -147,6 +149,14 @@ foames_machine_state_changed = [
 #
 # foames_process_event_extractors = ["myapp.mining.job_events"]
 
+# Topology
+# --------
+# Other apps add assets, links and signal bindings to the topology graph. Each dotted path is
+# called with no arguments during the topology sync and returns a collector report (see
+# foames.foames_topology.ingest), checked the same way as one posted to the ingest API.
+#
+# foames_topology_collectors = ["myapp.topology.report"]
+
 # Scheduled Tasks
 # ---------------
 
@@ -169,6 +179,9 @@ scheduler_events = {
 		],
 		# Rolls machine counts up to ERPNext Job Cards, to S/4HANA confirmations and to Insights Hub time
 		# series; each does nothing unless enabled in its adapter's settings.
+		# Mirrors Machines, machine data sources, P&ID components, OEE and ERP references into the
+		# topology graph; does nothing when sync is off in Topology Settings.
+		"*/15 * * * *": ["foames.foames_topology.sync.scheduled_sync"],
 		"*/10 * * * *": [
 			"foames.foames_adapters.erpnext.rollup.roll_up_all",
 			"foames.foames_adapters.s4hana.rollup.roll_up_all",

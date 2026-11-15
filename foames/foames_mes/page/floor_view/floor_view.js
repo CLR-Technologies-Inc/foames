@@ -23,6 +23,15 @@ frappe.pages["floor-view"].on_page_load = function (wrapper) {
 	if (frappe.model.can_create("Andon Call")) {
 		page.set_primary_action(__("Call for Help"), () => raise_andon_dialog(view));
 	}
+	// The data layer over the floor: each tile shows the signals bound to the machine (and to the
+	// instruments on it) and their freshness, from the snapshot's topology section.
+	if (frappe.boot.user.can_read.includes("Topology Asset")) {
+		page.add_inner_button(__("Data layer"), () => {
+			view.data_layer = !view.data_layer;
+			view.render(view.snap);
+		});
+		page.add_inner_button(__("Topology View"), () => frappe.set_route("topology-view"));
+	}
 	view.refresh();
 	view.timer = setInterval(() => view.refresh(), 30000);
 	$(wrapper).on("remove", () => clearInterval(view.timer));
@@ -45,6 +54,8 @@ class FloorView {
 			.foames-floor .sug { border-left: 4px solid #999; padding: 6px 10px; margin-bottom: 6px; background: var(--card-bg); }
 			.foames-floor .sug.Critical { border-color: #c62828; } .foames-floor .sug.Warning { border-color: #f9a825; }
 			.foames-floor .andon { margin-top: 6px; padding: 2px 8px; border-radius: 4px; background: #fff; color: #222; font-weight: 600; display: inline-block; }
+			.foames-floor .data { margin-top: 6px; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,.9); color: #222; font-size: 12px; display: inline-block; }
+			.foames-floor .data i { display: inline-block; width: 8px; height: 8px; border-radius: 4px; margin-right: 4px; }
 			.foames-floor .andon.Open { animation: foames-andon 1s step-start infinite; }
 			@keyframes foames-andon { 50% { background: #ffeb3b; } }
 		</style>`);
@@ -57,6 +68,9 @@ class FloorView {
 	}
 
 	render(snap) {
+		if (!snap) return;
+		this.snap = snap;
+		const topology = snap.topology || {};
 		const tiles = snap.machines
 			.map((m) => {
 				const counts = m.counts || {};
@@ -84,6 +98,7 @@ class FloorView {
 							? __("No counts today")
 							: __("Last count {0} min ago", [Math.round(m.minutes_since_count)])
 					}</div>
+					${this.data_layer ? data_badge(topology[m.name]) : ""}
 					<div class="metrics">
 						<span>${__("Good")} ${counts.good || 0}</span><span>${__("Scrap")} ${counts.scrap || 0}</span>
 						${oee ? `<span>OEE ${Math.round(oee.oee || 0)}%</span>` : ""}
@@ -116,6 +131,25 @@ class FloorView {
 				frappe.set_route("Form", "Machine", $(e.currentTarget).data("machine"))
 			);
 	}
+}
+
+const DATA_HEALTH = { fresh: "#2e7d32", stale: "#f9a825", "no data": "#9e9e9e", fault: "#c62828" };
+
+function data_badge(entry) {
+	if (!entry || !entry.signals) {
+		return `<div class="data"><i style="background:#9e9e9e"></i>${__("No signals bound")}</div>`;
+	}
+	const parts = [__("{0} signals", [entry.signals])];
+	if (entry.stale) parts.push(__("{0} stale", [entry.stale]));
+	if (entry.no_data) parts.push(__("{0} no data", [entry.no_data]));
+	const title = (entry.detail || [])
+		.map((s) => `${s.tag || s.title}: ${s.value == null ? "" : s.value + " " + (s.unit || "")} (${s.health})`)
+		.join("\n");
+	return `<div class="data" title="${frappe.utils.escape_html(title)}"><i style="background:${
+		DATA_HEALTH[entry.health] || "#9e9e9e"
+	}"></i>${parts.join(" · ")}${
+		entry.feeds && entry.feeds.length ? " → " + frappe.utils.escape_html(entry.feeds.join(", ")) : ""
+	}</div>`;
 }
 
 function andon_badge(call) {
