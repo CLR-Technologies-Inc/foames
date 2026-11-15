@@ -218,7 +218,7 @@ class PDSimulationStudy(Document):
 		lines = [
 			(
 				f"{r['response']}: mean {r['mean']:.4g}, 90% of runs in [{r['p05']:.4g}, {r['p95']:.4g}], "
-				f"{100 * r['probability_in_limits']:.1f}% within limits"
+				+ f"{100 * r['probability_in_limits']:.1f}% within limits"
 			)
 			+ (f", predicted Ppk {r['predicted_ppk']:.2f}" if r["predicted_ppk"] is not None else "")
 			for r in result["responses"]

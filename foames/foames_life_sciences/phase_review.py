@@ -151,7 +151,8 @@ def review_problems(
 	missing_votes = [a.get("user") for a in voting_present if not a.get("vote")]
 	if missing_votes:
 		problems.append(
-			"Voting members present without a recorded vote: " + ", ".join(map(str, missing_votes))
+			"Voting members present without a recorded vote: "
+			+ ", ".join(str(user) for user in missing_votes)
 		)
 	entry = unmet_criteria(criteria, stage, "Entry")
 	if entry:
