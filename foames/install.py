@@ -52,4 +52,5 @@ def before_tests():
 	after_install()
 	frappe.db.set_single_value("FoaMES Settings", "read_only_mode", 0)
 	frappe.db.set_single_value("FoaMES Settings", "new_connectors_read_only", 0)
-	frappe.db.commit()
+	# The test runner starts each test in its own transaction; commit so the mode holds for all of them.
+	frappe.db.commit()  # nosemgrep
