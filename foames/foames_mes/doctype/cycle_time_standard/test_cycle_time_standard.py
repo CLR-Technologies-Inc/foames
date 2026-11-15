@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Cycle Time Standard on a site: validation, the stored one-cycle figures, one default per machine,
 and the projection API with scenarios, observed time and batches for a scheduler."""

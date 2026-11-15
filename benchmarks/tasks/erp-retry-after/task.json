@@ -1,0 +1,35 @@
+{
+ "id": "erp-retry-after",
+ "title": "Honour S/4HANA throttling without duplicate postings",
+ "tier": "pure",
+ "complexity": "high",
+ "trl_bands": [
+  "4-6",
+  "7-9"
+ ],
+ "dimension": "ERP integration; invariant 6 (idempotent, sequenced postings) and failure recovery",
+ "hidden": {
+  "functional": [
+   "test_functional.py"
+  ],
+  "invariant": [
+   "test_invariants.py"
+  ]
+ },
+ "regression": [
+  "foames/foames_adapters/s4hana/test_outbox_rules.py",
+  "foames/foames_adapters/s4hana/test_odata.py",
+  "foames/foames_adapters/s4hana/test_postings.py"
+ ],
+ "allowed_paths": [
+  "foames/foames_adapters/s4hana/outbox.py",
+  "foames/foames_adapters/s4hana/odata.py",
+  "foames/foames_adapters/s4hana/test_*.py",
+  "foames/foames_adapters/doctype/s4hana_outbox/s4hana_outbox.py"
+ ],
+ "deliverables": [],
+ "budget": {
+  "usd": 2.0,
+  "seconds": 1500
+ }
+}

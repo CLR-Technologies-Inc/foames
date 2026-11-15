@@ -1,0 +1,24 @@
+{
+ "file": "PLAN.md",
+ "sections": ["Requirements", "Ambiguities", "Invariants", "Design", "Acceptance criteria", "Risks", "Cannot be inferred"],
+ "concepts": [
+  {"id": "counter_rules", "weight": 1.5, "any": ["\\breset", "first reading", "rollover", "running total"]},
+  {"id": "no_invented_output", "weight": 1.5, "any": ["(never|not|no|without)\\b.{0,60}(invent|inflat|interpolat|extrapolat|estimat)", "counters never invent"]},
+  {"id": "unknown_is_loss", "weight": 1.5, "any": ["unknown.{0,80}(loss|availability)", "(loss|availability).{0,80}unknown"]},
+  {"id": "staleness", "weight": 1.0, "any": ["stale", "staleness", "heartbeat", "NDEATH", "stops reporting"]},
+  {"id": "store_and_forward", "weight": 1.0, "any": ["store[- ]and[- ]forward", "\\bbuffer", "queue[sd]? (on|at) the (edge|gateway|plc)"]},
+  {"id": "event_dedup", "weight": 1.0, "any": ["event[ _](id|key)", "dedup", "duplicate event", "idempotent ingest"]},
+  {"id": "erp_idempotency", "weight": 1.5, "any": ["idempoten"]},
+  {"id": "erp_duplicates", "weight": 1.0, "any": ["(duplicate|double|twice).{0,60}(post|confirmation|goods movement)", "(post|confirmation).{0,60}(duplicate|twice)"]},
+  {"id": "people_act", "weight": 1.0, "any": ["agent suggestion", "human (review|approval)", "a person", "people act", "approv"]},
+  {"id": "time_and_order", "weight": 1.0, "any": ["clock", "time ?zone", "\\bntp\\b", "out[- ]of[- ]order", "late[- ]arriving"]},
+  {"id": "recompute", "weight": 1.0, "any": ["backfill", "recompute", "re-?calculat", "reprocess", "restate"]},
+  {"id": "traceability", "weight": 1.0, "any": ["audit", "traceab", "evidence", "provenance"]},
+  {"id": "foames_modules", "weight": 1.0, "any": ["counters\\.py", "oee\\.py", "outbox", "machine event", "oee period"]}
+ ],
+ "red_flags": [
+  {"id": "assumes_running_through_gap", "pattern": "(?<!not )(?<!never )(?<!n't )assume[sd]? (that )?(the )?(machine|line|press) (was|is|kept|keeps) running"},
+  {"id": "fills_gap_with_last_state", "pattern": "(?<!not )(?<!never )(?<!n't )(fill|carry) (the )?gaps? (forward )?with (the )?(last|previous)"}
+ ],
+ "red_flag_penalty": 0.15
+}

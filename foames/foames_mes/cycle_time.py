@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Automatic and manual time: an operation's cycle split into machine time and operator time, its
 projection over a quantity, what-if scenarios such as automating a manual step, and a comparison

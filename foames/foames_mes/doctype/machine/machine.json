@@ -27,7 +27,8 @@
   "counter_rollover",
   "cb_source",
   "workstation_reference",
-  "location_reference"
+  "location_reference",
+  "asset_reference"
  ],
  "fields": [
   {
@@ -173,11 +174,18 @@
    "fieldtype": "Link",
    "label": "ERP Location Reference",
    "options": "External Reference"
+  },
+  {
+   "fieldname": "asset_reference",
+   "fieldtype": "Link",
+   "label": "ERP Asset Reference",
+   "options": "External Reference",
+   "description": "The ERP's fixed asset for this machine, for maintenance work orders posted to the ERP"
   }
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-11-03 20:30:00.000000",
+ "modified": "2026-11-04 21:00:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES MES",
  "name": "Machine",
