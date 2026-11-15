@@ -48,6 +48,9 @@ class Tool:
 	read_only: bool = True
 	destructive: bool = False
 	idempotent: bool = True
+	# A writing tool that only raises Agent Suggestions for people to act on. Read-only mode lets
+	# these run unless the site holds them too; every other writing tool waits for sign-off.
+	suggests: bool = False
 
 	def to_mcp(self) -> dict:
 		schema = dict(self.input_schema)

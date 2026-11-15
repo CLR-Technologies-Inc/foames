@@ -1,0 +1,311 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-15 22:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "status",
+  "connector",
+  "kind",
+  "action",
+  "column_break_request",
+  "requested_by",
+  "requested_at",
+  "request_source",
+  "reference_doctype",
+  "reference_name",
+  "context_section",
+  "work_order",
+  "job_card",
+  "context_column",
+  "process_run",
+  "machine",
+  "sequence_group",
+  "payload_section",
+  "summary",
+  "arguments",
+  "payload_hash",
+  "signature_section",
+  "signed_by",
+  "signed_by_name",
+  "signed_at",
+  "column_break_signature",
+  "signature_meaning",
+  "signature_reason",
+  "signature_hash",
+  "result_section",
+  "result",
+  "error"
+ ],
+ "fields": [
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Awaiting Sign-off\nApproved\nReleased\nExecuted\nRejected\nBlocked\nFailed\nWithdrawn",
+   "default": "Awaiting Sign-off",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "connector",
+   "fieldtype": "Data",
+   "label": "Connector",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "kind",
+   "fieldtype": "Select",
+   "label": "Kind",
+   "options": "Outbox Posting\nMCP Tool Call\nRegistered Action",
+   "read_only": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "action",
+   "fieldtype": "Data",
+   "label": "Action",
+   "read_only": 1,
+   "in_list_view": 1,
+   "description": "The outbox operation, MCP tool or registered action."
+  },
+  {
+   "fieldname": "column_break_request",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "requested_by",
+   "fieldtype": "Link",
+   "label": "Requested By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "requested_at",
+   "fieldtype": "Datetime",
+   "label": "Requested At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "request_source",
+   "fieldtype": "Data",
+   "label": "Request Source",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "label": "Reference DocType",
+   "options": "DocType",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reference_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Reference",
+   "options": "reference_doctype",
+   "read_only": 1
+  },
+  {
+   "fieldname": "context_section",
+   "fieldtype": "Section Break",
+   "label": "Logged Against"
+  },
+  {
+   "fieldname": "work_order",
+   "fieldtype": "Data",
+   "label": "Work Order",
+   "in_standard_filter": 1,
+   "in_list_view": 1,
+   "description": "The work order (in any ERP or MES) this write belongs to.",
+   "read_only": 1
+  },
+  {
+   "fieldname": "job_card",
+   "fieldtype": "Data",
+   "label": "Job Card",
+   "in_standard_filter": 1,
+   "description": "The Job Card, operation or job this write belongs to.",
+   "read_only": 1
+  },
+  {
+   "fieldname": "context_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "process_run",
+   "fieldtype": "Data",
+   "label": "Process Run",
+   "in_standard_filter": 1,
+   "description": "The process run or batch this write belongs to.",
+   "read_only": 1
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "in_standard_filter": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "sequence_group",
+   "fieldtype": "Data",
+   "label": "Sequence Group",
+   "read_only": 1
+  },
+  {
+   "fieldname": "payload_section",
+   "fieldtype": "Section Break",
+   "label": "What Will Be Written"
+  },
+  {
+   "fieldname": "summary",
+   "fieldtype": "Small Text",
+   "label": "Summary",
+   "read_only": 1
+  },
+  {
+   "fieldname": "arguments",
+   "fieldtype": "Code",
+   "label": "Payload",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "fieldname": "payload_hash",
+   "fieldtype": "Data",
+   "label": "Payload Hash (SHA-256)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "signature_section",
+   "fieldtype": "Section Break",
+   "label": "Electronic Signature"
+  },
+  {
+   "fieldname": "signed_by",
+   "fieldtype": "Link",
+   "label": "Signed By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "signed_by_name",
+   "fieldtype": "Data",
+   "label": "Signer Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "signed_at",
+   "fieldtype": "Datetime",
+   "label": "Signed At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_signature",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "signature_meaning",
+   "fieldtype": "Select",
+   "label": "Meaning",
+   "options": "\nApproved\nRejected",
+   "read_only": 1
+  },
+  {
+   "fieldname": "signature_reason",
+   "fieldtype": "Small Text",
+   "label": "Reason",
+   "read_only": 1
+  },
+  {
+   "fieldname": "signature_hash",
+   "fieldtype": "Data",
+   "label": "Signature Hash (SHA-256)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "result_section",
+   "fieldtype": "Section Break",
+   "label": "Result",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "result",
+   "fieldtype": "Code",
+   "label": "Result",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "fieldname": "error",
+   "fieldtype": "Small Text",
+   "label": "Error",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 22:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Kernel",
+ "name": "Pending Write",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "print": 1,
+   "report": 1,
+   "export": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "print": 1,
+   "report": 1,
+   "export": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "print": 1,
+   "report": 1,
+   "export": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "print": 1,
+   "report": 1,
+   "export": 1
+  },
+  {
+   "role": "FoaMES Integration",
+   "read": 1,
+   "print": 1,
+   "report": 1,
+   "export": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "print": 1,
+   "report": 1,
+   "export": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "format:PW-{#######}",
+ "in_create": 1,
+ "title_field": "action",
+ "search_fields": "connector,action,work_order,job_card",
+ "track_changes": 1
+}

@@ -102,6 +102,37 @@ doc_events["Job Card"] = {
 	],
 }
 
+# Read-only mode
+# --------------
+# Every write to another system passes one gate, foames.foames_kernel.write_gate. While a connector
+# is read-only (the default for a new site and for every new connector), its writes wait as Pending
+# Writes for an authorised operator's electronic sign-off, or are refused, and each step is logged
+# against its work order, Job Card or process run in the Write Audit Log. See docs/read-only-mode.md.
+#
+# The adapter outboxes the gate holds: outbox DocType -> its connector key, or "field:<fieldname>"
+# when each row names its connector. The outbox's claim() asks the gate before it sends a posting.
+foames_write_gated_outboxes = {
+	"ERPNext Outbox": "ERPNext",
+	"S4HANA Outbox": "S4HANA",
+	"Insights Hub Outbox": "INSIGHTS_HUB",
+	"MES Outbox": "field:connection",
+}
+doc_events |= {
+	doctype: {
+		"after_insert": "foames.foames_kernel.write_gate.outbox_queued",
+		"on_update": "foames.foames_kernel.write_gate.outbox_updated",
+	}
+	for doctype in foames_write_gated_outboxes
+}
+# Writes that do not go through an outbox (a SCADA or historian write, a change a connector asks
+# FoaMES to make) are registered here and requested with write_gate.request_write(connector, key,
+# arguments), which performs them, holds them for sign-off, or refuses them.
+# foames_write_actions = {"myapp.write_setpoint": "myapp.scada.write_setpoint"}
+#
+# Other apps add tools to the MCP server with this hook: dotted paths of functions that return a list
+# of foames.foames_mcp.protocol.Tool. Their writes pass the gate like the core's.
+foames_mcp_tools = ["foames.foames_adapters.tulip.reads.mcp_tools"]
+
 # Machine data and the floor
 # --------------------------
 # Other apps extend the MES module through these hooks. Each entry is a dotted path.
@@ -190,4 +221,4 @@ scheduler_events = {
 # Testing
 # -------
 
-before_tests = "foames.install.after_install"
+before_tests = "foames.install.before_tests"

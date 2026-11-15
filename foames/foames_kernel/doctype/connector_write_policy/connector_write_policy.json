@@ -1,0 +1,146 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-15 22:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "connector",
+  "connector_label",
+  "connector_kind",
+  "column_break_mode",
+  "read_only",
+  "when_read_only",
+  "sign_off_role",
+  "notes_section",
+  "approval_reference",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "connector",
+   "fieldtype": "Data",
+   "label": "Connector",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1,
+   "set_only_once": 1,
+   "description": "Key of the adapter, MES Connection, bridge or other connector, as the gate sees it (for example the adapter key, or mcp for the MCP server)."
+  },
+  {
+   "fieldname": "connector_label",
+   "fieldtype": "Data",
+   "label": "Label",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "connector_kind",
+   "fieldtype": "Select",
+   "label": "Kind",
+   "options": "\nERP\nMES\nSCADA\nHistorian\nBridge\nAgent\nOther",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "column_break_mode",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "read_only",
+   "fieldtype": "Check",
+   "label": "Read-only",
+   "default": "1",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "While checked, every write this connector makes waits for an operator's sign-off or is refused. New connectors start read-only."
+  },
+  {
+   "fieldname": "when_read_only",
+   "fieldtype": "Select",
+   "label": "When Read-only",
+   "options": "Site default\nQueue for sign-off\nBlock",
+   "default": "Site default",
+   "in_list_view": 1,
+   "description": "Queue for sign-off holds each write as a Pending Write until an authorised person signs it; Block refuses it and logs the attempt. Site default follows FoaMES Settings."
+  },
+  {
+   "fieldname": "sign_off_role",
+   "fieldtype": "Link",
+   "label": "Sign-off Role",
+   "options": "Role",
+   "description": "Role a signer needs for this connector's writes. Empty: the role in FoaMES Settings."
+  },
+  {
+   "fieldname": "notes_section",
+   "fieldtype": "Section Break",
+   "label": "Approval Record"
+  },
+  {
+   "fieldname": "approval_reference",
+   "fieldtype": "Data",
+   "label": "Approval Reference",
+   "description": "Change control or validation record that approved this connector's mode, for example a change request number."
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 22:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Kernel",
+ "name": "Connector Write Policy",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "print": 1,
+   "report": 1,
+   "export": 1,
+   "write": 1,
+   "create": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "print": 1,
+   "report": 1,
+   "export": 1,
+   "write": 1,
+   "create": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "print": 1,
+   "report": 1,
+   "export": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "print": 1,
+   "report": 1,
+   "export": 1
+  },
+  {
+   "role": "FoaMES Integration",
+   "read": 1,
+   "print": 1,
+   "report": 1,
+   "export": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "field:connector",
+ "title_field": "connector_label",
+ "show_title_field_in_link": 0,
+ "search_fields": "connector_label,connector_kind",
+ "track_changes": 1
+}

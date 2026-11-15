@@ -1,0 +1,233 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-15 22:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "event",
+  "timestamp",
+  "user",
+  "full_name",
+  "column_break_what",
+  "connector",
+  "action",
+  "pending_write",
+  "reference_doctype",
+  "reference_name",
+  "context_section",
+  "work_order",
+  "job_card",
+  "context_column",
+  "process_run",
+  "machine",
+  "detail_section",
+  "reason",
+  "details",
+  "seal_section",
+  "previous_hash",
+  "entry_hash"
+ ],
+ "fields": [
+  {
+   "fieldname": "event",
+   "fieldtype": "Select",
+   "label": "Event",
+   "options": "\nWrite Requested\nHeld for Sign-off\nBlocked\nAllowed (read-write)\nSigned\nSignature Failed\nRejected\nReleased to Send\nExecuted\nExecution Failed\nWithdrawn\nPolicy Changed\nSettings Changed",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "timestamp",
+   "fieldtype": "Datetime",
+   "label": "Timestamp",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User",
+   "read_only": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "full_name",
+   "fieldtype": "Data",
+   "label": "Full Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_what",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "connector",
+   "fieldtype": "Data",
+   "label": "Connector",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "action",
+   "fieldtype": "Data",
+   "label": "Action",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pending_write",
+   "fieldtype": "Link",
+   "label": "Pending Write",
+   "options": "Pending Write",
+   "read_only": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "label": "Reference DocType",
+   "options": "DocType",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reference_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Reference",
+   "options": "reference_doctype",
+   "read_only": 1
+  },
+  {
+   "fieldname": "context_section",
+   "fieldtype": "Section Break",
+   "label": "Logged Against"
+  },
+  {
+   "fieldname": "work_order",
+   "fieldtype": "Data",
+   "label": "Work Order",
+   "in_standard_filter": 1,
+   "in_list_view": 1,
+   "description": "The work order (in any ERP or MES) this write belongs to.",
+   "read_only": 1
+  },
+  {
+   "fieldname": "job_card",
+   "fieldtype": "Data",
+   "label": "Job Card",
+   "in_standard_filter": 1,
+   "description": "The Job Card, operation or job this write belongs to.",
+   "read_only": 1
+  },
+  {
+   "fieldname": "context_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "process_run",
+   "fieldtype": "Data",
+   "label": "Process Run",
+   "in_standard_filter": 1,
+   "description": "The process run or batch this write belongs to.",
+   "read_only": 1
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "in_standard_filter": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "detail_section",
+   "fieldtype": "Section Break",
+   "label": "Detail"
+  },
+  {
+   "fieldname": "reason",
+   "fieldtype": "Small Text",
+   "label": "Reason",
+   "read_only": 1
+  },
+  {
+   "fieldname": "details",
+   "fieldtype": "Code",
+   "label": "Details",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "fieldname": "seal_section",
+   "fieldtype": "Section Break",
+   "label": "Seal",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "previous_hash",
+   "fieldtype": "Data",
+   "label": "Previous Entry Hash",
+   "read_only": 1
+  },
+  {
+   "fieldname": "entry_hash",
+   "fieldtype": "Data",
+   "label": "Entry Hash (SHA-256)",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 22:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Kernel",
+ "name": "Write Audit Log",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "print": 1,
+   "report": 1,
+   "export": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "print": 1,
+   "report": 1,
+   "export": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "print": 1,
+   "report": 1,
+   "export": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "print": 1,
+   "report": 1,
+   "export": 1
+  },
+  {
+   "role": "FoaMES Integration",
+   "read": 1,
+   "print": 1,
+   "report": 1,
+   "export": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "format:WAL-{##########}",
+ "in_create": 1,
+ "title_field": "event",
+ "search_fields": "connector,work_order,job_card",
+ "track_changes": 0
+}

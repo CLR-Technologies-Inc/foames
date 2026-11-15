@@ -111,3 +111,7 @@ The event shape is the same as for any other source; see [machine-data.md](../..
 - It does not write tags or send commands. Control stays in Ignition.
 - It does not read Ignition's tag history. OEE is computed from the events FoaMES received; for history before the connection was made, replay it through the webhook with the original timestamps.
 - It does not need the WebDev module or Ignition's Perspective or Vision; the Floor View is a Frappe page. An Ignition screen can embed Frappe pages or call the floor snapshot API if a plant wants one screen.
+
+## Read-only mode
+
+The Ignition connection is read-only by construction: FoaMES subscribes to Sparkplug B, reads OPC UA and receives webhooks, and never writes a tag or sends a command. In [read-only mode](../../read-only-mode.md) nothing changes for it. Should a site ever add a write to Ignition (a setpoint, a tag write), it must be registered in the `foames_write_actions` hook and requested through `write_gate.request_write`, so it waits for an operator's electronic sign-off while the connector is read-only.

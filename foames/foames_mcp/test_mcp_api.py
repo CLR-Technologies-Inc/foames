@@ -93,12 +93,14 @@ class TestMCPEndpoint(IntegrationTestCase):
 		self.assertEqual(init["result"]["protocolVersion"], "2025-06-18")
 		self.assertEqual(init["result"]["serverInfo"]["name"], "foames")
 		tools = api.handle({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})["result"]["tools"]
-		self.assertEqual(len(tools), len(TOOLS))
+		self.assertEqual(len(tools), len(api.catalogue()))
+		self.assertTrue({tool.name for tool in TOOLS} <= {tool["name"] for tool in tools})
 
 	def test_every_tool_binds_a_whitelisted_method(self):
 		import inspect
 
-		for tool in TOOLS:
+		# Tools other apps register through the foames_mcp_tools hook are held to the same rule.
+		for tool in api.catalogue():
 			method = frappe.get_attr(tool.method)
 			frappe.is_whitelisted(method)  # raises when it is not
 			parameters = inspect.signature(method).parameters

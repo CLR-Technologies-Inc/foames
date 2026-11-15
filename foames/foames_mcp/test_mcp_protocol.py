@@ -101,6 +101,9 @@ class TestCatalogue(unittest.TestCase):
 			writers, ["foames_post_suggestion", "foames_run_suggestion_rules", "foames_set_current_job"]
 		)
 		self.assertFalse(any(tool.destructive for tool in TOOLS))
+		# Read-only mode holds every writing tool except the two that only raise suggestions.
+		gated = sorted(tool.name for tool in TOOLS if not tool.read_only and not tool.suggests)
+		self.assertEqual(gated, ["foames_set_current_job"])
 
 	def test_floor_agent_playbook_names_exist(self):
 		for name in ("foames_get_floor_snapshot", "foames_post_suggestion", "foames_get_oee"):
