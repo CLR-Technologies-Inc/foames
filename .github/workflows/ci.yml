@@ -35,6 +35,21 @@ jobs:
         working-directory: bridges/historian
         run: python -m unittest discover -s tests -v
 
+  agent-skills:
+    runs-on: ubuntu-latest
+    name: Discovery skills
+    steps:
+      - name: Clone
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Check the discovery skills
+        run: python .github/scripts/check_discovery_skills.py
+      - name: Test the check
+        run: python -m unittest discover -s .github/scripts -p "test_*.py" -v
+
   tests:
     runs-on: ubuntu-latest
     strategy:
