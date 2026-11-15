@@ -35,7 +35,7 @@ The reasoning behind the pattern: as TRL rises, a wrong answer costs more (produ
 
 **Baseline.** Smaller or mid-sized commercial models, cheap per task and good at well-specified single-module changes: the current Claude Haiku or Sonnet through Claude Code, a Gemini Flash-class model through Gemini CLI, a GPT mini-class model through Codex CLI.
 
-**Frontier.** The most capable commercial models: the current Claude Opus through Claude Code, a GPT-5.x Codex-class model through Codex CLI, a Gemini Pro-class model through Gemini CLI.
+**Frontier.** The most capable commercial models: the current Claude Opus through Claude Code, a GPT-6.x Codex-class model through Codex CLI, a Gemini 4.x or Pro-class model through Antigravity CLI or the free Google API.
 
 Model names are given by family on purpose. Versions change every few months, so check what is current when you run the benchmark and record the exact version with your results.
 
