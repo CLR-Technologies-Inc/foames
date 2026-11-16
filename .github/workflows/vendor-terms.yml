@@ -1,0 +1,95 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
+name: Vendor terms
+
+# Re-checks the vendor terms pages cited in docs/vendor-interoperability.md. Weekly, it fetches
+# the pages whose sites allow automated access (robots.txt respected, generic user agent) and
+# compares a hash of their visible text with the reviewed hash in .github/vendor-terms/state.json;
+# a changed, broken or unreachable page opens (or updates) an issue for review. Monthly, it also
+# opens a reminder issue listing the pages a person must read, because their sites forbid bots,
+# need a login or render only in a browser. No vendor text is stored, only hashes.
+# The pages and their modes: .github/vendor-terms/pages.json.
+
+on:
+  schedule:
+    - cron: "17 6 * * 1" # Mondays 06:17 UTC
+  workflow_dispatch:
+    inputs:
+      include_manual:
+        description: "Also open the human-review reminder for manual pages"
+        type: boolean
+        default: false
+  pull_request:
+    paths:
+      - ".github/vendor-terms/**"
+      - ".github/scripts/check_vendor_terms.py"
+      - ".github/workflows/vendor-terms.yml"
+
+concurrency:
+  group: vendor-terms-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Decide whether this run includes the monthly human review
+        id: mode
+        run: |
+          manual=false
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$(date -u +%d)" -le 7 ]; then manual=true; fi
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.include_manual }}" = "true" ]; then manual=true; fi
+          echo "manual=$manual" >> "$GITHUB_OUTPUT"
+
+      - name: Check the terms pages
+        id: check
+        run: |
+          flag=""
+          if [ "${{ steps.mode.outputs.manual }}" = "true" ]; then flag="--include-manual"; fi
+          summary=$(python .github/scripts/check_vendor_terms.py --report report.md --new-state new-state.json $flag)
+          echo "$summary"
+          echo "attention=$(echo "$summary" | python -c 'import json,sys; print(json.load(sys.stdin)["needs_attention"])')" >> "$GITHUB_OUTPUT"
+          cat report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the report and candidate state
+        uses: actions/upload-artifact@v4
+        with:
+          name: vendor-terms-${{ github.run_id }}
+          path: |
+            report.md
+            new-state.json
+
+      - name: Open or update the review issue
+        # Pull requests only run the check; issues are opened from scheduled or manual runs.
+        if: github.event_name != 'pull_request' && (steps.check.outputs.attention != '0' || steps.mode.outputs.manual == 'true')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create vendor-terms --color C5DEF5 --description "Vendor terms and interoperability review" --force
+          printf '\n[Workflow run and new-state.json artifact](%s)\n' "$RUN_URL" >> report.md
+          if [ "${{ steps.mode.outputs.manual }}" = "true" ]; then
+            title="Vendor terms review $(date -u +%Y-%m)"
+          else
+            title="Vendor terms changed or unreachable"
+          fi
+          number=$(gh issue list --label vendor-terms --state open --search "in:title \"$title\"" --json number,title \
+            --jq "map(select(.title == \"$title\")) | .[0].number // empty")
+          if [ -n "$number" ]; then
+            gh issue comment "$number" --body-file report.md
+          else
+            gh issue create --title "$title" --label vendor-terms --body-file report.md
+          fi
