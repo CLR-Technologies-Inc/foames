@@ -12,6 +12,7 @@ Start with [overview.md](overview.md) for what FoaMES records, then [installatio
 | [machine-data.md](machine-data.md) | How machine events reach FoaMES: the signed webhook, MQTT, OPC UA and Sparkplug B, the event shape, counter rules |
 | [sbom.md](sbom.md) | The CycloneDX 1.7 SBOM: where to get it, what is in it (dependencies, the cryptography bill of materials, connected services), building and validating it |
 | [licensing.md](licensing.md) | The Apache-2.0 license, the source file header, and the license of each dependency and borrowed idea |
+| [vendor-interoperability.md](vendor-interoperability.md) | For each vendor: what its public API docs disclose, what its published terms allow, what FoaMES can and cannot write, and roadmap placement (not legal advice) |
 
 ## Vendors
 

@@ -8,7 +8,7 @@ AVEVA Manufacturing Execution System (formerly Wonderware MES) is reached throug
 
 ## What the profile ships
 
-The profile ships the authentication styles it supports and its notes. The API is documented behind a customer login, so the paths come from your installation.
+The profile ships the authentication styles it supports and its notes. AVEVA publishes the MES Web API V3 reference on docs.aveva.com, but its documentation may not be reproduced without AVEVA's written permission, so the paths come from your installation. See [../../vendor-interoperability.md](../../vendor-interoperability.md).
 
 ## Notes
 

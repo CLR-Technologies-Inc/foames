@@ -38,6 +38,8 @@ How the framework works: [Connect an MES or Tulip](How-to-Connect-an-MES-or-Tuli
 
 An adapter declares which of these it supports: Item, Unit of Measure, Batch, Serial Number, Work Order, Operation, Location, Stock Movement, Job Card, Bill of Materials, Routing, Workstation and Asset.
 
+What each vendor's published terms allow, and where each integration sits on the roadmap, is in [Vendor interoperability](Reference-Vendor-interoperability).
+
 ## Planned
 
 Odoo, Microsoft Dynamics 365, Epicor Kinetic, Infor, Oracle NetSuite and Fusion; Kepware and ThingWorx, HighByte, Litmus Edge, FactoryTalk Optix; IBM Maximo, SAP Plant Maintenance, Fiix and UpKeep. None is built yet. To propose another, open an issue.
