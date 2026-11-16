@@ -2,6 +2,6 @@
 # Changing this file on a working branch starts the Agent benchmark workflow there.
 # Optional lines: "agents: a, b", "tasks: x y" (empty: every runner-sized local model, every keyed provider,
 # every pure task) and "report: raw" (commit only the run files, for a run that overlaps another).
-2026-11-16T01:40Z hosted rerun with models picked from each provider's catalogue today, while the local run continues
-agents: aider-gemini-flash, aider-groq-free, aider-openrouter-free
+2026-11-16T01:50Z hosted rerun of Gemini and Groq (model picker fixed: plain User-Agent, slow answers allowed)
+agents: aider-gemini-flash, aider-groq-free
 report: raw

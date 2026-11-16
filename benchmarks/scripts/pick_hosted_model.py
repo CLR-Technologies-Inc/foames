@@ -23,11 +23,17 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-def _get(url: str, headers: dict | None = None, data: dict | None = None):
+# Some API fronts refuse urllib's default User-Agent, so send a plain client name (no contact details).
+UA = "foames-bench/1.0"
+LISTED: dict[str, str] = {}
+
+
+def _get(url: str, headers: dict | None = None, data: dict | None = None, timeout: int = 180):
+	"""(status, headers, json). A timeout or network error gives status 0 and the error as "error"."""
 	body = json.dumps(data).encode() if data is not None else None
-	req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json", **(headers or {})})
+	req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json", "User-Agent": UA, **(headers or {})})
 	try:
-		with urllib.request.urlopen(req, timeout=60) as r:
+		with urllib.request.urlopen(req, timeout=timeout) as r:
 			return r.status, dict(r.headers), json.loads(r.read() or b"{}")
 	except urllib.error.HTTPError as e:
 		try:
@@ -35,12 +41,20 @@ def _get(url: str, headers: dict | None = None, data: dict | None = None):
 		except ValueError:
 			payload = {}
 		return e.code, dict(e.headers), payload
+	except (OSError, ValueError) as e:
+		return 0, {}, {"error": {"message": f"{type(e).__name__}: {e}"}}
+
+
+def _err(d: dict) -> str:
+	e = d.get("error", "")
+	return (e.get("message", "") if isinstance(e, dict) else str(e))[:160]
 
 
 def gemini_models(key: str) -> list[str]:
 	ids, token = [], ""
 	while True:
-		_, _, d = _get(f"https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000&pageToken={token}", {"x-goog-api-key": key})
+		status, _, d = _get(f"https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000&pageToken={token}", {"x-goog-api-key": key})
+		LISTED["gemini"] = f"model list HTTP {status} {_err(d)}".strip()
 		ids += [m["name"].split("/", 1)[1] for m in d.get("models", []) if "generateContent" in m.get("supportedGenerationMethods", [])]
 		token = d.get("nextPageToken", "")
 		if not token:
@@ -53,11 +67,13 @@ def gemini_works(key: str, model: str) -> tuple[bool, str]:
 		{"x-goog-api-key": key},
 		{"contents": [{"parts": [{"text": "Say OK."}]}], "generationConfig": {"maxOutputTokens": 8}},
 	)
-	return status == 200, f"HTTP {status} {d.get('error', {}).get('message', '')[:160]}".strip()
+	# A slow answer (status 0, a timeout) still counts: the model is listed and aider retries on its own.
+	return status in (200, 0), f"HTTP {status or 'timeout'} {_err(d)}".strip()
 
 
 def groq_models(key: str) -> list[str]:
-	_, _, d = _get("https://api.groq.com/openai/v1/models", {"Authorization": f"Bearer {key}"})
+	status, _, d = _get("https://api.groq.com/openai/v1/models", {"Authorization": f"Bearer {key}"})
+	LISTED["groq"] = f"model list HTTP {status} {_err(d)}".strip()
 	return ["groq/" + m["id"] for m in d.get("data", [])]
 
 
@@ -69,7 +85,7 @@ def groq_works(key: str, model: str, min_tpm: int) -> tuple[bool, str]:
 	)
 	h = {k.lower(): v for k, v in headers.items()}
 	tpm = int(h.get("x-ratelimit-limit-tokens", "0") or 0)
-	why = f"HTTP {status}, tokens per minute {tpm or 'unknown'}, requests per day {h.get('x-ratelimit-limit-requests', 'unknown')}"
+	why = f"HTTP {status} {_err(d)}, tokens per minute {tpm or 'unknown'}, requests per day {h.get('x-ratelimit-limit-requests', 'unknown')}"
 	return status == 200 and (tpm == 0 or tpm >= min_tpm), why
 
 
@@ -101,7 +117,7 @@ def pick(agent: dict, notes: Path) -> str:
 	elif provider == "groq":
 		listed = groq_models(key)
 		for c in agent["_model_candidates"]:
-			if c["model"] not in listed:
+			if listed and c["model"] not in listed:
 				tried.append(f"{c['model']}: not listed")
 				continue
 			ok, why = groq_works(key, c["model"], c.get("min_tpm", 0))
@@ -122,6 +138,7 @@ def pick(agent: dict, notes: Path) -> str:
 				return _done(c["model"], free, tried, notes)
 	else:
 		raise SystemExit(f"no model picker for provider {provider}")
+	tried += LISTED.values()
 	_done("", listed, tried, notes)
 	raise SystemExit(f"{agent['name']}: no candidate model is usable on this key today; see {notes}/model-digest.txt")
 
