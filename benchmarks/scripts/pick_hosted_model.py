@@ -1,5 +1,5 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
 # SPDX-License-Identifier: Apache-2.0
-# Copyright 2026 CLR Technologies Inc.
 """Pick a hosted agent's model from its `_model_candidates` before a benchmark run.
 
 Free API tiers change their catalogues often (a model goes paid-only or is retired for new users), so

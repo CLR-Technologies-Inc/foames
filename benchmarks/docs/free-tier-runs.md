@@ -1,5 +1,5 @@
+<!-- Copyright (c) 2026 CLR Technologies Inc. and contributors -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
-<!-- Copyright 2026 CLR Technologies Inc. -->
 
 # Running the benchmark on free models in GitHub Actions
 
