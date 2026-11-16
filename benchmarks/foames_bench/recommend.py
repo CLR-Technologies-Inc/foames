@@ -131,9 +131,12 @@ def _below_ecl_tier(tier: str | None, recommendation: dict) -> bool:
 def ecl_markdown() -> str:
 	data = load()
 	tiers = data["tiers"]
+	intro = (
+		"Equipment Complexity Level (ECL): the minimum model tier adequate for the equipment, "
+		f"as of {data['as_of']}. A prior, not a benchmark result."
+	)
 	lines = [
-		"Equipment Complexity Level (ECL): the minimum model tier adequate for the equipment, as of "
-		f"{data['as_of']}. A prior, not a benchmark result.",
+		intro,
 		"",
 		"| ECL | Equipment | Examples | USP <1058> | IEC 61508 | GAMP 5 | Minimum tier | Agent role |",
 		"| --- | --- | --- | --- | --- | --- | --- | --- |",
