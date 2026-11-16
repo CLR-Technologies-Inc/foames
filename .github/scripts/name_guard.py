@@ -198,8 +198,10 @@ def identity_is_private(email: str, identities: list[str]) -> bool:
 def check_identity(label: str, email: str, guard: GuardList) -> list[str]:
 	if identity_is_private(email, guard.identities) or find_in_text(email, guard.words):
 		return [
-			f"{label}: the email is one the project keeps private; commit with your GitHub noreply "
-			"address or another address you intend to publish (see CONTRIBUTING.md)"
+			(
+				f"{label}: the email is one the project keeps private; commit with your GitHub noreply "
+				"address or another address you intend to publish (see CONTRIBUTING.md)"
+			)
 		]
 	return []
 
