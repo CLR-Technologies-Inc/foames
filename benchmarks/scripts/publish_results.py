@@ -74,7 +74,11 @@ def _date(iso: str) -> str:
 
 def _list_price(rows, prices):
 	if not prices:
-		return None
+		# Without list prices in agents.json, use aider's own estimate where it printed one.
+		known = [
+			r["usage"]["list_estimate_usd"] for r in rows if r["usage"].get("list_estimate_usd") is not None
+		]
+		return round(sum(known), 4) if known else None
 	total = 0.0
 	for r in rows:
 		u = r["usage"]
@@ -84,6 +88,12 @@ def _list_price(rows, prices):
 			+ u["output_tokens"] * prices.get("output_per_mtok", 0)
 		) / 1_000_000
 	return round(total, 4)
+
+
+def _run_notes(out: Path) -> list[str]:
+	"""Notes written by hand for this day's runs (notes.md in the report folder), one bullet per line."""
+	text = _read(out / "notes.md")
+	return [line for line in text.splitlines() if line.startswith("- ")]
 
 
 def collect(runs: Path) -> dict:
@@ -107,6 +117,10 @@ def collect(runs: Path) -> dict:
 					"cfg": cfg.get(r["agent"], {"name": r["agent"]}),
 				},
 			)
+			if a["cfg"].get("fixed_cost_usd") == 0.0 and (r["usage"].get("cost_usd") or 0) > 0:
+				# A free tier costs nothing; the price aider printed is what the same tokens cost at list price.
+				r["usage"]["list_estimate_usd"] = r["usage"]["cost_usd"]
+				r["usage"]["cost_usd"], r["usage"]["cost_source"] = 0.0, "free tier"
 			a["rows"].append(r)
 			if manifest and manifest not in a["manifests"]:
 				a["manifests"].append(manifest)
@@ -382,7 +396,8 @@ def main(argv=None):
 	)
 	cost_note = (
 		"- Cost is what the runs cost: $0 on free API tiers and for local models (electricity and runner time are not "
-		"counted). The list-price equivalent prices the same tokens at the provider's paid list price."
+		"counted). The list-price equivalent prices the same tokens at the provider's paid list price (from "
+		"agents.json, or else the estimate aider printed during the run)."
 	)
 	token_note = (
 		"- Aider prints token counts rounded to the nearest hundred above 1,000, so token totals are approximate. "
@@ -461,6 +476,7 @@ def main(argv=None):
 			if a.get("_skip_reason")
 		],
 		cpu_note,
+		*_run_notes(opts.out),
 		"",
 	]
 	(opts.out / "README.md").write_text("\n".join(lines), encoding="utf-8")
