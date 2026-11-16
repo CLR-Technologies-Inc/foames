@@ -1,0 +1,632 @@
+{
+ "summary": {
+  "by_agent": {
+   "reference": {
+    "model": "",
+    "tier": "",
+    "sandbox": "built-in",
+    "runs": 6,
+    "success_rate": 1.0,
+    "success_ci95": [
+     0.61,
+     1.0
+    ],
+    "first_attempt_success": 1.0,
+    "reproducible_tasks": 0,
+    "quality": 0.975,
+    "correctness": 1.0,
+    "process": 0.947,
+    "composite": 0.981,
+    "mean_seconds": 0.0,
+    "total_cost_usd": null,
+    "cost_runs_known": 0,
+    "cost_per_success_usd": null,
+    "regressions": 0,
+    "purity_violations": 0
+   },
+   "noop": {
+    "model": "",
+    "tier": "",
+    "sandbox": "built-in",
+    "runs": 6,
+    "success_rate": 0.0,
+    "success_ci95": [
+     0.0,
+     0.39
+    ],
+    "first_attempt_success": 0.0,
+    "reproducible_tasks": 0,
+    "quality": 0.224,
+    "correctness": 0.305,
+    "process": 0.131,
+    "composite": 0.168,
+    "mean_seconds": 0.0,
+    "total_cost_usd": null,
+    "cost_runs_known": 0,
+    "cost_per_success_usd": null,
+    "regressions": 2,
+    "purity_violations": 0
+   },
+   "aider-ghm-gpt-4.1": {
+    "model": "openai/gpt-4.1",
+    "tier": "baseline",
+    "sandbox": "docker",
+    "runs": 1,
+    "success_rate": 0.0,
+    "success_ci95": [
+     0.0,
+     0.793
+    ],
+    "first_attempt_success": 0.0,
+    "reproducible_tasks": 0,
+    "quality": 0.513,
+    "correctness": 0.837,
+    "process": 0.143,
+    "composite": 0.385,
+    "mean_seconds": 69.5,
+    "total_cost_usd": 0.0,
+    "cost_runs_known": 1,
+    "cost_per_success_usd": null,
+    "regressions": 1,
+    "purity_violations": 0
+   },
+   "aider-ghm-gpt-4.1-mini": {
+    "model": "openai/gpt-4.1-mini",
+    "tier": "baseline",
+    "sandbox": "docker",
+    "runs": 1,
+    "success_rate": 0.0,
+    "success_ci95": [
+     0.0,
+     0.793
+    ],
+    "first_attempt_success": 0.0,
+    "reproducible_tasks": 0,
+    "quality": 0.513,
+    "correctness": 0.837,
+    "process": 0.143,
+    "composite": 0.385,
+    "mean_seconds": 70.9,
+    "total_cost_usd": 0.0,
+    "cost_runs_known": 1,
+    "cost_per_success_usd": null,
+    "regressions": 1,
+    "purity_violations": 0
+   },
+   "aider-ghm-gpt-4o-mini": {
+    "model": "openai/gpt-4o-mini",
+    "tier": "baseline",
+    "sandbox": "docker",
+    "runs": 1,
+    "success_rate": 0.0,
+    "success_ci95": [
+     0.0,
+     0.793
+    ],
+    "first_attempt_success": 0.0,
+    "reproducible_tasks": 0,
+    "quality": 0.513,
+    "correctness": 0.837,
+    "process": 0.143,
+    "composite": 0.385,
+    "mean_seconds": 71.5,
+    "total_cost_usd": 0.0,
+    "cost_runs_known": 1,
+    "cost_per_success_usd": null,
+    "regressions": 1,
+    "purity_violations": 0
+   }
+  },
+  "by_agent_task": [
+   {
+    "agent": "aider-ghm-gpt-4.1",
+    "task": "counter-reset",
+    "runs": 1,
+    "success_rate": 0.0,
+    "success_ci95": [
+     0.0,
+     0.793
+    ],
+    "first_attempt_success": 0.0,
+    "reproducible_tasks": 0,
+    "quality": 0.513,
+    "correctness": 0.837,
+    "process": 0.143,
+    "composite": 0.385,
+    "mean_seconds": 69.5,
+    "total_cost_usd": 0.0,
+    "cost_runs_known": 1,
+    "cost_per_success_usd": null,
+    "regressions": 1,
+    "purity_violations": 0
+   },
+   {
+    "agent": "aider-ghm-gpt-4.1-mini",
+    "task": "counter-reset",
+    "runs": 1,
+    "success_rate": 0.0,
+    "success_ci95": [
+     0.0,
+     0.793
+    ],
+    "first_attempt_success": 0.0,
+    "reproducible_tasks": 0,
+    "quality": 0.513,
+    "correctness": 0.837,
+    "process": 0.143,
+    "composite": 0.385,
+    "mean_seconds": 70.9,
+    "total_cost_usd": 0.0,
+    "cost_runs_known": 1,
+    "cost_per_success_usd": null,
+    "regressions": 1,
+    "purity_violations": 0
+   },
+   {
+    "agent": "aider-ghm-gpt-4o-mini",
+    "task": "counter-reset",
+    "runs": 1,
+    "success_rate": 0.0,
+    "success_ci95": [
+     0.0,
+     0.793
+    ],
+    "first_attempt_success": 0.0,
+    "reproducible_tasks": 0,
+    "quality": 0.513,
+    "correctness": 0.837,
+    "process": 0.143,
+    "composite": 0.385,
+    "mean_seconds": 71.5,
+    "total_cost_usd": 0.0,
+    "cost_runs_known": 1,
+    "cost_per_success_usd": null,
+    "regressions": 1,
+    "purity_violations": 0
+   },
+   {
+    "agent": "noop",
+    "task": "counter-reset",
+    "runs": 1,
+    "success_rate": 0.0,
+    "success_ci95": [
+     0.0,
+     0.793
+    ],
+    "first_attempt_success": 0.0,
+    "reproducible_tasks": 0,
+    "quality": 0.513,
+    "correctness": 0.837,
+    "process": 0.143,
+    "composite": 0.385,
+    "mean_seconds": 0.0,
+    "total_cost_usd": null,
+    "cost_runs_known": 0,
+    "cost_per_success_usd": null,
+    "regressions": 1,
+    "purity_violations": 0
+   },
+   {
+    "agent": "noop",
+    "task": "erp-retry-after",
+    "runs": 1,
+    "success_rate": 0.0,
+    "success_ci95": [
+     0.0,
+     0.793
+    ],
+    "first_attempt_success": 0.0,
+    "reproducible_tasks": 0,
+    "quality": 0.259,
+    "correctness": 0.242,
+    "process": 0.278,
+    "composite": 0.194,
+    "mean_seconds": 0.0,
+    "total_cost_usd": null,
+    "cost_runs_known": 0,
+    "cost_per_success_usd": null,
+    "regressions": 1,
+    "purity_violations": 0
+   },
+   {
+    "agent": "noop",
+    "task": "oee-unknown-time",
+    "runs": 1,
+    "success_rate": 0.0,
+    "success_ci95": [
+     0.0,
+     0.793
+    ],
+    "first_attempt_success": 0.0,
+    "reproducible_tasks": 0,
+    "quality": 0.133,
+    "correctness": 0.25,
+    "process": 0.0,
+    "composite": 0.1,
+    "mean_seconds": 0.0,
+    "total_cost_usd": null,
+    "cost_runs_known": 0,
+    "cost_per_success_usd": null,
+    "regressions": 0,
+    "purity_violations": 0
+   },
+   {
+    "agent": "noop",
+    "task": "process-mining-analysis",
+    "runs": 1,
+    "success_rate": 0.0,
+    "success_ci95": [
+     0.0,
+     0.793
+    ],
+    "first_attempt_success": 0.0,
+    "reproducible_tasks": 0,
+    "quality": 0.144,
+    "correctness": 0.125,
+    "process": 0.167,
+    "composite": 0.108,
+    "mean_seconds": 0.0,
+    "total_cost_usd": null,
+    "cost_runs_known": 0,
+    "cost_per_success_usd": null,
+    "regressions": 0,
+    "purity_violations": 0
+   },
+   {
+    "agent": "noop",
+    "task": "process-spec-network-loss",
+    "runs": 1,
+    "success_rate": 0.0,
+    "success_ci95": [
+     0.0,
+     0.793
+    ],
+    "first_attempt_success": 0.0,
+    "reproducible_tasks": 0,
+    "quality": 0.16,
+    "correctness": 0.125,
+    "process": 0.2,
+    "composite": 0.12,
+    "mean_seconds": 0.0,
+    "total_cost_usd": null,
+    "cost_runs_known": 0,
+    "cost_per_success_usd": null,
+    "regressions": 0,
+    "purity_violations": 0
+   },
+   {
+    "agent": "noop",
+    "task": "spc-ewma-chart",
+    "runs": 1,
+    "success_rate": 0.0,
+    "success_ci95": [
+     0.0,
+     0.793
+    ],
+    "first_attempt_success": 0.0,
+    "reproducible_tasks": 0,
+    "quality": 0.133,
+    "correctness": 0.25,
+    "process": 0.0,
+    "composite": 0.1,
+    "mean_seconds": 0.0,
+    "total_cost_usd": null,
+    "cost_runs_known": 0,
+    "cost_per_success_usd": null,
+    "regressions": 0,
+    "purity_violations": 0
+   },
+   {
+    "agent": "reference",
+    "task": "counter-reset",
+    "runs": 1,
+    "success_rate": 1.0,
+    "success_ci95": [
+     0.207,
+     1.0
+    ],
+    "first_attempt_success": 1.0,
+    "reproducible_tasks": 0,
+    "quality": 0.995,
+    "correctness": 1.0,
+    "process": 0.989,
+    "composite": 0.996,
+    "mean_seconds": 0.0,
+    "total_cost_usd": null,
+    "cost_runs_known": 0,
+    "cost_per_success_usd": null,
+    "regressions": 0,
+    "purity_violations": 0
+   },
+   {
+    "agent": "reference",
+    "task": "erp-retry-after",
+    "runs": 1,
+    "success_rate": 1.0,
+    "success_ci95": [
+     0.207,
+     1.0
+    ],
+    "first_attempt_success": 1.0,
+    "reproducible_tasks": 0,
+    "quality": 1.0,
+    "correctness": 1.0,
+    "process": 1.0,
+    "composite": 1.0,
+    "mean_seconds": 0.0,
+    "total_cost_usd": null,
+    "cost_runs_known": 0,
+    "cost_per_success_usd": null,
+    "regressions": 0,
+    "purity_violations": 0
+   },
+   {
+    "agent": "reference",
+    "task": "oee-unknown-time",
+    "runs": 1,
+    "success_rate": 1.0,
+    "success_ci95": [
+     0.207,
+     1.0
+    ],
+    "first_attempt_success": 1.0,
+    "reproducible_tasks": 0,
+    "quality": 0.99,
+    "correctness": 1.0,
+    "process": 0.978,
+    "composite": 0.992,
+    "mean_seconds": 0.0,
+    "total_cost_usd": null,
+    "cost_runs_known": 0,
+    "cost_per_success_usd": null,
+    "regressions": 0,
+    "purity_violations": 0
+   },
+   {
+    "agent": "reference",
+    "task": "process-mining-analysis",
+    "runs": 1,
+    "success_rate": 1.0,
+    "success_ci95": [
+     0.207,
+     1.0
+    ],
+    "first_attempt_success": 1.0,
+    "reproducible_tasks": 0,
+    "quality": 0.895,
+    "correctness": 1.0,
+    "process": 0.776,
+    "composite": 0.921,
+    "mean_seconds": 0.1,
+    "total_cost_usd": null,
+    "cost_runs_known": 0,
+    "cost_per_success_usd": null,
+    "regressions": 0,
+    "purity_violations": 0
+   },
+   {
+    "agent": "reference",
+    "task": "process-spec-network-loss",
+    "runs": 1,
+    "success_rate": 1.0,
+    "success_ci95": [
+     0.207,
+     1.0
+    ],
+    "first_attempt_success": 1.0,
+    "reproducible_tasks": 0,
+    "quality": 0.976,
+    "correctness": 1.0,
+    "process": 0.949,
+    "composite": 0.982,
+    "mean_seconds": 0.0,
+    "total_cost_usd": null,
+    "cost_runs_known": 0,
+    "cost_per_success_usd": null,
+    "regressions": 0,
+    "purity_violations": 0
+   },
+   {
+    "agent": "reference",
+    "task": "spc-ewma-chart",
+    "runs": 1,
+    "success_rate": 1.0,
+    "success_ci95": [
+     0.207,
+     1.0
+    ],
+    "first_attempt_success": 1.0,
+    "reproducible_tasks": 0,
+    "quality": 0.995,
+    "correctness": 1.0,
+    "process": 0.989,
+    "composite": 0.996,
+    "mean_seconds": 0.0,
+    "total_cost_usd": null,
+    "cost_runs_known": 0,
+    "cost_per_success_usd": null,
+    "regressions": 0,
+    "purity_violations": 0
+   }
+  ]
+ },
+ "qualification": [
+  {
+   "band": "1-3",
+   "complexity": "low",
+   "agent": "aider-ghm-gpt-4.1",
+   "model": "openai/gpt-4.1",
+   "tier": "baseline",
+   "runs": 1,
+   "missing_tasks": [],
+   "quality": 0.513,
+   "all_reps_succeeded": false,
+   "cost_per_success_usd": null,
+   "qualifies": false
+  },
+  {
+   "band": "1-3",
+   "complexity": "low",
+   "agent": "aider-ghm-gpt-4.1-mini",
+   "model": "openai/gpt-4.1-mini",
+   "tier": "baseline",
+   "runs": 1,
+   "missing_tasks": [],
+   "quality": 0.513,
+   "all_reps_succeeded": false,
+   "cost_per_success_usd": null,
+   "qualifies": false
+  },
+  {
+   "band": "1-3",
+   "complexity": "low",
+   "agent": "aider-ghm-gpt-4o-mini",
+   "model": "openai/gpt-4o-mini",
+   "tier": "baseline",
+   "runs": 1,
+   "missing_tasks": [],
+   "quality": 0.513,
+   "all_reps_succeeded": false,
+   "cost_per_success_usd": null,
+   "qualifies": false
+  },
+  {
+   "band": "4-6",
+   "complexity": "low",
+   "agent": "aider-ghm-gpt-4.1",
+   "model": "openai/gpt-4.1",
+   "tier": "baseline",
+   "runs": 1,
+   "missing_tasks": [
+    "oee-unknown-time"
+   ],
+   "quality": 0.513,
+   "all_reps_succeeded": false,
+   "cost_per_success_usd": null,
+   "qualifies": false
+  },
+  {
+   "band": "4-6",
+   "complexity": "low",
+   "agent": "aider-ghm-gpt-4.1-mini",
+   "model": "openai/gpt-4.1-mini",
+   "tier": "baseline",
+   "runs": 1,
+   "missing_tasks": [
+    "oee-unknown-time"
+   ],
+   "quality": 0.513,
+   "all_reps_succeeded": false,
+   "cost_per_success_usd": null,
+   "qualifies": false
+  },
+  {
+   "band": "4-6",
+   "complexity": "low",
+   "agent": "aider-ghm-gpt-4o-mini",
+   "model": "openai/gpt-4o-mini",
+   "tier": "baseline",
+   "runs": 1,
+   "missing_tasks": [
+    "oee-unknown-time"
+   ],
+   "quality": 0.513,
+   "all_reps_succeeded": false,
+   "cost_per_success_usd": null,
+   "qualifies": false
+  },
+  {
+   "band": "7-9",
+   "complexity": "low",
+   "agent": "aider-ghm-gpt-4.1",
+   "model": "openai/gpt-4.1",
+   "tier": "baseline",
+   "runs": 1,
+   "missing_tasks": [
+    "oee-unknown-time"
+   ],
+   "quality": 0.513,
+   "all_reps_succeeded": false,
+   "cost_per_success_usd": null,
+   "qualifies": false
+  },
+  {
+   "band": "7-9",
+   "complexity": "low",
+   "agent": "aider-ghm-gpt-4.1-mini",
+   "model": "openai/gpt-4.1-mini",
+   "tier": "baseline",
+   "runs": 1,
+   "missing_tasks": [
+    "oee-unknown-time"
+   ],
+   "quality": 0.513,
+   "all_reps_succeeded": false,
+   "cost_per_success_usd": null,
+   "qualifies": false
+  },
+  {
+   "band": "7-9",
+   "complexity": "low",
+   "agent": "aider-ghm-gpt-4o-mini",
+   "model": "openai/gpt-4o-mini",
+   "tier": "baseline",
+   "runs": 1,
+   "missing_tasks": [
+    "oee-unknown-time"
+   ],
+   "quality": 0.513,
+   "all_reps_succeeded": false,
+   "cost_per_success_usd": null,
+   "qualifies": false
+  },
+  {
+   "band": "7-9",
+   "complexity": "high",
+   "agent": "aider-ghm-gpt-4.1",
+   "model": "openai/gpt-4.1",
+   "tier": "baseline",
+   "runs": 1,
+   "missing_tasks": [
+    "erp-retry-after",
+    "process-spec-network-loss"
+   ],
+   "quality": 0.513,
+   "all_reps_succeeded": false,
+   "cost_per_success_usd": null,
+   "qualifies": false
+  },
+  {
+   "band": "7-9",
+   "complexity": "high",
+   "agent": "aider-ghm-gpt-4.1-mini",
+   "model": "openai/gpt-4.1-mini",
+   "tier": "baseline",
+   "runs": 1,
+   "missing_tasks": [
+    "erp-retry-after",
+    "process-spec-network-loss"
+   ],
+   "quality": 0.513,
+   "all_reps_succeeded": false,
+   "cost_per_success_usd": null,
+   "qualifies": false
+  },
+  {
+   "band": "7-9",
+   "complexity": "high",
+   "agent": "aider-ghm-gpt-4o-mini",
+   "model": "openai/gpt-4o-mini",
+   "tier": "baseline",
+   "runs": 1,
+   "missing_tasks": [
+    "erp-retry-after",
+    "process-spec-network-loss"
+   ],
+   "quality": 0.513,
+   "all_reps_succeeded": false,
+   "cost_per_success_usd": null,
+   "qualifies": false
+  }
+ ]
+}
