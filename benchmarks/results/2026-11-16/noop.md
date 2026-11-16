@@ -4,9 +4,9 @@
 
 - Model: `` ( tier), harness:  
 - Changes nothing. Every real agent must beat it.
-- FoaMES commit: `6025f370625ec85fc3dac415fa4157b20b1bae66`, bench 0.1.0, started 2026-11-16T00:34:04+00:00
+- FoaMES commit: `50e033039c70c51c625793c9cc39322803e9100f`, bench 0.1.0, started 2026-11-16T00:42:59+00:00
 - Sandbox: built-in, image ``
-- Workflow run: https://github.com/CLR-Technologies-Inc/foames/actions/runs/43779693868
+- Workflow run: https://github.com/CLR-Technologies-Inc/foames/actions/runs/43781545523
 
 | Runs | Success (95 % CI) | Quality | Correctness | Process | Composite | Mean time | Tokens in / cached / out | Cost | List-price equivalent | ECL tier |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |

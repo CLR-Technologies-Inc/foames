@@ -2,26 +2,28 @@
 
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
-Runs started 2026-11-16T00:21:48+00:00 (UTC) on FoaMES commit(s) `6025f37062`. Workflow run: https://github.com/CLR-Technologies-Inc/foames/actions/runs/43779693868.
+Runs started 2026-11-16T00:39:57+00:00 (UTC) on FoaMES commit(s) `50e033039c`. Workflow run: https://github.com/CLR-Technologies-Inc/foames/actions/runs/43781545523.
 
 Every agent ran the six pure tasks in the benchmark's Docker sandbox on a GitHub-hosted runner (4 vCPU, 16 GB, no GPU). Hosted models were called on GitHub Models' free tier; local models were served by Ollama on the runner's CPU. Ranking is by quality (correctness and process, without cost), as in [docs/methodology.md](../../docs/methodology.md). One repetition cannot separate close agents; read the intervals.
 
-| Agent | Model | Tier | Runs | Success (95 % CI) | Quality | Composite | Mean time | Tokens in / out | Cost | List-price equivalent | ECL tier |
-| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| [reference](reference.md) | `` |  | 6 | 100% (61% to 100%) | 0.97 | 0.98 | 0 s | 0 / 0 | n/a | n/a | n/a |
-| [aider-ghm-gpt-4.1](aider-ghm-gpt-4.1.md) | `openai/gpt-4.1` | baseline | 1 | 0% (0% to 79%) | 0.51 | 0.39 | 70 s | 0 / 0 | $0.00 | $0.00 | n/a |
-| [aider-ghm-gpt-4.1-mini](aider-ghm-gpt-4.1-mini.md) | `openai/gpt-4.1-mini` | baseline | 1 | 0% (0% to 79%) | 0.51 | 0.39 | 71 s | 0 / 0 | $0.00 | $0.00 | n/a |
-| [aider-ghm-gpt-4o-mini](aider-ghm-gpt-4o-mini.md) | `openai/gpt-4o-mini` | baseline | 1 | 0% (0% to 79%) | 0.51 | 0.39 | 72 s | 0 / 0 | $0.00 | $0.00 | n/a |
-| [noop](noop.md) | `` |  | 6 | 0% (0% to 39%) | 0.22 | 0.17 | 0 s | 0 / 0 | n/a | n/a | n/a |
+**Reference bar: 80% of the reference solution's quality on each task**, and every invariant kept. "Clears" counts the tasks where every repetition reached it. Move the bar with the slider in [comparison.html](comparison.html) (open the file in a browser), or rebuild with `--reference`.
+
+| Agent | Model | Tier | Runs | Clears bar | Success (95 % CI) | Quality | Composite | Mean time | Tokens in / out | Cost | List-price equivalent | ECL tier |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| [aider-ghm-gpt-4.1](aider-ghm-gpt-4.1.md) | `openai/gpt-4.1` | baseline | 1 | 0 / 6 | 0% (0% to 79%) | 0.51 | 0.39 | 70 s | 0 / 0 | $0.00 | $0.00 | n/a |
+| [aider-ghm-gpt-4.1-mini](aider-ghm-gpt-4.1-mini.md) | `openai/gpt-4.1-mini` | baseline | 1 | 0 / 6 | 0% (0% to 79%) | 0.51 | 0.39 | 70 s | 0 / 0 | $0.00 | $0.00 | n/a |
+| [aider-ghm-gpt-4o-mini](aider-ghm-gpt-4o-mini.md) | `openai/gpt-4o-mini` | baseline | 1 | 0 / 6 | 0% (0% to 79%) | 0.51 | 0.39 | 70 s | 0 / 0 | $0.00 | $0.00 | n/a |
+| [reference](reference.md) | `-` | calibration | 6 | 6 / 6 | 100% (61% to 100%) | 0.97 | 0.98 | 0 s | 0 / 0 | n/a | n/a | n/a |
+| [noop](noop.md) | `-` | calibration | 6 | 0 / 6 | 0% (0% to 39%) | 0.22 | 0.17 | 0 s | 0 / 0 | n/a | n/a | n/a |
 
 ## Quality by task
 
 | Agent | counter-reset | erp-retry-after | oee-unknown-time | process-mining-analysis | process-spec-network-loss | spc-ewma-chart |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| reference | 0.99 PASS | 1.00 PASS | 0.99 PASS | 0.90 PASS | 0.98 PASS | 0.99 PASS |
 | aider-ghm-gpt-4.1 | 0.51 fail |  |  |  |  |  |
 | aider-ghm-gpt-4.1-mini | 0.51 fail |  |  |  |  |  |
 | aider-ghm-gpt-4o-mini | 0.51 fail |  |  |  |  |  |
+| reference | 0.99 PASS | 1.00 PASS | 0.99 PASS | 0.90 PASS | 0.98 PASS | 0.99 PASS |
 | noop | 0.51 fail | 0.26 fail | 0.13 fail | 0.14 fail | 0.16 fail | 0.13 fail |
 
 ## Which TRL x complexity cells each agent qualifies for

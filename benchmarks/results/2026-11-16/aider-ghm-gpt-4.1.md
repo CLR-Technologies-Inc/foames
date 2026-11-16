@@ -4,9 +4,9 @@
 
 - Model: `openai/gpt-4.1` (baseline tier), harness: aider aider 0.86.1
 - Aider on GitHub Models (gpt-4.1), free tier through the workflow's GITHUB_TOKEN (permission models: read, passed as OPENAI_API_KEY). Free-tier requests are capped at about 8,000 input tokens, so the repository map is kept small. 
-- FoaMES commit: `6025f370625ec85fc3dac415fa4157b20b1bae66`, bench 0.1.0, started 2026-11-16T00:21:48+00:00
-- Sandbox: docker, image `sha256:19de216a6c0c`
-- Workflow run: https://github.com/CLR-Technologies-Inc/foames/actions/runs/43779693868
+- FoaMES commit: `50e033039c70c51c625793c9cc39322803e9100f`, bench 0.1.0, started 2026-11-16T00:39:57+00:00
+- Sandbox: docker, image `sha256:741a0b00d94d`
+- Workflow run: https://github.com/CLR-Technologies-Inc/foames/actions/runs/43781545523
 
 | Runs | Success (95 % CI) | Quality | Correctness | Process | Composite | Mean time | Tokens in / cached / out | Cost | List-price equivalent | ECL tier |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
