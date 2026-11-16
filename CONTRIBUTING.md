@@ -32,3 +32,14 @@ See [Installation](README.md#installation) and [Contributing](README.md#contribu
 
   Frappe's DocType generator writes a header that points at `license.txt`; replace it with this one.
 - Credit any third-party code you include and keep its license notice with it. Only code under a license compatible with Apache-2.0 can be included, and GPL code (ERPNext included) cannot be copied into FoaMES. See [docs/licensing.md](docs/licensing.md).
+
+## Keeping private information out
+
+FoaMES is public, so every commit, pull request title and description is public too.
+
+- Commit with an approved author address: your GitHub noreply address (`<id>+<login>@users.noreply.github.com`) or a project address. Set it for this checkout with `git config user.email <address>`. CI checks every commit's author and committer address.
+- Never commit secrets, site configuration (`site_config.json`), `.env` files, keys or certificates. `.gitignore` covers the usual names, GitHub push protection blocks known secret formats, and gitleaks runs locally and in CI.
+- Tenants, providers and estates are referred to generically, never by a company's name. CI checks files, commit messages and pull request text against a private word list.
+- Run `pre-commit install` once. It installs the license, name, author-email and gitleaks checks for both commits and commit messages.
+
+Report a security problem privately, as described in [SECURITY.md](SECURITY.md).

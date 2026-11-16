@@ -3,6 +3,7 @@
 
 exclude: 'node_modules|.git'
 default_stages: [pre-commit]
+default_install_hook_types: [pre-commit, commit-msg]
 fail_fast: false
 
 
@@ -74,6 +75,26 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+
+      # Guarded names and the author email. The word list is private: put it in
+      # .git/name-guard-words (never committed) or NAME_GUARD_WORDS. See the script's docstring.
+      - id: name-guard
+        name: "Check for guarded names and the git author email"
+        entry: python .github/scripts/name_guard.py --check-git-email
+        language: system
+        stages: [pre-commit]
+
+      - id: name-guard-commit-msg
+        name: "Check the commit message for guarded names"
+        entry: python .github/scripts/name_guard.py
+        language: system
+        stages: [commit-msg]
+
+  # Secrets in staged changes. CI runs gitleaks over the PR's commits in the Disclosure workflow.
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
 
 ci:
     autoupdate_schedule: weekly
