@@ -24,9 +24,11 @@ Each needs one Actions secret (Settings, Secrets and variables, Actions, New rep
 
 | Agent | Provider and free tier | Secret name | Sign up |
 | --- | --- | --- | --- |
-| `aider-gemini-2.5-flash` | Google AI Studio (Gemini API) free tier | `GEMINI_API_KEY` | aistudio.google.com, Get API key |
-| `aider-groq-gpt-oss-120b` | Groq free tier (tokens-per-minute limits are tight) | `GROQ_API_KEY` | console.groq.com, API keys |
-| `aider-openrouter-qwen3-coder-free` | OpenRouter `:free` models (50 requests a day without credits) | `OPENROUTER_API_KEY` | openrouter.ai, Keys |
+| `aider-gemini-flash` | Google AI Studio (Gemini API) free tier, newest Flash model the key can use | `GEMINI_API_KEY` | aistudio.google.com, Get API key |
+| `aider-groq-free` | Groq free tier: the first candidate whose tokens-per-minute limit fits an aider request | `GROQ_API_KEY` | console.groq.com, API keys |
+| `aider-openrouter-free` | OpenRouter `:free` models (50 requests a day without credits) | `OPENROUTER_API_KEY` | openrouter.ai, Keys |
+
+Free catalogues change often. On 2026-11-16 Google had retired `gemini-2.5-flash` for new keys, OpenRouter had made `qwen/qwen3-coder:free` paid-only, and Groq's free limit for `openai/gpt-oss-120b` (8,000 tokens a minute) was smaller than one aider request (about 12,700 tokens). So each hosted agent lists `_model_candidates` in `agents.json`, and `benchmarks/scripts/pick_hosted_model.py` picks the first one the key can use that day before the run. The pick, the candidates tried and the provider's model list go into the run's `model-digest.txt` and `provider-models.txt`, and the agent's page shows the model that ran.
 
 Mistral (`aider-mistral-devstral`, `MISTRAL_API_KEY`) and Cerebras (`aider-cerebras-gpt-oss-120b`, `CEREBRAS_API_KEY`) are configured but skipped by default: on 2026-11-16 both asked for a credit card at sign-up, so they are not a no-cost tier here. Devstral still runs, as open weights, through the GPU notebook.
 
@@ -36,8 +38,12 @@ Free tiers may keep or train on prompts. The benchmark's tasks are public and us
 
 ## Dates and versions
 
-Each report folder is named after the date its runs started (`benchmarks/results/<YYYY-MM-DD>/`). The README gives the start and finish times, the FoaMES commit and when the report was built; each agent's page adds the model's Ollama digest and pull date (or the API model id and call date), the aider version, the sandbox image and where it ran. Hosted model ids such as `gemini-2.5-flash` can change behind the same name, which is why the call date is kept.
+Each report folder is named after the date its runs started (`benchmarks/results/<YYYY-MM-DD>/`). The README gives the start and finish times, the FoaMES commit and when the report was built; each agent's page adds the model's Ollama digest and pull date (or the API model id and call date), the aider version, the sandbox image and where it ran. Hosted model ids such as `gemini-3.8-flash` can change behind the same name, which is why the call date is kept.
 
 ## Reading the results
 
 `benchmarks/results/<date>/README.md` ranks the agents by quality and shows tokens, the actual cost ($0 on free tiers) and a list-price equivalent from each agent's `_list_prices`. `comparison.html` in the same folder has a **reference bar** slider: set the bar as a share of the reference solution's own score on each task (or as an absolute score), choose the score (quality, correctness, process, composite) and whether invariants must hold, and the table re-ranks by how many tasks each agent clears. `publish_results.py --reference 0.8 --reference-mode relative` sets the bar written into the README.
+
+## Overlapping runs
+
+A push run whose `run-request.txt` has a `report: raw` line commits only its run files under `benchmarks/results/<date>/runs/`, so it can finish while a longer run is still going without the two rewriting the same README. To rebuild the pages from everything in a day's folder, run `python benchmarks/scripts/publish_results.py --runs benchmarks/results/<date>/runs --out benchmarks/results/<date>`.

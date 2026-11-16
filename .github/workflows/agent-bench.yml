@@ -136,11 +136,20 @@ jobs:
           DIGEST=$(ollama list | awk -v m="$MODEL" '$1==m{print $2}')
           echo "Ollama $MODEL digest $DIGEST, pulled $(date -u +%Y-%m-%d)" | tee notes/model-digest.txt
           free -g
-      - name: Model id and date (hosted)
+      - name: Pick the model, with its id and date (hosted)
         if: "!startsWith(matrix.agent, 'aider-ollama-')"
+        env:
+          # Only this agent's own key; the script never prints it.
+          GEMINI_API_KEY: ${{ startsWith(matrix.agent, 'aider-gemini-') && secrets.GEMINI_API_KEY || '' }}
+          GROQ_API_KEY: ${{ startsWith(matrix.agent, 'aider-groq-') && secrets.GROQ_API_KEY || '' }}
+          OPENROUTER_API_KEY: ${{ startsWith(matrix.agent, 'aider-openrouter-') && secrets.OPENROUTER_API_KEY || '' }}
         run: |
-          MODEL=$(python3 -c "import json;a={x['name']:x for x in json.load(open('benchmarks/agents.json'))['agents']}['${{ matrix.agent }}'];print(a['model'])")
-          echo "API model id $MODEL, called $(date -u +%Y-%m-%d) (the provider may update a model behind an unversioned id)" > notes/model-digest.txt
+          # Free catalogues change, so an agent with _model_candidates gets the first one usable today.
+          python benchmarks/scripts/pick_hosted_model.py "${{ matrix.agent }}" --notes notes
+          if [ ! -f notes/model-digest.txt ]; then
+            MODEL=$(python3 -c "import json;a={x['name']:x for x in json.load(open('benchmarks/agents.json'))['agents']}['${{ matrix.agent }}'];print(a['model'])")
+            echo "API model id $MODEL, called $(date -u +%Y-%m-%d) (the provider may update a model behind an unversioned id)" > notes/model-digest.txt
+          fi
           echo "GitHub-hosted runner, model on the provider's free API tier" > notes/environment.txt
       - name: Run the benchmark
         working-directory: benchmarks
@@ -176,6 +185,9 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The branch as it is now, so this report adds to results that other runs committed meanwhile.
+          ref: ${{ github.ref_name }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -187,11 +199,17 @@ jobs:
         working-directory: benchmarks
         run: python -m foames_bench validate --out ../runs/calibration
       - name: Combine the runs into a dated report
+        env:
+          EVENT: ${{ github.event_name }}
         run: |
+          # "report: raw" in the request file adds only the run files, for a run that overlaps another
+          # one still going; the later full report (or a rerun of the publisher) rebuilds the pages.
+          RAW=""
+          if [ "$EVENT" = push ] && grep -Eq '^report:[[:space:]]*raw' benchmarks/results/run-request.txt; then RAW="--raw-only"; fi
           # The folder is named after the date the runs started, so a run that crosses midnight stays together.
-          python benchmarks/scripts/publish_results.py --runs runs --out-root benchmarks/results \
+          python benchmarks/scripts/publish_results.py --runs runs --out-root benchmarks/results $RAW \
             --workflow-run "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" | tee report.log
-          cat "$(ls -td benchmarks/results/*/ | head -1)README.md" >> "$GITHUB_STEP_SUMMARY"
+          cat "$(ls -td benchmarks/results/*/ | head -1)README.md" >> "$GITHUB_STEP_SUMMARY" || true
       - uses: actions/upload-artifact@v4
         with:
           name: bench-report

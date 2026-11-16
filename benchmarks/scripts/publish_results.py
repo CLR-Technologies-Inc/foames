@@ -224,6 +224,12 @@ def main(argv=None):
 		"solution's score on each task; with absolute, a score from 0 to 1. comparison.html has a slider for it.",
 	)
 	ap.add_argument("--reference-mode", choices=["relative", "absolute"], default="relative")
+	ap.add_argument(
+		"--raw-only",
+		action="store_true",
+		help="only add the run files under <out>/runs/ (no README, pages or comparison), so a workflow run "
+		"that overlaps another can commit without touching the files the other one rewrites",
+	)
 	opts = ap.parse_args(argv)
 
 	agents = collect(opts.runs)
@@ -240,13 +246,16 @@ def main(argv=None):
 	# the same name (the same agent and task) is replaced by the newer one.
 	kept = opts.out / "runs"
 	for src in sorted(opts.runs.rglob("results.jsonl")):
-		if kept in src.parents:
+		if kept in src.parents or (opts.raw_only and src.parent.name == "calibration"):
 			continue
 		dest = kept / src.parent.name
 		shutil.rmtree(dest, ignore_errors=True)
 		dest.mkdir(parents=True)
 		for f in [src, *src.parent.glob("manifest.json"), *src.parent.glob("*.txt")]:
 			shutil.copy2(f, dest / f.name)
+	if opts.raw_only:
+		print(f"added run files under {kept}; run again without --raw-only to rebuild the report")
+		return
 	agents = collect(kept)
 	all_rows = [r for a in agents.values() for r in a["rows"]]
 	starts = sorted(m.get("started_at", "") for a in agents.values() for m in a["manifests"] if m.get("started_at"))
