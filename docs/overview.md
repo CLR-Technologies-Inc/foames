@@ -35,6 +35,16 @@ The OEE arithmetic and the suggestion rules have no Frappe dependency (`foames/f
 
 Machine states and downtime are built-in sources. The analyses (directly-follows graph, variants, throughput, waiting times, rework, conformance replay and footprint comparison) have no Frappe dependency (`foames/foames_process_mining/discovery.py`, `conformance.py`). See [docs/process-mining.md](process-mining.md).
 
+## Validation and qualification
+
+| Record | Module | Role |
+| --- | --- | --- |
+| Validation Protocol | Validation | An approved IQ, OQ, PQ, PPQ or CPV protocol for a machine or a process, with acceptance criteria: pass/fail checks, numeric ranges, capability (Cpk or Ppk) and statistical control on machine measurements. |
+| Validation Execution | Validation | One run of a protocol: results, evidence, deviations and dispositions, approved by someone other than the executor; sets the outcome and the date the qualification lapses. |
+| Qualification Status (report) | Validation | Every machine and process with its status (Qualified, Due Soon, Expired, Runs Pending, Not Qualified); a daily check raises suggestions for those due or expired. |
+
+The rules have no Frappe dependency (`foames/foames_validation/qualification.py`, and `capability` in `spc.py`). See [docs/validation.md](validation.md).
+
 ## Agents and MCP
 
-FoaMES is an MCP server. `POST /api/method/foames.foames_mcp.api.mcp` speaks the Model Context Protocol over Streamable HTTP with a Frappe API key, and `python -m foames.foames_mcp` is a standard-library stdio bridge to it for Claude Desktop, Claude Code, Cursor and other clients. The 26 tools read machines and state, downtime, OEE, time projections, the floor snapshot, suggestions, process mining and ERP references through the adapters, each with the permissions of the key's user; the only writes create Agent Suggestions or record a machine's current job. See [docs/mcp.md](mcp.md).
+FoaMES is an MCP server. `POST /api/method/foames.foames_mcp.api.mcp` speaks the Model Context Protocol over Streamable HTTP with a Frappe API key, and `python -m foames.foames_mcp` is a standard-library stdio bridge to it for Claude Desktop, Claude Code, Cursor and other clients. The 27 tools read machines and state, downtime, OEE, time projections, the floor snapshot, suggestions, process mining, qualification status and ERP references through the adapters, each with the permissions of the key's user; the only writes create Agent Suggestions or record a machine's current job. See [docs/mcp.md](mcp.md).

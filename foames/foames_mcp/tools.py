@@ -24,6 +24,7 @@ MINING = "foames.foames_process_mining.api"
 ADAPTERS = "foames.foames_adapters"
 READS = "foames.foames_mcp.reads"
 CYCLE = "foames.foames_mes.cycle_time_api"
+VALIDATION = "foames.foames_validation.api"
 
 # Packages a tool's method may live in. The catalogue test holds every tool to this list, so a
 # tool cannot quietly reach a method outside the public API.
@@ -34,6 +35,7 @@ ALLOWED_METHOD_PREFIXES = (
 	ADAPTERS + ".get_available_erp_systems",
 	READS,
 	CYCLE,
+	VALIDATION + ".get_qualification_status",
 )
 
 INSTRUCTIONS = """FoaMES is a manufacturing execution system. These tools read the plant floor and \
@@ -410,6 +412,19 @@ TOOLS: list[Tool] = [
 				"erp_system": _s("ERP system key; defaults to the site's default ERP system"),
 			},
 			["reference_type", "external_id"],
+		),
+	),
+	Tool(
+		name="foames_get_qualification_status",
+		title="Get qualification status",
+		description="Where each machine and process stands on its equipment qualifications (IQ, OQ, PQ) and process validation (PPQ, CPV): Qualified, Due Soon, Expired, Runs Pending or Not Qualified, with the date it lapses and the approved execution it rests on. Check this before relying on a machine's output for a validated process. Needs read on Validation Execution.",
+		method=f"{VALIDATION}.get_qualification_status",
+		input_schema=_schema(
+			{
+				"machine": _s("Only this machine"),
+				"process": _s("Only this process"),
+				"protocol_type": _s("Only this protocol type", enum=["IQ", "OQ", "PQ", "PPQ", "CPV"]),
+			}
 		),
 	),
 ]

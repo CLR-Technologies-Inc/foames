@@ -1,0 +1,320 @@
+{
+ "actions": [],
+ "creation": "2026-11-14 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "criterion",
+  "check_type",
+  "critical",
+  "evidence_required",
+  "method",
+  "cb_source",
+  "source",
+  "machine",
+  "measurement",
+  "units",
+  "sb_limits",
+  "limits",
+  "lower_limit",
+  "upper_limit",
+  "cb_limits",
+  "capability_index",
+  "min_index",
+  "rule_set",
+  "min_points",
+  "sb_observed",
+  "not_applicable",
+  "checked",
+  "recorded_value",
+  "observed_value",
+  "result",
+  "points",
+  "cb_observed",
+  "summary",
+  "evaluated_on",
+  "evidence_file",
+  "evidence_notes",
+  "sb_deviation",
+  "deviation",
+  "cb_deviation",
+  "disposition",
+  "impact_assessment",
+  "sb_evidence_data",
+  "evidence_data"
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Validation",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 0,
+ "name": "Validation Result",
+ "fields": [
+  {
+   "fieldname": "criterion",
+   "fieldtype": "Data",
+   "label": "Acceptance Criterion",
+   "in_list_view": 1,
+   "columns": 3,
+   "read_only": 1
+  },
+  {
+   "fieldname": "check_type",
+   "fieldtype": "Select",
+   "label": "Check",
+   "options": "Pass/Fail\nNumeric Range\nCapability\nStatistical Control",
+   "default": "Pass/Fail",
+   "in_list_view": 1,
+   "columns": 2,
+   "read_only": 1
+  },
+  {
+   "fieldname": "critical",
+   "fieldtype": "Check",
+   "label": "Critical",
+   "description": "A critical criterion that fails fails the execution; it cannot be accepted by deviation",
+   "read_only": 1
+  },
+  {
+   "fieldname": "evidence_required",
+   "fieldtype": "Check",
+   "label": "Evidence Required",
+   "description": "The result needs an attached file or machine-data evidence before approval",
+   "read_only": 1
+  },
+  {
+   "fieldname": "method",
+   "fieldtype": "Small Text",
+   "label": "Test Method",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_source",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "Manual\nMachine Data",
+   "default": "Manual",
+   "depends_on": "eval:doc.check_type=='Numeric Range'",
+   "description": "Machine Data checks every reading of the measurement in the execution window",
+   "read_only": 1
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "depends_on": "eval:['Capability','Statistical Control'].includes(doc.check_type) || (doc.check_type=='Numeric Range' && doc.source=='Machine Data')",
+   "description": "Leave empty to use the protocol's machine",
+   "read_only": 1
+  },
+  {
+   "fieldname": "measurement",
+   "fieldtype": "Data",
+   "label": "Measurement",
+   "depends_on": "eval:['Capability','Statistical Control'].includes(doc.check_type) || (doc.check_type=='Numeric Range' && doc.source=='Machine Data')",
+   "description": "The measurement name of Measurement-type Machine Events",
+   "read_only": 1
+  },
+  {
+   "fieldname": "units",
+   "fieldtype": "Data",
+   "label": "Units",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_limits",
+   "fieldtype": "Section Break",
+   "label": "Limits",
+   "depends_on": "eval:['Numeric Range','Capability'].includes(doc.check_type) || ['Capability','Statistical Control'].includes(doc.check_type)"
+  },
+  {
+   "fieldname": "limits",
+   "fieldtype": "Select",
+   "label": "Limits",
+   "options": "Lower and Upper\nLower Only\nUpper Only",
+   "default": "Lower and Upper",
+   "depends_on": "eval:['Numeric Range','Capability'].includes(doc.check_type)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "lower_limit",
+   "fieldtype": "Float",
+   "label": "Lower Limit",
+   "depends_on": "eval:['Numeric Range','Capability'].includes(doc.check_type) && doc.limits!='Upper Only'",
+   "read_only": 1
+  },
+  {
+   "fieldname": "upper_limit",
+   "fieldtype": "Float",
+   "label": "Upper Limit",
+   "depends_on": "eval:['Numeric Range','Capability'].includes(doc.check_type) && doc.limits!='Lower Only'",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_limits",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "capability_index",
+   "fieldtype": "Select",
+   "label": "Capability Index",
+   "options": "Cpk\nPpk",
+   "default": "Cpk",
+   "depends_on": "eval:doc.check_type=='Capability'",
+   "read_only": 1
+  },
+  {
+   "fieldname": "min_index",
+   "fieldtype": "Float",
+   "label": "Minimum Index",
+   "default": "1.33",
+   "depends_on": "eval:doc.check_type=='Capability'",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rule_set",
+   "fieldtype": "Select",
+   "label": "Run Rules",
+   "options": "Nelson\nWestern Electric",
+   "default": "Nelson",
+   "depends_on": "eval:doc.check_type=='Statistical Control'",
+   "read_only": 1
+  },
+  {
+   "fieldname": "min_points",
+   "fieldtype": "Int",
+   "label": "Minimum Readings",
+   "default": "25",
+   "depends_on": "eval:['Capability','Statistical Control'].includes(doc.check_type)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_observed",
+   "fieldtype": "Section Break",
+   "label": "Observed"
+  },
+  {
+   "fieldname": "not_applicable",
+   "fieldtype": "Check",
+   "label": "Not Applicable",
+   "description": "Leave this criterion out; give the reason in the deviation"
+  },
+  {
+   "fieldname": "checked",
+   "fieldtype": "Select",
+   "label": "Check Met",
+   "options": "\nYes\nNo",
+   "depends_on": "eval:doc.check_type=='Pass/Fail'"
+  },
+  {
+   "fieldname": "recorded_value",
+   "fieldtype": "Data",
+   "label": "Recorded Value",
+   "depends_on": "eval:doc.check_type=='Numeric Range' && doc.source!='Machine Data'",
+   "description": "The value read during the test; leave empty until it is measured"
+  },
+  {
+   "fieldname": "observed_value",
+   "fieldtype": "Float",
+   "label": "Observed Value",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 1,
+   "description": "The recorded value, the worst reading, the capability index or the signal count"
+  },
+  {
+   "fieldname": "result",
+   "fieldtype": "Select",
+   "label": "Result",
+   "options": "Pending\nPass\nFail\nN/A",
+   "default": "Pending",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "points",
+   "fieldtype": "Int",
+   "label": "Readings",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_observed",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "summary",
+   "fieldtype": "Small Text",
+   "label": "Summary",
+   "read_only": 1
+  },
+  {
+   "fieldname": "evaluated_on",
+   "fieldtype": "Datetime",
+   "label": "Evaluated On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "evidence_file",
+   "fieldtype": "Attach",
+   "label": "Evidence"
+  },
+  {
+   "fieldname": "evidence_notes",
+   "fieldtype": "Small Text",
+   "label": "Evidence Notes"
+  },
+  {
+   "fieldname": "sb_deviation",
+   "fieldtype": "Section Break",
+   "label": "Deviation",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "deviation",
+   "fieldtype": "Small Text",
+   "label": "Deviation",
+   "description": "What differed from the protocol, the investigation and its reference"
+  },
+  {
+   "fieldname": "cb_deviation",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "disposition",
+   "fieldtype": "Select",
+   "label": "Disposition",
+   "options": "\nAccepted: no impact on the conclusion\nRejected: the criterion is not met"
+  },
+  {
+   "fieldname": "impact_assessment",
+   "fieldtype": "Small Text",
+   "label": "Impact Assessment"
+  },
+  {
+   "fieldname": "sb_evidence_data",
+   "fieldtype": "Section Break",
+   "label": "Machine Data Evidence",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "evidence_data",
+   "fieldtype": "Code",
+   "label": "Evidence Data",
+   "options": "JSON",
+   "read_only": 1
+  }
+ ],
+ "permissions": [],
+ "description": "The result of one acceptance criterion in a Validation Execution"
+}

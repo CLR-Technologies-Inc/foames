@@ -1,0 +1,252 @@
+{
+ "actions": [],
+ "creation": "2026-11-14 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "title",
+  "protocol_type",
+  "validation_stage",
+  "cb_head",
+  "machine",
+  "process_name",
+  "approved_by",
+  "approved_on",
+  "sb_rules",
+  "required_runs",
+  "validity_months",
+  "cb_rules",
+  "enforce_sequence",
+  "sb_text",
+  "objective",
+  "scope",
+  "procedure",
+  "sb_criteria",
+  "criteria",
+  "amended_from"
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Validation",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "name": "Validation Protocol",
+ "is_submittable": 1,
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "title",
+ "show_title_field_in_link": 1,
+ "search_fields": "protocol_type,machine,process_name",
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "VP-.YYYY.-",
+   "default": "VP-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "protocol_type",
+   "fieldtype": "Select",
+   "label": "Protocol Type",
+   "options": "IQ\nOQ\nPQ\nPPQ\nCPV",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "IQ installation, OQ operational, PQ performance qualification of equipment; PPQ process performance qualification; CPV continued process verification"
+  },
+  {
+   "fieldname": "validation_stage",
+   "fieldtype": "Data",
+   "label": "Validation Stage",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "Required for IQ, OQ and PQ; for PPQ it names the equipment whose PQ must be current"
+  },
+  {
+   "fieldname": "process_name",
+   "fieldtype": "Data",
+   "label": "Process",
+   "in_standard_filter": 1,
+   "description": "Required for PPQ and CPV: the process being validated"
+  },
+  {
+   "fieldname": "approved_by",
+   "fieldtype": "Link",
+   "label": "Approved By",
+   "options": "User",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "approved_on",
+   "fieldtype": "Datetime",
+   "label": "Approved On",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "sb_rules",
+   "fieldtype": "Section Break",
+   "label": "Rules"
+  },
+  {
+   "fieldname": "required_runs",
+   "fieldtype": "Int",
+   "label": "Consecutive Passing Runs",
+   "description": "Runs that must pass in a row before the subject counts as qualified (default 3 for PPQ, 1 otherwise)"
+  },
+  {
+   "fieldname": "validity_months",
+   "fieldtype": "Int",
+   "label": "Validity (Months)",
+   "default": "12",
+   "description": "Requalify after this many months; 0 means no expiry"
+  },
+  {
+   "fieldname": "cb_rules",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enforce_sequence",
+   "fieldtype": "Check",
+   "label": "Enforce Sequence",
+   "default": "1",
+   "description": "Refuse approval of an execution while the prerequisite (IQ before OQ before PQ before PPQ before CPV) is not current"
+  },
+  {
+   "fieldname": "sb_text",
+   "fieldtype": "Section Break",
+   "label": "Protocol"
+  },
+  {
+   "fieldname": "objective",
+   "fieldtype": "Small Text",
+   "label": "Objective"
+  },
+  {
+   "fieldname": "scope",
+   "fieldtype": "Text Editor",
+   "label": "Scope"
+  },
+  {
+   "fieldname": "procedure",
+   "fieldtype": "Text Editor",
+   "label": "Procedure"
+  },
+  {
+   "fieldname": "sb_criteria",
+   "fieldtype": "Section Break",
+   "label": "Acceptance Criteria"
+  },
+  {
+   "fieldname": "criteria",
+   "fieldtype": "Table",
+   "label": "Acceptance Criteria",
+   "options": "Validation Acceptance Criterion",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "options": "Validation Protocol",
+   "read_only": 1,
+   "no_copy": 1,
+   "print_hide": 1
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "description": "An approved plan for qualifying equipment or validating a process, with its acceptance criteria"
+}
