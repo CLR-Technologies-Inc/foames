@@ -19,6 +19,7 @@ from frappe.utils import add_days, get_datetime, now_datetime
 from foames.foames_mes.counters import minutes_between
 from foames.foames_mes.doctype.andon_call.andon_call import open_andon_calls
 from foames.foames_mes.doctype.shift_pattern.shift_pattern import load_pattern
+from foames.foames_mes.doctype.work_instruction_run.work_instruction_run import active_runs
 from foames.foames_mes.shifts import window_at
 
 
@@ -44,6 +45,7 @@ def floor_snapshot(days: int = 1) -> dict:
 	)
 	jobs = current_jobs([m.current_job_reference for m in machines if m.current_job_reference])
 	andon = open_andon_calls(now) if frappe.has_permission("Andon Call", "read") else []
+	runs = active_runs(now) if frappe.has_permission("Work Instruction Run", "read") else []
 	for m in machines:
 		m["current_job"] = jobs.get(m.pop("current_job_reference"))
 		if m["current_job"]:
@@ -51,6 +53,7 @@ def floor_snapshot(days: int = 1) -> dict:
 		m.pop("current_job_since")
 		m["shift"] = current_shift(m.pop("shift_pattern"), now)
 		m["andon"] = [c for c in andon if c.machine == m.name]
+		m["work_instruction_runs"] = [r for r in runs if r.machine == m.name]
 		# Measured from the machine's latest count ever (kept on the Machine by event processing), not
 		# only inside the window, so a machine that counted yesterday and reports Running without
 		# counting today is still caught by the rules.
@@ -96,6 +99,7 @@ def floor_snapshot(days: int = 1) -> dict:
 		"downtime_by_machine": downtime,
 		"external_references": references,
 		"andon_calls": andon,
+		"work_instruction_runs": runs,
 		"open_suggestions": frappe.get_all(
 			"Agent Suggestion",
 			{"status": "Open"},
@@ -184,8 +188,10 @@ def counts_since(machine: str, since) -> dict[str, float]:
 def collect_findings(snapshot: dict) -> list[dict]:
 	"""The built-in rules plus every rule registered through the `foames_suggestion_rules` hook."""
 	from foames.foames_mes.suggestions import all_rules
+	from foames.foames_mes.work_instructions import stalled_runs
 
 	findings = all_rules(snapshot)
+	findings.extend(stalled_runs(snapshot))
 	findings.extend(_spc_findings())
 	for rule in frappe.get_hooks("foames_suggestion_rules") or []:
 		findings.extend(frappe.get_attr(rule)(snapshot))

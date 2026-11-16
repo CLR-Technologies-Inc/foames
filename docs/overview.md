@@ -22,6 +22,7 @@ Events arrive through a signed webhook, an MQTT gateway, a Sparkplug B gateway o
 | Floor View (page) | MES | Live tiles per machine with state, counts and OEE, plus open suggestions. |
 | Agent Suggestion | MES | A finding raised by the built-in rules or by an external agent, with evidence, for a person to accept or dismiss. |
 | Andon Call, Andon Call Type | MES | A call for help at a machine (maintenance, material, quality, supervisor, safety), with response and resolution times. A call that misses its type's targets becomes an Agent Suggestion. |
+| Work Instruction, Work Instruction Run | MES | Step-by-step operator instructions with images, attachments and video links, revision-controlled (Draft, Released, Obsolete). A run executes a released revision at a machine: steps in order, checks and readings against limits, two-person sign-offs, holds on failed critical checks. Failed steps and stalled runs become Agent Suggestions; readings can feed SPC. |
 | SPC Control Chart (report) | MES | I-MR or X-bar R chart of a machine measurement with Nelson or Western Electric run rules; signals on recent readings become Quality suggestions. |
 
 The OEE arithmetic and the suggestion rules have no Frappe dependency (`foames/foames_mes/oee.py`, `suggestions.py`, `spc.py`). The counter-delta, owed-count and coverage ideas follow public MES practice, including the FactorySemantics MES design notes. See [docs/agents/floor-agent.md](agents/floor-agent.md) for the agent API and the hooks that add snapshot sections and rules.

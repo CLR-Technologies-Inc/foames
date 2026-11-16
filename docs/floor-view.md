@@ -20,6 +20,8 @@ One tile per enabled Machine, in code order. The colour is the machine's current
 
 Each tile also shows when the machine was last seen, how many minutes since its last count ("No counts today" when there is none in the window), the good and scrap counts over the last day, and "OEE n %" from the machine's most recent OEE Period when one exists. Clicking a tile opens the Machine record.
 
+A tile also shows the machine's open andon calls (see [andon.md](andon.md)) and its active work instruction runs, with the step each one is on. Clicking a run's badge opens it in the runner; **Work Instructions** at the top starts a new one (see [work-instructions.md](work-instructions.md)).
+
 A grey tile is the one to look at first. Unknown time is loss in OEE, and a machine that was counting and then went quiet usually means a gateway, network or PLC problem rather than a stopped machine.
 
 ## Downtime

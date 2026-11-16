@@ -1,0 +1,262 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 21:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "instruction_code",
+  "title",
+  "revision",
+  "operation",
+  "cb_head",
+  "status",
+  "released_at",
+  "released_by",
+  "estimated_minutes",
+  "sb_scope",
+  "machine",
+  "machine_type",
+  "cb_scope",
+  "item_reference",
+  "governing_sop",
+  "sb_desc",
+  "description",
+  "safety_notes",
+  "sb_steps",
+  "steps",
+  "sb_change",
+  "change_note",
+  "amended_from_revision"
+ ],
+ "fields": [
+  {
+   "fieldname": "instruction_code",
+   "fieldtype": "Data",
+   "label": "Instruction Code",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "set_only_once": 1,
+   "description": "The same code for every revision of this instruction, such as WI-PRESS-CHANGEOVER"
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "revision",
+   "fieldtype": "Int",
+   "label": "Revision",
+   "read_only": 1,
+   "in_list_view": 1,
+   "description": "Set when the record is created: one more than the highest revision of the code"
+  },
+  {
+   "fieldname": "operation",
+   "fieldtype": "Data",
+   "label": "Operation",
+   "in_standard_filter": 1,
+   "description": "What the instruction is for, such as Changeover, Setup, First-Off Inspection"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nReleased\nObsolete",
+   "default": "Draft",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "released_at",
+   "fieldtype": "Datetime",
+   "label": "Released At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "released_by",
+   "fieldtype": "Link",
+   "label": "Released By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "estimated_minutes",
+   "fieldtype": "Float",
+   "label": "Estimated (min)",
+   "read_only": 1,
+   "precision": "1",
+   "description": "The sum of the steps' estimates"
+  },
+  {
+   "fieldname": "sb_scope",
+   "fieldtype": "Section Break",
+   "label": "Where It Applies"
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "in_standard_filter": 1,
+   "description": "Leave empty to offer it on every machine of the machine type, or on every machine"
+  },
+  {
+   "fieldname": "machine_type",
+   "fieldtype": "Data",
+   "label": "Machine Type",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "cb_scope",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "item_reference",
+   "fieldtype": "Link",
+   "label": "Product",
+   "options": "External Reference",
+   "description": "The ERP item or product it is for, as an External Reference; optional"
+  },
+  {
+   "fieldname": "governing_sop",
+   "fieldtype": "Data",
+   "label": "Governing SOP",
+   "description": "The code of the standard operating procedure this instruction carries out"
+  },
+  {
+   "fieldname": "sb_desc",
+   "fieldtype": "Section Break",
+   "label": "Before You Start"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "label": "Description"
+  },
+  {
+   "fieldname": "safety_notes",
+   "fieldtype": "Small Text",
+   "label": "Safety and PPE",
+   "description": "Shown to the operator before the first step"
+  },
+  {
+   "fieldname": "sb_steps",
+   "fieldtype": "Section Break",
+   "label": "Steps"
+  },
+  {
+   "fieldname": "steps",
+   "fieldtype": "Table",
+   "label": "Steps",
+   "options": "Work Instruction Step",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sb_change",
+   "fieldtype": "Section Break",
+   "label": "Change",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "change_note",
+   "fieldtype": "Small Text",
+   "label": "What Changed",
+   "description": "What this revision changes from the previous one"
+  },
+  {
+   "fieldname": "amended_from_revision",
+   "fieldtype": "Link",
+   "label": "Previous Revision",
+   "options": "Work Instruction",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 21:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Work Instruction",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "title_field": "title",
+ "show_title_field_in_link": 0,
+ "search_fields": "title,instruction_code,status"
+}
