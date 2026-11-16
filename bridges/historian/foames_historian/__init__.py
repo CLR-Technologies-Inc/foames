@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Read-only bridge from process historians (PI, InfluxDB, Ignition, TimescaleDB and other SQL
 historians) to FoaMES machine events."""

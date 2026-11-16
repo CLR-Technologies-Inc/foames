@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 # Creates the Frappe bench and the test site inside the bench container. Safe to run again: every
 # step is skipped when its result already exists, so a second run only refreshes requirements.
 #
@@ -89,6 +92,11 @@ get_erpnext() {
 
 get_foames() {
 	cd "$BENCH_DIR"
+	# The checkout is bind-mounted from the host, so its owner is usually not the container's
+	# frappe user (uid 1000). Without this, git refuses it as "dubious ownership" and
+	# bench get-app fails on git rev-parse.
+	git config --global --get-all safe.directory 2>/dev/null | grep -qxF "$FOAMES_SRC" \
+		|| git config --global --add safe.directory "$FOAMES_SRC"
 	if [ -e apps/foames ]; then
 		log "foames is already in the bench ($(readlink -f apps/foames))"
 	elif bench get-app --soft-link --skip-assets foames "$FOAMES_SRC"; then
@@ -96,8 +104,13 @@ get_foames() {
 	else
 		# Older bench releases have no --soft-link; link by hand and register the app.
 		log "bench get-app --soft-link failed, linking apps/foames by hand"
-		ln -s "$FOAMES_SRC" apps/foames
-		grep -qx foames sites/apps.txt 2>/dev/null || echo foames >> sites/apps.txt
+		# A failed get-app can leave its link behind, so replace rather than add.
+		ln -sfn "$FOAMES_SRC" apps/foames
+	fi
+	if ! grep -qx foames sites/apps.txt 2>/dev/null; then
+		# apps.txt may lack a final newline; add one so foames gets its own line.
+		[ -s sites/apps.txt ] && [ -n "$(tail -c1 sites/apps.txt)" ] && echo >> sites/apps.txt
+		echo foames >> sites/apps.txt
 	fi
 	log "Installing requirements"
 	bench setup requirements --dev

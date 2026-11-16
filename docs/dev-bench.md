@@ -55,7 +55,7 @@ Edit `docker/.env` and run `./bench.sh up` again. Changing the Frappe branch or 
 
 | Goal | `.env` |
 | --- | --- |
-| Frappe v16, no ERP (the default, same as the "Frappe v16" CI job) | `FRAPPE_BRANCH=version-16`, `ERPNEXT_BRANCH=` empty, `MARIADB_IMAGE=mariadb:11.8` |
+| Frappe v16, no ERP (the default, same as the "Frappe v16" CI job) | `FRAPPE_BRANCH=version-16`, `ERPNEXT_BRANCH=` empty, `PYTHON_VERSION=3.14`, `MARIADB_IMAGE=mariadb:11.8` |
 | Frappe v16 with ERPNext (the "Frappe v16 + ERPNext" CI job) | as above with `ERPNEXT_BRANCH=version-16` |
 | Frappe v15, no ERP (the "Frappe v15" CI job) | `FRAPPE_BRANCH=version-15`, `PYTHON_VERSION=3.11`, `NODE_VERSION=20`, `MARIADB_IMAGE=mariadb:10.6` |
 

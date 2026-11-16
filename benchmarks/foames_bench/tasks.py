@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Task manifests. Each task is a folder under tasks/ with task.json, prompt.md, an optional
 setup.py, hidden tests the agent never sees, and a reference solution used to validate the task."""
@@ -24,6 +24,8 @@ class Task:
 	dimension: str
 	path: Path
 	hidden: dict[str, list[str]]
+	ecl: int | None = None  # Equipment Complexity Level 1-5, None when no equipment is involved
+	machine_class: str = ""
 	regression: list[str] = field(default_factory=list)
 	allowed_paths: list[str] = field(default_factory=list)
 	deliverables: list[str] = field(default_factory=list)

@@ -1,3 +1,6 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Regenerate hidden/expected.json with FoaMES's own process-mining module. Run from benchmarks/:
 PYTHONPATH=..:foames_bench/stubs python tasks/process-mining-analysis/make_expected.py"""
 

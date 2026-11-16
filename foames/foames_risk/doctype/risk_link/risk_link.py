@@ -1,0 +1,8 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
+from frappe.model.document import Document
+
+
+class RiskLink(Document):
+	pass
