@@ -8,17 +8,22 @@ frappe.ui.form.on("Material Queue", {
 			frappe
 				.call("foames.foames_mes.api.get_dispatch_list", { queue: frm.doc.name })
 				.then((r) => {
-					const rows = (r.message || [])
-						.map(
-							(e, i) =>
-								`<tr><td>${i + 1}</td><td>${frappe.utils.escape_html(e.name)}</td><td>${frappe.utils.escape_html(e.item || "")}</td><td>${e.quantity || ""} ${frappe.utils.escape_html(e.uom || "")}</td><td>${frappe.utils.escape_html(e.state)}</td></tr>`
-						)
+					const esc = frappe.utils.escape_html;
+					const cell = (value) => `<td>${esc(value == null ? "" : String(value))}</td>`;
+					const head = ["#", __("Entry"), __("Item"), __("Quantity"), __("State")]
+						.map((label) => `<th>${esc(label)}</th>`)
 						.join("");
+					const rows = (r.message || [])
+						.map((e, i) => {
+							const quantity = `${e.quantity || ""} ${e.uom || ""}`;
+							const cells = [i + 1, e.name, e.item, quantity, e.state].map(cell);
+							return `<tr>${cells.join("")}</tr>`;
+						})
+						.join("");
+					const table = `<table class="table table-sm"><tr>${head}</tr>${rows}</table>`;
 					frappe.msgprint({
 						title: __("Next to start ({0})", [frm.doc.discipline]),
-						message: rows
-							? `<table class="table table-sm"><tr><th>#</th><th>${__("Entry")}</th><th>${__("Item")}</th><th>${__("Quantity")}</th><th>${__("State")}</th></tr>${rows}</table>`
-							: __("Nothing is ready to start."),
+						message: rows ? table : __("Nothing is ready to start."),
 					});
 				})
 		);
