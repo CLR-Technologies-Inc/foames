@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """The Insights Hub adapter against the scripted fake: which request each reference type sends and
 how every answer maps onto the adapter contract. No Frappe site needed."""

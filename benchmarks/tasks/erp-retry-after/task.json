@@ -7,6 +7,8 @@
   "4-6",
   "7-9"
  ],
+ "ecl": null,
+ "machine_class": "No equipment: ERP integration",
  "dimension": "ERP integration; invariant 6 (idempotent, sequenced postings) and failure recovery",
  "hidden": {
   "functional": [

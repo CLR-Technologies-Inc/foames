@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Tests for the confirmation and goods-movement payload builders, the value formatting they rely
 on, and the cancellation and reversal actions. No Frappe site and no S/4HANA system are needed."""
