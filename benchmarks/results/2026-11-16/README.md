@@ -3,7 +3,7 @@
 <!-- Copyright (c) 2026 CLR Technologies Inc. and contributors -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
-**Run of 2026-11-16.** Runs started 2026-11-16T01:26:37+00:00 and the last finished 2026-11-16T08:41:34+00:00 (UTC), on FoaMES commit `11c643fbf2`, `2cbb32a971`, `a1c95f786e`, `ac71285e48`. Report built 2026-11-16T12:59:28+00:00. Workflow run: https://github.com/CLR-Technologies-Inc/foames/actions/runs/43796612771.
+**Run of 2026-11-16.** Runs started 2026-11-16T01:26:37+00:00 and the last finished 2026-11-16T13:48:07+00:00 (UTC), on FoaMES commit `11c643fbf2`, `2cbb32a971`, `37ac1b3533`, `a1c95f786e`, `a5e355aa7b`, `ac71285e48`. Report built 2026-11-16T13:50:38+00:00. Workflow run: https://github.com/CLR-Technologies-Inc/foames/actions/runs/43805918094.
 
 Every agent is aider driving one model on the benchmark's pure tasks, in the benchmark's sandbox. Local models ran on Ollama; hosted models, where present, on their providers' free API tiers. Each model's page gives its exact version (digest or API model id), where it ran and when. Ranking is by tasks cleared at the reference bar, then quality (correctness and process, without cost), as in [docs/methodology.md](../../docs/methodology.md). One repetition cannot separate close agents: read the intervals.
 
@@ -11,14 +11,42 @@ Every agent is aider driving one model on the benchmark's pure tasks, in the ben
 
 | Agent | Model | Built for | Tier | Ran on | Runs | Clears bar | Success (95 % CI) | Quality | Composite | Mean time | Tokens in / out | Cost | List-price equivalent | ECL reached |
 | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| [aider-gemini-flash](aider-gemini-flash.md) | `gemini/gemini-3.8-flash` | - | baseline | GitHub-hosted runner, model on the provider's free API tier | 5 | 4 / 6 | 80% (38% to 96%) | 0.87 | 0.77 | 857 s | 127,900 / 252,200 | $0.00 | $1.04 | ECL 2 |
+| [aider-gemini-flash](aider-gemini-flash.md) | `gemini/gemini-3.8-flash` | - | baseline | GitHub-hosted runner, model on the provider's free API tier | 6 | 4 / 6 | 67% (30% to 90%) | 0.75 | 0.66 | 922 s | 177,900 / 310,200 | $0.00 | $1.29 | none |
 | [aider-openrouter-free](aider-openrouter-free.md) | `openrouter/thinkingmachines/inkling-2-small:free` | - | oss | GitHub-hosted runner, model on the provider's free API tier | 6 | 3 / 6 | 50% (19% to 81%) | 0.67 | 0.62 | 178 s | 352,900 / 182,210 | $0.00 | $0.29 | none |
 | [aider-ollama-gpt-oss-20b](aider-ollama-gpt-oss-20b.md) | `ollama_chat/gpt-oss:20b` | reasoning (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 1 / 6 | 17% (3% to 56%) | 0.48 | 0.38 | 4404 s | 81,700 / 27,055 | $0.00 | n/a | none |
+| [aider-ollama-deepseek-r1-14b](aider-ollama-deepseek-r1-14b.md) | `ollama_chat/deepseek-r1:14b` | reasoning (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.39 | 0.29 | 7826 s | 112,600 / 12,877 | $0.00 | n/a | none |
 | [aider-ollama-qwen2.5-coder-14b](aider-ollama-qwen2.5-coder-14b.md) | `ollama_chat/qwen2.5-coder:14b` | coding | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.30 | 0.22 | 7532 s | 33,800 / 4,934 | $0.00 | n/a | none |
+| [aider-ollama-phi4-reasoning-14b](aider-ollama-phi4-reasoning-14b.md) | `ollama_chat/phi4-reasoning:14b` | reasoning (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.28 | 0.21 | 13651 s | 8,400 / 3,000 | $0.00 | n/a | none |
 | [aider-ollama-qwen3-8b](aider-ollama-qwen3-8b.md) | `ollama_chat/qwen3:8b` | general chat (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.25 | 0.19 | 7395 s | 90,500 / 21,587 | $0.00 | n/a | none |
+| [aider-ollama-llama3.1-8b](aider-ollama-llama3.1-8b.md) | `ollama_chat/llama3.1:8b` | general chat (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.25 | 0.19 | 8148 s | 167,000 / 14,081 | $0.00 | n/a | none |
+| [aider-ollama-qwen2.5-coder-1.5b](aider-ollama-qwen2.5-coder-1.5b.md) | `ollama_chat/qwen2.5-coder:1.5b` | coding | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.25 | 0.19 | 4310 s | 211,900 / 17,637 | $0.00 | n/a | none |
+| [aider-ollama-yi-coder-9b](aider-ollama-yi-coder-9b.md) | `ollama_chat/yi-coder:9b` | coding | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.25 | 0.19 | 4421 s | 88,500 / 4,659 | $0.00 | n/a | none |
+| [aider-ollama-phi4-mini-3.8b](aider-ollama-phi4-mini-3.8b.md) | `ollama_chat/phi4-mini:3.8b` | tiny (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.25 | 0.19 | 11063 s | 40,200 / 7,100 | $0.00 | n/a | none |
+| [aider-ollama-gemma3-1b](aider-ollama-gemma3-1b.md) | `ollama_chat/gemma3:1b` | tiny (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.25 | 0.18 | 596 s | 114,900 / 27,080 | $0.00 | n/a | none |
+| [aider-ollama-granite3.3-2b](aider-ollama-granite3.3-2b.md) | `ollama_chat/granite3.3:2b` | tiny (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.23 | 0.17 | 1923 s | 140,500 / 9,148 | $0.00 | n/a | none |
+| [aider-ollama-mistral-nemo-12b](aider-ollama-mistral-nemo-12b.md) | `ollama_chat/mistral-nemo:12b` | general chat (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.23 | 0.17 | 6407 s | 173,400 / 8,159 | $0.00 | n/a | none |
+| [aider-ollama-olmo2-13b](aider-ollama-olmo2-13b.md) | `ollama_chat/olmo2:13b` | general chat (fully open data) (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.23 | 0.17 | 522 s | 7,784 / 5,949 | $0.00 | n/a | none |
+| [aider-ollama-codegemma-7b](aider-ollama-codegemma-7b.md) | `ollama_chat/codegemma:7b` | coding | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.22 | 0.17 | 300 s | 28,660 / 1,711 | $0.00 | n/a | none |
+| [aider-ollama-deepscaler-1.5b](aider-ollama-deepscaler-1.5b.md) | `ollama_chat/deepscaler:1.5b` | domain: maths reasoning (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.22 | 0.17 | 5920 s | 79,200 / 8,042 | $0.00 | n/a | none |
+| [aider-ollama-granite-code-8b](aider-ollama-granite-code-8b.md) | `ollama_chat/granite-code:8b` | coding | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.22 | 0.17 | 3534 s | 76,500 / 2,925 | $0.00 | n/a | none |
 | [aider-ollama-granite3.3-8b](aider-ollama-granite3.3-8b.md) | `ollama_chat/granite3.3:8b` | general chat (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.22 | 0.17 | 5337 s | 56,500 / 6,030 | $0.00 | n/a | none |
+| [aider-ollama-mathstral-7b](aider-ollama-mathstral-7b.md) | `ollama_chat/mathstral:7b` | domain: maths and science (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.22 | 0.17 | 7674 s | 71,300 / 9,420 | $0.00 | n/a | none |
+| [aider-ollama-meditron-7b](aider-ollama-meditron-7b.md) | `ollama_chat/meditron:7b` | domain: medicine (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.22 | 0.17 | 67 s | 6,437 / 42 | $0.00 | n/a | none |
+| [aider-ollama-phi4-14b](aider-ollama-phi4-14b.md) | `ollama_chat/phi4:14b` | general chat (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.22 | 0.17 | 5757 s | 58,996 / 7,194 | $0.00 | n/a | none |
 | [aider-ollama-qwen2.5-coder-7b](aider-ollama-qwen2.5-coder-7b.md) | `ollama_chat/qwen2.5-coder:7b` | coding | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.22 | 0.17 | 4846 s | 118,200 / 12,424 | $0.00 | n/a | none |
+| [aider-ollama-qwen3-0.6b](aider-ollama-qwen3-0.6b.md) | `ollama_chat/qwen3:0.6b` | tiny (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.22 | 0.17 | 4084 s | 98,700 / 5,835 | $0.00 | n/a | none |
+| [aider-ollama-qwen3-1.7b](aider-ollama-qwen3-1.7b.md) | `ollama_chat/qwen3:1.7b` | tiny (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.22 | 0.17 | 2295 s | 101,900 / 12,500 | $0.00 | n/a | none |
 | [aider-ollama-qwen3-14b](aider-ollama-qwen3-14b.md) | `ollama_chat/qwen3:14b` | general chat (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.22 | 0.17 | 11455 s | 30,500 / 6,100 | $0.00 | n/a | none |
+| [aider-ollama-qwen3-4b](aider-ollama-qwen3-4b.md) | `ollama_chat/qwen3:4b` | tiny (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.22 | 0.17 | 13650 s | 0 / 0 | $0.00 | n/a | none |
+| [aider-ollama-smollm2-1.7b](aider-ollama-smollm2-1.7b.md) | `ollama_chat/smollm2:1.7b` | tiny (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.22 | 0.17 | 4652 s | 10,968 / 2,392 | $0.00 | n/a | none |
+| [aider-ollama-sqlcoder-7b](aider-ollama-sqlcoder-7b.md) | `ollama_chat/sqlcoder:7b` | domain: SQL (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.22 | 0.17 | 11742 s | 1,300 / 738 | $0.00 | n/a | none |
+| [aider-ollama-starcoder2-15b](aider-ollama-starcoder2-15b.md) | `ollama_chat/starcoder2:15b` | coding (base model, not tuned for chat) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.22 | 0.17 | 11841 s | 693 / 2,100 | $0.00 | n/a | none |
+| [aider-ollama-llama3.2-3b](aider-ollama-llama3.2-3b.md) | `ollama_chat/llama3.2:3b` | tiny (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.22 | 0.16 | 2616 s | 275,800 / 11,699 | $0.00 | n/a | none |
+| [aider-ollama-deepseek-coder-v2-16b](aider-ollama-deepseek-coder-v2-16b.md) | `ollama_chat/deepseek-coder-v2:16b` | coding | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.21 | 0.16 | 2687 s | 152,800 / 13,776 | $0.00 | n/a | none |
+| [aider-ollama-falcon3-10b](aider-ollama-falcon3-10b.md) | `ollama_chat/falcon3:10b` | general chat (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.20 | 0.15 | 5140 s | 182,200 / 14,699 | $0.00 | n/a | none |
+| [aider-ollama-deepcoder-14b](aider-ollama-deepcoder-14b.md) | `ollama_chat/deepcoder:14b` | coding | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.19 | 0.14 | 13650 s | 111,700 / 19,300 | $0.00 | n/a | none |
+| [aider-ollama-gemma3-12b](aider-ollama-gemma3-12b.md) | `ollama_chat/gemma3:12b` | general chat (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.18 | 0.14 | 5244 s | 154,900 / 16,303 | $0.00 | n/a | none |
+| [aider-ollama-mistral-7b](aider-ollama-mistral-7b.md) | `ollama_chat/mistral:7b` | general chat (off-label) | oss | GitHub-hosted runner (4 vCPU, 15 GB, CPU only) | 6 | 0 / 6 | 0% (0% to 39%) | 0.17 | 0.12 | 6186 s | 167,000 / 14,812 | $0.00 | n/a | none |
 | [reference](reference.md) | `-` | - | calibration | runner | 6 | 6 / 6 | 100% (61% to 100%) | 0.97 | 0.98 | 0 s | 0 / 0 | n/a | n/a | n/a |
 | [noop](noop.md) | `-` | - | calibration | runner | 6 | 0 / 6 | 0% (0% to 39%) | 0.22 | 0.17 | 0 s | 0 / 0 | n/a | n/a | n/a |
 
@@ -26,14 +54,42 @@ Every agent is aider driving one model on the benchmark's pure tasks, in the ben
 
 | Agent | counter-reset (ECL 2) | erp-retry-after (ECL -) | oee-unknown-time (ECL 2) | process-mining-analysis (ECL 3) | process-spec-network-loss (ECL 3) | spc-ewma-chart (ECL 2) |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| aider-gemini-flash | 1.00 PASS | 1.00 PASS | 0.91 PASS | 0.91 PASS | 0.53 fail |  |
+| aider-gemini-flash | 1.00 PASS | 1.00 PASS | 0.91 PASS | 0.91 PASS | 0.53 fail | 0.13 fail |
 | aider-openrouter-free | 1.00 PASS | 0.38 fail | 1.00 PASS | 1.00 PASS | 0.53 fail | 0.13 fail |
 | aider-ollama-gpt-oss-20b | 0.91 PASS | 0.26 fail | 0.78 fail | 0.36 fail | 0.47 fail | 0.13 fail |
+| aider-ollama-deepseek-r1-14b | 0.58 fail | 0.26 fail | 0.39 fail | 0.14 fail | 0.40 fail | 0.56 fail |
 | aider-ollama-qwen2.5-coder-14b | 0.51 fail | 0.26 fail | 0.53 fail | 0.14 fail | 0.20 fail | 0.13 fail |
+| aider-ollama-phi4-reasoning-14b | 0.51 fail | 0.26 fail | 0.13 fail | 0.14 fail | 0.47 fail | 0.13 fail |
 | aider-ollama-qwen3-8b | 0.51 fail | 0.38 fail | 0.13 fail | 0.14 fail | 0.16 fail | 0.19 fail |
+| aider-ollama-llama3.1-8b | 0.51 fail | 0.03 fail | 0.19 fail | 0.28 fail | 0.36 fail | 0.13 fail |
+| aider-ollama-qwen2.5-coder-1.5b | 0.57 fail | 0.26 fail | 0.19 fail | 0.14 fail | 0.16 fail | 0.19 fail |
+| aider-ollama-yi-coder-9b | 0.57 fail | 0.31 fail | 0.19 fail | 0.14 fail | 0.16 fail | 0.13 fail |
+| aider-ollama-phi4-mini-3.8b | 0.51 fail | 0.26 fail | 0.23 fail | 0.14 fail | 0.16 fail | 0.19 fail |
+| aider-ollama-gemma3-1b | 0.57 fail | 0.31 fail | 0.13 fail | 0.14 fail | 0.20 fail | 0.13 fail |
+| aider-ollama-granite3.3-2b | 0.51 fail | 0.26 fail | 0.19 fail | 0.14 fail | 0.16 fail | 0.13 fail |
+| aider-ollama-mistral-nemo-12b | 0.51 fail | 0.29 fail | 0.13 fail | 0.21 fail | 0.17 fail | 0.05 fail |
+| aider-ollama-olmo2-13b | 0.55 fail | 0.26 fail | 0.13 fail | 0.14 fail | 0.16 fail | 0.13 fail |
+| aider-ollama-codegemma-7b | 0.51 fail | 0.26 fail | 0.13 fail | 0.14 fail | 0.16 fail | 0.13 fail |
+| aider-ollama-deepscaler-1.5b | 0.51 fail | 0.26 fail | 0.13 fail | 0.14 fail | 0.16 fail | 0.13 fail |
+| aider-ollama-granite-code-8b | 0.51 fail | 0.26 fail | 0.13 fail | 0.14 fail | 0.16 fail | 0.13 fail |
 | aider-ollama-granite3.3-8b | 0.51 fail | 0.26 fail | 0.13 fail | 0.14 fail | 0.16 fail | 0.13 fail |
+| aider-ollama-mathstral-7b | 0.51 fail | 0.26 fail | 0.13 fail | 0.14 fail | 0.16 fail | 0.13 fail |
+| aider-ollama-meditron-7b | 0.51 fail | 0.26 fail | 0.13 fail | 0.14 fail | 0.16 fail | 0.13 fail |
+| aider-ollama-phi4-14b | 0.51 fail | 0.26 fail | 0.13 fail | 0.14 fail | 0.16 fail | 0.13 fail |
 | aider-ollama-qwen2.5-coder-7b | 0.51 fail | 0.26 fail | 0.13 fail | 0.14 fail | 0.16 fail | 0.13 fail |
+| aider-ollama-qwen3-0.6b | 0.51 fail | 0.26 fail | 0.13 fail | 0.14 fail | 0.16 fail | 0.13 fail |
+| aider-ollama-qwen3-1.7b | 0.51 fail | 0.26 fail | 0.13 fail | 0.14 fail | 0.16 fail | 0.13 fail |
 | aider-ollama-qwen3-14b | 0.51 fail | 0.26 fail | 0.13 fail | 0.14 fail | 0.16 fail | 0.13 fail |
+| aider-ollama-qwen3-4b | 0.51 fail | 0.26 fail | 0.13 fail | 0.14 fail | 0.16 fail | 0.13 fail |
+| aider-ollama-smollm2-1.7b | 0.51 fail | 0.26 fail | 0.13 fail | 0.14 fail | 0.16 fail | 0.13 fail |
+| aider-ollama-sqlcoder-7b | 0.51 fail | 0.26 fail | 0.13 fail | 0.14 fail | 0.16 fail | 0.13 fail |
+| aider-ollama-starcoder2-15b | 0.51 fail | 0.26 fail | 0.13 fail | 0.14 fail | 0.16 fail | 0.13 fail |
+| aider-ollama-llama3.2-3b | 0.57 fail | 0.20 fail | 0.19 fail | 0.12 fail | 0.17 fail | 0.07 fail |
+| aider-ollama-deepseek-coder-v2-16b | 0.57 fail | 0.07 fail | 0.19 fail | 0.14 fail | 0.16 fail | 0.13 fail |
+| aider-ollama-falcon3-10b | 0.51 fail | 0.02 fail | 0.20 fail | 0.14 fail | 0.16 fail | 0.13 fail |
+| aider-ollama-deepcoder-14b | 0.51 fail | 0.07 fail | 0.19 fail | 0.14 fail | 0.16 fail | 0.07 fail |
+| aider-ollama-gemma3-12b | 0.20 fail | 0.04 fail | 0.42 fail | 0.14 fail | 0.16 fail | 0.13 fail |
+| aider-ollama-mistral-7b | 0.18 fail | 0.26 fail | 0.19 fail | 0.14 fail | 0.16 fail | 0.07 fail |
 | reference | 0.99 PASS | 1.00 PASS | 0.99 PASS | 0.90 PASS | 0.98 PASS | 0.99 PASS |
 | noop | 0.51 fail | 0.26 fail | 0.13 fail | 0.14 fail | 0.16 fail | 0.13 fail |
 
@@ -63,7 +119,7 @@ Every agent is aider driving one model on the benchmark's pure tasks, in the ben
 - Not run: `aider-nvidia-qwen3-coder`: NVIDIA Build listed no Qwen3-Coder model for this key on 2026-11-16.
 - Local models on GitHub-hosted runners ran on CPU (4 vCPU, 16 GB). Speed is not scored against them here beyond the efficiency term in the composite; read quality.
 - "Built for" is what the model's makers tuned it for. Models marked off-label (general chat, reasoning, tiny or domain models) are not meant for agentic coding; they are here to show how far each kind gets on FoaMES work.
-- Gemini's `spc-ewma-chart` run is left out: it was the sixth task in the job and met the free tier's limit of 20 requests a day for `gemini-3.8-flash` (HTTP 429). The rerun after the quota reset (workflow run 43830642714) got HTTP 503 from Google (model overloaded) on every request, so it is left out too (`runs/run-aider-gemini-flash-spc-ewma-chart_/dropped-unavailable.jsonl`); it is retried later.
+- Gemini's `spc-ewma-chart` is from its third attempt (workflow run 43871563784). The first met the free tier's limit of 20 requests a day (HTTP 429) and the second got HTTP 503 (model overloaded) on every request; both are kept out of the scores, in `runs/run-aider-gemini-flash-all_/dropped-rate-limited.jsonl` and `runs/run-aider-gemini-flash-spc-ewma-chart_/dropped-unavailable.jsonl`.
 - The first local-model run (workflow run 43784200629) is not in this report: on 4 CPU cores most requests outlived aider's 600-second timeout and were retried until aider gave up, so its scores measured the timeout. The local models were rerun with a one-hour request timeout.
 - OpenRouter's `qwen/qwen3-coder:free` had gone paid-only; the agent ran on the free model with the largest context window that day, `thinkingmachines/inkling-2-small:free`.
-- Local models on the 4-vCPU runners mostly ran out of time: each task's limit is thirteen times its budget (up to 3.25 hours), and many runs used all of it while producing a few thousand tokens. Only gpt-oss 20b passed a task (1 of 6). On CPU these scores say more about speed than about what the models can do; the GPU notebook runs the larger models without that limit.
+- Local models on the 4-vCPU runners mostly ran out of time: each task's limit is thirteen times its budget (up to 3.25 hours), and many runs used all of it while producing a few thousand tokens. Of the 34 local models, only gpt-oss 20b passed a task (1 of 6). On CPU these scores say more about speed than about what the models can do; the GPU notebook runs the larger models without that limit.

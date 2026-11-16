@@ -9,6 +9,5 @@
  "aider-ollama-deepseek-r1-32b": "Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet)",
  "aider-ollama-qwen3-30b": "Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet)",
  "aider-nvidia-*": "Running in Actions (runs 43805934998 and the 2026-11-16 08:40 UTC rerun with corrected model candidates)",
- "aider-ollama-*": "Running in Actions (run 43805918094)",
  "claude-code-*": "Running on the sector case studies; results due in the next dated report"
 }

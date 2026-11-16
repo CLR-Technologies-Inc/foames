@@ -16,7 +16,7 @@
 - **Where it ran:** GitHub-hosted runner, model on the provider's free API tier; sandbox docker, image `sha256:6166f83c4e86`
 - **FoaMES commit:** `ac71285e4838`
 - Aider on a free API tier; needs the OPENROUTER_API_KEY Actions secret. OpenRouter free model; 50 requests a day without credits. The job picks the first candidate still listed with a :free id (qwen3-coder:free went paid-only in 2026-11), else the free model with the largest context. Free tiers can use prompts for training: send only public benchmark scenarios.
-- Workflow run: https://github.com/CLR-Technologies-Inc/foames/actions/runs/43796612771
+- Workflow run: https://github.com/CLR-Technologies-Inc/foames/actions/runs/43805918094
 
 | Runs | Success (95 % CI) | Quality | Correctness | Process | Composite | Mean time | Tokens in / cached / out | Cost | List-price equivalent | ECL reached |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |

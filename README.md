@@ -135,7 +135,7 @@ Each agent runs the same tasks in the [agent benchmark](benchmarks/README.md): t
 
 | Agent | Model | Built for | Report | Tasks run | Pass rate | ECL reached |
 | --- | --- | --- | --- | ---: | ---: | --- |
-| aider-gemini-flash | `gemini/gemini-3.8-flash` | - | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 5 | 80% | ECL 2 |
+| aider-gemini-flash | `gemini/gemini-3.8-flash` | - | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 67% | none |
 
 **OpenRouter, free models**
 
@@ -188,34 +188,34 @@ Each agent runs the same tasks in the [agent benchmark](benchmarks/README.md): t
 | aider-ollama-qwen3-14b | `ollama_chat/qwen3:14b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
 | aider-ollama-granite3.3-8b | `ollama_chat/granite3.3:8b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
 | aider-ollama-gpt-oss-20b | `ollama_chat/gpt-oss:20b` | reasoning (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 17% | none |
-| aider-ollama-deepseek-coder-v2-16b | `ollama_chat/deepseek-coder-v2:16b` | coding | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-yi-coder-9b | `ollama_chat/yi-coder:9b` | coding | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-granite-code-8b | `ollama_chat/granite-code:8b` | coding | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-codegemma-7b | `ollama_chat/codegemma:7b` | coding | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-deepcoder-14b | `ollama_chat/deepcoder:14b` | coding | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-starcoder2-15b | `ollama_chat/starcoder2:15b` | coding (base model, not tuned for chat) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-qwen2.5-coder-1.5b | `ollama_chat/qwen2.5-coder:1.5b` | coding | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-llama3.1-8b | `ollama_chat/llama3.1:8b` | general chat (off-label) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-mistral-7b | `ollama_chat/mistral:7b` | general chat (off-label) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-mistral-nemo-12b | `ollama_chat/mistral-nemo:12b` | general chat (off-label) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-gemma3-12b | `ollama_chat/gemma3:12b` | general chat (off-label) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-phi4-14b | `ollama_chat/phi4:14b` | general chat (off-label) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-olmo2-13b | `ollama_chat/olmo2:13b` | general chat (fully open data) (off-label) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-falcon3-10b | `ollama_chat/falcon3:10b` | general chat (off-label) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-deepseek-r1-14b | `ollama_chat/deepseek-r1:14b` | reasoning (off-label) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-phi4-reasoning-14b | `ollama_chat/phi4-reasoning:14b` | reasoning (off-label) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-qwen3-4b | `ollama_chat/qwen3:4b` | tiny (off-label) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-qwen3-1.7b | `ollama_chat/qwen3:1.7b` | tiny (off-label) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-qwen3-0.6b | `ollama_chat/qwen3:0.6b` | tiny (off-label) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-phi4-mini-3.8b | `ollama_chat/phi4-mini:3.8b` | tiny (off-label) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-llama3.2-3b | `ollama_chat/llama3.2:3b` | tiny (off-label) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-gemma3-1b | `ollama_chat/gemma3:1b` | tiny (off-label) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-granite3.3-2b | `ollama_chat/granite3.3:2b` | tiny (off-label) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-smollm2-1.7b | `ollama_chat/smollm2:1.7b` | tiny (off-label) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-mathstral-7b | `ollama_chat/mathstral:7b` | domain: maths and science (off-label) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-deepscaler-1.5b | `ollama_chat/deepscaler:1.5b` | domain: maths reasoning (off-label) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-meditron-7b | `ollama_chat/meditron:7b` | domain: medicine (off-label) | Running in Actions (run 43805918094) | - | - | - |
-| aider-ollama-sqlcoder-7b | `ollama_chat/sqlcoder:7b` | domain: SQL (off-label) | Running in Actions (run 43805918094) | - | - | - |
+| aider-ollama-deepseek-coder-v2-16b | `ollama_chat/deepseek-coder-v2:16b` | coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-yi-coder-9b | `ollama_chat/yi-coder:9b` | coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-granite-code-8b | `ollama_chat/granite-code:8b` | coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-codegemma-7b | `ollama_chat/codegemma:7b` | coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-deepcoder-14b | `ollama_chat/deepcoder:14b` | coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-starcoder2-15b | `ollama_chat/starcoder2:15b` | coding (base model, not tuned for chat) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-qwen2.5-coder-1.5b | `ollama_chat/qwen2.5-coder:1.5b` | coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-llama3.1-8b | `ollama_chat/llama3.1:8b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-mistral-7b | `ollama_chat/mistral:7b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-mistral-nemo-12b | `ollama_chat/mistral-nemo:12b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-gemma3-12b | `ollama_chat/gemma3:12b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-phi4-14b | `ollama_chat/phi4:14b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-olmo2-13b | `ollama_chat/olmo2:13b` | general chat (fully open data) (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-falcon3-10b | `ollama_chat/falcon3:10b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-deepseek-r1-14b | `ollama_chat/deepseek-r1:14b` | reasoning (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-phi4-reasoning-14b | `ollama_chat/phi4-reasoning:14b` | reasoning (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-qwen3-4b | `ollama_chat/qwen3:4b` | tiny (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-qwen3-1.7b | `ollama_chat/qwen3:1.7b` | tiny (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-qwen3-0.6b | `ollama_chat/qwen3:0.6b` | tiny (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-phi4-mini-3.8b | `ollama_chat/phi4-mini:3.8b` | tiny (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-llama3.2-3b | `ollama_chat/llama3.2:3b` | tiny (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-gemma3-1b | `ollama_chat/gemma3:1b` | tiny (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-granite3.3-2b | `ollama_chat/granite3.3:2b` | tiny (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-smollm2-1.7b | `ollama_chat/smollm2:1.7b` | tiny (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-mathstral-7b | `ollama_chat/mathstral:7b` | domain: maths and science (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-deepscaler-1.5b | `ollama_chat/deepscaler:1.5b` | domain: maths reasoning (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-meditron-7b | `ollama_chat/meditron:7b` | domain: medicine (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-sqlcoder-7b | `ollama_chat/sqlcoder:7b` | domain: SQL (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
 
 **Ollama on a free notebook GPU (Kaggle or Colab)**
 
