@@ -57,8 +57,14 @@ FoaMES already ends every agent action in a suggestion that a person accepts (se
 
 ECL rates the equipment. Its counterpart for what goes through the equipment is [Material processing complexity (MPC)](Explanation-Material-processing-complexity), which is upcoming. MPC uses the same oversight at the top: a single expert at level 4, and an expert team at level 5.
 
-## What is planned
+## ECL on the Machine record
 
-Today ECL exists in the benchmark and its recommendations. An ECL field on the Machine record, with agent eligibility tied to it (an agent registered for a machine only if its tier meets the machine's ECL), is planned and listed under [Upcoming features](Upcoming-features).
+Each Machine has an **Equipment Complexity Level (ECL)** field, with the class id it was taken from in the public [Equipment Complexity Levels list](https://github.com/CLR-Technologies-Inc/equipment-complexity-levels) and a rationale. People set these fields; an agent may only propose a value. Over MCP, `foames_get_equipment_profile(machine, tier)` returns what the level means for an agent: the minimum tier, its role, the oversight and the line's ECL. Given the agent's tier, it also says whether the agent is eligible. The rules match the benchmark's:
+
+- An unrated machine has no eligible agent. Rate it first.
+- An agent whose tier is below the level's minimum is not eligible.
+- At ECL 4 an eligible agent narrows the options for one expert. At ECL 5 no agent is eligible, and an agent may only list options for the expert team.
+
+The [equipment agent](How-to-Rate-equipment-and-run-the-equipment-agent) follows these rules and proposes ratings from the public list. The [materials agent](How-to-Run-the-materials-agent) combines a machine's ECL with its material's MPC, and the stricter oversight wins.
 
 The tier floors in the table are dated prior recommendations, like the TRL matrix. They are not measured results, so replace them with your own runs.

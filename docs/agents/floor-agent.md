@@ -14,6 +14,8 @@ FoaMES exposes the plant floor to agents as one snapshot and takes suggestions b
 
 Over MCP these are the tools `foames_get_floor_snapshot`, `foames_post_suggestion`, `foames_run_suggestion_rules`, `foames_get_oee` and `foames_set_current_job`, next to `foames_list_machines`, `foames_get_machine`, `foames_list_downtime`, `foames_downtime_by_reason`, `foames_list_suggestions` and the `foames_mining_*` tools. Connecting a client and the full list are in [../mcp.md](../mcp.md).
 
+Before advising on one machine, read its Equipment Complexity Level with `foames_get_equipment_profile(machine, tier)`. It says whether an agent of your model tier may advise on it, and who reviews: one expert at ECL 4, a team of experts at ECL 5. The [equipment agent](equipment-agent/SKILL.md) and [materials agent](materials-agent/SKILL.md) skills build on this playbook.
+
 Rules for an agent:
 
 - Suggest, never act. Releases, holds, dispositions and ERP postings are done by people through the DocTypes; an agent's output is an Agent Suggestion with evidence.

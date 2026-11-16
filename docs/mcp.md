@@ -2,7 +2,7 @@
 
 FoaMES speaks the Model Context Protocol (MCP), so an agent in Claude Desktop, Claude Code, Cursor or any other MCP client can read the plant floor and raise suggestions through tools, with no custom integration. The server exposes the public FoaMES API and nothing more: every tool is one whitelisted method that is already callable at `/api/method/...`, run as the user whose API key the agent holds, with that user's permissions.
 
-The 26 tools cover machines and their state, machine events, downtime, OEE, automatic and manual time projections, the floor snapshot, Agent Suggestions, process mining (event logs, discovery, conformance, export) and ERP reference reads through whichever adapters are registered on the site. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act.
+The 28 tools cover machines and their state and Equipment Complexity Level (ECL), machine events, downtime, OEE, automatic and manual time projections, the floor snapshot, Agent Suggestions, process mining (event logs, discovery, conformance, export) and ERP reference reads through whichever adapters are registered on the site. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act.
 
 ## Two ways to connect
 
@@ -81,8 +81,10 @@ Permissions are the DocType permissions of the user behind the key, checked by t
 
 | Tool | Returns |
 | --- | --- |
-| `foames_list_machines(status, machine_type, include_disabled, limit)` | Machines with state, last seen, last count, cycle time, shift |
+| `foames_list_machines(status, machine_type, include_disabled, limit, ecl)` | Machines with state, last seen, last count, cycle time, shift, ECL |
 | `foames_get_machine(machine)` | One machine, counts of the last 24 hours, open downtime, latest OEE Period, last 20 state changes |
+| `foames_get_equipment_profile(machine, tier)` | A machine's ECL, minimum model tier, agent role, human oversight and line ECL; with `tier`, whether an agent of that tier may be tied to it |
+| `foames_list_equipment_complexity(line, include_disabled)` | Every machine's ECL and oversight, the count per level, unrated machines, each line's ECL |
 | `foames_list_machine_events(machine, event_type, since, until, limit)` | Raw events, newest first, with counter deltas |
 | `foames_list_downtime(machine, status, reason, since, until, limit)` | Downtime Records |
 | `foames_downtime_by_reason(machine, since, until)` | Minutes per reason in the window, plus unclassified minutes |

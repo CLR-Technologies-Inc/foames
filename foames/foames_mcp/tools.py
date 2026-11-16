@@ -41,8 +41,10 @@ raise suggestions. Rules: suggest, never act (releases, holds, dispositions and 
 by people); quote the numbers you relied on in `evidence`; time without a machine signal is loss, \
 never production, so do not infer output from silence. Start with foames_get_floor_snapshot for the \
 whole floor, foames_list_machines for one machine at a time, foames_get_oee for any window, and the \
-foames_mining_* tools for how work really flows. Datetimes are the site's local time, \
-formatted YYYY-MM-DD HH:MM:SS."""
+foames_mining_* tools for how work really flows. Before advising on a machine, read its \
+Equipment Complexity Level with foames_get_equipment_profile: at ECL 4 one human expert reviews \
+your suggestion, at ECL 5 a team of experts decides and you only list options. Datetimes are the \
+site's local time, formatted YYYY-MM-DD HH:MM:SS."""
 
 
 def _s(description: str, **extra) -> dict:
@@ -92,7 +94,7 @@ TOOLS: list[Tool] = [
 	Tool(
 		name="foames_list_machines",
 		title="List machines",
-		description="Machines with their current state, when they last reported, when they last counted a part, their ideal cycle time and shift. Needs read on Machine.",
+		description="Machines with their current state, when they last reported, when they last counted a part, their ideal cycle time, shift and Equipment Complexity Level (ECL). Needs read on Machine.",
 		method=f"{READS}.list_machines",
 		input_schema=_schema(
 			{
@@ -100,6 +102,7 @@ TOOLS: list[Tool] = [
 				"machine_type": _s("Only machines of this type (free text on the Machine)"),
 				"include_disabled": _b("Include disabled machines (default false)"),
 				"limit": LIMIT,
+				"ecl": _i("Only machines at this Equipment Complexity Level", minimum=1, maximum=5),
 			}
 		),
 	),
@@ -122,6 +125,32 @@ TOOLS: list[Tool] = [
 				"since": SINCE,
 				"until": UNTIL,
 				"limit": LIMIT,
+			}
+		),
+	),
+	# Equipment complexity ------------------------------------------------------------------
+	Tool(
+		name="foames_get_equipment_profile",
+		title="Equipment profile",
+		description="A machine's Equipment Complexity Level (ECL 1-5) and what it means for an agent: the minimum model tier (oss, baseline, frontier, or none at ECL 5), the agent's role, the human oversight (ECL 4: Human Expert Recommended, one expert; ECL 5: Expert Team Required, a team of experts), and the ECL of its line. Pass `tier` to check whether an agent of that tier may be tied to the machine. Call it before advising on a machine. Needs read on Machine.",
+		method=f"{READS}.get_equipment_profile",
+		input_schema=_schema(
+			{
+				"machine": MACHINE,
+				"tier": _s("Your model tier, to check eligibility", enum=["oss", "baseline", "frontier"]),
+			},
+			["machine"],
+		),
+	),
+	Tool(
+		name="foames_list_equipment_complexity",
+		title="List equipment complexity",
+		description="Every machine's ECL with its minimum tier and oversight, the count per level, the machines not rated yet, and each line's ECL (its most complex rated member). Needs read on Machine.",
+		method=f"{READS}.list_equipment_complexity",
+		input_schema=_schema(
+			{
+				"line": _s("Only machines on this line"),
+				"include_disabled": _b("Include disabled machines (default false)"),
 			}
 		),
 	),

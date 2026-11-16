@@ -38,7 +38,8 @@ Start with [overview.md](overview.md) for what FoaMES records, then [installatio
 | Page | What it covers |
 | --- | --- |
 | [../AGENTS.md](../AGENTS.md) | The guide for coding agents and developers building on or integrating FoaMES: invariants, extension hooks, API surface, tests |
-| [mcp.md](mcp.md) | The MCP server: connecting Claude Desktop, Claude Code or any MCP client with an API key, the 26 tools, permissions, limits |
+| [mcp.md](mcp.md) | The MCP server: connecting Claude Desktop, Claude Code or any MCP client with an API key, the 28 tools, permissions, limits |
 | [agents/floor-agent.md](agents/floor-agent.md) | The playbook for an agent that reads the floor snapshot and raises suggestions, with the MCP tool names |
+| [agents/README.md](agents/README.md) | The usage agents: the equipment agent (ECL) and the materials agent (lineside stock, queues, MPC) |
 | [agents/research-to-code.md](agents/research-to-code.md) | The playbook for turning a public paper into a FoaMES change: sourcing rules, go or no-go triage, data mapping, invariant check, landing zones, test-first from the paper; [research-to-code-example.md](agents/research-to-code-example.md) is a worked run |
 | [case-studies/README.md](case-studies/README.md) | Scaffolds for case studies of discrete, process and logistics improvements (changeover, yield and energy, electric trucks, autonomous trucks), with a shared template and honesty rules |

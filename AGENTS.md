@@ -1,6 +1,6 @@
 # AGENTS.md: working on and with FoaMES
 
-This file is for coding agents and developers who implement something on top of FoaMES, connect a plant to it, or change it. It states what FoaMES is, the rules the code base keeps, where things are, how to extend it without forking it, and how to test. Human-facing guides are under [docs/](docs/README.md); the playbook for an agent that reads the floor at run time is [docs/agents/floor-agent.md](docs/agents/floor-agent.md).
+This file is for coding agents and developers who implement something on top of FoaMES, connect a plant to it, or change it. It states what FoaMES is, the rules the code base keeps, where things are, how to extend it without forking it, and how to test. Human-facing guides are under [docs/](docs/README.md); the playbook for an agent that reads the floor at run time is [docs/agents/floor-agent.md](docs/agents/floor-agent.md), and the equipment and materials agents are skills under [docs/agents/](docs/agents/README.md).
 
 **This file is vendor-neutral on purpose.** Anything that is true of one ERP, SCADA product or other vendor (its settings, its rules, its hooks and endpoints, how to test it) lives in that vendor's own `AGENTS.md`, next to its code, and in its guide under `docs/vendors/`. Read the `AGENTS.md` closest to the code you change; see [Finding vendor guidance](#finding-vendor-guidance).
 
@@ -29,7 +29,7 @@ Keep these whatever you build. A pull request that breaks one will not be merged
 4. **Unknown time is loss.** The OEE ledger is built from state events with Downtime Records overlaid, and an Unknown state is never run time. A machine that stops reporting gets an Unknown state event from the scheduler's staleness check (source System), and the Sparkplug gateway writes one at once on NDEATH or DDEATH. Do not add code that infers output or run time from the absence of events.
 5. **Agents suggest; people act.** Anything an agent or a rule finds becomes an `Agent Suggestion` with evidence. FoaMES does not write tags, send commands to SCADA, change machine state on its own, or post to an ERP without an explicit, idempotent posting a person configured.
 6. **Postings to an ERP are idempotent and sequenced.** An idempotency key per business event, a marker written into the created document, a check before resending after an unclear answer, exponential backoff, strict order within a sequence group. The adapters' outboxes are the model; the details are in [foames/foames_adapters/AGENTS.md](foames/foames_adapters/AGENTS.md). Follow it for any new write path.
-7. **Pure logic stays pure.** `oee.py`, `counters.py`, `shifts.py`, `andon.py`, `suggestions.py`, `maintenance.py`, `cycle_time.py`, `sop.py`, `signing.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, the process-mining core and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe, and so do the arithmetic, parsing and protocol modules of each adapter (each vendor's `AGENTS.md` lists its own). Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
+7. **Pure logic stays pure.** `oee.py`, `counters.py`, `shifts.py`, `andon.py`, `suggestions.py`, `maintenance.py`, `cycle_time.py`, `sop.py`, `signing.py`, `ecl.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, the process-mining core and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe, and so do the arithmetic, parsing and protocol modules of each adapter (each vendor's `AGENTS.md` lists its own). Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
 8. **Secrets live in Password fields** of a Settings DocType (`Machine Data Settings`, or the adapter's own Settings), read with `get_password`. Never in code, hooks or site config, never logged.
 9. **Both Frappe versions.** Use `foames.tests_compat.IntegrationTestCase` for site tests. Avoid APIs that exist in only one of v15 and v16.
 
@@ -54,6 +54,7 @@ foames/
     api.py                    ingest_machine_events, get_floor_snapshot, run_suggestion_rules, post_suggestion
     floor.py                  floor_snapshot, collect_findings
     oee.py  counters.py  shifts.py  suggestions.py  signing.py  kpi.py  spc.py  maintenance.py   pure logic (kpi.py: report roll-ups, shifts.py: shift calendars, spc.py: control charts)
+    ecl.py                    pure: Equipment Complexity Level, minimum model tier, agent eligibility and oversight
     cycle_time.py             pure: automatic and manual time, projections, scenarios, calibration; cycle_time_api.py serves them
     sop.py                    pure: SOP revision lifecycle, sign-off, periodic review and training status
     cbom.py                   pure: the site CBOM with the deployed certificates; site_cbom.py reads the site and writes it
