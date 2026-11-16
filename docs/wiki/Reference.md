@@ -15,3 +15,4 @@ Reference pages describe FoaMES as it is on `main`: names, fields, parameters an
 | [Reports and workspaces](Reference-Reports-and-workspaces) | Script reports, workspaces, dashboards and number cards |
 | [Integrations](Reference-Integrations) | Every shipped integration, its adapter key and guide |
 | [Licensing and SBOM](Reference-Licensing-and-SBOM) | The licence, notices, CLA, dependency licences and the CycloneDX SBOM |
+| [Vendor interoperability](Reference-Vendor-interoperability) | What each vendor publishes about its API, what its terms allow, what FoaMES can and cannot write, and where each sits on the roadmap (not legal advice) |

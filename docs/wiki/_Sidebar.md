@@ -44,6 +44,7 @@
 - [[Reports and workspaces|Reference-Reports-and-workspaces]]
 - [[Integrations|Reference-Integrations]]
 - [[Licensing and SBOM|Reference-Licensing-and-SBOM]]
+- [[Vendor interoperability|Reference-Vendor-interoperability]]
 
 **[[Explanation|Explanation]]** (understand)
 - [[ERP-agnostic core and adapters|Explanation-ERP-agnostic-core-and-adapters]]

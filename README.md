@@ -30,7 +30,7 @@ Which ERPs and other manufacturing systems have an adapter, and what each one re
 
 ## Integrations
 
-FoaMES reaches other systems only through adapters and gateway paths, so none of them is required and each can be added or removed without touching the core. How each one is set up is in its guide under [docs/vendors/](docs/vendors/README.md).
+FoaMES reaches other systems only through adapters and gateway paths, so none of them is required and each can be added or removed without touching the core. How each one is set up is in its guide under [docs/vendors/](docs/vendors/README.md). What each vendor publishes about its API, what its terms allow FoaMES to write, and where each integration sits on the roadmap is in [docs/vendor-interoperability.md](docs/vendor-interoperability.md) (not legal advice).
 
 ### Existing alpha integrations
 

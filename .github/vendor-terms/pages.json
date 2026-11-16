@@ -1,0 +1,224 @@
+{
+  "_comment": "Vendor terms pages cited in docs/vendor-interoperability.md. mode 'fetch' pages are fetched by .github/scripts/check_vendor_terms.py (robots.txt respected, generic user agent) and their visible text hashed; mode 'manual' pages are never fetched automatically, because the site's terms or robots.txt forbid automated access or the page needs a login or a JavaScript renderer, and a person reviews them on the monthly reminder. Hashes of reviewed text live in state.json.",
+  "pages": [
+    {
+      "id": "aveva-mes-web-api-legal",
+      "vendor": "AVEVA MES",
+      "url": "https://docs.aveva.com/bundle/mes-web-api-v3/page/topic2.html",
+      "mode": "manual",
+      "reason": "Rendered by JavaScript; a plain fetch returns only the site shell"
+    },
+    {
+      "id": "aveva-terms-of-use",
+      "vendor": "AVEVA",
+      "url": "https://www.aveva.com/en/legal/terms-of-use/",
+      "mode": "fetch"
+    },
+    {
+      "id": "aveva-trademarks",
+      "vendor": "AVEVA",
+      "url": "https://www.aveva.com/en/legal/trademarks/",
+      "mode": "fetch"
+    },
+    {
+      "id": "aveva-pi-software-schedule",
+      "vendor": "AVEVA PI System",
+      "url": "https://www.aveva.com/content/dam/aveva/documents/legal/policies/AVEVA-Software-Schedule-PI-System-v1-5-June-2026.pdf",
+      "mode": "fetch",
+      "binary": true
+    },
+    {
+      "id": "aveva-osisoft-copyright",
+      "vendor": "AVEVA PI System",
+      "url": "https://www.aveva.com/en/legal/osisoft-terms-and-conditions/osisoft-copyright/",
+      "mode": "fetch"
+    },
+    {
+      "id": "sap-terms-of-use",
+      "vendor": "SAP",
+      "url": "https://www.sap.com/about/legal/terms-of-use.html",
+      "mode": "manual",
+      "reason": "SAP's terms (section 4) forbid access by bots, scrapers, MCP and agent frameworks"
+    },
+    {
+      "id": "sap-trademark",
+      "vendor": "SAP",
+      "url": "https://www.sap.com/about/legal/trademark.html",
+      "mode": "manual",
+      "reason": "SAP's terms (section 4) forbid access by bots, scrapers, MCP and agent frameworks"
+    },
+    {
+      "id": "sap-api-hub",
+      "vendor": "SAP",
+      "url": "https://api.sap.com/",
+      "mode": "manual",
+      "reason": "robots.txt disallows automated readers; SAP's terms forbid bots"
+    },
+    {
+      "id": "siemens-insights-hub-docs",
+      "vendor": "Siemens Insights Hub",
+      "url": "https://documentation.mindsphere.io/MindSphere/index.html",
+      "mode": "fetch"
+    },
+    {
+      "id": "siemens-terms-of-use",
+      "vendor": "Siemens",
+      "url": "https://www.siemens.com/global/en/general/terms-of-use.html",
+      "mode": "fetch"
+    },
+    {
+      "id": "plex-developer-portal",
+      "vendor": "Rockwell Plex",
+      "url": "https://developers.plex.com/",
+      "mode": "manual",
+      "reason": "Rendered by JavaScript; a plain fetch returns only the site shell"
+    },
+    {
+      "id": "rockwell-scsa",
+      "vendor": "Rockwell Automation",
+      "url": "https://www.rockwellautomation.com/en-us/company/about-us/legal-notices/software-cloud-services-agreement.html",
+      "mode": "fetch"
+    },
+    {
+      "id": "rockwell-terms-of-access",
+      "vendor": "Rockwell Automation",
+      "url": "https://www.rockwellautomation.com/en-us/company/about-us/legal-notices/terms-and-conditions-of-access.html",
+      "mode": "fetch"
+    },
+    {
+      "id": "rockwell-trademarks",
+      "vendor": "Rockwell Automation",
+      "url": "https://www.rockwellautomation.com/en-us/company/about-us/legal-notices/trademarks.html",
+      "mode": "fetch"
+    },
+    {
+      "id": "3ds-terms-of-use",
+      "vendor": "Dassault Systemes",
+      "url": "https://www.3ds.com/terms-of-use",
+      "mode": "manual",
+      "reason": "The terms prohibit robots and data mining"
+    },
+    {
+      "id": "cmf-help",
+      "vendor": "Critical Manufacturing",
+      "url": "https://help.criticalmanufacturing.com/",
+      "mode": "fetch"
+    },
+    {
+      "id": "cmf-terms",
+      "vendor": "Critical Manufacturing",
+      "url": "https://www.criticalmanufacturing.com/terms-privacy-policy/",
+      "mode": "manual",
+      "reason": "The terms forbid downloading site content without written authorisation"
+    },
+    {
+      "id": "tulip-api-docs",
+      "vendor": "Tulip",
+      "url": "https://support.tulip.co/apidocs/introduction",
+      "mode": "fetch"
+    },
+    {
+      "id": "tulip-api-license",
+      "vendor": "Tulip",
+      "url": "https://tulip.co/legal/api-license-agreement/",
+      "mode": "fetch"
+    },
+    {
+      "id": "tulip-developer-policy",
+      "vendor": "Tulip",
+      "url": "https://tulip.co/legal/developer-policy/",
+      "mode": "fetch"
+    },
+    {
+      "id": "tulip-terms-of-service",
+      "vendor": "Tulip",
+      "url": "https://tulip.co/legal/terms-of-service/",
+      "mode": "fetch"
+    },
+    {
+      "id": "aegis-general-terms",
+      "vendor": "Aegis FactoryLogix",
+      "url": "https://www.aiscorp.com/legal/general-terms-conditions",
+      "mode": "fetch"
+    },
+    {
+      "id": "koerber-legal",
+      "vendor": "Koerber PAS-X",
+      "url": "https://www.koerber.com/de/rechtliche-anforderungen/haftungsausschluss",
+      "mode": "fetch"
+    },
+    {
+      "id": "gevernova-docs",
+      "vendor": "GE Vernova Proficy",
+      "url": "https://www.gevernova.com/software/documentation/",
+      "mode": "manual",
+      "reason": "robots.txt disallows automated readers"
+    },
+    {
+      "id": "ignition-license",
+      "vendor": "Inductive Automation Ignition",
+      "url": "https://inductiveautomation.com/ignition/license",
+      "mode": "fetch"
+    },
+    {
+      "id": "ignition-sdk-docs",
+      "vendor": "Inductive Automation Ignition",
+      "url": "https://www.sdk-docs.inductiveautomation.com/",
+      "mode": "fetch"
+    },
+    {
+      "id": "sparkplug-spec",
+      "vendor": "Eclipse Sparkplug",
+      "url": "https://sparkplug.eclipse.org/specification",
+      "mode": "fetch"
+    },
+    {
+      "id": "eclipse-trademarks",
+      "vendor": "Eclipse Foundation",
+      "url": "https://www.eclipse.org/legal/logo-guidelines",
+      "mode": "fetch"
+    },
+    {
+      "id": "opc-specifications-agreement",
+      "vendor": "OPC Foundation",
+      "url": "https://opcfoundation.org/license/specifications/1.15/index.html",
+      "mode": "fetch"
+    },
+    {
+      "id": "erpnext-trademark-policy",
+      "vendor": "Frappe ERPNext",
+      "url": "https://raw.githubusercontent.com/frappe/erpnext/develop/TRADEMARK_POLICY.md",
+      "mode": "fetch"
+    },
+    {
+      "id": "influxdb-readme",
+      "vendor": "InfluxData InfluxDB",
+      "url": "https://raw.githubusercontent.com/influxdata/influxdb/main/README.md",
+      "mode": "fetch"
+    },
+    {
+      "id": "timescale-license",
+      "vendor": "Timescale",
+      "url": "https://raw.githubusercontent.com/timescale/timescaledb/main/tsl/LICENSE-TIMESCALE",
+      "mode": "fetch"
+    },
+    {
+      "id": "bluesky-license",
+      "vendor": "NSLS-II Bluesky",
+      "url": "https://raw.githubusercontent.com/bluesky/bluesky/main/LICENSE",
+      "mode": "fetch"
+    },
+    {
+      "id": "tiled-license",
+      "vendor": "NSLS-II Tiled",
+      "url": "https://raw.githubusercontent.com/bluesky/tiled/main/LICENSE",
+      "mode": "fetch"
+    },
+    {
+      "id": "dexpi-specifications",
+      "vendor": "DEXPI",
+      "url": "https://dexpi.org/specifications/",
+      "mode": "fetch"
+    }
+  ]
+}
