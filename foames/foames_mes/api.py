@@ -173,3 +173,56 @@ def post_suggestion(
 		if created
 		else frappe.db.get_value("Agent Suggestion", {"rule_key": finding["rule_key"]}, "name")
 	)
+
+
+# Material flow ---------------------------------------------------------------------------------------
+
+
+@frappe.whitelist()
+def get_material_status(machine: str | None = None) -> dict:
+	"""Lineside bins and material queues as last checked, for the whole floor or one machine: stock on
+	hand, use per hour, hours to dry, what to call for, queue counts and MPC levels."""
+	from foames.foames_mes.material_flow import BIN_FIELDS, QUEUE_FIELDS, machine_summary
+
+	frappe.has_permission("Lineside Bin", "read", throw=True)
+	frappe.has_permission("Material Queue", "read", throw=True)
+	filters = {"disabled": 0}
+	if machine:
+		filters["machine"] = machine
+	bins = frappe.get_all("Lineside Bin", filters=filters, fields=list(BIN_FIELDS), order_by="name")
+	queues = frappe.get_all("Material Queue", filters=filters, fields=list(QUEUE_FIELDS), order_by="name")
+	result = {"bins": bins, "queues": queues}
+	if machine:
+		result["summary"] = machine_summary(machine, bins, queues)
+	return result
+
+
+@frappe.whitelist()
+def get_dispatch_list(queue: str) -> list[dict]:
+	"""Material that may start now in one queue, in the order its dispatch rule picks. Entries still
+	conditioning, past their queue-time limit, expired or on hold are left out."""
+	from foames.foames_mes.material_flow import dispatch_list
+
+	frappe.has_permission("Material Queue Entry", "read", throw=True)
+	return dispatch_list(queue)
+
+
+@frappe.whitelist()
+def get_material_readiness(machine: str, hours: float = 0) -> dict:
+	"""Whether a machine has the material to run for the next `hours`: bins that run dry inside the
+	window and queue entries ready to start. For schedulers and agents deciding what to start."""
+	from foames.foames_mes.material_flow import material_readiness
+
+	frappe.has_permission("Lineside Bin", "read", throw=True)
+	frappe.has_permission("Material Queue Entry", "read", throw=True)
+	return material_readiness(machine, float(hours or 0))
+
+
+@frappe.whitelist(methods=["POST"])
+def check_lineside_bin(bin: str) -> dict:
+	"""Read one bin's stock from the ERP and recompute its forecast now. Changes only the FoaMES record."""
+	from foames.foames_mes.material_flow import refresh_bin
+
+	frappe.has_permission("Lineside Bin", "write", doc=bin, throw=True)
+	row = refresh_bin(bin)
+	return {"status": row["assessment"]["status"], **row["assessment"], "dry_at": row["dry_at"]}

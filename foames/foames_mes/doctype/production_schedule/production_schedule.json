@@ -1,0 +1,266 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 21:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "title",
+  "status",
+  "line",
+  "cb_head",
+  "schedule_start",
+  "horizon_days",
+  "dispatch_rule",
+  "allow_split",
+  "sb_jobs",
+  "jobs",
+  "sb_result",
+  "operations_scheduled",
+  "operations_unscheduled",
+  "late_jobs",
+  "cb_result",
+  "total_tardiness_minutes",
+  "makespan_end",
+  "built_on",
+  "cb_publish",
+  "published_on",
+  "published_by",
+  "sb_load",
+  "machine_load",
+  "problems"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "PSCH-.YYYY.-",
+   "default": "PSCH-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nPublished\nSuperseded",
+   "default": "Draft",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "line",
+   "fieldtype": "Data",
+   "label": "Line",
+   "in_standard_filter": 1,
+   "description": "Only machines on this line. Empty: every enabled machine"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "schedule_start",
+   "fieldtype": "Datetime",
+   "label": "Start",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "horizon_days",
+   "fieldtype": "Int",
+   "label": "Horizon Days",
+   "default": "7",
+   "reqd": 1
+  },
+  {
+   "fieldname": "dispatch_rule",
+   "fieldtype": "Select",
+   "label": "Dispatching Rule",
+   "options": "EDD\nSPT\nFIFO\nPriority\nCR",
+   "default": "EDD",
+   "reqd": 1,
+   "description": "EDD earliest due date, SPT shortest processing time, FIFO first in first out, Priority highest first, CR critical ratio"
+  },
+  {
+   "fieldname": "allow_split",
+   "fieldtype": "Check",
+   "label": "Pause Over Breaks",
+   "default": "1",
+   "description": "An operation may stop at the end of a shift and continue in the next one"
+  },
+  {
+   "fieldname": "sb_jobs",
+   "fieldtype": "Section Break",
+   "label": "Operations to Schedule"
+  },
+  {
+   "fieldname": "jobs",
+   "fieldtype": "Table",
+   "label": "Operations",
+   "options": "Production Schedule Job"
+  },
+  {
+   "fieldname": "sb_result",
+   "fieldtype": "Section Break",
+   "label": "Result"
+  },
+  {
+   "fieldname": "operations_scheduled",
+   "fieldtype": "Int",
+   "label": "Scheduled",
+   "read_only": 1
+  },
+  {
+   "fieldname": "operations_unscheduled",
+   "fieldtype": "Int",
+   "label": "Unscheduled",
+   "read_only": 1
+  },
+  {
+   "fieldname": "late_jobs",
+   "fieldtype": "Int",
+   "label": "Late Jobs",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_result",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_tardiness_minutes",
+   "fieldtype": "Float",
+   "label": "Total Tardiness Minutes",
+   "read_only": 1
+  },
+  {
+   "fieldname": "makespan_end",
+   "fieldtype": "Datetime",
+   "label": "Last Operation Ends",
+   "read_only": 1
+  },
+  {
+   "fieldname": "built_on",
+   "fieldtype": "Datetime",
+   "label": "Built On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_publish",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "published_on",
+   "fieldtype": "Datetime",
+   "label": "Published On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "published_by",
+   "fieldtype": "Link",
+   "label": "Published By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_load",
+   "fieldtype": "Section Break",
+   "label": "Machine Load",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "machine_load",
+   "fieldtype": "Code",
+   "label": "Machine Load",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "fieldname": "problems",
+   "fieldtype": "Small Text",
+   "label": "Problems",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 21:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Production Schedule",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "title",
+ "show_title_field_in_link": 1,
+ "description": "A finite-capacity plan: which machine runs which operation when, built from shift calendars, maintenance and cycle times"
+}

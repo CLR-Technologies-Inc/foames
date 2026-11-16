@@ -10,6 +10,8 @@ Scaffolds for case studies of manufacturing improvements measured with FoaMES. E
 | Operational and logistics | [logistics-autonomous-trucking.md](logistics-autonomous-trucking.md) | Autonomous yard, shuttle or line-haul trucks, measured as intervention rate, time to resume, availability and dwell |
 | Process | [oilfield-pumpjack-solar-tea.md](oilfield-pumpjack-solar-tea.md) | Techno-economic comparison of standard and solar-supported pumpjacks, with a runnable model ([pumpjack_tea.py](pumpjack_tea.py)), measured as specific energy and solar share |
 
+The agent benchmark has one illustrative case study per industrial sector, each grounded in a US government source and written to this template: see [benchmarks/docs/sector-case-studies.md](../../benchmarks/docs/sector-case-studies.md).
+
 ## Rules for a study
 
 These keep a study honest and keep it consistent with how FoaMES computes things.

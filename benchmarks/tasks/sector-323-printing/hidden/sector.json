@@ -1,0 +1,108 @@
+{
+ "case_id": "sector-323-printing",
+ "sector": "Printing (check printing)",
+ "naics": "323",
+ "seed": 323,
+ "source": {
+  "title": "Compressed Air Project Improves Efficiency and Production at Harland Publishing Facility",
+  "publisher": "U.S. Department of Energy, Office of Industrial Technologies (BestPractices technical case study)",
+  "report": "DOE/GO-102002-1546",
+  "date": "2002-05",
+  "url": "https://docs.nrel.gov/docs/fy02osti/31713.pdf",
+  "us_government_work": true,
+  "named_organisations": [
+   "Harland",
+   "Air System Management",
+   "Check-Technology"
+  ]
+ },
+ "claim": {
+  "kind": "annual_energy_saving",
+  "value": 2900000,
+  "unit": "kWh/yr",
+  "text": "Redesigned printing machines cut air demand from 27 to 4.5 scfm each and the site's demand from over 600 scfm at 130 psig to about 300 scfm at 81 psig; the summary gives 2.9 million kWh a year, while the per-machine figures ($3,103 to $310 for each of 70 machines) are in dollars."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-03-02T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-05-04T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   6,
+   22
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4
+ ],
+ "mark_unknown_after_minutes": 30,
+ "production_unit": "thousand pages",
+ "energy_unit": "kWh",
+ "energy_price": 0.067,
+ "line": {
+  "source_id": "PLANT-A-PRESS-HALL",
+  "description": "Check printing machines (70 reported as one line)",
+  "ideal_cycle_seconds": 6.0,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "PLANT-A-AIR-KWH",
+  "description": "Compressed air plant kWh meter",
+  "counter": "energy_kwh",
+  "rollover": null,
+  "every_minutes": 15,
+  "start_value": 1500000
+ },
+ "baseline": {
+  "rate_per_run_hour": 480,
+  "scrap_fraction": 0.01,
+  "down_per_day": 1.2,
+  "down_minutes": 30,
+  "idle_per_day": 1.5,
+  "idle_minutes": 20,
+  "setup_per_day": 2,
+  "setup_minutes": 25,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 700,
+  "energy_per_unit": 0.15
+ },
+ "after": {
+  "rate_per_run_hour": 480,
+  "scrap_fraction": 0.01,
+  "down_per_day": 1.0,
+  "down_minutes": 30,
+  "idle_per_day": 1.5,
+  "idle_minutes": 20,
+  "setup_per_day": 2,
+  "setup_minutes": 25,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 380,
+  "energy_per_unit": 0.15
+ },
+ "traps": {
+  "out_of_order": {
+   "window": "baseline"
+  },
+  "network_gap": {
+   "window": "after",
+   "at": 0.55,
+   "hours": 3
+  },
+  "duplicate": {
+   "window": "after"
+  }
+ },
+ "target_ratio": 0.95
+}

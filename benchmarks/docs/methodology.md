@@ -69,7 +69,7 @@ The hidden tests and reference solutions are public in this repository, so a mod
 
 ## The Frappe tier
 
-The six tasks are pure Python because that is what runs anywhere at near-zero cost. Tasks that need a Frappe site (a DocType, a whitelisted method, the outbox DocTypes, the ERPNext adapter) are the next tier. They would use the [Docker dev bench](../../docs/dev-bench.md) as the workspace runtime and mark `"tier": "frappe"` in `task.json`. None is included yet.
+The core tasks and the sector case studies are pure Python because that is what runs anywhere at near-zero cost. Tasks that need a Frappe site (a DocType, a whitelisted method, the outbox DocTypes, the ERPNext adapter) are the next tier. They would use the [Docker dev bench](../../docs/dev-bench.md) as the workspace runtime and mark `"tier": "frappe"` in `task.json`. None is included yet.
 
 ## Tools considered
 

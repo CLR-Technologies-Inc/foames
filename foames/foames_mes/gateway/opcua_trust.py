@@ -36,8 +36,8 @@ def load_certificates(data: bytes) -> list:
 	"""Parse a PEM bundle (one or more certificates) or a single DER certificate."""
 	from cryptography import x509
 
-	data = data.strip()
-	if not data:
+	# Only check for blank input: stripping would cut DER bytes that happen to be whitespace values.
+	if not data.strip():
 		return []
 	if PEM_BEGIN in data:
 		certificates = []

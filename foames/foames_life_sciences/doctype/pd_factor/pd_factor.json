@@ -1,0 +1,106 @@
+{
+ "actions": [],
+ "creation": "2026-11-15 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "factor",
+  "symbol",
+  "unit_of_measure",
+  "low",
+  "high",
+  "cb_what_if",
+  "nominal",
+  "distribution",
+  "sd",
+  "spread"
+ ],
+ "fields": [
+  {
+   "fieldname": "factor",
+   "fieldtype": "Data",
+   "label": "Factor",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "symbol",
+   "fieldtype": "Data",
+   "label": "Symbol",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 1,
+   "description": "x1 to x6, in row order"
+  },
+  {
+   "fieldname": "unit_of_measure",
+   "fieldtype": "Data",
+   "label": "Unit",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "low",
+   "fieldtype": "Float",
+   "label": "Low",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "high",
+   "fieldtype": "Float",
+   "label": "High",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "cb_what_if",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "nominal",
+   "fieldtype": "Data",
+   "label": "Nominal",
+   "in_list_view": 1,
+   "columns": 1,
+   "description": "The what-if centre; blank means the middle of the range"
+  },
+  {
+   "fieldname": "distribution",
+   "fieldtype": "Select",
+   "label": "Distribution",
+   "options": "Fixed\nNormal\nUniform\nTriangular",
+   "default": "Fixed",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "sd",
+   "fieldtype": "Float",
+   "label": "Standard Deviation",
+   "description": "Normal: the spread of the parameter in operation, in its unit"
+  },
+  {
+   "fieldname": "spread",
+   "fieldtype": "Float",
+   "label": "Half-Width",
+   "description": "Uniform and Triangular: nominal +/- this; 0 means the studied range"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Life Sciences",
+ "name": "PD Factor",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1,
+ "permissions": []
+}

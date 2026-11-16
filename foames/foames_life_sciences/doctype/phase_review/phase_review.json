@@ -1,0 +1,250 @@
+{
+ "actions": [],
+ "creation": "2026-11-15 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "npi_program",
+  "stage",
+  "review_type",
+  "phase_review_board",
+  "cb_head",
+  "scheduled_on",
+  "held_on",
+  "chair",
+  "decision",
+  "sb_attendees",
+  "attendees",
+  "vote_summary",
+  "sb_decision",
+  "rationale",
+  "conditions_due",
+  "cb_decision",
+  "criteria_at_review",
+  "sb_minutes",
+  "minutes",
+  "actions",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "PHR-.YYYY.-",
+   "default": "PHR-.YYYY.-",
+   "hidden": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "npi_program",
+   "fieldtype": "Link",
+   "label": "NPI Program",
+   "options": "NPI Program",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "stage",
+   "fieldtype": "Data",
+   "label": "Stage",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "The program's current stage when the review was opened"
+  },
+  {
+   "fieldname": "review_type",
+   "fieldtype": "Select",
+   "label": "Review Type",
+   "options": "Phase Review\nLaunch Readiness Review\nPost-Launch Review",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "phase_review_board",
+   "fieldtype": "Link",
+   "label": "Phase Review Board",
+   "options": "Phase Review Board",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "scheduled_on",
+   "fieldtype": "Datetime",
+   "label": "Scheduled On"
+  },
+  {
+   "fieldname": "held_on",
+   "fieldtype": "Datetime",
+   "label": "Held On"
+  },
+  {
+   "fieldname": "chair",
+   "fieldtype": "Link",
+   "label": "Chair",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "decision",
+   "fieldtype": "Select",
+   "label": "Decision",
+   "options": "\nGo\nConditional Go\nRecycle\nHold\nKill",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "sb_attendees",
+   "fieldtype": "Section Break",
+   "label": "Attendance and Votes"
+  },
+  {
+   "fieldname": "attendees",
+   "fieldtype": "Table",
+   "label": "Attendees",
+   "options": "Phase Review Attendee",
+   "description": "Filled from the board. Mark who was present and each voting member's vote."
+  },
+  {
+   "fieldname": "vote_summary",
+   "fieldtype": "Data",
+   "label": "Vote Summary",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_decision",
+   "fieldtype": "Section Break",
+   "label": "Decision"
+  },
+  {
+   "fieldname": "rationale",
+   "fieldtype": "Small Text",
+   "label": "Conditions or Rationale",
+   "description": "Conditions of a Conditional Go; the reason for Recycle, Hold or Kill, or for a decision that differs from the majority vote"
+  },
+  {
+   "fieldname": "conditions_due",
+   "fieldtype": "Date",
+   "label": "Conditions Due"
+  },
+  {
+   "fieldname": "cb_decision",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "criteria_at_review",
+   "fieldtype": "Small Text",
+   "label": "Criteria at Review",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "sb_minutes",
+   "fieldtype": "Section Break",
+   "label": "Minutes and Actions"
+  },
+  {
+   "fieldname": "minutes",
+   "fieldtype": "Text Editor",
+   "label": "Minutes"
+  },
+  {
+   "fieldname": "actions",
+   "fieldtype": "Table",
+   "label": "Actions",
+   "options": "Phase Review Action",
+   "allow_on_submit": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "options": "Phase Review",
+   "read_only": 1,
+   "no_copy": 1,
+   "print_hide": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Life Sciences",
+ "name": "Phase Review",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  }
+ ],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "is_submittable": 1,
+ "search_fields": "npi_program,stage,decision",
+ "description": "A formal phase review of one NPI gate by the phase review board: attendance, votes, the Chair's decision, minutes and actions"
+}

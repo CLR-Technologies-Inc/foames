@@ -4,7 +4,7 @@ A small, reproducible benchmark of how well coding agents use and develop FoaMES
 
 It is written for senior design teams, master's students and PhD researchers who build on FoaMES and want evidence, not opinions, about which agent to trust with which part of the work.
 
-- **Standard library only.** Python 3.10 or later. No Frappe site and no database for the six pure-Python tasks.
+- **Standard library only.** Python 3.10 or later. No Frappe site and no database for the pure-Python tasks.
 - **Sandboxed.** Agents run where they can see their workspace and nothing of the benchmark: in a Docker container, or on Linux in a private mount namespace. See [Sandbox](#sandbox).
 - **Any agent.** Claude Code, Codex CLI, Gemini CLI, OpenCode, Aider, or your own script. An agent is a command line in [agents.json](agents.json).
 - **Outside the app.** Nothing here is imported by the `foames` app, and nothing here runs in CI.
@@ -76,6 +76,10 @@ Isolation is one of two defences. The runner also hashes the task folder, the ha
 | `erp-retry-after` | high | Honour S/4HANA throttling, and find why a confirmation was posted twice | Retry-After parsing and backoff; no duplicate posting after a 504; idempotency rules intact |
 | `process-spec-network-loss` | high | Turn an incomplete plant request into a specification with executable acceptance criteria | A written rubric; the acceptance tests must pass now and must catch three planted regressions |
 
+### Sector case studies
+
+A second suite, `sector-case-study`, has 29 tasks: one per major industrial sector (the NAICS manufacturing subsectors, plus oil and gas, mining and utilities), each built on an improvement reported in a public US government document or record from DOE, EPA or NIST MEP. The agent measures a week before and a week after the change from FoaMES machine events, checks the document's claim against the measurement, and writes the case study up. All of them share one specification and one grader, so results compare across sectors. Run them with `--suite sector-case-study`; `run` without `--suite` or `--tasks` runs only the six tasks above. The sectors, sources and scoring are in [docs/sector-case-studies.md](docs/sector-case-studies.md).
+
 The tasks use only public FoaMES code and invented data. Each one lives in [tasks/](tasks/) with its prompt, an optional setup that plants the defect, hidden tests, and a reference solution. Hidden tests and reference solutions are never copied into the agent's workspace, the [sandbox](#sandbox) keeps the agent from reading them elsewhere, and a run that edits them fails. They are public in this repository, though, so a model trained on it may have seen them; see [docs/methodology.md](docs/methodology.md#contamination).
 
 ## Scoring
@@ -108,8 +112,9 @@ benchmarks/
     stubs/frappe/          a stand-in so FoaMES's pure modules import without a bench
     inspect_eval.py        optional Inspect AI front end (experimental)
   tasks/<id>/              task.json, prompt.md, setup.py, reference.py, hidden/
+  tasks/_<family>/         what a family of tasks shares (the sector case studies)
   data/recommendations.json  the TRL x complexity matrix
-  docs/                    methodology, model matrix, writing tasks
+  docs/                    methodology, model matrix, writing tasks, sector case studies
   tests/                   self-tests of the harness
 ```
 

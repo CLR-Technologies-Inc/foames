@@ -1,0 +1,108 @@
+{
+ "case_id": "sector-313-textile-mills",
+ "sector": "Textile mills (cotton spinning and weaving)",
+ "naics": "313",
+ "seed": 313,
+ "source": {
+  "title": "The Challenge: Improving Ventilation System Energy Efficiency in a Textile Plant",
+  "publisher": "U.S. Department of Energy, Advanced Manufacturing Office (Motor Challenge showcase demonstration)",
+  "report": "DOE case study",
+  "date": "1994-1996 monitoring; page updated 2012-01-24",
+  "url": "https://www.energy.gov/sites/prod/files/2014/05/f16/case_study_ventilation_textile.pdf",
+  "us_government_work": true,
+  "named_organisations": [
+   "Nisshinbo"
+  ]
+ },
+ "claim": {
+  "kind": "annual_energy_saving",
+  "value": 1579400,
+  "unit": "kWh/yr",
+  "text": "Variable frequency drives on 15 of 18 ventilation fans cut fan energy from about 2,700,000 to 1,100,000 kWh a year; the table gives 1,579,400 kWh."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-03-09T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-07-06T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   0,
+   24
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5
+ ],
+ "mark_unknown_after_minutes": 30,
+ "production_unit": "yd",
+ "energy_unit": "kWh",
+ "energy_price": 0.0639,
+ "line": {
+  "source_id": "PLANT-A-WEAVING-HALL",
+  "description": "Weaving hall (looms reported as one line)",
+  "ideal_cycle_seconds": 1.0,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "PLANT-A-FANS-KWH",
+  "description": "Ventilation fan feeder kWh meter",
+  "counter": "energy_kwh",
+  "rollover": 1000000,
+  "every_minutes": 15,
+  "start_value": 0
+ },
+ "baseline": {
+  "rate_per_run_hour": 2700,
+  "scrap_fraction": 0.02,
+  "down_per_day": 1.5,
+  "down_minutes": 30,
+  "idle_per_day": 1.0,
+  "idle_minutes": 15,
+  "setup_per_day": 0.5,
+  "setup_minutes": 90,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 322,
+  "energy_per_unit": 0.0005
+ },
+ "after": {
+  "rate_per_run_hour": 2700,
+  "scrap_fraction": 0.02,
+  "down_per_day": 1.5,
+  "down_minutes": 30,
+  "idle_per_day": 1.0,
+  "idle_minutes": 15,
+  "setup_per_day": 0.5,
+  "setup_minutes": 90,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 140,
+  "energy_per_unit": 0.0005
+ },
+ "traps": {
+  "network_gap": {
+   "window": "baseline",
+   "at": 0.6,
+   "hours": 5
+  },
+  "out_of_order": {
+   "window": "after"
+  },
+  "meter_rollover": {
+   "window": "after",
+   "at": 0.3
+  }
+ },
+ "target_ratio": 0.97
+}

@@ -1,0 +1,116 @@
+{
+ "case_id": "sector-333-machinery",
+ "sector": "Machinery manufacturing (diesel engines)",
+ "naics": "333",
+ "seed": 333,
+ "source": {
+  "title": "SEP Measurement & Verification Case Study Webinar (engine plant)",
+  "publisher": "U.S. Department of Energy, Advanced Manufacturing Office (Superior Energy Performance webinar slides)",
+  "report": "DOE webinar slides",
+  "date": "2015-11-19",
+  "url": "https://www.energy.gov/sites/prod/files/2015/12/f27/Cummins%20MV%20Slides%20r3_17Nov2016.pdf",
+  "us_government_work": "DOE-hosted slides presented by DOE with the plant and a university; only figures are used",
+  "named_organisations": [
+   "Cummins",
+   "Rocky Mount",
+   "DEKRA",
+   "Georgia Institute"
+  ]
+ },
+ "claim": {
+  "kind": "specific_energy_reduction",
+  "value": 0.126,
+  "unit": "fraction",
+  "text": "Against its baseline year the plant certified a 12.6 percent energy performance improvement (Superior Energy Performance Gold); its listed projects add up to 27,397 MMBtu, or 11 percent."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-01-19T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-06-22T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   0,
+   24
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5
+ ],
+ "mark_unknown_after_minutes": 30,
+ "production_unit": "engines",
+ "energy_unit": "MMBtu",
+ "energy_price": 12.0,
+ "line": {
+  "source_id": "PLANT-A-ASSEMBLY-1",
+  "description": "Engine assembly and test line 1",
+  "ideal_cycle_seconds": 140.0,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "PLANT-A-SITE-MMBTU",
+  "description": "Site energy (electricity, gas and diesel) in MMBtu",
+  "counter": "energy_mmbtu",
+  "rollover": 1000000,
+  "every_minutes": 15,
+  "start_value": 640000
+ },
+ "baseline": {
+  "rate_per_run_hour": 22,
+  "scrap_fraction": 0.01,
+  "down_per_day": 1.0,
+  "down_minutes": 40,
+  "idle_per_day": 1.5,
+  "idle_minutes": 20,
+  "setup_per_day": 1.0,
+  "setup_minutes": 45,
+  "planned_down_per_week": 1,
+  "planned_down_minutes": 240,
+  "energy_base_per_hour": 21,
+  "energy_per_unit": 0.6
+ },
+ "after": {
+  "rate_per_run_hour": 22,
+  "scrap_fraction": 0.01,
+  "down_per_day": 1.0,
+  "down_minutes": 40,
+  "idle_per_day": 1.5,
+  "idle_minutes": 20,
+  "setup_per_day": 1.0,
+  "setup_minutes": 45,
+  "planned_down_per_week": 1,
+  "planned_down_minutes": 240,
+  "energy_base_per_hour": 18,
+  "energy_per_unit": 0.6
+ },
+ "traps": {
+  "plc_reset": {
+   "window": "baseline",
+   "at": 0.3
+  },
+  "out_of_order": {
+   "window": "after"
+  },
+  "network_gap": {
+   "window": "after",
+   "at": 0.6,
+   "hours": 4
+  },
+  "meter_rollover": {
+   "window": "after",
+   "at": 0.45
+  }
+ },
+ "target_ratio": 1.04,
+ "integer_counts": true
+}

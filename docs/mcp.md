@@ -2,7 +2,7 @@
 
 FoaMES speaks the Model Context Protocol (MCP), so an agent in Claude Desktop, Claude Code, Cursor or any other MCP client can read the plant floor and raise suggestions through tools, with no custom integration. The server exposes the public FoaMES API and nothing more: every tool is one whitelisted method that is already callable at `/api/method/...`, run as the user whose API key the agent holds, with that user's permissions.
 
-The 26 tools cover machines and their state, machine events, downtime, OEE, automatic and manual time projections, the floor snapshot, Agent Suggestions, process mining (event logs, discovery, conformance, export) and ERP reference reads through whichever adapters are registered on the site. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act.
+The 45 tools cover machines and their state and Equipment Complexity Level (ECL), machine events, downtime, OEE, automatic and manual time projections, the floor snapshot, lineside stock and material queues, Agent Suggestions, the P&ID tag register and drawings, process mining (event logs, discovery, conformance, export), qualification status, life-sciences programs (NPI status, requirement tracing, tech transfer packages, PD studies, scale-up) and ERP reference reads through whichever adapters are registered on the site. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act. In [read-only mode](read-only-mode.md) a writing tool other than the suggestion tools does not run: the call waits as a Pending Write for a person's electronic sign-off, and the agent is told its name. Three more tools read the mode, the pending writes and the write audit trail, and apps can add tools of their own (the Tulip adapter adds six read-only Tulip tools).
 
 ## Two ways to connect
 
@@ -69,11 +69,16 @@ Permissions are the DocType permissions of the user behind the key, checked by t
 | `foames_list_suggestions`, `foames_get_suggestion` | read on Agent Suggestion |
 | `foames_post_suggestion`, `foames_run_suggestion_rules` | create on Agent Suggestion (Operator, Engineer) |
 | `foames_set_current_job` | write on Machine (Operator, Engineer) |
+| `foames_pid_*` | read on PID Component / PID Drawing (every FoaMES role); `foames_pid_parse_tag` needs no record |
 | `foames_mining_*`, `foames_list_event_logs`, `foames_list_event_log_sources` | read on Process Event Log / Event Log Source |
 | `foames_project_time` | read on Cycle Time Standard; with `use_observed`, also read on Machine Event |
 | `foames_compare_cycle_with_machine` | read on Cycle Time Standard and Machine Event |
+| `foames_get_qualification_status` | read on Validation Execution (Quality, Engineer, Supervisor, Maintenance, Operator) |
 | `foames_list_erp_systems` | any logged-in user |
 | `foames_list_external_references`, `foames_lookup_erp_record` | read on External Reference (System Manager by default) |
+| `foames_get_npi_status` | read on NPI Program (Engineer, Quality, Supervisor, Operator) |
+| `foames_get_requirements_trace`, `foames_get_tech_transfer_package`, `foames_get_pd_study` | read on Product Requirements Document / Tech Transfer Package / PD Simulation Study |
+| `foames_scale_up` | any logged-in user (arithmetic only) |
 
 `foames_get_machine` returns the sections the user may read and leaves the others out, so an Operator sees the machine and its downtime but not sections they lack the role for.
 
@@ -81,8 +86,10 @@ Permissions are the DocType permissions of the user behind the key, checked by t
 
 | Tool | Returns |
 | --- | --- |
-| `foames_list_machines(status, machine_type, include_disabled, limit)` | Machines with state, last seen, last count, cycle time, shift |
+| `foames_list_machines(status, machine_type, include_disabled, limit, ecl)` | Machines with state, last seen, last count, cycle time, shift, ECL |
 | `foames_get_machine(machine)` | One machine, counts of the last 24 hours, open downtime, latest OEE Period, last 20 state changes |
+| `foames_get_equipment_profile(machine, tier)` | A machine's ECL, minimum model tier, agent role, human oversight and line ECL; with `tier`, whether an agent of that tier may be tied to it |
+| `foames_list_equipment_complexity(line, include_disabled)` | Every machine's ECL and oversight, the count per level, unrated machines, each line's ECL |
 | `foames_list_machine_events(machine, event_type, since, until, limit)` | Raw events, newest first, with counter deltas |
 | `foames_list_downtime(machine, status, reason, since, until, limit)` | Downtime Records |
 | `foames_downtime_by_reason(machine, since, until)` | Minutes per reason in the window, plus unclassified minutes |
@@ -90,22 +97,40 @@ Permissions are the DocType permissions of the user behind the key, checked by t
 | `foames_get_oee(machine, from_time, to_time, planned_minutes)` | OEE and the time ledger for any window, computed now |
 | `foames_list_oee_periods(machine, since, until, limit)` | Saved daily OEE Periods |
 | `foames_get_floor_snapshot(days)` | The whole floor as one object ([floor-view.md](floor-view.md#the-floor-snapshot)) |
+| `foames_get_material_status(machine)` | Lineside bins and material queues: stock on hand, use per hour, hours to dry, quantity to call for, MPC levels ([material-flow.md](material-flow.md)) |
+| `foames_get_dispatch_list(queue)` | Material that may start now in one queue, in its dispatch-rule order |
+| `foames_get_material_readiness(machine, hours)` | Bins that run dry inside the window and queue entries ready to start |
 | `foames_list_suggestions(status, category, severity, agent, limit)` | Agent Suggestions, open by default |
 | `foames_get_suggestion(name)` | One suggestion with text, evidence, resolution |
 | `foames_post_suggestion(title, category, suggestion, agent, severity, reference_doctype, reference_name, evidence, rule_key)` | Creates a suggestion; returns its name |
 | `foames_run_suggestion_rules(days)` | Runs the rules now; returns the names created |
 | `foames_set_current_job(machine, reference, at)` | Records the Job Card (an External Reference) a machine is working on, or ends it |
+| `foames_pid_list_components(drawing, component_type, machine, linked, search, limit)` | The P&ID tag register with ISA meaning, location and signal links ([pid.md](pid.md)) |
+| `foames_pid_get_component(tag)` | One tag with its live value and flag, what is located on it, its connections |
+| `foames_pid_get_drawing(drawing)` | A P&ID's components and its process and signal connections |
+| `foames_pid_parse_tag(tag)` | The ISA-5.1 reading of an instrument tag |
+| `foames_pid_suggest_links(drawing)` | Candidate tag-to-signal links with reasons; changes nothing |
 | `foames_mining_summary(event_log, since, until, sources)` | Event, case, variant and activity counts |
 | `foames_mining_events(..., limit)` | The events |
 | `foames_mining_discover(..., min_edge_count, dot)` | DFG, variants, throughput, durations, bottlenecks, rework |
 | `foames_mining_conformance(model, ..., include_traces)` | Fitness, deviations, footprint comparison |
 | `foames_mining_export(..., fmt)` | XES or OCEL 2.0 text |
+| `foames_get_qualification_status(machine, process, protocol_type)` | Qualification status per machine or process and IQ/OQ/PQ/PPQ/CPV ([validation.md](validation.md)) |
 | `foames_list_event_logs(status, limit)`, `foames_list_event_log_sources()` | Saved logs and configured sources |
 | `foames_project_time(standard, machine, quantity, changes, annual_quantity, use_observed, days)` | Elapsed, automatic and operator time for a quantity; with `changes`, a what-if scenario against the baseline ([cycle-time.md](cycle-time.md)) |
 | `foames_compare_cycle_with_machine(standard, machine, since, until, days)` | A standard's cycle next to the machine's observed running and idle time per cycle |
 | `foames_list_erp_systems()` | Registered adapters, availability, default system, reference types |
 | `foames_list_external_references(erp_system, reference_type, status, limit)` | External References with resolution status |
 | `foames_lookup_erp_record(reference_type, external_id, erp_system)` | One ERP record through its adapter; creates nothing |
+| `foames_get_npi_status(program, include_closed)` | NPI programs: stage, status, next gate, open required deliverables and phase review criteria, phase reviews held, open gate conditions ([life-sciences.md](life-sciences.md)) |
+| `foames_get_requirements_trace(document)` | A product requirements document's trace matrix, gaps and coverage |
+| `foames_get_tech_transfer_package(package)` | CPPs with NOR and PAR, CQAs with limits and comparability outcome, deliverables, what blocks approval |
+| `foames_get_pd_study(study)` | A PD simulation study's factors, runs, fitted models and last what-if |
+| `foames_scale_up(small_volume_l, large_volume_l, impeller_diameter_m, rpm, ...)` | Stirred-vessel scale-up for constant P/V, tip speed, Re and mixing time, with kLa |
+| `foames_get_write_mode()` | Read-only mode, site-wide and per connector, the sign-off role, how many writes wait |
+| `foames_list_pending_writes(status, connector, work_order, job_card, process_run, machine, limit)` | Writes held for sign-off and how they were signed |
+| `foames_get_write_audit_trail(work_order, job_card, process_run, machine, pending_write, connector, limit)` | The Write Audit Log for an order, job, run, machine or connector |
+| `foames_tulip_*` (registered by the Tulip adapter) | Tulip tables, table records and counts, machines and stations, read through Tulip's API ([vendors/tulip](vendors/tulip/README.md)) |
 
 Every tool carries its input schema and annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`) in `tools/list`, so a client can show which tools write. The server's `initialize` response includes the agent instructions from [agents/floor-agent.md](agents/floor-agent.md) in short form.
 
@@ -116,12 +141,13 @@ Datetimes are in the site's local time, `YYYY-MM-DD HH:MM:SS`; ISO 8601 strings 
 - **Stateless.** The server issues no session id and keeps nothing between messages. Each POST carries one JSON-RPC message and returns one JSON response, or `202 Accepted` for a notification. JSON-RPC batches are not accepted (they left the MCP specification in revision 2025-06-18). A `GET` for the server-to-client stream is refused by the framework (the endpoint accepts POST only), which the specification allows for a server that does not push messages; clients treat it as non-fatal.
 - **Protocol revisions** 2024-11-05, 2025-03-26, 2025-06-18 and 2025-11-25 are negotiated through `initialize`; a client that offers another revision gets 2025-11-25 back.
 - **Errors.** A permission or validation failure in a tool is a tool result with `isError` and the message. Any other exception is logged in the site's Error Log and reported to the agent only by type, so nothing internal leaks. A failing tool's database writes are rolled back.
+- **Read-only mode.** While the site or the `mcp` Connector Write Policy is read-only, `foames_set_current_job` (and any writing tool an app adds) answers `{"status": "Awaiting Sign-off", "pending_write": ...}` and writes nothing; with *Block* it answers an error. Suggestions run unless the site holds them too. See [read-only-mode.md](read-only-mode.md).
 - **Writes commit** at the end of the request as for any Frappe API call. The writing tools create Agent Suggestions or set a machine's current job; `foames_post_suggestion` with a `rule_key` that is already open returns the open suggestion instead of creating a second one.
 - **Throughput.** The bridge handles messages one at a time; a client that sends a `ping` during a long `foames_mining_discover` gets its answer after it. The HTTP endpoint runs under the site's normal workers.
 
 ## Extending the catalogue
 
-The catalogue is `foames/foames_mcp/tools.py`: a list of `Tool(name, description, method, input_schema, read_only, ...)` records, each bound to a dotted path of a whitelisted method. Adding a tool is adding one record for a method that already exists and does its own permission check. A unit test holds every method to an allow-list of public API packages, so a tool cannot reach outside them by accident. Another app that wants its own tools should run its own MCP server rather than editing this list; `foames.foames_mcp.protocol.Server` is reusable for that.
+The catalogue is `foames/foames_mcp/tools.py`: a list of `Tool(name, description, method, input_schema, read_only, ...)` records, each bound to a dotted path of a whitelisted method. Adding a tool is adding one record for a method that already exists and does its own permission check. A unit test holds every method to an allow-list of public API packages, so a tool cannot reach outside them by accident. Another app adds tools without editing this list through the `foames_mcp_tools` hook: dotted paths of functions that return a list of `Tool` records (a tool may not take a core tool's name). Their methods must be whitelisted and do their own permission checks, and their writes pass the read-only gate like the core's.
 
 ## Tests
 

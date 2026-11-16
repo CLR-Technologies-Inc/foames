@@ -51,4 +51,4 @@ A line *runs dry* when a machine is starved of material. Industry also calls thi
 
 ## A prior, not a measurement
 
-The factor scores, the compounding rule and the multipliers are starting points to tune per site. They are not measured results. Like ECL, MPC keeps FoaMES's rule that [agents suggest and people act](Explanation-Agents-suggest-people-act): the rating decides *who* must review, and never lets an agent move or release material on its own.
+The factor scores, the compounding rule and the multipliers are starting points to tune per site. They are not measured results. Like ECL, MPC keeps FoaMES's rule that [agents suggest and people act](Explanation-Agents-suggest-people-act): the rating decides *who* must review, and never lets an agent move or release material on its own. The [materials agent](How-to-Run-the-materials-agent) works this way. It reads lineside stock, queues and MPC, and when a material's MPC and its machine's ECL disagree, it applies the stricter oversight.

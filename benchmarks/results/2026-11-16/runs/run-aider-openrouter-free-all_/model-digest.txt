@@ -1,0 +1,8 @@
+API model id openrouter/thinkingmachines/inkling-2-small:free, called 2026-11-16 (picked from the agent's candidates; the provider may update a model behind an unversioned id)
+- openrouter/qwen/qwen3-coder:free: not listed as free
+- openrouter/openai/gpt-oss-120b:free: not listed as free
+- openrouter/moonshotai/kimi-k2:free: not listed as free
+- openrouter/deepseek/deepseek-chat-v3.1:free: not listed as free
+- openrouter/z-ai/glm-4.5-air:free: not listed as free
+- openrouter/meta-llama/llama-3.3-70b-instruct:free: not listed as free
+- openrouter/thinkingmachines/inkling-2-small:free: largest-context free model (1048576 tokens)

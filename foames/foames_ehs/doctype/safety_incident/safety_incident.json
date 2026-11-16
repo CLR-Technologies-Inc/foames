@@ -1,0 +1,476 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "title",
+  "incident_type",
+  "occurred_on",
+  "machine",
+  "location",
+  "cb_head",
+  "status",
+  "reported_on",
+  "reported_by",
+  "potential_severity",
+  "work_related",
+  "sb_what",
+  "description",
+  "immediate_actions",
+  "downtime_record",
+  "sb_injury",
+  "person_name",
+  "privacy_case",
+  "job_title",
+  "injury_nature",
+  "body_part",
+  "cb_injury",
+  "medical_treatment",
+  "loss_of_consciousness",
+  "significant_diagnosis",
+  "death",
+  "days_away",
+  "days_restricted",
+  "sb_record",
+  "recordable",
+  "osha_outcome",
+  "cb_record",
+  "log_days_away",
+  "log_days_restricted",
+  "sb_env",
+  "substance",
+  "quantity",
+  "quantity_uom",
+  "cb_env",
+  "released_to",
+  "reportable_release",
+  "authority_notified_on",
+  "sb_investigation",
+  "root_cause_category",
+  "hazard_assessment",
+  "root_cause",
+  "contributing_factors",
+  "sb_actions",
+  "actions",
+  "sb_close",
+  "closed_on",
+  "cb_close",
+  "closed_by"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "SINC-.YYYY.-",
+   "default": "SINC-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "incident_type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "Near Miss\nUnsafe Condition\nUnsafe Act\nFirst Aid\nInjury or Illness\nProperty Damage\nEnvironmental Release",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "occurred_on",
+   "fieldtype": "Datetime",
+   "label": "Occurred On",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location",
+   "description": "Area, line or cell where it happened"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Reported\nInvestigating\nActions Open\nClosed",
+   "default": "Reported",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "reported_on",
+   "fieldtype": "Datetime",
+   "label": "Reported On",
+   "description": "Set to the time of saving when left empty"
+  },
+  {
+   "fieldname": "reported_by",
+   "fieldtype": "Link",
+   "label": "Reported By",
+   "options": "User"
+  },
+  {
+   "fieldname": "potential_severity",
+   "fieldtype": "Int",
+   "label": "Potential Severity (1-5)",
+   "description": "How bad it could reasonably have been: 1 negligible to 5 catastrophic. Near misses with a high potential deserve the same investigation as injuries."
+  },
+  {
+   "fieldname": "work_related",
+   "fieldtype": "Check",
+   "label": "Work Related",
+   "default": "1",
+   "depends_on": "eval:doc.incident_type==\"Injury or Illness\" || doc.incident_type==\"First Aid\""
+  },
+  {
+   "fieldname": "sb_what",
+   "fieldtype": "Section Break",
+   "label": "What Happened"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description",
+   "reqd": 1
+  },
+  {
+   "fieldname": "immediate_actions",
+   "fieldtype": "Small Text",
+   "label": "Immediate Actions",
+   "description": "What was done on the spot to make it safe"
+  },
+  {
+   "fieldname": "downtime_record",
+   "fieldtype": "Link",
+   "label": "Downtime Record",
+   "options": "Downtime Record",
+   "description": "The stop this incident caused, if any, so OEE and safety tell the same story"
+  },
+  {
+   "fieldname": "sb_injury",
+   "fieldtype": "Section Break",
+   "label": "Injury or Illness",
+   "depends_on": "eval:doc.incident_type==\"Injury or Illness\" || doc.incident_type==\"First Aid\"",
+   "collapsible": 0
+  },
+  {
+   "fieldname": "person_name",
+   "fieldtype": "Data",
+   "label": "Person Affected",
+   "depends_on": "eval:!doc.privacy_case"
+  },
+  {
+   "fieldname": "privacy_case",
+   "fieldtype": "Check",
+   "label": "Privacy Case",
+   "default": "0",
+   "description": "Keep the name off the log (OSHA 1904.29(b)(7)); the report shows 'Privacy Case'"
+  },
+  {
+   "fieldname": "job_title",
+   "fieldtype": "Data",
+   "label": "Job Title"
+  },
+  {
+   "fieldname": "injury_nature",
+   "fieldtype": "Select",
+   "label": "Injury or Illness Type",
+   "options": "\nInjury\nSkin Disorder\nRespiratory Condition\nPoisoning\nHearing Loss\nAll Other Illnesses"
+  },
+  {
+   "fieldname": "body_part",
+   "fieldtype": "Data",
+   "label": "Body Part"
+  },
+  {
+   "fieldname": "cb_injury",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "medical_treatment",
+   "fieldtype": "Check",
+   "label": "Medical Treatment Beyond First Aid",
+   "default": "0"
+  },
+  {
+   "fieldname": "loss_of_consciousness",
+   "fieldtype": "Check",
+   "label": "Loss of Consciousness",
+   "default": "0"
+  },
+  {
+   "fieldname": "significant_diagnosis",
+   "fieldtype": "Check",
+   "label": "Significant Diagnosed Injury or Illness",
+   "default": "0"
+  },
+  {
+   "fieldname": "death",
+   "fieldtype": "Check",
+   "label": "Death",
+   "default": "0"
+  },
+  {
+   "fieldname": "days_away",
+   "fieldtype": "Int",
+   "label": "Days Away From Work",
+   "default": "0"
+  },
+  {
+   "fieldname": "days_restricted",
+   "fieldtype": "Int",
+   "label": "Days Restricted or Transferred",
+   "default": "0"
+  },
+  {
+   "fieldname": "sb_record",
+   "fieldtype": "Section Break",
+   "label": "Recordability",
+   "depends_on": "eval:doc.incident_type==\"Injury or Illness\" || doc.incident_type==\"First Aid\"",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "recordable",
+   "fieldtype": "Check",
+   "label": "Recordable",
+   "read_only": 1,
+   "default": "0",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "osha_outcome",
+   "fieldtype": "Data",
+   "label": "Outcome",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_record",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "log_days_away",
+   "fieldtype": "Int",
+   "label": "Days Away (Log)",
+   "read_only": 1,
+   "description": "Capped at 180"
+  },
+  {
+   "fieldname": "log_days_restricted",
+   "fieldtype": "Int",
+   "label": "Days Restricted (Log)",
+   "read_only": 1,
+   "description": "Capped at 180"
+  },
+  {
+   "fieldname": "sb_env",
+   "fieldtype": "Section Break",
+   "label": "Environmental Release",
+   "depends_on": "eval:doc.incident_type==\"Environmental Release\""
+  },
+  {
+   "fieldname": "substance",
+   "fieldtype": "Data",
+   "label": "Substance"
+  },
+  {
+   "fieldname": "quantity",
+   "fieldtype": "Float",
+   "label": "Quantity Released"
+  },
+  {
+   "fieldname": "quantity_uom",
+   "fieldtype": "Data",
+   "label": "Unit",
+   "description": "kg, L, gal ..."
+  },
+  {
+   "fieldname": "cb_env",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "released_to",
+   "fieldtype": "Select",
+   "label": "Released To",
+   "options": "\nContained\nAir\nWater\nLand\nSewer"
+  },
+  {
+   "fieldname": "reportable_release",
+   "fieldtype": "Check",
+   "label": "Reportable to an Authority",
+   "default": "0"
+  },
+  {
+   "fieldname": "authority_notified_on",
+   "fieldtype": "Datetime",
+   "label": "Authority Notified On",
+   "depends_on": "reportable_release"
+  },
+  {
+   "fieldname": "sb_investigation",
+   "fieldtype": "Section Break",
+   "label": "Investigation"
+  },
+  {
+   "fieldname": "root_cause_category",
+   "fieldtype": "Select",
+   "label": "Root Cause Category",
+   "options": "\nPeople\nMachine\nMaterial\nMethod\nMeasurement\nEnvironment\nManagement"
+  },
+  {
+   "fieldname": "hazard_assessment",
+   "fieldtype": "Link",
+   "label": "Hazard Assessment",
+   "options": "Hazard Assessment",
+   "description": "The hazard this incident shows, so its risk and controls can be reviewed"
+  },
+  {
+   "fieldname": "root_cause",
+   "fieldtype": "Small Text",
+   "label": "Root Cause"
+  },
+  {
+   "fieldname": "contributing_factors",
+   "fieldtype": "Small Text",
+   "label": "Contributing Factors"
+  },
+  {
+   "fieldname": "sb_actions",
+   "fieldtype": "Section Break",
+   "label": "Corrective and Preventive Actions"
+  },
+  {
+   "fieldname": "actions",
+   "fieldtype": "Table",
+   "label": "Actions",
+   "options": "EHS Action"
+  },
+  {
+   "fieldname": "sb_close",
+   "fieldtype": "Section Break",
+   "label": "Closure",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "closed_on",
+   "fieldtype": "Datetime",
+   "label": "Closed On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_close",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "closed_by",
+   "fieldtype": "Link",
+   "label": "Closed By",
+   "options": "User",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES EHS",
+ "name": "Safety Incident",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Safety",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "create": 1,
+   "report": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "create": 1,
+   "report": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "create": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "naming_series:",
+ "title_field": "title",
+ "show_title_field_in_link": 1,
+ "track_changes": 1,
+ "search_fields": "incident_type,machine",
+ "description": "An incident, near miss, unsafe condition or environmental release, its investigation and its actions"
+}

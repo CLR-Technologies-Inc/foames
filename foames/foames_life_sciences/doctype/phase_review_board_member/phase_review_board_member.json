@@ -1,0 +1,54 @@
+{
+ "actions": [],
+ "creation": "2026-11-15 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "user",
+  "board_role",
+  "function"
+ ],
+ "fields": [
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 3
+  },
+  {
+   "fieldname": "board_role",
+   "fieldtype": "Select",
+   "label": "Board Role",
+   "options": "Chair\nMember\nAdvisor\nSecretary",
+   "reqd": 1,
+   "default": "Member",
+   "in_list_view": 1,
+   "columns": 2,
+   "description": "Chair holds decision authority; Chair and Members vote; Advisors and the Secretary attend"
+  },
+  {
+   "fieldname": "function",
+   "fieldtype": "Data",
+   "label": "Function",
+   "in_list_view": 1,
+   "columns": 3,
+   "description": "For example Quality, Regulatory, R&D, Manufacturing, Marketing, Finance"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Life Sciences",
+ "name": "Phase Review Board Member",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1,
+ "permissions": []
+}

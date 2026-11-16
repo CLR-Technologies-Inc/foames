@@ -1,0 +1,312 @@
+{
+ "actions": [],
+ "creation": "2026-11-15 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "title",
+  "product_name",
+  "process_name",
+  "transfer_type",
+  "cb_head",
+  "sending_site",
+  "receiving_site",
+  "npi_program",
+  "product_requirements",
+  "risk_assessment",
+  "sb_scale",
+  "from_scale",
+  "to_scale",
+  "cb_scale",
+  "scale_uom",
+  "scale_ratio",
+  "sb_process",
+  "process_description",
+  "control_strategy",
+  "sb_parameters",
+  "parameters",
+  "sb_attributes",
+  "attributes",
+  "sb_deliverables",
+  "deliverables",
+  "sb_approval",
+  "prepared_by",
+  "cb_approval",
+  "approved_by",
+  "approved_on",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "TTP-.YYYY.-",
+   "default": "TTP-.YYYY.-",
+   "hidden": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "product_name",
+   "fieldtype": "Data",
+   "label": "Product",
+   "reqd": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "process_name",
+   "fieldtype": "Data",
+   "label": "Process",
+   "reqd": 1,
+   "in_standard_filter": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "transfer_type",
+   "fieldtype": "Select",
+   "label": "Transfer Type",
+   "options": "Site to Site\nScale-Up\nScale-Down\nDevelopment to Commercial\nTo or From a CMO\nLine Transfer",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sending_site",
+   "fieldtype": "Data",
+   "label": "Sending Site or Unit",
+   "reqd": 1
+  },
+  {
+   "fieldname": "receiving_site",
+   "fieldtype": "Data",
+   "label": "Receiving Site or Unit",
+   "reqd": 1
+  },
+  {
+   "fieldname": "npi_program",
+   "fieldtype": "Link",
+   "label": "NPI Program",
+   "options": "NPI Program"
+  },
+  {
+   "fieldname": "product_requirements",
+   "fieldtype": "Link",
+   "label": "Product Requirements",
+   "options": "Product Requirements Document"
+  },
+  {
+   "fieldname": "risk_assessment",
+   "fieldtype": "Data",
+   "label": "Risk Assessment",
+   "description": "Name of the PFMEA or quality risk assessment that covers this transfer"
+  },
+  {
+   "fieldname": "sb_scale",
+   "fieldtype": "Section Break",
+   "label": "Scale"
+  },
+  {
+   "fieldname": "from_scale",
+   "fieldtype": "Float",
+   "label": "Sending Working Volume"
+  },
+  {
+   "fieldname": "to_scale",
+   "fieldtype": "Float",
+   "label": "Receiving Working Volume"
+  },
+  {
+   "fieldname": "cb_scale",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "scale_uom",
+   "fieldtype": "Data",
+   "label": "Volume Unit",
+   "default": "L"
+  },
+  {
+   "fieldname": "scale_ratio",
+   "fieldtype": "Float",
+   "label": "Scale Ratio",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_process",
+   "fieldtype": "Section Break",
+   "label": "Process Description and Control Strategy",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "process_description",
+   "fieldtype": "Text Editor",
+   "label": "Process Description"
+  },
+  {
+   "fieldname": "control_strategy",
+   "fieldtype": "Text Editor",
+   "label": "Control Strategy"
+  },
+  {
+   "fieldname": "sb_parameters",
+   "fieldtype": "Section Break",
+   "label": "Process Parameters"
+  },
+  {
+   "fieldname": "parameters",
+   "fieldtype": "Table",
+   "label": "Parameters",
+   "options": "Tech Transfer Parameter"
+  },
+  {
+   "fieldname": "sb_attributes",
+   "fieldtype": "Section Break",
+   "label": "Quality Attributes"
+  },
+  {
+   "fieldname": "attributes",
+   "fieldtype": "Table",
+   "label": "Attributes",
+   "options": "Tech Transfer Attribute"
+  },
+  {
+   "fieldname": "sb_deliverables",
+   "fieldtype": "Section Break",
+   "label": "Transfer Deliverables"
+  },
+  {
+   "fieldname": "deliverables",
+   "fieldtype": "Table",
+   "label": "Deliverables",
+   "options": "NPI Deliverable",
+   "allow_on_submit": 1
+  },
+  {
+   "fieldname": "sb_approval",
+   "fieldtype": "Section Break",
+   "label": "Approval"
+  },
+  {
+   "fieldname": "prepared_by",
+   "fieldtype": "Link",
+   "label": "Prepared By",
+   "options": "User",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "cb_approval",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "approved_by",
+   "fieldtype": "Link",
+   "label": "Approved By",
+   "options": "User",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "approved_on",
+   "fieldtype": "Datetime",
+   "label": "Approved On",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "options": "Tech Transfer Package",
+   "read_only": 1,
+   "no_copy": 1,
+   "print_hide": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Life Sciences",
+ "name": "Tech Transfer Package",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "is_submittable": 1,
+ "title_field": "title",
+ "show_title_field_in_link": 1,
+ "search_fields": "product_name,process_name,receiving_site",
+ "description": "An MSAT tech transfer package: CPPs with NOR and PAR, CQAs with acceptance limits, sending and receiving site, deliverables and the comparability approach"
+}

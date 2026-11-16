@@ -1,0 +1,107 @@
+{
+ "case_id": "sector-332-machine-shop",
+ "sector": "Fabricated metal products (contract machining)",
+ "naics": "332",
+ "seed": 3327,
+ "source": {
+  "title": "Success Story: Improvement Effort Reduces Changeover Time",
+  "publisher": "National Institute of Standards and Technology, Manufacturing Extension Partnership (Manufacturing Innovation blog)",
+  "report": "NIST MEP success story",
+  "date": "2018-04-06",
+  "url": "https://www.nist.gov/blogs/manufacturing-innovation-blog/success-story-improvement-effort-reduces-changeover-time",
+  "us_government_work": true,
+  "named_organisations": [
+   "Brighton NC Machine"
+  ]
+ },
+ "claim": {
+  "kind": "setup_reduction",
+  "value": 0.7,
+  "unit": "fraction",
+  "text": "A kaizen event on one work center cut a changeover that took 8 hours and 20 minutes by 70 percent and cut walking during it by 98 percent."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-02-02T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-05-04T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   0,
+   24
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4
+ ],
+ "mark_unknown_after_minutes": 30,
+ "production_unit": "parts",
+ "energy_unit": "kWh",
+ "energy_price": 0.09,
+ "line": {
+  "source_id": "PLANT-A-HMC-7",
+  "description": "Horizontal machining center 7",
+  "ideal_cycle_seconds": 80.0,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "PLANT-A-HMC-7-KWH",
+  "description": "Work center kWh meter",
+  "counter": "energy_kwh",
+  "rollover": null,
+  "every_minutes": 15,
+  "start_value": 0
+ },
+ "baseline": {
+  "rate_per_run_hour": 38,
+  "scrap_fraction": 0.02,
+  "down_per_day": 1.0,
+  "down_minutes": 45,
+  "idle_per_day": 1.0,
+  "idle_minutes": 30,
+  "setup_per_day": 0.45,
+  "setup_minutes": 500,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 6,
+  "energy_per_unit": 0.4
+ },
+ "after": {
+  "rate_per_run_hour": 38,
+  "scrap_fraction": 0.02,
+  "down_per_day": 1.0,
+  "down_minutes": 45,
+  "idle_per_day": 1.0,
+  "idle_minutes": 30,
+  "setup_per_day": 1.1,
+  "setup_minutes": 150,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 6,
+  "energy_per_unit": 0.4
+ },
+ "traps": {
+  "network_gap": {
+   "window": "after",
+   "at": 0.38,
+   "hours": 3
+  },
+  "duplicate": {
+   "window": "baseline"
+  },
+  "plc_reset": {
+   "window": "after",
+   "at": 0.7
+  }
+ },
+ "integer_counts": true
+}

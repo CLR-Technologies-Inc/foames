@@ -108,6 +108,9 @@ This page is generated from the DocType JSON files on `main`. When the two disag
 | Shift Start | `shift_start` | Time |  |
 | Scheduled Minutes Per Day | `scheduled_minutes_per_day` | Float | default `480` |
 | Shift Pattern | `shift_pattern` | Link | → Shift Pattern |
+| Equipment Complexity Level (ECL) | `ecl` | Select | empty (not rated), 1, 2, 3, 4, 5 |
+| ECL Equipment Class | `ecl_class` | Data | class id from the public ECL list, lower-case kebab-case |
+| ECL Rationale | `ecl_rationale` | Small Text |  |
 | Current Job Reference | `current_job_reference` | Link | → External Reference |
 | Current Job Since | `current_job_since` | Datetime | read only |
 | Source ID | `source_id` | Data | unique |

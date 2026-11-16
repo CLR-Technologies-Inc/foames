@@ -31,4 +31,17 @@ See [Installation](README.md#installation) and [Contributing](README.md#contribu
   ```
 
   Frappe's DocType generator writes a header that points at `license.txt`; replace it with this one.
+- Add a changelog fragment under [`changelog.d/`](changelog.d/README.md) for a user-facing change, for example `changelog.d/81.added.md`. Do not edit `CHANGELOG.md` or the version: both change only at release time ([docs/versioning.md](docs/versioning.md)).
 - Credit any third-party code you include and keep its license notice with it. Only code under a license compatible with Apache-2.0 can be included, and GPL code (ERPNext included) cannot be copied into FoaMES. See [docs/licensing.md](docs/licensing.md).
+
+## Keeping private information out
+
+FoaMES is public, so every commit, pull request title and description is public too.
+
+- Your own name, email and GitHub account on the commits you author are your signature and are public by design. If you would rather not publish your email, use your GitHub noreply address (`<id>+<login>@users.noreply.github.com`) with `git config user.email <address>`.
+- Do not add other people's personal details. An email address in new content passes when it belongs to an author of the change (including `Co-authored-by` and `Signed-off-by` trailers), is already in the repository, is a placeholder on a documentation domain such as `example.com`, or sits in an attribution or reference file (NOTICE, AUTHORS, CITATION, `.bib`). Credit and cite people there. Anything else is flagged, with the file and line but not the address.
+- Never commit secrets, site configuration (`site_config.json`), `.env` files, keys or certificates. `.gitignore` covers the usual names, GitHub push protection blocks known secret formats, and gitleaks runs locally and in CI.
+- Tenants, providers and estates are referred to generically, never by a company's name. CI checks files, commit messages and pull request text against a private word list.
+- Run `pre-commit install` once. It installs the license, name, personal-details and gitleaks checks for both commits and commit messages.
+
+Report a security problem privately, as described in [SECURITY.md](SECURITY.md).

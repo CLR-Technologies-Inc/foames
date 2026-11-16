@@ -67,9 +67,13 @@ def _agent(name: str):
 
 @task
 def foames_bench(
-	agent: str = "claude_code", tasks: str = "", tier: str = "pure", sandbox_type: str = "local"
+	agent: str = "claude_code",
+	tasks: str = "",
+	tier: str = "pure",
+	sandbox_type: str = "local",
+	suite: str = "core",
 ):
-	selected = tasks_mod.select([t for t in tasks.split(",") if t] or None, tier)
+	selected = tasks_mod.select([t for t in tasks.split(",") if t] or None, tier, suite)
 	dataset = [
 		Sample(id=t.id, input=t.prompt, metadata={"task": t.id, "complexity": t.complexity}) for t in selected
 	]
