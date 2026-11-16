@@ -2,7 +2,7 @@
 
 FoaMES speaks the Model Context Protocol (MCP), so an agent in Claude Desktop, Claude Code, Cursor or any other MCP client can read the plant floor and raise suggestions through tools, with no custom integration. The server exposes the public FoaMES API and nothing more: every tool is one whitelisted method that is already callable at `/api/method/...`, run as the user whose API key the agent holds, with that user's permissions.
 
-The 43 tools cover machines and their state, machine events, downtime, OEE, automatic and manual time projections, the floor snapshot, lineside stock and material queues, Agent Suggestions, the P&ID tag register and drawings, process mining (event logs, discovery, conformance, export), qualification status, life-sciences programs (NPI status, requirement tracing, tech transfer packages, PD studies, scale-up) and ERP reference reads through whichever adapters are registered on the site. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act. In [read-only mode](read-only-mode.md) a writing tool other than the suggestion tools does not run: the call waits as a Pending Write for a person's electronic sign-off, and the agent is told its name. Three more tools read the mode, the pending writes and the write audit trail, and apps can add tools of their own (the Tulip adapter adds six read-only Tulip tools).
+The 45 tools cover machines and their state and Equipment Complexity Level (ECL), machine events, downtime, OEE, automatic and manual time projections, the floor snapshot, lineside stock and material queues, Agent Suggestions, the P&ID tag register and drawings, process mining (event logs, discovery, conformance, export), qualification status, life-sciences programs (NPI status, requirement tracing, tech transfer packages, PD studies, scale-up) and ERP reference reads through whichever adapters are registered on the site. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act. In [read-only mode](read-only-mode.md) a writing tool other than the suggestion tools does not run: the call waits as a Pending Write for a person's electronic sign-off, and the agent is told its name. Three more tools read the mode, the pending writes and the write audit trail, and apps can add tools of their own (the Tulip adapter adds six read-only Tulip tools).
 
 ## Two ways to connect
 
@@ -86,8 +86,10 @@ Permissions are the DocType permissions of the user behind the key, checked by t
 
 | Tool | Returns |
 | --- | --- |
-| `foames_list_machines(status, machine_type, include_disabled, limit)` | Machines with state, last seen, last count, cycle time, shift |
+| `foames_list_machines(status, machine_type, include_disabled, limit, ecl)` | Machines with state, last seen, last count, cycle time, shift, ECL |
 | `foames_get_machine(machine)` | One machine, counts of the last 24 hours, open downtime, latest OEE Period, last 20 state changes |
+| `foames_get_equipment_profile(machine, tier)` | A machine's ECL, minimum model tier, agent role, human oversight and line ECL; with `tier`, whether an agent of that tier may be tied to it |
+| `foames_list_equipment_complexity(line, include_disabled)` | Every machine's ECL and oversight, the count per level, unrated machines, each line's ECL |
 | `foames_list_machine_events(machine, event_type, since, until, limit)` | Raw events, newest first, with counter deltas |
 | `foames_list_downtime(machine, status, reason, since, until, limit)` | Downtime Records |
 | `foames_downtime_by_reason(machine, since, until)` | Minutes per reason in the window, plus unclassified minutes |

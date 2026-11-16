@@ -37,6 +37,7 @@ def floor_snapshot(days: int = 1) -> dict:
 			"last_seen",
 			"last_count_at",
 			"machine_type",
+			"ecl",
 			"ideal_cycle_seconds",
 			"current_job_reference",
 			"current_job_since",
@@ -53,6 +54,7 @@ def floor_snapshot(days: int = 1) -> dict:
 			m["current_job"]["since"] = m.current_job_since
 		m.pop("current_job_since")
 		m["shift"] = current_shift(m.pop("shift_pattern"), now)
+		m["ecl"] = int(m.ecl) if m.ecl else None
 		m["andon"] = [c for c in andon if c.machine == m.name]
 		m["work_instruction_runs"] = [r for r in runs if r.machine == m.name]
 		# Measured from the machine's latest count ever (kept on the Machine by event processing), not
