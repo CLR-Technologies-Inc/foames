@@ -157,11 +157,52 @@ def _ci(s):
 	return f"({ci[0]:.0%} to {ci[1]:.0%})" if ci else ""
 
 
+METRICS = ("quality", "correctness", "process", "composite")
+
+
+def reference_scores(rows):
+	"""The reference solution's mean scores per task: the top of the comparison scale."""
+	out = {}
+	for t in sorted({r["task"] for r in rows if r["agent"] == "reference"}):
+		rs = [r for r in rows if r["agent"] == "reference" and r["task"] == t]
+		out[t] = {m: round(sum(r["scores"][m] for r in rs) / len(rs), 4) for m in METRICS}
+	return out
+
+
+def clears(runs, task, reference, bar, mode, metric="quality"):
+	"""Whether every run of an agent on a task reaches the bar and keeps every invariant."""
+	need = bar * reference.get(task, {}).get(metric, 1.0) if mode == "relative" else bar
+	return bool(runs) and all(r["scores"][metric] >= need - 1e-9 and r["scores"]["invariants_kept"] for r in runs)
+
+
+def write_html(out: Path, entries, reference, tasks, bar, mode, meta, footer):
+	data = {
+		"meta": meta,
+		"footer": footer,
+		"default_bar": bar,
+		"default_mode": mode,
+		"tasks": tasks,
+		"reference": reference,
+		"agents": entries,
+	}
+	template = (Path(__file__).parent / "comparison_template.html").read_text(encoding="utf-8")
+	blob = json.dumps(data).replace("</", "<\\/")
+	(out / "comparison.html").write_text(template.replace("__DATA__", blob), encoding="utf-8")
+
+
 def main(argv=None):
 	ap = argparse.ArgumentParser()
 	ap.add_argument("--runs", required=True, type=Path)
 	ap.add_argument("--out", required=True, type=Path)
 	ap.add_argument("--workflow-run", default="")
+	ap.add_argument(
+		"--reference",
+		type=float,
+		default=0.8,
+		help="the comparison bar: with --reference-mode relative (default), a fraction of the reference "
+		"solution's score on each task; with absolute, a score from 0 to 1. comparison.html has a slider for it.",
+	)
+	ap.add_argument("--reference-mode", choices=["relative", "absolute"], default="relative")
 	opts = ap.parse_args(argv)
 	blocks = collect(opts.runs)
 	opts.out.mkdir(parents=True, exist_ok=True)
@@ -198,14 +239,54 @@ def main(argv=None):
 	(opts.out / "summary.json").write_text(
 		json.dumps({"summary": summary, "qualification": cells}, indent=1), encoding="utf-8"
 	)
-	ranked = sorted((o for o in overview if not o.get("missing")), key=lambda o: -(o["s"]["quality"] or 0))
-	commits = sorted({o["commit"] for o in ranked if o["commit"]})
+	ranked = sorted(
+		(o for o in overview if not o.get("missing") and o["agent"] not in ("reference", "noop")),
+		key=lambda o: -(o["s"]["quality"] or 0),
+	)
+	calibration = [o for o in overview if not o.get("missing") and o["agent"] in ("reference", "noop")]
+	reference = reference_scores(all_rows)
+	task_ids = sorted({r["task"] for r in all_rows})
+	by_agent_task = {}
+	for r in all_rows:
+		by_agent_task.setdefault((r["agent"], r["task"]), []).append(r)
+	for o in ranked + calibration:
+		o["cleared"] = sum(
+			clears(by_agent_task.get((o["agent"], t), []), t, reference, opts.reference, opts.reference_mode)
+			for t in task_ids
+		)
+	bar_text = (
+		f"{opts.reference:.0%} of the reference solution's quality on each task"
+		if opts.reference_mode == "relative"
+		else f"quality of at least {opts.reference:.2f}"
+	)
+	entries = [
+		{
+			"agent": o["agent"],
+			"model": o["s"]["model"] or "",
+			"tier": o["s"]["tier"] or "calibration",
+			"tokens_in": o["tokens"][0],
+			"tokens_out": o["tokens"][1],
+			"cost": _money(o["s"]["total_cost_usd"]),
+			"list_price": _money(o["list_price"]),
+			"ecl": None,
+			"tasks": {
+				t: [
+					{**{m: r["scores"][m] for m in METRICS}, "invariants_ok": r["scores"]["invariants_kept"]}
+					for r in by_agent_task.get((o["agent"], t), [])
+				]
+				for t in task_ids
+			},
+		}
+		for o in ranked + [c for c in calibration if c["agent"] == "noop"]
+	]
+	everyone = ranked + calibration
+	commits = sorted({o["commit"] for o in everyone if o["commit"]})
 	lines = [
 		"# FoaMES agent benchmark results",
 		"",
 		"<!-- SPDX-License-Identifier: Apache-2.0 -->",
 		"",
-		f"Runs started {min((o['started'] for o in ranked), default='n/a')} (UTC) on FoaMES commit(s) "
+		f"Runs started {min((o['started'] for o in everyone if o['started']), default='n/a')} (UTC) on FoaMES commit(s) "
 		+ ", ".join(f"`{c[:10]}`" for c in commits)
 		+ (f". Workflow run: {opts.workflow_run}" if opts.workflow_run else "")
 		+ ".",
@@ -216,24 +297,28 @@ def main(argv=None):
 		"[docs/methodology.md](../../docs/methodology.md). One repetition cannot separate close agents; read the "
 		"intervals.",
 		"",
-		"| Agent | Model | Tier | Runs | Success (95 % CI) | Quality | Composite | Mean time | Tokens in / out | Cost | List-price equivalent | ECL tier |",
-		"| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+		f"**Reference bar: {bar_text}**, and every invariant kept. \"Clears\" counts the tasks where every "
+		"repetition reached it. Move the bar with the slider in [comparison.html](comparison.html) (open the "
+		"file in a browser), or rebuild with `--reference`.",
+		"",
+		"| Agent | Model | Tier | Runs | Clears bar | Success (95 % CI) | Quality | Composite | Mean time | Tokens in / out | Cost | List-price equivalent | ECL tier |",
+		"| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
 	]
-	for o in ranked:
+	for o in ranked + calibration:
 		s = o["s"]
 		lines.append(
-			f"| [{o['agent']}]({o['agent']}.md) | `{s['model']}` | {s['tier']} | {s['runs']} | {_pct(s['success_rate'])} {_ci(s)} | "
+			f"| [{o['agent']}]({o['agent']}.md) | `{s['model'] or '-'}` | {s['tier'] or 'calibration'} | {s['runs']} | {o['cleared']} / {len(task_ids)} | {_pct(s['success_rate'])} {_ci(s)} | "
 			f"{_num(s['quality'])} | {_num(s['composite'])} | {_num(s['mean_seconds'], '{:.0f} s')} | "
 			f"{o['tokens'][0]:,} / {o['tokens'][1]:,} | {_money(s['total_cost_usd'])} | {_money(o['list_price'])} | n/a |"
 		)
 	for o in overview:
 		if o.get("missing"):
-			lines.append(f"| {o['agent']} | | | 0 | no results (the job failed before grading) | | | | | | | |")
+			lines.append(f"| {o['agent']} | | | 0 | | no results (the job failed before grading) | | | | | | | |")
 	tasks = sorted({r["task"] for r in all_rows})
 	if tasks:
 		lines += ["", "## Quality by task", "", "| Agent | " + " | ".join(tasks) + " |", "| --- |" + " ---: |" * len(tasks)]
 		by = {(x["agent"], x["task"]): x for x in summary["by_agent_task"]}
-		for o in ranked:
+		for o in ranked + calibration:
 			cells_row = []
 			for t in tasks:
 				x = by.get((o["agent"], t))
@@ -271,6 +356,18 @@ def main(argv=None):
 		"",
 	]
 	(opts.out / "README.md").write_text("\n".join(lines), encoding="utf-8")
+	write_html(
+		opts.out,
+		entries,
+		reference,
+		task_ids,
+		opts.reference,
+		opts.reference_mode,
+		lines[4].replace("`", ""),
+		"Bar applies per task: in relative mode the reference solution's own score on that task is 100 %. "
+		"Ranked by tasks cleared, then mean score. Data: results.jsonl in this folder. "
+		"See benchmarks/docs/methodology.md for the scoring.",
+	)
 	print(f"wrote {opts.out} ({len(all_rows)} runs, {len(ranked)} agents)")
 
 
