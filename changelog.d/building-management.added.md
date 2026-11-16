@@ -1,0 +1,7 @@
+Building management for the utilities and building services that support production off its process route (water, wastewater, electricity, gas, chilled and hot water, steam, compressed air, HVAC, rooftop units, chillers, boilers, lighting, server rooms, hazardous material storage): facility zones and assets, building points with Brick and Haystack tags, and the FoaMES Building workspace.
+Building points carry high-high, high, low, low-low and alarm-state limits with priorities, on-delays and a deadband; a point past a limit or silent past its stale time opens a Building Alarm and an Agent Suggestion, and people acknowledge it.
+A signed readings webhook and a read-only gateway (`bridges/bms`) that reads BACnet/IP devices (ReadProperty, with status flags as quality) and Modbus TCP meters (function codes 1 to 4) and never writes.
+The Utility Consumption report charges each meter's use to the zone it serves, per day, week or month, and per good unit made where the zone names a production line.
+Maintenance Plans can be for a facility asset, worn by its run-status point or its totalizing meter.
+Hazardous material storage links its Hazard Assessment; its alarms are Safety suggestions, and the hourly check flags storage with no assessment or no monitored point.
+Facility zones, assets and points appear in the topology graph and the floor snapshot, and six read-only MCP tools let agents read assets, alarms, point history, utility consumption and a per-system summary.

@@ -1,0 +1,59 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-16 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "limit_type",
+  "value",
+  "priority",
+  "delay_seconds"
+ ],
+ "fields": [
+  {
+   "fieldname": "limit_type",
+   "fieldtype": "Select",
+   "label": "Limit",
+   "options": "High High\nLow Low\nHigh\nLow\nAlarm State",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "value",
+   "fieldtype": "Float",
+   "label": "Value",
+   "in_list_view": 1,
+   "description": "The limit; for Alarm State, the state value that alarms (1 for an active binary point)"
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "label": "Priority",
+   "options": "Critical\nHigh\nMedium\nLow",
+   "default": "Medium",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "delay_seconds",
+   "fieldtype": "Int",
+   "label": "On Delay (s)",
+   "in_list_view": 1,
+   "description": "How long the value must stay past the limit before the alarm is raised"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-16 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES BMS",
+ "name": "Building Point Limit",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1
+}

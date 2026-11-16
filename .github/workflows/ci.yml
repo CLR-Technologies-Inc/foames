@@ -40,6 +40,9 @@ jobs:
       - name: Historian bridge
         working-directory: bridges/historian
         run: python -m unittest discover -s tests -v
+      - name: BMS gateway
+        working-directory: bridges/bms
+        run: python -m unittest discover -s tests -v
 
   agent-skills:
     runs-on: ubuntu-latest

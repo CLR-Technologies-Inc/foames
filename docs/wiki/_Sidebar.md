@@ -11,6 +11,7 @@
 - [[Run the gateways in production|How-to-Run-the-gateways-in-production]]
 - [[Connect Ignition|How-to-Connect-Ignition]]
 - [[Read a process historian|How-to-Read-a-process-historian]]
+- [[Monitor building systems|How-to-Monitor-building-systems]]
 - [[Connect ERPNext|How-to-Connect-ERPNext]]
 - [[Connect SAP S/4HANA|How-to-Connect-SAP-S4HANA]]
 - [[Connect an MES or Tulip|How-to-Connect-an-MES-or-Tulip]]
@@ -51,6 +52,7 @@
 - [[The outbox and safe writes|Explanation-The-outbox-and-safe-writes]]
 - [[How the benchmark scores agents|Explanation-How-the-benchmark-scores-agents]]
 - [[Equipment complexity levels|Explanation-Equipment-complexity-levels]]
+- [[Building systems beside the process|Explanation-Building-systems-beside-the-process]]
 - [[Material processing complexity (upcoming)|Explanation-Material-processing-complexity]]
 - [[Why Apache-2.0|Explanation-Why-Apache-2.0]]
 

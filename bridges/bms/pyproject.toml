@@ -1,0 +1,18 @@
+[project]
+name = "foames-bms-gateway"
+description = "Read-only gateway from building controllers and meters (BACnet/IP, Modbus TCP) to FoaMES building points"
+authors = [{ name = "CLR Technologies Inc." }]
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+readme = "README.md"
+classifiers = ["License :: OSI Approved :: Apache Software License"]
+dynamic = ["version"]
+# Standard library only.
+dependencies = []
+
+[project.scripts]
+foames-bms-gateway = "foames_bms_gateway.__main__:main"
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"

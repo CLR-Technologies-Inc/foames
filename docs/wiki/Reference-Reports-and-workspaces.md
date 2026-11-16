@@ -8,6 +8,7 @@ All of these are standard Frappe records that `bench migrate` installs and keeps
 | FoaMES Supervisor | Supervisor, Engineer | Seven-day OEE, machines running, open stoppages and suggestions; OEE trends by line and machine, Pareto, MTBF and MTTR, suggestion status, process throughput; the Plant dashboard |
 | FoaMES Maintenance | Maintenance, Engineer | Plans overdue and due, open work orders, the Maintenance Due List; machines down, stoppages, MTBF and MTTR, availability trend |
 | FoaMES Quality | Quality, Engineer | Seven-day quality rate and scrap, open quality suggestions; quality trend, SPC Control Chart, OEE Periods, event logs |
+| FoaMES Building | Maintenance, Supervisor, Engineer, Safety | Active building alarms, assets in alarm or stale, facility assets, the zone tree, Utility Consumption, open facility suggestions |
 | FoaMES Integration | Integration, Engineer, System Manager | Failed and waiting postings per adapter, failed IDocs, missing External References; outbox health and postings per day |
 
 ## Script reports
@@ -23,6 +24,7 @@ All of these are standard Frappe records that `bench migrate` installs and keeps
 | SPC Control Chart | Machine Event | One measurement on an I-MR or X-bar R chart with run-rule signals |
 | Maintenance Due List | Maintenance Plan | Enabled plans with live meters, worst first |
 | SOP Training Matrix | SOP Acknowledgement | Each person against each Effective SOP they must acknowledge: Current, Outdated, Missing, overdue |
+| Utility Consumption | Building Point Reading | Each meter's consumption per day, week or month, charged to the zone it serves, with good units and consumption per good unit where the zone names a line |
 | ERP Outbox Health | Outboxes of every adapter | Postings per adapter and status, oldest unposted, most attempts, last error |
 
 A line's OEE is the time-weighted roll-up of its machines' periods (summed ledgers and counts), never an average of percentages. Machines with no **Line** appear under `No Line`.

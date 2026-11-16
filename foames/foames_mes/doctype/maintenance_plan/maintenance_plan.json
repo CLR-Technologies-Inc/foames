@@ -8,6 +8,7 @@
   "naming_series",
   "title",
   "machine",
+  "facility_asset",
   "disabled",
   "cb_head",
   "status",
@@ -58,9 +59,19 @@
    "fieldtype": "Link",
    "label": "Machine",
    "options": "Machine",
-   "reqd": 1,
    "in_list_view": 1,
-   "in_standard_filter": 1
+   "in_standard_filter": 1,
+   "mandatory_depends_on": "eval:!doc.facility_asset",
+   "depends_on": "eval:!doc.facility_asset"
+  },
+  {
+   "fieldname": "facility_asset",
+   "fieldtype": "Link",
+   "label": "Facility Asset",
+   "options": "Facility Asset",
+   "in_standard_filter": 1,
+   "depends_on": "eval:!doc.machine",
+   "description": "For building equipment (a chiller, RTU or pump) instead of a machine: run hours come from its run-status point and counts from its totalizing meter"
   },
   {
    "fieldname": "disabled",

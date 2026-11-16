@@ -1,0 +1,388 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-16 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "point_id",
+  "title",
+  "facility_asset",
+  "system",
+  "cb_head",
+  "point_type",
+  "value_kind",
+  "quantity",
+  "unit",
+  "disabled",
+  "sb_source",
+  "protocol",
+  "address",
+  "cb_source",
+  "brick_class",
+  "haystack_tags",
+  "sb_meter",
+  "utility",
+  "meter_mode",
+  "cb_meter",
+  "rollover",
+  "rate_time_base",
+  "max_gap_minutes",
+  "sb_alarms",
+  "limits",
+  "cb_alarms",
+  "deadband",
+  "stale_after_minutes",
+  "stale_priority",
+  "sb_value",
+  "last_value",
+  "last_value_at",
+  "last_quality",
+  "cb_value",
+  "alarm_condition",
+  "open_alarm",
+  "pending_condition",
+  "pending_since"
+ ],
+ "fields": [
+  {
+   "fieldname": "point_id",
+   "fieldtype": "Data",
+   "label": "Point ID",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1,
+   "description": "The id the gateway sends with each reading, for example bacnet:1001:analog-input:3 or the historian tag"
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "facility_asset",
+   "fieldtype": "Link",
+   "label": "Facility Asset",
+   "options": "Facility Asset",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "system",
+   "fieldtype": "Data",
+   "label": "System",
+   "fetch_from": "facility_asset.system",
+   "read_only": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "point_type",
+   "fieldtype": "Select",
+   "label": "Point Type",
+   "options": "Sensor\nSetpoint\nStatus\nCommand\nAlarm\nMeter",
+   "default": "Sensor",
+   "reqd": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "value_kind",
+   "fieldtype": "Select",
+   "label": "Value Kind",
+   "options": "Analog\nBinary\nMultistate",
+   "default": "Analog"
+  },
+  {
+   "fieldname": "quantity",
+   "fieldtype": "Select",
+   "label": "Quantity",
+   "options": "\nTemperature\nHumidity\nPressure\nDifferential Pressure\nFlow\nLevel\nPower\nEnergy\nCurrent\nVoltage\nVolume\nMass\npH\nConductivity\nConcentration\nCO2\nRun Status\nPosition\nSpeed\nOccupancy\nLeak\nOther"
+  },
+  {
+   "fieldname": "unit",
+   "fieldtype": "Data",
+   "label": "Unit",
+   "description": "As the controller reports it, for example degC, %RH, kW, kWh, m3, L/min"
+  },
+  {
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
+  },
+  {
+   "fieldname": "sb_source",
+   "fieldtype": "Section Break",
+   "label": "Source",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "protocol",
+   "fieldtype": "Select",
+   "label": "Protocol",
+   "options": "\nBACnet/IP\nModbus TCP\nHistorian\nIgnition\nOPC UA\nMQTT\nManual\nOther"
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Data",
+   "label": "Address",
+   "description": "Where the gateway reads it, for example device 1001 analog-input 3, or unit 1 input register 30010 float32"
+  },
+  {
+   "fieldname": "cb_source",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "brick_class",
+   "fieldtype": "Data",
+   "label": "Brick Class",
+   "description": "Filled from the point type and quantity when empty"
+  },
+  {
+   "fieldname": "haystack_tags",
+   "fieldtype": "Small Text",
+   "label": "Haystack Tags",
+   "description": "Filled from the point type, quantity and utility when empty"
+  },
+  {
+   "fieldname": "sb_meter",
+   "fieldtype": "Section Break",
+   "label": "Meter",
+   "depends_on": "eval:doc.point_type=='Meter'"
+  },
+  {
+   "fieldname": "utility",
+   "fieldtype": "Select",
+   "label": "Utility",
+   "options": "\nElectricity\nNatural Gas\nWater\nWastewater\nChilled Water\nHeating Hot Water\nSteam\nCompressed Air",
+   "mandatory_depends_on": "eval:doc.point_type=='Meter'"
+  },
+  {
+   "fieldname": "meter_mode",
+   "fieldtype": "Select",
+   "label": "Meter Mode",
+   "options": "Totalizer\nRate",
+   "default": "Totalizer",
+   "description": "Totalizer: a running total (kWh, m3). Rate: an instantaneous rate (kW, m3/h) that FoaMES integrates"
+  },
+  {
+   "fieldname": "cb_meter",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "rollover",
+   "fieldtype": "Float",
+   "label": "Rollover Value",
+   "depends_on": "eval:doc.meter_mode=='Totalizer'",
+   "description": "The value a totalizer wraps to zero after, if it does; a drop is otherwise taken as a reset"
+  },
+  {
+   "fieldname": "rate_time_base",
+   "fieldtype": "Select",
+   "label": "Rate Per",
+   "options": "Hour\nMinute\nSecond",
+   "default": "Hour",
+   "depends_on": "eval:doc.meter_mode=='Rate'"
+  },
+  {
+   "fieldname": "max_gap_minutes",
+   "fieldtype": "Int",
+   "label": "Max Gap (min)",
+   "description": "Readings further apart than this count nothing between them (default 60)"
+  },
+  {
+   "fieldname": "sb_alarms",
+   "fieldtype": "Section Break",
+   "label": "Alarm Limits"
+  },
+  {
+   "fieldname": "limits",
+   "fieldtype": "Table",
+   "label": "Limits",
+   "options": "Building Point Limit"
+  },
+  {
+   "fieldname": "cb_alarms",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "deadband",
+   "fieldtype": "Float",
+   "label": "Deadband",
+   "description": "How far back inside a limit the value must come before its alarm returns to normal"
+  },
+  {
+   "fieldname": "stale_after_minutes",
+   "fieldtype": "Int",
+   "label": "Stale After (min)",
+   "description": "A point that has not reported for this long raises a communication-loss alarm (default 60)"
+  },
+  {
+   "fieldname": "stale_priority",
+   "fieldtype": "Select",
+   "label": "Stale Priority",
+   "options": "Critical\nHigh\nMedium\nLow",
+   "default": "Medium"
+  },
+  {
+   "fieldname": "sb_value",
+   "fieldtype": "Section Break",
+   "label": "Present Value"
+  },
+  {
+   "fieldname": "last_value",
+   "fieldtype": "Float",
+   "label": "Last Value",
+   "read_only": 1,
+   "no_copy": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "last_value_at",
+   "fieldtype": "Datetime",
+   "label": "Last Reading At",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "last_quality",
+   "fieldtype": "Select",
+   "label": "Last Quality",
+   "options": "\nGood\nUncertain\nBad",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "cb_value",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "alarm_condition",
+   "fieldtype": "Data",
+   "label": "Condition",
+   "read_only": 1,
+   "no_copy": 1,
+   "default": "Normal",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "open_alarm",
+   "fieldtype": "Link",
+   "label": "Open Alarm",
+   "options": "Building Alarm",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "pending_condition",
+   "fieldtype": "Data",
+   "label": "Pending Condition",
+   "read_only": 1,
+   "no_copy": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "pending_since",
+   "fieldtype": "Datetime",
+   "label": "Pending Since",
+   "read_only": 1,
+   "no_copy": 1,
+   "hidden": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-16 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES BMS",
+ "name": "Building Point",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Safety",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Integration",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "field:point_id",
+ "track_changes": 1,
+ "title_field": "title",
+ "search_fields": "title,facility_asset,point_type,quantity",
+ "description": "One value a building controller or meter reports: a sensor, setpoint, status, command, alarm or meter (BACnet object, Modbus register or historian tag)"
+}

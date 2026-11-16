@@ -152,13 +152,14 @@ This page is generated from the DocType JSON files on `main`. When the two disag
 
 ### Maintenance Plan
 
-A preventive maintenance task for one machine, due by calendar, run hours or counts
+A preventive maintenance task for one machine or facility asset, due by calendar, run hours or counts
 
 | Field | Fieldname | Type | Notes |
 | --- | --- | --- | --- |
 | Series | `naming_series` | Select | MPL-.#####; default `MPL-.#####` |
 | Title | `title` | Data | required |
-| Machine | `machine` | Link | → Machine; required |
+| Machine | `machine` | Link | → Machine; required unless a Facility Asset is set |
+| Facility Asset | `facility_asset` | Link | → Facility Asset; for building equipment instead of a machine |
 | Disabled | `disabled` | Check | default `0` |
 | Status | `status` | Select | OK, Due Soon, Due, Overdue; read only; default `OK` |
 | Open Work Order | `open_work_order` | Link | → Maintenance Work Order; read only |
@@ -189,6 +190,7 @@ One service of a Maintenance Plan; completing it restarts the plan's meter
 | Maintenance Plan | `maintenance_plan` | Link | → Maintenance Plan; required |
 | Title | `title` | Data |  |
 | Machine | `machine` | Link | → Machine; read only |
+| Facility Asset | `facility_asset` | Link | → Facility Asset; read only |
 | Status | `status` | Select | Open, In Progress, Completed, Cancelled; default `Open` |
 | Assigned To | `assigned_to` | Link | → User |
 | Due On | `due_on` | Datetime |  |
@@ -379,6 +381,132 @@ One revision of a controlled standard operating procedure
 | Field | Fieldname | Type | Notes |
 | --- | --- | --- | --- |
 | Event Log Source | `source` | Link | → Event Log Source; required |
+
+## FoaMES BMS
+
+Building management: facility zones and assets, building points with their alarm limits, readings and alarms. See [docs/building-management.md](https://github.com/CLR-Technologies-Inc/foames/blob/main/docs/building-management.md).
+
+### Facility Zone
+
+A site, building, floor, room or area that building systems serve, as a tree
+
+| Field | Fieldname | Type | Notes |
+| --- | --- | --- | --- |
+| Zone Name | `zone_name` | Data | required; unique |
+| Zone Type | `zone_type` | Select | Site, Building, Floor, Room, Area, Utility Yard, Outdoor; default `Area` |
+| Parent Zone | `parent_facility_zone` | Link | → Facility Zone |
+| Is Group | `is_group` | Check |  |
+| Production Line | `line` | Data |  |
+| Floor Area (m²) | `floor_area` | Float |  |
+| Disabled | `disabled` | Check |  |
+| Description | `description` | Small Text |  |
+
+### Facility Asset
+
+A piece of facility equipment or a utility system the BMS watches: a chiller, RTU, meter, lighting panel, server room or hazmat store
+
+| Field | Fieldname | Type | Notes |
+| --- | --- | --- | --- |
+| Asset ID | `asset_name` | Data | required; unique |
+| Title | `title` | Data |  |
+| System | `system` | Select | HVAC, Air Handling Unit, Rooftop Unit, Chiller, Cooling Tower, Boiler, Chilled Water, Heating Hot Water, Steam, Domestic Water, Process Water, Wastewater, Compressed Air, Electricity, Natural Gas, Lighting, Server Room, Hazardous Material Storage, Fire and Life Safety, Other; required |
+| Located In | `zone` | Link | → Facility Zone |
+| Serves | `serves_zone` | Link | → Facility Zone |
+| Status | `status` | Select | Unknown, Normal, Alarm, Stale, Out of Service; read only; default `Unknown` |
+| Out of Service | `out_of_service` | Check |  |
+| Disabled | `disabled` | Check |  |
+| Active Alarms | `active_alarms` | Int | read only |
+| Brick Class | `equipment_class` | Data |  |
+| Haystack Tags | `haystack_tags` | Small Text |  |
+| Manufacturer | `manufacturer` | Data |  |
+| Model | `model_number` | Data |  |
+| Serial Number | `serial_number` | Data |  |
+| Hazard Assessment | `hazard_assessment` | Link | → Hazard Assessment |
+| Stored Materials | `stored_materials` | Small Text |  |
+| Notes | `notes` | Small Text |  |
+
+### Building Point
+
+One value a building controller or meter reports: a sensor, setpoint, status, command, alarm or meter (BACnet object, Modbus register or historian tag)
+
+| Field | Fieldname | Type | Notes |
+| --- | --- | --- | --- |
+| Point ID | `point_id` | Data | required; unique |
+| Title | `title` | Data |  |
+| Facility Asset | `facility_asset` | Link | → Facility Asset; required |
+| System | `system` | Data | read only; from facility_asset.system |
+| Point Type | `point_type` | Select | Sensor, Setpoint, Status, Command, Alarm, Meter; required; default `Sensor` |
+| Value Kind | `value_kind` | Select | Analog, Binary, Multistate; default `Analog` |
+| Quantity | `quantity` | Select | Temperature, Humidity, Pressure, Differential Pressure, Flow, Level, Power, Energy, Current, Voltage, Volume, Mass, pH, Conductivity, Concentration, CO2, Run Status, Position, Speed, Occupancy, Leak, Other |
+| Unit | `unit` | Data |  |
+| Disabled | `disabled` | Check |  |
+| Protocol | `protocol` | Select | BACnet/IP, Modbus TCP, Historian, Ignition, OPC UA, MQTT, Manual, Other |
+| Address | `address` | Data |  |
+| Brick Class | `brick_class` | Data |  |
+| Haystack Tags | `haystack_tags` | Small Text |  |
+| Utility | `utility` | Select | Electricity, Natural Gas, Water, Wastewater, Chilled Water, Heating Hot Water, Steam, Compressed Air |
+| Meter Mode | `meter_mode` | Select | Totalizer, Rate; default `Totalizer` |
+| Rollover Value | `rollover` | Float |  |
+| Rate Per | `rate_time_base` | Select | Hour, Minute, Second; default `Hour` |
+| Max Gap (min) | `max_gap_minutes` | Int |  |
+| Limits | `limits` | Table | → Building Point Limit |
+| Deadband | `deadband` | Float |  |
+| Stale After (min) | `stale_after_minutes` | Int |  |
+| Stale Priority | `stale_priority` | Select | Critical, High, Medium, Low; default `Medium` |
+| Last Value | `last_value` | Float | read only |
+| Last Reading At | `last_value_at` | Datetime | read only |
+| Last Quality | `last_quality` | Select | Good, Uncertain, Bad; read only |
+| Condition | `alarm_condition` | Data | read only; default `Normal` |
+| Open Alarm | `open_alarm` | Link | → Building Alarm; read only |
+
+### Building Point Limit (child table)
+
+| Field | Fieldname | Type | Notes |
+| --- | --- | --- | --- |
+| Limit | `limit_type` | Select | High High, Low Low, High, Low, Alarm State; required |
+| Value | `value` | Float |  |
+| Priority | `priority` | Select | Critical, High, Medium, Low; required; default `Medium` |
+| On Delay (s) | `delay_seconds` | Int |  |
+
+### Building Point Reading
+
+One reading of a Building Point, as a gateway or historian sent it
+
+| Field | Fieldname | Type | Notes |
+| --- | --- | --- | --- |
+| Point | `point` | Link | → Building Point; required |
+| Timestamp | `timestamp` | Datetime | required |
+| Value | `value` | Float |  |
+| Quality | `quality` | Select | Good, Uncertain, Bad; default `Good` |
+| Source | `source` | Select | Webhook, Manual, Import; default `Manual` |
+| Reading Key | `reading_key` | Data | unique; read only |
+
+### Building Alarm
+
+A building point past one of its limits or no longer reporting, from raise to acknowledgement and return to normal
+
+| Field | Fieldname | Type | Notes |
+| --- | --- | --- | --- |
+| Series | `naming_series` | Select | BAL-.YYYY.-; default `BAL-.YYYY.-` |
+| Point | `point` | Link | → Building Point; required |
+| Facility Asset | `facility_asset` | Link | → Facility Asset; read only |
+| System | `system` | Data | read only |
+| Zone | `zone` | Link | → Facility Zone; read only |
+| Status | `status` | Select | Active, Acknowledged, Returned, Closed; read only; default `Active` |
+| Priority | `priority` | Select | Critical, High, Medium, Low; read only |
+| Condition | `alarm_condition` | Data | read only |
+| Raised At | `raised_at` | Datetime | read only |
+| Value At Raise | `value_at_raise` | Float | read only |
+| Limit | `limit_value` | Float | read only |
+| Unit | `unit` | Data | read only |
+| Worst Value | `worst_value` | Float | read only |
+| Last Value | `last_value` | Float | read only |
+| Returned To Normal At | `returned_at` | Datetime | read only |
+| Acknowledged By | `acknowledged_by` | Link | → User; read only |
+| Acknowledged At | `acknowledged_at` | Datetime | read only |
+| Closed At | `closed_at` | Datetime | read only |
+| Hazard Assessment | `hazard_assessment` | Link | → Hazard Assessment; read only |
+| Note | `note` | Small Text |  |
 
 ## FoaMES Adapters
 
