@@ -122,10 +122,10 @@ Each agent runs the same tasks in the [agent benchmark](benchmarks/README.md): t
 
 | Agent | Model | Built for | Report | Tasks run | Pass rate | ECL reached |
 | --- | --- | --- | --- | ---: | ---: | --- |
-| claude-code-haiku-5-5 | `claude-haiku-5-5` | agentic coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 29 | 97% | none |
-| claude-code-sonnet-5-5 | `claude-sonnet-5-5` | agentic coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 29 | 100% | none |
-| claude-code-opus-5-5 | `claude-opus-5-5` | agentic coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 29 | 100% | none |
-| claude-code-fable-5-2 | `claude-fable-5-2` | agentic coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 29 | 100% | none |
+| claude-code-haiku-5-5 | `claude-haiku-5-5` | agentic coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 35 | 94% | ECL 2 |
+| claude-code-sonnet-5-5 | `claude-sonnet-5-5` | agentic coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 35 | 94% | none |
+| claude-code-opus-5-5 | `claude-opus-5-5` | agentic coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 35 | 97% | ECL 2 |
+| claude-code-fable-5-2 | `claude-fable-5-2` | agentic coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 35 | 97% | none |
 | claude-code-opus-5 | `claude-opus-5` | agentic coding | Not run: older model, left out to stay inside the subscription's shared 5-hour usage limit | - | - | - |
 | claude-code-opus-4-8 | `claude-opus-4-8` | agentic coding | Not run: older model, left out to stay inside the subscription's shared 5-hour usage limit | - | - | - |
 | claude-code-sonnet-4-5 | `claude-sonnet-4-5` | agentic coding | Not run: older model, left out to stay inside the subscription's shared 5-hour usage limit | - | - | - |

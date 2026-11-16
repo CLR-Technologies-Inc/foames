@@ -3,7 +3,7 @@
 <!-- Copyright (c) 2026 CLR Technologies Inc. and contributors -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
-- **Run dates (UTC):** started 2026-11-16T05:12:08+00:00, last run finished 2026-11-16T08:10:49+00:00
+- **Run dates (UTC):** started 2026-11-16T05:12:08+00:00, last run finished 2026-11-16T15:00:55+00:00
 - **Model:** `claude-sonnet-5-5` (baseline tier, built for agentic coding), Claude Code 2.1.325 (CLI), model claude-sonnet-5-5, called 2026-11-16 through this account's Claude subscription (not the API); the model behind an alias may be updated by Anthropic
 - **Harness:** claude-code
 - **Where it ran:** Claude Code cloud container (Linux, unshare sandbox), tasks from commit c8bf84e; subscription run, cost $0; list price is Claude Code's API-equivalent estimate; sandbox unshare
@@ -12,10 +12,15 @@
 
 | Runs | Success (95 % CI) | Quality | Correctness | Process | Composite | Mean time | Tokens in / cached / out | Cost | List-price equivalent | ECL reached |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| 29 | 100% (88% to 100%) | 0.98 | 1.00 | 0.97 | 0.94 | 106 s | 1,577,829 / 18,643,795 / 428,533 | $0.00 | $12.46 | none |
+| 35 | 94% (81% to 98%) | 0.98 | 0.98 | 0.97 | 0.93 | 101 s | 1,861,997 / 21,855,432 / 487,575 | $0.00 | $14.51 | none |
 
 | Task | ECL | Complexity | Finished (UTC) | Success | Quality | Correctness | Process | Time | Tokens in / out | Exit | Notes |
 | --- | ---: | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
+| counter-reset (rep 1) | 2 | low | 2026-11-16T14:53 | PASS | 1.00 | 1.00 | 1.00 | 38 s | 40,510 / 4,454 | 0 |  |
+| erp-retry-after (rep 1) | - | high | 2026-11-16T14:54 | PASS | 0.98 | 1.00 | 0.96 | 50 s | 49,707 / 6,964 | 0 |  |
+| oee-unknown-time (rep 1) | 2 | medium | 2026-11-16T14:55 | PASS | 1.00 | 1.00 | 1.00 | 29 s | 32,536 / 4,003 | 0 |  |
+| process-mining-analysis (rep 1) | 3 | medium | 2026-11-16T14:55 | PASS | 1.00 | 1.00 | 1.00 | 41 s | 34,279 / 4,952 | 0 |  |
+| process-spec-network-loss (rep 1) | 3 | high | 2026-11-16T15:00 | fail | 0.98 | 1.00 | 0.95 | 265 s | 93,200 / 34,415 | 0 | broke an invariant |
 | sector-211-oil-gas (rep 1) | - | medium | 2026-11-16T05:14 | PASS | 0.98 | 1.00 | 0.96 | 117 s | 50,454 / 15,681 | 0 |  |
 | sector-212-mining (rep 1) | - | medium | 2026-11-16T05:15 | PASS | 0.97 | 1.00 | 0.94 | 101 s | 54,914 / 14,032 | 0 |  |
 | sector-2213-wastewater (rep 1) | - | medium | 2026-11-16T05:17 | PASS | 0.97 | 1.00 | 0.94 | 72 s | 49,882 / 10,211 | 0 |  |
@@ -45,3 +50,4 @@
 | sector-3364-aerospace (rep 1) | - | medium | 2026-11-16T08:07 | PASS | 0.98 | 1.00 | 0.96 | 89 s | 51,060 / 12,983 | 0 |  |
 | sector-337-furniture (rep 1) | - | medium | 2026-11-16T08:08 | PASS | 0.98 | 1.00 | 0.96 | 101 s | 51,557 / 14,457 | 0 |  |
 | sector-3391-medical-devices (rep 1) | - | medium | 2026-11-16T08:10 | PASS | 0.98 | 1.00 | 0.96 | 121 s | 57,997 / 16,110 | 0 |  |
+| spc-ewma-chart (rep 1) | 2 | medium | 2026-11-16T15:00 | fail | 0.72 | 0.57 | 0.90 | 32 s | 33,936 / 4,254 | 0 | broke an invariant |
