@@ -1,0 +1,35 @@
+{
+ "bench_version": "0.1.0",
+ "foames_commit": "11c643fbf2e7e88e51bf9f625f8980bfbb497fa5",
+ "source": {
+  "dirty": false
+ },
+ "python": "3.13.18",
+ "platform": "Linux-6.18.44-fc-v470-x86_64-with-glibc2.39",
+ "started_at": "2026-11-16T03:12:01+00:00",
+ "reps": 1,
+ "tasks": [
+  "counter-reset",
+  "erp-retry-after",
+  "oee-unknown-time",
+  "process-mining-analysis",
+  "process-spec-network-loss",
+  "spc-ewma-chart"
+ ],
+ "agents": [
+  {
+   "name": "reference",
+   "model": "",
+   "tier": "",
+   "harness": "",
+   "sandbox": "built-in"
+  },
+  {
+   "name": "noop",
+   "model": "",
+   "tier": "",
+   "harness": "",
+   "sandbox": "built-in"
+  }
+ ]
+}

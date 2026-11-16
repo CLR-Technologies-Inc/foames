@@ -1,0 +1,5 @@
+# Does the pharmaceutical plant's meter show the assessment's saving?
+
+Plant A makes and packs pharmaceutical preparations, about a million finished packs a year, around the clock. Most of its electricity goes to chilled water, air handling for its classified rooms and compressed air, not to the packaging lines themselves. A university Industrial Assessment Center funded by the US Department of Energy assessed a plant like it, and the plant carried out most of the recommendations: a new chiller, premium efficiency motors, variable frequency drives and power factor correction.
+
+The assessment's record (IAC assessment MI0445, <https://itac.university/assessment/MI0445>, from the DOE Industrial Assessment Center database) gives the implemented measures as 2,207,693 kWh a year. Plant A's FoaMES site meters the whole plant and counts finished packs on its main packaging line. The engineering director wants the measured saving set against that figure. A planned validation stop each week is planned downtime.

@@ -19,7 +19,6 @@ These features are in open pull requests on the repository. They are **not on `m
 | Material queues | The buffer in front of each machine, with FIFO, priority, earliest due or earliest expiry dispatch, minimum and maximum waits (Q-time, floor life, pot life), and starved or blocked machine detection | [#72](https://github.com/CLR-Technologies-Inc/foames/pull/72) |
 | Dry-line alerts | Warnings before a line is starved of material (Reorder, Running Dry, Will Run Dry, Dry), allowing for lead time and conditioning time | [#72](https://github.com/CLR-Technologies-Inc/foames/pull/72) |
 | Material processing complexity (MPC) | Materials rated 1 to 5 from standard handling factors. MPC 4 is Human Expert Recommended and MPC 5 is Expert Team Required. See [Material processing complexity](Explanation-Material-processing-complexity) | [#72](https://github.com/CLR-Technologies-Inc/foames/pull/72) |
-| Equipment Complexity Level on Machine | An ECL field on each Machine, and agents tied to a machine only if their model tier meets its ECL. Planned, not yet in a pull request. The benchmark side is in [Equipment complexity levels](Explanation-Equipment-complexity-levels) | Planned |
 | SPDX licence headers | One Apache-2.0 SPDX header in every source file, checked in CI, and a licensing guide | [#62](https://github.com/CLR-Technologies-Inc/foames/pull/62) |
 
 To follow or comment on one, open its pull request. See [open pull requests](https://github.com/CLR-Technologies-Inc/foames/pulls) for the current list.

@@ -1,0 +1,301 @@
+{
+ "actions": [],
+ "creation": "2026-11-14 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "protocol",
+  "title",
+  "protocol_type",
+  "validation_stage",
+  "machine",
+  "process_name",
+  "commissioning_package",
+  "cb_head",
+  "status",
+  "run_number",
+  "executed_by",
+  "started_on",
+  "ended_on",
+  "sb_results",
+  "results",
+  "sb_conclusion",
+  "open_items",
+  "conclusion",
+  "sb_review",
+  "outcome",
+  "qualified_until",
+  "cb_review",
+  "reviewed_by",
+  "reviewed_on",
+  "amended_from"
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-16 08:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Validation",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "name": "Validation Execution",
+ "is_submittable": 1,
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "title",
+ "show_title_field_in_link": 1,
+ "search_fields": "protocol,machine,process_name",
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "VE-.YYYY.-",
+   "default": "VE-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "protocol",
+   "fieldtype": "Link",
+   "label": "Protocol",
+   "options": "Validation Protocol",
+   "reqd": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "protocol_type",
+   "fieldtype": "Data",
+   "label": "Protocol Type",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "validation_stage",
+   "fieldtype": "Data",
+   "label": "Validation Stage",
+   "read_only": 1
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "read_only": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "process_name",
+   "fieldtype": "Data",
+   "label": "Process",
+   "read_only": 1
+  },
+  {
+   "fieldname": "commissioning_package",
+   "fieldtype": "Link",
+   "label": "Commissioning Package",
+   "options": "Commissioning Package",
+   "in_standard_filter": 1,
+   "description": "The handover this IQ follows; its dossier holds the tests, loop checks and punch items to reference"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nIn Progress\nReady for Review\nPassed\nPassed with Deviations\nFailed\nCancelled",
+   "default": "Draft",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "run_number",
+   "fieldtype": "Int",
+   "label": "Run",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "executed_by",
+   "fieldtype": "Link",
+   "label": "Executed By",
+   "options": "User"
+  },
+  {
+   "fieldname": "started_on",
+   "fieldtype": "Datetime",
+   "label": "Started On"
+  },
+  {
+   "fieldname": "ended_on",
+   "fieldtype": "Datetime",
+   "label": "Ended On",
+   "description": "Machine-data criteria read Measurement events from Started On to Ended On"
+  },
+  {
+   "fieldname": "sb_results",
+   "fieldtype": "Section Break",
+   "label": "Results"
+  },
+  {
+   "fieldname": "results",
+   "fieldtype": "Table",
+   "label": "Results",
+   "options": "Validation Result"
+  },
+  {
+   "fieldname": "sb_conclusion",
+   "fieldtype": "Section Break",
+   "label": "Conclusion"
+  },
+  {
+   "fieldname": "open_items",
+   "fieldtype": "Small Text",
+   "label": "Open Items",
+   "read_only": 1,
+   "no_copy": 1,
+   "description": "What still stops this execution from being approved"
+  },
+  {
+   "fieldname": "conclusion",
+   "fieldtype": "Text",
+   "label": "Conclusion"
+  },
+  {
+   "fieldname": "sb_review",
+   "fieldtype": "Section Break",
+   "label": "Review and Approval"
+  },
+  {
+   "fieldname": "outcome",
+   "fieldtype": "Data",
+   "label": "Outcome",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "qualified_until",
+   "fieldtype": "Date",
+   "label": "Qualified Until",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "cb_review",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reviewed_by",
+   "fieldtype": "Link",
+   "label": "Approved By",
+   "options": "User",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "reviewed_on",
+   "fieldtype": "Datetime",
+   "label": "Approved On",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "options": "Validation Execution",
+   "read_only": 1,
+   "no_copy": 1,
+   "print_hide": 1
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "create": 1,
+   "write": 1
+  }
+ ],
+ "description": "One execution of a Validation Protocol: results, evidence and deviations, approved by someone other than the executor"
+}

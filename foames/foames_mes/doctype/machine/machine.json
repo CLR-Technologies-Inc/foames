@@ -18,6 +18,11 @@
   "shift_start",
   "scheduled_minutes_per_day",
   "shift_pattern",
+  "sb_ecl",
+  "ecl",
+  "ecl_class",
+  "cb_ecl",
+  "ecl_rationale",
   "sb_job",
   "current_job_reference",
   "cb_job",
@@ -118,6 +123,37 @@
    "description": "When set, the daily OEE task creates one period per shift of this pattern, and Shift Start and Scheduled Minutes Per Day are ignored"
   },
   {
+   "fieldname": "sb_ecl",
+   "fieldtype": "Section Break",
+   "label": "Equipment Complexity",
+   "collapsible": 1,
+   "description": "How complex this machine is to reason about (ECL 1 to 5), which decides the model tier an agent needs and the human oversight that stays in charge. ECL 4: Human Expert Recommended (one expert). ECL 5: Expert Team Required, and no agent qualifies."
+  },
+  {
+   "fieldname": "ecl",
+   "fieldtype": "Select",
+   "label": "Equipment Complexity Level (ECL)",
+   "options": "\n1\n2\n3\n4\n5",
+   "in_standard_filter": 1,
+   "description": "1 simple tool, 2 single-function machine, 3 configurable multi-step machine or cell, 4 coupled process equipment, 5 frontier equipment. Leave empty until the machine is rated"
+  },
+  {
+   "fieldname": "ecl_class",
+   "fieldtype": "Data",
+   "label": "ECL Equipment Class",
+   "description": "The class id from the public Equipment Complexity Levels list (for example cnc-machining-centre), when the rating was taken from it"
+  },
+  {
+   "fieldname": "cb_ecl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ecl_rationale",
+   "fieldtype": "Small Text",
+   "label": "ECL Rationale",
+   "description": "Why this level, for this machine as it is configured here. Rate the equipment the agent will actually reason about"
+  },
+  {
    "fieldname": "sb_job",
    "fieldtype": "Section Break",
    "label": "Current Job"
@@ -185,7 +221,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-11-04 21:00:00.000000",
+ "modified": "2026-11-16 06:00:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES MES",
  "name": "Machine",

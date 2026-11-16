@@ -1,0 +1,298 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "permit_type",
+  "machine",
+  "location",
+  "work_description",
+  "cb_head",
+  "status",
+  "valid_from",
+  "valid_to",
+  "maintenance_work_order",
+  "hazard_assessment",
+  "sb_people",
+  "requested_by",
+  "issued_by",
+  "cb_people",
+  "performed_by",
+  "crew",
+  "sb_isolation",
+  "isolation_points",
+  "sb_precautions",
+  "precautions",
+  "gas_test_reading",
+  "sb_close",
+  "activated_on",
+  "closed_on",
+  "cb_close",
+  "closed_by",
+  "closure_notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "PTW-.YYYY.-",
+   "default": "PTW-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "permit_type",
+   "fieldtype": "Select",
+   "label": "Permit Type",
+   "options": "Lockout Tagout\nHot Work\nConfined Space\nWorking at Height\nElectrical\nLine Break\nExcavation\nGeneral",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location"
+  },
+  {
+   "fieldname": "work_description",
+   "fieldtype": "Small Text",
+   "label": "Work to Be Done",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nActive\nSuspended\nClosed\nCancelled\nExpired",
+   "default": "Draft",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "valid_from",
+   "fieldtype": "Datetime",
+   "label": "Valid From",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "valid_to",
+   "fieldtype": "Datetime",
+   "label": "Valid To",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "maintenance_work_order",
+   "fieldtype": "Link",
+   "label": "Maintenance Work Order",
+   "options": "Maintenance Work Order"
+  },
+  {
+   "fieldname": "hazard_assessment",
+   "fieldtype": "Link",
+   "label": "Hazard Assessment",
+   "options": "Hazard Assessment"
+  },
+  {
+   "fieldname": "sb_people",
+   "fieldtype": "Section Break",
+   "label": "People"
+  },
+  {
+   "fieldname": "requested_by",
+   "fieldtype": "Link",
+   "label": "Requested By",
+   "options": "User"
+  },
+  {
+   "fieldname": "issued_by",
+   "fieldtype": "Link",
+   "label": "Issued By",
+   "options": "User",
+   "description": "The authorised person who checks the conditions and issues the permit"
+  },
+  {
+   "fieldname": "cb_people",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "performed_by",
+   "fieldtype": "Link",
+   "label": "Performed By",
+   "options": "User",
+   "description": "The person in charge of the work, who accepts the permit"
+  },
+  {
+   "fieldname": "crew",
+   "fieldtype": "Small Text",
+   "label": "Crew",
+   "description": "Everyone else working under this permit"
+  },
+  {
+   "fieldname": "sb_isolation",
+   "fieldtype": "Section Break",
+   "label": "Isolation",
+   "description": "Every energy source locked, tagged and verified at zero before the work starts"
+  },
+  {
+   "fieldname": "isolation_points",
+   "fieldtype": "Table",
+   "label": "Isolation Points",
+   "options": "Permit Isolation Point"
+  },
+  {
+   "fieldname": "sb_precautions",
+   "fieldtype": "Section Break",
+   "label": "Precautions"
+  },
+  {
+   "fieldname": "precautions",
+   "fieldtype": "Small Text",
+   "label": "Precautions",
+   "description": "Gas test results, fire watch, rescue plan, barriers, PPE"
+  },
+  {
+   "fieldname": "gas_test_reading",
+   "fieldtype": "Data",
+   "label": "Gas Test Reading",
+   "depends_on": "eval:[\"Confined Space\",\"Hot Work\"].includes(doc.permit_type)"
+  },
+  {
+   "fieldname": "sb_close",
+   "fieldtype": "Section Break",
+   "label": "Hand Back",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "activated_on",
+   "fieldtype": "Datetime",
+   "label": "Activated On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "closed_on",
+   "fieldtype": "Datetime",
+   "label": "Closed On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_close",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "closed_by",
+   "fieldtype": "Link",
+   "label": "Closed By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "closure_notes",
+   "fieldtype": "Small Text",
+   "label": "Hand Back Notes",
+   "description": "State of the equipment when the work was handed back"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES EHS",
+ "name": "Safety Permit",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Safety",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "naming_series:",
+ "track_changes": 1,
+ "search_fields": "permit_type,machine,status",
+ "description": "A permit to work: lockout/tagout, hot work, confined space and other hazardous work, with its isolation points"
+}

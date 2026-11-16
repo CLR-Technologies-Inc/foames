@@ -1,0 +1,110 @@
+{
+ "case_id": "sector-3344-semiconductors",
+ "sector": "Computer and electronic products (semiconductor wafer fab)",
+ "naics": "3344",
+ "seed": 3344,
+ "source": {
+  "title": "Freescale Semiconductor Successfully Implements an Energy Management System",
+  "publisher": "U.S. Department of Energy, Industrial Technologies Program (with the U.S. Council for Energy-Efficient Manufacturing)",
+  "report": "DOE/EE-0579",
+  "date": "2011-06",
+  "url": "https://www1.eere.energy.gov/manufacturing/tech_assistance/pdfs/freescale_case_study.pdf",
+  "us_government_work": "US government work; its photos are credited to another organisation and are not copied",
+  "named_organisations": [
+   "Freescale"
+  ]
+ },
+ "claim": {
+  "kind": "annual_energy_saving",
+  "value": 2550000,
+  "unit": "kWh/yr",
+  "text": "Completed projects save 2.55 million kWh a year; the same document reports 28 million kWh saved between 2006 and 2009, a cumulative figure on a different basis."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-03-23T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-07-20T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   0,
+   24
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6
+ ],
+ "mark_unknown_after_minutes": 20,
+ "production_unit": "wafers",
+ "energy_unit": "kWh",
+ "energy_price": 0.07,
+ "line": {
+  "source_id": "PLANT-A-LITHO-BAY",
+  "description": "Lithography bay (wafer moves reported as one line)",
+  "ideal_cycle_seconds": 80.0,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "PLANT-A-FAB-KWH",
+  "description": "Fab utilities kWh meter",
+  "counter": "energy_kwh",
+  "rollover": 100000000,
+  "every_minutes": 15,
+  "start_value": 0
+ },
+ "baseline": {
+  "rate_per_run_hour": 42,
+  "scrap_fraction": 0.01,
+  "down_per_day": 0.5,
+  "down_minutes": 60,
+  "idle_per_day": 1,
+  "idle_minutes": 20,
+  "setup_per_day": 1,
+  "setup_minutes": 40,
+  "planned_down_per_week": 1,
+  "planned_down_minutes": 240,
+  "energy_base_per_hour": 20500,
+  "energy_per_unit": 60
+ },
+ "after": {
+  "rate_per_run_hour": 42,
+  "scrap_fraction": 0.01,
+  "down_per_day": 0.5,
+  "down_minutes": 60,
+  "idle_per_day": 1,
+  "idle_minutes": 20,
+  "setup_per_day": 1,
+  "setup_minutes": 40,
+  "planned_down_per_week": 1,
+  "planned_down_minutes": 240,
+  "energy_base_per_hour": 20300,
+  "energy_per_unit": 60
+ },
+ "traps": {
+  "out_of_order": {
+   "window": "after"
+  },
+  "network_gap": {
+   "window": "after",
+   "at": 0.45,
+   "hours": 2
+  },
+  "meter_rollover": {
+   "window": "baseline",
+   "at": 0.7
+  }
+ },
+ "target_ratio": 1.55,
+ "integer_counts": true
+}

@@ -1,0 +1,109 @@
+{
+ "case_id": "sector-3254-pharmaceuticals",
+ "sector": "Pharmaceutical preparation manufacturing",
+ "naics": "3254",
+ "seed": 3254,
+ "source": {
+  "title": "ITAC Assessment: MI0445 (pharmaceutical preparation manufacturing)",
+  "publisher": "U.S. Department of Energy, Industrial Assessment Centers (University of Miami IAC), assessment database record",
+  "report": "IAC assessment MI0445",
+  "date": "2024 assessment",
+  "url": "https://itac.university/assessment/MI0445",
+  "us_government_work": "DOE Industrial Assessment Center database record written by a DOE-funded university assessment centre; only figures are used",
+  "named_organisations": []
+ },
+ "claim": {
+  "kind": "annual_energy_saving",
+  "value": 2207693,
+  "unit": "kWh/yr",
+  "text": "The implemented recommendations, led by a chiller replacement, save 2,207,693 kWh ($620,238 including demand and fees) a year."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-02-09T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-06-15T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   0,
+   24
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6
+ ],
+ "mark_unknown_after_minutes": 30,
+ "production_unit": "pieces",
+ "energy_unit": "kWh",
+ "energy_price": 0.2,
+ "line": {
+  "source_id": "PLANT-A-PACKAGING-1",
+  "description": "Packaging line 1 (finished packs)",
+  "ideal_cycle_seconds": 20.0,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "PLANT-A-MAIN-KWH",
+  "description": "Plant electricity meter",
+  "counter": "energy_kwh",
+  "rollover": 100000000,
+  "every_minutes": 15,
+  "start_value": 25000000
+ },
+ "baseline": {
+  "rate_per_run_hour": 130,
+  "scrap_fraction": 0.004,
+  "down_per_day": 0.6,
+  "down_minutes": 40,
+  "idle_per_day": 2.0,
+  "idle_minutes": 30,
+  "setup_per_day": 1.0,
+  "setup_minutes": 120,
+  "planned_down_per_week": 1,
+  "planned_down_minutes": 480,
+  "energy_base_per_hour": 1600,
+  "energy_per_unit": 0.6
+ },
+ "after": {
+  "rate_per_run_hour": 130,
+  "scrap_fraction": 0.004,
+  "down_per_day": 0.6,
+  "down_minutes": 40,
+  "idle_per_day": 2.0,
+  "idle_minutes": 30,
+  "setup_per_day": 1.0,
+  "setup_minutes": 120,
+  "planned_down_per_week": 1,
+  "planned_down_minutes": 480,
+  "energy_base_per_hour": 1350,
+  "energy_per_unit": 0.6
+ },
+ "traps": {
+  "plc_reset": {
+   "window": "after",
+   "at": 0.25
+  },
+  "network_gap": {
+   "window": "baseline",
+   "at": 0.7,
+   "hours": 5
+  },
+  "meter_rollover": {
+   "window": "baseline",
+   "at": 0.4
+  }
+ },
+ "target_ratio": 0.9,
+ "integer_counts": true
+}

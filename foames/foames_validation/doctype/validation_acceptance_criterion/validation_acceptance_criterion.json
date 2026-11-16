@@ -1,0 +1,179 @@
+{
+ "actions": [],
+ "creation": "2026-11-14 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "criterion",
+  "check_type",
+  "critical",
+  "evidence_required",
+  "method",
+  "cb_source",
+  "source",
+  "machine",
+  "measurement",
+  "units",
+  "sb_limits",
+  "limits",
+  "lower_limit",
+  "upper_limit",
+  "cb_limits",
+  "capability_index",
+  "min_index",
+  "rule_set",
+  "min_points"
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Validation",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 0,
+ "name": "Validation Acceptance Criterion",
+ "fields": [
+  {
+   "fieldname": "criterion",
+   "fieldtype": "Data",
+   "label": "Acceptance Criterion",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 3
+  },
+  {
+   "fieldname": "check_type",
+   "fieldtype": "Select",
+   "label": "Check",
+   "options": "Pass/Fail\nNumeric Range\nCapability\nStatistical Control",
+   "default": "Pass/Fail",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "critical",
+   "fieldtype": "Check",
+   "label": "Critical",
+   "in_list_view": 1,
+   "columns": 1,
+   "description": "A critical criterion that fails fails the execution; it cannot be accepted by deviation"
+  },
+  {
+   "fieldname": "evidence_required",
+   "fieldtype": "Check",
+   "label": "Evidence Required",
+   "description": "The result needs an attached file or machine-data evidence before approval"
+  },
+  {
+   "fieldname": "method",
+   "fieldtype": "Small Text",
+   "label": "Test Method"
+  },
+  {
+   "fieldname": "cb_source",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "Manual\nMachine Data",
+   "default": "Manual",
+   "depends_on": "eval:doc.check_type=='Numeric Range'",
+   "description": "Machine Data checks every reading of the measurement in the execution window"
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "depends_on": "eval:['Capability','Statistical Control'].includes(doc.check_type) || (doc.check_type=='Numeric Range' && doc.source=='Machine Data')",
+   "description": "Leave empty to use the protocol's machine"
+  },
+  {
+   "fieldname": "measurement",
+   "fieldtype": "Data",
+   "label": "Measurement",
+   "depends_on": "eval:['Capability','Statistical Control'].includes(doc.check_type) || (doc.check_type=='Numeric Range' && doc.source=='Machine Data')",
+   "in_list_view": 1,
+   "columns": 2,
+   "description": "The measurement name of Measurement-type Machine Events"
+  },
+  {
+   "fieldname": "units",
+   "fieldtype": "Data",
+   "label": "Units"
+  },
+  {
+   "fieldname": "sb_limits",
+   "fieldtype": "Section Break",
+   "label": "Limits",
+   "depends_on": "eval:['Numeric Range','Capability'].includes(doc.check_type) || ['Capability','Statistical Control'].includes(doc.check_type)"
+  },
+  {
+   "fieldname": "limits",
+   "fieldtype": "Select",
+   "label": "Limits",
+   "options": "Lower and Upper\nLower Only\nUpper Only",
+   "default": "Lower and Upper",
+   "depends_on": "eval:['Numeric Range','Capability'].includes(doc.check_type)"
+  },
+  {
+   "fieldname": "lower_limit",
+   "fieldtype": "Float",
+   "label": "Lower Limit",
+   "in_list_view": 1,
+   "columns": 1,
+   "depends_on": "eval:['Numeric Range','Capability'].includes(doc.check_type) && doc.limits!='Upper Only'"
+  },
+  {
+   "fieldname": "upper_limit",
+   "fieldtype": "Float",
+   "label": "Upper Limit",
+   "in_list_view": 1,
+   "columns": 1,
+   "depends_on": "eval:['Numeric Range','Capability'].includes(doc.check_type) && doc.limits!='Lower Only'"
+  },
+  {
+   "fieldname": "cb_limits",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "capability_index",
+   "fieldtype": "Select",
+   "label": "Capability Index",
+   "options": "Cpk\nPpk",
+   "default": "Cpk",
+   "depends_on": "eval:doc.check_type=='Capability'"
+  },
+  {
+   "fieldname": "min_index",
+   "fieldtype": "Float",
+   "label": "Minimum Index",
+   "default": "1.33",
+   "depends_on": "eval:doc.check_type=='Capability'"
+  },
+  {
+   "fieldname": "rule_set",
+   "fieldtype": "Select",
+   "label": "Run Rules",
+   "options": "Nelson\nWestern Electric",
+   "default": "Nelson",
+   "depends_on": "eval:doc.check_type=='Statistical Control'"
+  },
+  {
+   "fieldname": "min_points",
+   "fieldtype": "Int",
+   "label": "Minimum Readings",
+   "default": "25",
+   "depends_on": "eval:['Capability','Statistical Control'].includes(doc.check_type)"
+  }
+ ],
+ "permissions": [],
+ "description": "One acceptance criterion of a Validation Protocol"
+}

@@ -11,6 +11,7 @@ import os
 import re
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 from foames_bench.paths import STUBS_DIR
@@ -171,10 +172,12 @@ def rubric_score(workspace: Path, rubric: dict) -> dict:
 
 def grade(task, workspace: Path, repo: Path, change: dict, sandbox=None) -> dict:
 	"""Grade the workspace. Every test imports the agent's code, so all of them run in `sandbox`."""
-	hidden = {
-		group: run_tests([task.path / "hidden" / f for f in files], workspace, sandbox=sandbox)
-		for group, files in task.hidden.items()
-	}
+	with tempfile.TemporaryDirectory(prefix="foames-bench-hidden-") as scratch:
+		hidden_dir = task.hidden_dir(Path(scratch))
+		hidden = {
+			group: run_tests([hidden_dir / f for f in files], workspace, sandbox=sandbox)
+			for group, files in task.hidden.items()
+		}
 	# The repository's own tests, taken from the pristine checkout so an agent cannot pass them by
 	# editing them, run against the agent's code.
 	regression = run_tests([repo / p for p in task.regression], workspace, sandbox=sandbox)
@@ -198,7 +201,7 @@ def grade(task, workspace: Path, repo: Path, change: dict, sandbox=None) -> dict
 	notes = workspace / "BENCH_NOTES.md"
 	rubric = None
 	if task.rubric:
-		rubric = rubric_score(workspace, json.loads((task.path / task.rubric).read_text(encoding="utf-8")))
+		rubric = rubric_score(workspace, json.loads(task.rubric_path.read_text(encoding="utf-8")))
 	return {
 		"hidden": {g: {"pass_rate": pass_rate(rows), "tests": rows} for g, rows in hidden.items()},
 		"regression": {"pass_rate": pass_rate(regression), "tests": regression},

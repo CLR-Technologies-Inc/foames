@@ -1,0 +1,119 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 21:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section",
+  "check_text",
+  "kind",
+  "acceptance_criteria",
+  "low_limit",
+  "high_limit",
+  "unit",
+  "measured_value",
+  "result",
+  "remarks",
+  "punch_category",
+  "punch_item"
+ ],
+ "fields": [
+  {
+   "fieldname": "section",
+   "fieldtype": "Data",
+   "label": "Section"
+  },
+  {
+   "fieldname": "check_text",
+   "fieldtype": "Small Text",
+   "label": "Check",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 3
+  },
+  {
+   "fieldname": "kind",
+   "fieldtype": "Select",
+   "label": "Kind",
+   "options": "Check\nValue\nText",
+   "default": "Check",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "acceptance_criteria",
+   "fieldtype": "Small Text",
+   "label": "Acceptance Criteria"
+  },
+  {
+   "fieldname": "low_limit",
+   "fieldtype": "Data",
+   "label": "Low Limit"
+  },
+  {
+   "fieldname": "high_limit",
+   "fieldtype": "Data",
+   "label": "High Limit"
+  },
+  {
+   "fieldname": "unit",
+   "fieldtype": "Data",
+   "label": "Unit"
+  },
+  {
+   "fieldname": "measured_value",
+   "fieldtype": "Data",
+   "label": "Measured Value",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "result",
+   "fieldtype": "Select",
+   "label": "Result",
+   "options": "Pending\nPass\nFail\nN/A",
+   "default": "Pending",
+   "in_list_view": 1,
+   "columns": 1,
+   "description": "Worked out from the measured value for a Value step"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks",
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "punch_category",
+   "fieldtype": "Select",
+   "label": "Punch Category",
+   "options": "A\nB\nC",
+   "default": "B"
+  },
+  {
+   "fieldname": "punch_item",
+   "fieldtype": "Link",
+   "label": "Punch Item",
+   "options": "Punch Item",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 21:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Commissioning",
+ "name": "Commissioning Test Step",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0,
+ "istable": 1,
+ "editable_grid": 1
+}

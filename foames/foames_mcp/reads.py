@@ -37,6 +37,8 @@ MACHINE_FIELDS = [
 	"counter_rollover",
 	"workstation_reference",
 	"location_reference",
+	"ecl",
+	"ecl_class",
 ]
 MACHINE_EVENT_FIELDS = [
 	"name",
@@ -121,6 +123,7 @@ def list_machines(
 	machine_type: str | None = None,
 	include_disabled: bool = False,
 	limit: int = 100,
+	ecl: str | int | None = None,
 ) -> list[dict]:
 	filters = []
 	if not cint(include_disabled):
@@ -129,6 +132,8 @@ def list_machines(
 		filters.append(["status", "=", status])
 	if machine_type:
 		filters.append(["machine_type", "=", machine_type])
+	if ecl not in (None, ""):
+		filters.append(["ecl", "=", str(_ecl_or_throw(ecl))])
 	return frappe.get_list(
 		"Machine", filters=filters, fields=MACHINE_FIELDS, order_by="name", limit_page_length=_limit(limit)
 	)
@@ -168,6 +173,102 @@ def get_machine(machine: str) -> dict:
 			limit_page_length=20,
 		)
 	return out
+
+
+def _ecl_or_throw(value) -> int | None:
+	from foames.foames_mes.ecl import parse_ecl
+
+	try:
+		return parse_ecl(value)
+	except ValueError as e:
+		frappe.throw(str(e))
+
+
+# Equipment complexity ---------------------------------------------------------------------------
+
+
+@frappe.whitelist()
+def get_equipment_profile(machine: str, tier: str | None = None) -> dict:
+	"""A machine's Equipment Complexity Level and what it means for an agent: the minimum model
+	tier, the agent's role, the human oversight, the ECL of its line, and, given a tier, whether
+	an agent of that tier may be tied to it. Reads only."""
+	from foames.foames_mes import ecl as ecl_rules
+
+	frappe.has_permission("Machine", "read", machine, throw=True)
+	doc = frappe.get_doc("Machine", machine)
+	level = _ecl_or_throw(doc.ecl)
+	out = {
+		"machine": doc.name,
+		"title": doc.title,
+		"machine_type": doc.machine_type,
+		"line": doc.line,
+		"status": doc.status,
+		"ecl_class": doc.ecl_class,
+		"ecl_rationale": doc.ecl_rationale,
+		**ecl_rules.profile(level),
+		"list_url": ecl_rules.LIST_URL,
+	}
+	if doc.line:
+		members = frappe.get_list(
+			"Machine",
+			filters={"line": doc.line, "disabled": 0},
+			fields=["name", "ecl"],
+			order_by="name",
+			limit_page_length=MAX_LIMIT,
+		)
+		out["line_ecl"] = ecl_rules.group_ecl(m.ecl for m in members)
+		out["line_unrated"] = [m.name for m in members if not m.ecl]
+	if tier:
+		try:
+			out["eligibility"] = ecl_rules.eligibility(tier, level)
+		except ValueError as e:
+			frappe.throw(str(e))
+	return out
+
+
+@frappe.whitelist()
+def list_equipment_complexity(line: str | None = None, include_disabled: bool = False) -> dict:
+	"""Every machine's ECL with its oversight, the count per level, the machines not rated yet, and
+	each line's ECL (its most complex rated member). Reads only."""
+	from foames.foames_mes import ecl as ecl_rules
+
+	filters = []
+	if not cint(include_disabled):
+		filters.append(["disabled", "=", 0])
+	if line:
+		filters.append(["line", "=", line])
+	rows = frappe.get_list(
+		"Machine",
+		filters=filters,
+		fields=["name", "title", "machine_type", "line", "status", "ecl", "ecl_class"],
+		order_by="name",
+		limit_page_length=MAX_LIMIT,
+	)
+	by_level = {str(level): 0 for level in ecl_rules.LEVELS}
+	lines: dict[str, list] = {}
+	machines = []
+	for row in rows:
+		info = ecl_rules.profile(row.ecl)
+		if info["rated"]:
+			by_level[str(info["ecl"])] += 1
+		if row.line:
+			lines.setdefault(row.line, []).append(row.ecl)
+		machines.append(
+			{
+				**row,
+				"ecl": info["ecl"],
+				"min_tier": info["min_tier"],
+				"oversight": info["oversight"],
+				"human_oversight": info["human_oversight"],
+			}
+		)
+	return {
+		"machines": machines,
+		"by_level": by_level,
+		"unrated": [m["name"] for m in machines if m["ecl"] is None],
+		"lines": {name: ecl_rules.group_ecl(levels) for name, levels in sorted(lines.items())},
+		"list_url": ecl_rules.LIST_URL,
+	}
 
 
 @frappe.whitelist()

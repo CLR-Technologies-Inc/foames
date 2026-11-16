@@ -1,0 +1,313 @@
+{
+ "task": "counter-reset",
+ "tier": "pure",
+ "complexity": "low",
+ "agent": "noop",
+ "agent_tier": "",
+ "harness": "",
+ "model": "",
+ "sandbox": "built-in",
+ "rep": 1,
+ "exit_code": 0,
+ "timed_out": false,
+ "seconds": 0.0,
+ "usage": {
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "cached_input_tokens": 0,
+  "turns": null,
+  "cost_usd": null,
+  "cost_source": "unknown"
+ },
+ "scores": {
+  "correctness": 0.8368,
+  "process": 0.1429,
+  "efficiency": 0.0,
+  "quality": 0.513,
+  "composite": 0.3847,
+  "invariants_kept": false,
+  "success": false
+ },
+ "graded": {
+  "hidden": {
+   "functional": {
+    "pass_rate": 0.8,
+    "tests": [
+     {
+      "test": "bench_0_test_functional.TestCounting.test_good_and_scrap",
+      "outcome": "pass",
+      "detail": ""
+     },
+     {
+      "test": "bench_0_test_functional.TestCounting.test_known_rollover_wraps",
+      "outcome": "pass",
+      "detail": ""
+     },
+     {
+      "test": "bench_0_test_functional.TestCounting.test_night_shift_sequence",
+      "outcome": "fail",
+      "detail": "Traceback (most recent call last):\n  File \"/home/user/foames/benchmarks/results/2026-11-16/runs/calibration/counter-reset/noop/rep-1/workspace/.foames-bench/grade/tests/00-hidden/test_functional.py\", line 27, in test_night_shift_sequence\n    self.assertEqual(total, 112 + 3 + 55)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 207.0 != 170\n"
+     },
+     {
+      "test": "bench_0_test_functional.TestCounting.test_normal_increments",
+      "outcome": "pass",
+      "detail": ""
+     },
+     {
+      "test": "bench_0_test_functional.TestCounting.test_unchanged_counter",
+      "outcome": "pass",
+      "detail": ""
+     }
+    ]
+   },
+   "invariant": {
+    "pass_rate": 0.2857142857142857,
+    "tests": [
+     {
+      "test": "bench_0_test_invariants.TestCountersNeverInventProduction.test_first_reading_is_zero",
+      "outcome": "pass",
+      "detail": ""
+     },
+     {
+      "test": "bench_0_test_invariants.TestCountersNeverInventProduction.test_never_negative_and_never_more_than_the_rise",
+      "outcome": "fail",
+      "detail": "Traceback (most recent call last):\n  File \"/home/user/foames/benchmarks/results/2026-11-16/runs/calibration/counter-reset/noop/rep-1/workspace/.foames-bench/grade/tests/00-hidden/test_invariants.py\", line 35, in test_never_negative_and_never_more_than_the_rise\n    self.assertLessEqual(d, max(b - a, 0))\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^\nAssertionError: 2471.0 not less than or equal to 0\n"
+     },
+     {
+      "test": "bench_0_test_invariants.TestCountersNeverInventProduction.test_out_of_order_is_zero",
+      "outcome": "fail",
+      "detail": "Traceback (most recent call last):\n  File \"/home/user/foames/benchmarks/results/2026-11-16/runs/calibration/counter-reset/noop/rep-1/workspace/.foames-bench/grade/tests/00-hidden/test_invariants.py\", line 19, in test_out_of_order_is_zero\n    self.assertEqual(counter_delta(500, 499), 0.0)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 499.0 != 0.0\n"
+     },
+     {
+      "test": "bench_0_test_invariants.TestCountersNeverInventProduction.test_reading_above_a_known_rollover_is_not_a_wrap",
+      "outcome": "fail",
+      "detail": "Traceback (most recent call last):\n  File \"/home/user/foames/benchmarks/results/2026-11-16/runs/calibration/counter-reset/noop/rep-1/workspace/.foames-bench/grade/tests/00-hidden/test_invariants.py\", line 27, in test_reading_above_a_known_rollover_is_not_a_wrap\n    self.assertEqual(counter_delta(70000, 4, rollover=65535), 0.0)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 4.0 != 0.0\n"
+     },
+     {
+      "test": "bench_0_test_invariants.TestCountersNeverInventProduction.test_reset_is_zero",
+      "outcome": "fail",
+      "detail": "Traceback (most recent call last):\n  File \"/home/user/foames/benchmarks/results/2026-11-16/runs/calibration/counter-reset/noop/rep-1/workspace/.foames-bench/grade/tests/00-hidden/test_invariants.py\", line 16, in test_reset_is_zero\n    self.assertEqual(counter_delta(48112, 4800), 0.0)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 4800.0 != 0.0\n"
+     },
+     {
+      "test": "bench_0_test_invariants.TestCountersNeverInventProduction.test_sum_never_exceeds_the_true_count",
+      "outcome": "pass",
+      "detail": ""
+     },
+     {
+      "test": "bench_0_test_invariants.TestCountersNeverInventProduction.test_unknown_rollover_is_a_reset",
+      "outcome": "fail",
+      "detail": "Traceback (most recent call last):\n  File \"/home/user/foames/benchmarks/results/2026-11-16/runs/calibration/counter-reset/noop/rep-1/workspace/.foames-bench/grade/tests/00-hidden/test_invariants.py\", line 22, in test_unknown_rollover_is_a_reset\n    self.assertEqual(counter_delta(65530, 4), 0.0)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 4.0 != 0.0\n"
+     }
+    ]
+   }
+  },
+  "regression": {
+   "pass_rate": 0.9473684210526315,
+   "tests": [
+    {
+     "test": "bench_0_test_machine_data_logic.TestCounterDelta.test_first_reading_invents_nothing",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_0_test_machine_data_logic.TestCounterDelta.test_normal_increment",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_0_test_machine_data_logic.TestCounterDelta.test_out_of_order_reading_is_zero",
+     "outcome": "fail",
+     "detail": "Traceback (most recent call last):\n  File \"/home/user/foames/benchmarks/results/2026-11-16/runs/calibration/counter-reset/noop/rep-1/workspace/.foames-bench/grade/tests/00-foames_mes/test_machine_data_logic.py\", line 33, in test_out_of_order_reading_is_zero\n    self.assertEqual(counter_delta(512, 500), 0)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 500.0 != 0\n"
+    },
+    {
+     "test": "bench_0_test_machine_data_logic.TestCounterDelta.test_reset_without_rollover_invents_nothing",
+     "outcome": "fail",
+     "detail": "Traceback (most recent call last):\n  File \"/home/user/foames/benchmarks/results/2026-11-16/runs/calibration/counter-reset/noop/rep-1/workspace/.foames-bench/grade/tests/00-foames_mes/test_machine_data_logic.py\", line 27, in test_reset_without_rollover_invents_nothing\n    self.assertEqual(counter_delta(500, 3), 0)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 3.0 != 0\n"
+    },
+    {
+     "test": "bench_0_test_machine_data_logic.TestCounterDelta.test_rollover",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_0_test_machine_data_logic.TestEventMapping.test_count_defaults_to_good",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_0_test_machine_data_logic.TestEventMapping.test_errors_are_plain",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_0_test_machine_data_logic.TestEventMapping.test_iso_timestamp_to_utc",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_0_test_machine_data_logic.TestEventMapping.test_mqtt_topic_and_payload",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_0_test_machine_data_logic.TestEventMapping.test_state_aliases",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_0_test_machine_data_logic.TestResourceCounters.test_names_match_exactly_or_with_a_unit_suffix",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_0_test_machine_data_logic.TestResourceCounters.test_resource_totals_leave_production_out",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_0_test_machine_data_logic.TestSigning.test_replay_outside_tolerance",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_0_test_machine_data_logic.TestSigning.test_round_trip_and_tamper",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestComputeOEE.test_availability_is_capped_at_one",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestComputeOEE.test_no_counts_gives_zero_quality_and_performance",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestComputeOEE.test_no_notes_on_a_clean_period",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestComputeOEE.test_no_planned_time_gives_zero_availability",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestComputeOEE.test_no_run_time_gives_zero_performance_even_with_counts",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestComputeOEE.test_none_counts_are_treated_as_zero",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestComputeOEE.test_notes_for_unknown_time_show_whole_minutes",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestComputeOEE.test_oee_is_the_product_of_its_factors_and_never_exceeds_them",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestComputeOEE.test_performance_exactly_at_rated_speed_is_not_flagged",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestComputeOEE.test_planned_downtime_covering_the_plan_gives_zero_availability",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestComputeOEE.test_result_carries_inputs",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestComputeOEE.test_scrap_only_gives_zero_quality",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestComputeOEE.test_zero_or_negative_cycle_time_is_like_none",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestTimeLedger.test_accounted_minutes_sums_every_bucket",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestTimeLedger.test_coverage_excludes_unknown_time",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestTimeLedger.test_coverage_is_clamped_when_intervals_exceed_the_plan",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestTimeLedger.test_coverage_is_zero_without_planned_time",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestTimeLedger.test_ledger_from_states_does_not_shrink_over_coverage",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestTimeLedger.test_ledger_from_states_fills_gaps_with_unknown",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestTimeLedger.test_ledger_from_states_ignores_planned_flag_outside_down",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestTimeLedger.test_ledger_from_states_keeps_explicit_unknown",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestTimeLedger.test_ledger_from_states_treats_unrecognised_states_as_unknown",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestTimeLedger.test_ledger_from_states_with_no_intervals",
+     "outcome": "pass",
+     "detail": ""
+    },
+    {
+     "test": "bench_1_test_oee_ledger.TestTimeLedger.test_tiny_float_gap_is_not_counted",
+     "outcome": "pass",
+     "detail": ""
+    }
+   ]
+  },
+  "agent_tests": {
+   "files": [],
+   "new_test_functions": 0,
+   "pass_rate": null,
+   "tests": []
+  },
+  "changed_files": [],
+  "out_of_scope": [],
+  "purity_violations": [],
+  "deliverables": {},
+  "notes_words": 0,
+  "rubric": null
+ },
+ "finished_at": "2026-11-16T03:12:02+00:00"
+}

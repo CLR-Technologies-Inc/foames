@@ -1,0 +1,108 @@
+{
+ "case_id": "sector-212-mining",
+ "sector": "Mining (coal preparation plant)",
+ "naics": "212",
+ "seed": 212,
+ "source": {
+  "title": "Optimized Pump Systems Save Coal Preparation Plant Money and Energy",
+  "publisher": "U.S. Department of Energy, Office of Industrial Technologies (Motor Challenge project fact sheet)",
+  "report": "DOE fact sheet",
+  "date": "1999-01",
+  "url": "https://www.energy.gov/sites/prod/files/2014/05/f16/optimized_coal_plant_pump.pdf",
+  "us_government_work": true,
+  "named_organisations": [
+   "Peabody",
+   "Randolph"
+  ]
+ },
+ "claim": {
+  "kind": "annual_energy_saving",
+  "value": 87184,
+  "unit": "kWh/yr",
+  "text": "A right-sized pump casing and a premium efficiency motor save 87,184 kWh ($5,231) a year; the fact sheet calls this about 15 percent, though 87,184 of 513,766 kWh is 17 percent."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-04-20T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-08-17T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   6,
+   22
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4
+ ],
+ "mark_unknown_after_minutes": 30,
+ "production_unit": "t",
+ "energy_unit": "kWh",
+ "energy_price": 0.06,
+ "line": {
+  "source_id": "PLANT-A-HEAVY-MEDIA-CIRCUIT",
+  "description": "Heavy media circuit (clean coal reported as one line)",
+  "ideal_cycle_seconds": 4.0,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "PLANT-A-PUMP-7-KWH",
+  "description": "Pump 7 motor kWh meter",
+  "counter": "energy_kwh",
+  "rollover": null,
+  "every_minutes": 15,
+  "start_value": 0
+ },
+ "baseline": {
+  "rate_per_run_hour": 800,
+  "scrap_fraction": 0.0,
+  "down_per_day": 0.8,
+  "down_minutes": 45,
+  "idle_per_day": 1.0,
+  "idle_minutes": 30,
+  "setup_per_day": 0.0,
+  "setup_minutes": 0,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 1.0,
+  "energy_per_unit": 0.16
+ },
+ "after": {
+  "rate_per_run_hour": 800,
+  "scrap_fraction": 0.0,
+  "down_per_day": 0.8,
+  "down_minutes": 45,
+  "idle_per_day": 1.0,
+  "idle_minutes": 30,
+  "setup_per_day": 0.0,
+  "setup_minutes": 0,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 1.0,
+  "energy_per_unit": 0.16
+ },
+ "traps": {
+  "plc_reset": {
+   "window": "after",
+   "at": 0.4
+  },
+  "network_gap": {
+   "window": "baseline",
+   "at": 0.3,
+   "hours": 3
+  },
+  "duplicate": {
+   "window": "after"
+  }
+ },
+ "target_ratio": 1.0
+}

@@ -1,0 +1,246 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+name: Agent benchmark
+
+# Runs the FoaMES agent benchmark (benchmarks/) with agents that need no paid key:
+#   - open-weight models served by Ollama on the runner itself (CPU only), with no key at all
+#   - hosted models on free API tiers, for each provider whose key is set as an Actions secret
+# Every agent is aider in the benchmark's Docker sandbox. A local model gets one job per task, so a
+# slow CPU run of a 14B model has the whole 6-hour job limit for one task; a hosted model gets one
+# job for all tasks, so its free-tier rate limit is spent in order. The report job combines the runs
+# into benchmarks/results/<date>/ (README.md, one page per agent, comparison.html with a reference
+# bar slider) and, on a claude/ working branch, commits them there.
+# Start it from the Actions tab. On a working branch, a push that changes
+# benchmarks/results/run-request.txt starts it too (workflow_dispatch needs the file on main).
+# How to add keys and what each agent is: benchmarks/docs/free-tier-runs.md.
+
+on:
+  push:
+    branches: [claude/project-thread-97ppc8]
+    paths: [benchmarks/results/run-request.txt]
+  workflow_dispatch:
+    inputs:
+      agents:
+        description: Comma-separated agent names from benchmarks/agents.json (empty for every runner-sized local model and every keyed provider)
+        default: ""
+      reps:
+        description: Repetitions of each task
+        default: "1"
+      tasks:
+        description: Space-separated task ids (empty for every pure task)
+        default: ""
+      aider_version:
+        description: aider-chat version installed in the sandbox image
+        default: "0.86.1"
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: plan
+        env:
+          AGENTS: ${{ inputs.agents || '' }}
+          TASKS: ${{ inputs.tasks || '' }}
+          EVENT: ${{ github.event_name }}
+          # Only whether each is set is read here; the values never leave the bench job's sandbox.
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+        run: |
+          python3 - <<'PY'
+          import json, os, sys
+          sys.path.insert(0, "benchmarks")
+          from foames_bench import tasks as tasks_mod
+          cfg = {a["name"]: a for a in json.load(open("benchmarks/agents.json"))["agents"]}
+          aider = [n for n, a in cfg.items() if n.startswith("aider-") and n != "aider-local"]
+          agents_in, tasks_in = os.environ["AGENTS"], os.environ["TASKS"]
+          if os.environ["EVENT"] == "push":
+              # A push run reads "agents:" and "tasks:" lines from the request file.
+              for line in open("benchmarks/results/run-request.txt"):
+                  key, _, value = line.partition(":")
+                  if key.strip() == "agents":
+                      agents_in = value
+                  elif key.strip() == "tasks":
+                      tasks_in = value
+                  elif key.strip() == "collect" and value.strip():
+                      # Only gather earlier runs' artifacts into the report; run no agents.
+                      agents_in = "none"
+          wanted = [a.strip() for a in agents_in.split(",") if a.strip()] or [
+              n for n in aider if cfg[n].get("_runs_on", "runner") == "runner" and not cfg[n].get("_skip_reason")]
+          tasks = tasks_in.split() or [t.id for t in tasks_mod.all_tasks("pure")]
+          include, skipped = [], []
+          for name in ([] if agents_in.strip() == "none" else wanted):
+              a = cfg.get(name)
+              secret = (a or {}).get("_secret")
+              if a is None:
+                  skipped.append(f"{name}: not in agents.json")
+              elif a.get("_skip_reason"):
+                  skipped.append(f"{name}: {a['_skip_reason']}")
+              elif secret and not os.environ.get(secret):
+                  skipped.append(f"{name}: no {secret} secret")
+              elif a.get("_runs_on") == "gpu":
+                  skipped.append(f"{name}: needs a GPU (run it with benchmarks/notebooks/foames-bench-gpu.ipynb)")
+              elif a["model"].startswith("ollama"):
+                  include += [{"agent": name, "task": t} for t in tasks]
+              else:
+                  include.append({"agent": name, "task": " ".join(tasks)})
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write("matrix=" + json.dumps({"include": include}) + "\n")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write(f"{len(include)} jobs: " + ", ".join(sorted({i['agent'] for i in include})) + "\n\n")
+              f.writelines(f"- skipped {s}\n" for s in skipped)
+          print(json.dumps(include, indent=1), "\nskipped:", skipped)
+          PY
+
+  bench:
+    needs: plan
+    if: needs.plan.outputs.matrix != '{"include":[]}'
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    name: ${{ matrix.agent }} ${{ contains(matrix.task, ' ') && 'all tasks' || matrix.task }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - id: names
+        run: |
+          echo "slug=$(echo '${{ matrix.agent }}-${{ contains(matrix.task, ' ') && 'all' || matrix.task }}' | tr -c 'A-Za-z0-9._-' '_')" >> "$GITHUB_OUTPUT"
+      - name: Sandbox image with aider
+        run: |
+          docker build -t foames-bench-agent \
+            --build-arg NPM_AGENTS="" \
+            --build-arg PIP_AGENTS="aider-chat==${{ inputs.aider_version || '0.86.1' }}" \
+            benchmarks/sandbox
+          mkdir -p notes
+          docker run --rm foames-bench-agent aider --version | tee notes/aider-version.txt
+          docker image inspect foames-bench-agent --format '{{.Id}}' > notes/image-id.txt
+          echo "GitHub-hosted runner ($(nproc) vCPU, $(free -g | awk '/Mem:/{print $2}') GB, CPU only)" > notes/environment.txt
+      - name: Ollama and the model
+        if: startsWith(matrix.agent, 'aider-ollama-')
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:11434/api/version && break; sleep 2; done || (ollama serve > ollama.log 2>&1 &)
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:11434/api/version && break; sleep 2; done
+          MODEL=$(python3 -c "import json;a={x['name']:x for x in json.load(open('benchmarks/agents.json'))['agents']}['${{ matrix.agent }}'];print(a['model'].split('/',1)[1])")
+          # An Ollama tag can be renamed or withdrawn; say so plainly instead of failing later in aider.
+          ollama pull "$MODEL" || { echo "::error::ollama pull $MODEL failed (tag not in the Ollama library today?)"; exit 1; }
+          ollama --version | tee notes/ollama-version.txt
+          DIGEST=$(ollama list | awk -v m="$MODEL" '$1==m{print $2}')
+          echo "Ollama $MODEL digest $DIGEST, pulled $(date -u +%Y-%m-%d)" | tee notes/model-digest.txt
+          free -g
+      - name: Pick the model, with its id and date (hosted)
+        if: "!startsWith(matrix.agent, 'aider-ollama-')"
+        env:
+          # Only this agent's own key; the script never prints it.
+          GEMINI_API_KEY: ${{ startsWith(matrix.agent, 'aider-gemini-') && secrets.GEMINI_API_KEY || '' }}
+          GROQ_API_KEY: ${{ startsWith(matrix.agent, 'aider-groq-') && secrets.GROQ_API_KEY || '' }}
+          OPENROUTER_API_KEY: ${{ startsWith(matrix.agent, 'aider-openrouter-') && secrets.OPENROUTER_API_KEY || '' }}
+          NVIDIA_API_KEY: ${{ startsWith(matrix.agent, 'aider-nvidia-') && secrets.NVIDIA_API_KEY || '' }}
+        run: |
+          # Free catalogues change, so an agent with _model_candidates gets the first one usable today.
+          python benchmarks/scripts/pick_hosted_model.py "${{ matrix.agent }}" --notes notes
+          if [ ! -f notes/model-digest.txt ]; then
+            MODEL=$(python3 -c "import json;a={x['name']:x for x in json.load(open('benchmarks/agents.json'))['agents']}['${{ matrix.agent }}'];print(a['model'])")
+            echo "API model id $MODEL, called $(date -u +%Y-%m-%d) (the provider may update a model behind an unversioned id)" > notes/model-digest.txt
+          fi
+          echo "GitHub-hosted runner, model on the provider's free API tier" > notes/environment.txt
+      - name: Run the benchmark
+        working-directory: benchmarks
+        env:
+          # Free-tier provider keys, from Actions secrets. Each agent's sandbox passes in only its own.
+          GEMINI_API_KEY: ${{ startsWith(matrix.agent, 'aider-gemini-') && secrets.GEMINI_API_KEY || '' }}
+          GROQ_API_KEY: ${{ startsWith(matrix.agent, 'aider-groq-') && secrets.GROQ_API_KEY || '' }}
+          OPENROUTER_API_KEY: ${{ startsWith(matrix.agent, 'aider-openrouter-') && secrets.OPENROUTER_API_KEY || '' }}
+          MISTRAL_API_KEY: ${{ startsWith(matrix.agent, 'aider-mistral-') && secrets.MISTRAL_API_KEY || '' }}
+          CEREBRAS_API_KEY: ${{ startsWith(matrix.agent, 'aider-cerebras-') && secrets.CEREBRAS_API_KEY || '' }}
+          # NVIDIA Build (NIM): the secret is NVIDIA_API_KEY; litellm reads it as NVIDIA_NIM_API_KEY.
+          NVIDIA_NIM_API_KEY: ${{ startsWith(matrix.agent, 'aider-nvidia-') && secrets.NVIDIA_API_KEY || '' }}
+          OUT: runs/${{ steps.names.outputs.slug }}
+        run: |
+          python -m foames_bench run --agents "${{ matrix.agent }}" --reps "${{ inputs.reps || '1' }}" \
+            --tasks ${{ matrix.task }} --sandbox docker --out "$OUT"
+          cp ../notes/*.txt "$OUT/"
+          python -m foames_bench report "$OUT" || true
+          cat "$OUT/summary.md" >> "$GITHUB_STEP_SUMMARY" || true
+          # The end of each agent transcript, in the log, for debugging a failed run.
+          for f in "$OUT"/*/*/rep-*/agent.std*; do echo "::group::$f"; tail -c 6000 "$f"; echo "::endgroup::"; done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: run-${{ steps.names.outputs.slug }}
+          path: benchmarks/runs/${{ steps.names.outputs.slug }}
+          if-no-files-found: warn
+
+  report:
+    needs: bench
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      # Write only to commit the report back to a claude/ working branch (never to main).
+      contents: write
+      # Read, to download the run files of earlier workflow runs named on a "collect:" line.
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The branch as it is now, so this report adds to results that other runs committed meanwhile.
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: run-*
+          path: runs
+      - name: Earlier runs named on a "collect:" line
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # "collect: <run id> ..." adds those workflow runs' agent results (run-* artifacts) to this report,
+          # for runs whose own report could not keep them.
+          for id in $(sed -n 's/^collect:[[:space:]]*//p' benchmarks/results/run-request.txt); do
+            gh run download "$id" --repo "${{ github.repository }}" --pattern 'run-*' --dir "runs/$id"
+          done
+          ls runs || true
+      - name: Calibration (reference and no-op agents)
+        working-directory: benchmarks
+        run: python -m foames_bench validate --out ../runs/calibration
+      - name: Combine the runs into a dated report
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          # "report: raw" in the request file adds only the run files, for a run that overlaps another
+          # one still going; the later full report (or a rerun of the publisher) rebuilds the pages.
+          RAW=""
+          if [ "$EVENT" = push ] && grep -Eq '^report:[[:space:]]*raw' benchmarks/results/run-request.txt; then RAW="--raw-only"; fi
+          # The folder is named after the date the runs started, so a run that crosses midnight stays together.
+          python benchmarks/scripts/publish_results.py --runs runs --out-root benchmarks/results $RAW \
+            --workflow-run "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" | tee report.log
+          cat "$(ls -td benchmarks/results/*/ | head -1)README.md" >> "$GITHUB_STEP_SUMMARY" || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bench-report
+          path: benchmarks/results
+      - name: Commit the report to the working branch
+        if: startsWith(github.ref_name, 'claude/')
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898499+github-actions[bot]@users.noreply.github.com"
+          git add benchmarks/results
+          git diff --cached --quiet && exit 0
+          git commit -m "Add agent benchmark results from run ${{ github.run_id }}"
+          for i in 1 2 3; do git pull --rebase origin "${{ github.ref_name }}" && git push origin "HEAD:${{ github.ref_name }}" && break; sleep 10; done

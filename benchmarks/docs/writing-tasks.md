@@ -27,6 +27,11 @@ tasks/<id>/
 | `deliverables` | Files that must exist after the run |
 | `rubric` | A rubric file name, for tasks whose output is a document |
 | `budget` | `{"usd": ..., "seconds": ...}`: the efficiency reference, not a limit |
+| `family` | Optional: the name of a shared folder `tasks/_<family>/` (see below) |
+
+## Families
+
+Tasks that share a specification can share one folder, `tasks/_<family>/`, and name it in `task.json` as `"family"`. The family folder holds what they have in common: `setup.py`, `reference.py`, a `prompt.md` appended after the task's own, a rubric, and `hidden/` tests and helpers. A task's own folder then holds `task.json`, its `prompt.md`, and the hidden data that makes it different (for the sector case studies, `hidden/sector.json`). A file in the task's folder wins over the family's. Family modules find the task's folder in the module global `TASK_DIR`; the hidden tests run from a copy of the family's `hidden/` with the task's own files over it. `--suite <family>` selects a family's tasks, and `run` selects only the tasks outside any family (`--suite core`) unless told otherwise. See [sector-case-studies.md](sector-case-studies.md).
 
 ## Rules
 

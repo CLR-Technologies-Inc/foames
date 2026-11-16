@@ -1,0 +1,389 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-16 00:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "title",
+  "machine",
+  "line",
+  "point_type",
+  "disabled",
+  "cb_head",
+  "status",
+  "hours_to_dry",
+  "dry_at",
+  "replenish_qty",
+  "last_checked",
+  "sb_material",
+  "item",
+  "uom",
+  "cb_material",
+  "material_profile",
+  "mpc_level",
+  "sb_stock",
+  "stock_source",
+  "location",
+  "read_qty",
+  "last_read_at",
+  "cb_stock",
+  "in_transit_qty",
+  "consumed_since_read",
+  "on_hand",
+  "per_hour",
+  "last_replenished_at",
+  "sb_consumption",
+  "quantity_per_unit",
+  "scrap_allowance_percent",
+  "cb_consumption",
+  "rate_window_hours",
+  "sb_replenishment",
+  "replenishment_method",
+  "reorder_qty",
+  "max_qty",
+  "container_qty",
+  "cb_replenishment",
+  "kanban_cards",
+  "recommended_kanban_cards",
+  "replenishment_lead_minutes",
+  "warn_margin_percent"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "LSB-.#####",
+   "default": "LSB-.#####",
+   "hidden": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "For example Resin A at Mould 1"
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "The machine this stock feeds. Its counts drive the consumption estimate."
+  },
+  {
+   "fieldname": "line",
+   "fieldtype": "Data",
+   "label": "Line or Work Centre",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "point_type",
+   "fieldtype": "Select",
+   "label": "Point Type",
+   "options": "Point of Use\nLineside\nSupermarket\nStaging",
+   "default": "Point of Use"
+  },
+  {
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled",
+   "default": "0"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "OK\nReorder\nRunning Dry\nWill Run Dry\nDry",
+   "default": "OK",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "hours_to_dry",
+   "fieldtype": "Float",
+   "label": "Hours to Dry",
+   "read_only": 1,
+   "in_list_view": 1,
+   "description": "At the current consumption rate. Empty when nothing is being used."
+  },
+  {
+   "fieldname": "dry_at",
+   "fieldtype": "Datetime",
+   "label": "Runs Dry Around",
+   "read_only": 1
+  },
+  {
+   "fieldname": "replenish_qty",
+   "fieldtype": "Float",
+   "label": "Call For",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_checked",
+   "fieldtype": "Datetime",
+   "label": "Last Checked",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_material",
+   "fieldtype": "Section Break",
+   "label": "Material"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Data",
+   "label": "Item",
+   "reqd": 1,
+   "in_standard_filter": 1,
+   "description": "The item code in the ERP"
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Data",
+   "label": "Unit"
+  },
+  {
+   "fieldname": "cb_material",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "material_profile",
+   "fieldtype": "Link",
+   "label": "Material Handling Profile",
+   "options": "Material Handling Profile"
+  },
+  {
+   "fieldname": "mpc_level",
+   "fieldtype": "Int",
+   "label": "MPC Level",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_stock",
+   "fieldtype": "Section Break",
+   "label": "Stock"
+  },
+  {
+   "fieldname": "stock_source",
+   "fieldtype": "Select",
+   "label": "Stock Source",
+   "options": "ERP\nManual",
+   "default": "ERP",
+   "description": "ERP: read the quantity from the ERP through its adapter every check. Manual: a person enters each count."
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "ERP Location",
+   "description": "The warehouse or storage location id in the ERP that holds this lineside stock",
+   "depends_on": "eval:doc.stock_source=='ERP'"
+  },
+  {
+   "fieldname": "read_qty",
+   "fieldtype": "Float",
+   "label": "Quantity at Last Read",
+   "description": "From the ERP, or the last manual count"
+  },
+  {
+   "fieldname": "last_read_at",
+   "fieldtype": "Datetime",
+   "label": "Last Read At"
+  },
+  {
+   "fieldname": "cb_stock",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "in_transit_qty",
+   "fieldtype": "Float",
+   "label": "In Transit",
+   "description": "Called for and on its way. Holds off the dry warning while it is coming."
+  },
+  {
+   "fieldname": "consumed_since_read",
+   "fieldtype": "Float",
+   "label": "Used Since Read",
+   "read_only": 1
+  },
+  {
+   "fieldname": "on_hand",
+   "fieldtype": "Float",
+   "label": "Estimated On Hand",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "per_hour",
+   "fieldtype": "Float",
+   "label": "Use per Hour",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_replenished_at",
+   "fieldtype": "Datetime",
+   "label": "Last Replenished At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_consumption",
+   "fieldtype": "Section Break",
+   "label": "Consumption"
+  },
+  {
+   "fieldname": "quantity_per_unit",
+   "fieldtype": "Float",
+   "label": "Quantity per Unit Produced",
+   "description": "Bill of materials quantity per good or scrapped unit the machine counts (backflush rate)"
+  },
+  {
+   "fieldname": "scrap_allowance_percent",
+   "fieldtype": "Percent",
+   "label": "Scrap Allowance"
+  },
+  {
+   "fieldname": "cb_consumption",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "rate_window_hours",
+   "fieldtype": "Float",
+   "label": "Rate Window (hours)",
+   "default": "2",
+   "description": "Consumption rate is averaged over this many recent hours"
+  },
+  {
+   "fieldname": "sb_replenishment",
+   "fieldtype": "Section Break",
+   "label": "Replenishment"
+  },
+  {
+   "fieldname": "replenishment_method",
+   "fieldtype": "Select",
+   "label": "Method",
+   "options": "Kanban\nReorder Point\nMin-Max\nManual",
+   "default": "Reorder Point"
+  },
+  {
+   "fieldname": "reorder_qty",
+   "fieldtype": "Float",
+   "label": "Reorder Point"
+  },
+  {
+   "fieldname": "max_qty",
+   "fieldtype": "Float",
+   "label": "Maximum"
+  },
+  {
+   "fieldname": "container_qty",
+   "fieldtype": "Float",
+   "label": "Container Quantity"
+  },
+  {
+   "fieldname": "cb_replenishment",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "kanban_cards",
+   "fieldtype": "Int",
+   "label": "Kanban Cards",
+   "depends_on": "eval:doc.replenishment_method=='Kanban'"
+  },
+  {
+   "fieldname": "recommended_kanban_cards",
+   "fieldtype": "Int",
+   "label": "Recommended Cards",
+   "read_only": 1,
+   "depends_on": "eval:doc.replenishment_method=='Kanban'",
+   "description": "Use per hour times the lead time, plus the safety margin, in containers"
+  },
+  {
+   "fieldname": "replenishment_lead_minutes",
+   "fieldtype": "Float",
+   "label": "Replenishment Lead Time (minutes)",
+   "description": "From a call to the material arriving at the bin. The profile's conditioning time is added."
+  },
+  {
+   "fieldname": "warn_margin_percent",
+   "fieldtype": "Percent",
+   "label": "Warning Margin",
+   "default": "50",
+   "description": "Warn this much earlier than the lead time (times the MPC safety multiplier)"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-16 00:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Lineside Bin",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "title",
+ "show_title_field_in_link": 1,
+ "search_fields": "machine,item",
+ "description": "Point-of-use stock of one item at a machine or line, with replenishment rules and a line-dry forecast. The ERP stays the system of record.",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Integration",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ]
+}

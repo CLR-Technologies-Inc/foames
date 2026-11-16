@@ -93,12 +93,14 @@ class TestMCPEndpoint(IntegrationTestCase):
 		self.assertEqual(init["result"]["protocolVersion"], "2025-06-18")
 		self.assertEqual(init["result"]["serverInfo"]["name"], "foames")
 		tools = api.handle({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})["result"]["tools"]
-		self.assertEqual(len(tools), len(TOOLS))
+		self.assertEqual(len(tools), len(api.catalogue()))
+		self.assertTrue({tool.name for tool in TOOLS} <= {tool["name"] for tool in tools})
 
 	def test_every_tool_binds_a_whitelisted_method(self):
 		import inspect
 
-		for tool in TOOLS:
+		# Tools other apps register through the foames_mcp_tools hook are held to the same rule.
+		for tool in api.catalogue():
 			method = frappe.get_attr(tool.method)
 			frappe.is_whitelisted(method)  # raises when it is not
 			parameters = inspect.signature(method).parameters
@@ -117,6 +119,36 @@ class TestMCPEndpoint(IntegrationTestCase):
 		)
 		events = content(call("foames_list_machine_events", {"machine": self.machine, "event_type": "Count"}))
 		self.assertEqual(sorted(e["delta"] for e in events), [0, 100])
+
+	def test_equipment_complexity(self):
+		line = "T-LINE-" + frappe.generate_hash(length=6).upper()
+		press = make_machine(self.machine + "-P", line=line, ecl="2", ecl_class="Hydraulic-Press ")
+		self.assertEqual(press.ecl_class, "hydraulic-press")
+		make_machine(self.machine + "-F", line=line, ecl="4")
+		make_machine(self.machine + "-U", line=line)
+		profile = call("foames_get_equipment_profile", {"machine": press.name, "tier": "oss"})["result"][
+			"structuredContent"
+		]
+		self.assertEqual(profile["ecl"], 2)
+		self.assertEqual(profile["min_tier"], "oss")
+		self.assertEqual(profile["line_ecl"], 4)
+		self.assertEqual(profile["line_unrated"], [self.machine + "-U"])
+		self.assertTrue(profile["eligibility"]["eligible"])
+		furnace = call("foames_get_equipment_profile", {"machine": self.machine + "-F", "tier": "baseline"})
+		furnace = furnace["result"]["structuredContent"]
+		self.assertEqual(furnace["human_oversight"], "Human Expert Recommended")
+		self.assertFalse(furnace["eligibility"]["eligible"])
+		overview = call("foames_list_equipment_complexity", {"line": line})["result"]["structuredContent"]
+		self.assertEqual(overview["by_level"]["2"], 1)
+		self.assertEqual(overview["by_level"]["4"], 1)
+		self.assertEqual(overview["unrated"], [self.machine + "-U"])
+		self.assertEqual(overview["lines"], {line: 4})
+		rated = content(call("foames_list_machines", {"ecl": 4}))
+		self.assertEqual(
+			[m["name"] for m in rated if m["name"].startswith(self.machine)], [self.machine + "-F"]
+		)
+		with self.assertRaises(frappe.ValidationError):
+			make_machine(self.machine + "-X", ecl_class="not a class")
 
 	def test_downtime_and_oee(self):
 		downtime = content(call("foames_list_downtime", {"machine": self.machine}))

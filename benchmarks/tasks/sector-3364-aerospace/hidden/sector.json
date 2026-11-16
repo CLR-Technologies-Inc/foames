@@ -1,0 +1,108 @@
+{
+ "case_id": "sector-3364-aerospace",
+ "sector": "Aerospace product and parts (precision tube assemblies and machining)",
+ "naics": "3364",
+ "seed": 3364,
+ "source": {
+  "title": "Total Productive Maintenance Reduces Equipment Downtime and Lost Capacity",
+  "publisher": "National Institute of Standards and Technology, Manufacturing Extension Partnership (CONNSTEP success story)",
+  "report": "NIST MEP success story",
+  "date": "2022-10-04",
+  "url": "https://www.nist.gov/mep/successstories/2022/total-productive-maintenance-reduces-equipment-downtime-and-lost-capacity",
+  "us_government_work": true,
+  "named_organisations": [
+   "Leggett",
+   "L&P"
+  ]
+ },
+ "claim": {
+  "kind": "oee_after",
+  "value": 0.45,
+  "unit": "fraction",
+  "text": "Total productive maintenance on a CNC lathe cell raised OEE from 39 to 45 percent and cut lost capacity from 61 to 55 percent."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-01-26T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-06-08T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   6,
+   22
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4
+ ],
+ "mark_unknown_after_minutes": 30,
+ "production_unit": "parts",
+ "energy_unit": "kWh",
+ "energy_price": 0.12,
+ "line": {
+  "source_id": "PLANT-A-LATHE-CELL-2",
+  "description": "CNC lathe cell 2",
+  "ideal_cycle_seconds": 90.0,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "PLANT-A-CELL-2-KWH",
+  "description": "Cell kWh meter",
+  "counter": "energy_kwh",
+  "rollover": null,
+  "every_minutes": 15,
+  "start_value": 0
+ },
+ "baseline": {
+  "rate_per_run_hour": 26,
+  "scrap_fraction": 0.04,
+  "down_per_day": 3.9,
+  "down_minutes": 60,
+  "idle_per_day": 2,
+  "idle_minutes": 25,
+  "setup_per_day": 1,
+  "setup_minutes": 60,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 12,
+  "energy_per_unit": 0.5
+ },
+ "after": {
+  "rate_per_run_hour": 27,
+  "scrap_fraction": 0.035,
+  "down_per_day": 3.0,
+  "down_minutes": 55,
+  "idle_per_day": 2,
+  "idle_minutes": 25,
+  "setup_per_day": 1,
+  "setup_minutes": 60,
+  "planned_down_per_week": 1,
+  "planned_down_minutes": 240,
+  "energy_base_per_hour": 12,
+  "energy_per_unit": 0.5
+ },
+ "traps": {
+  "network_gap": {
+   "window": "baseline",
+   "at": 0.52,
+   "hours": 4
+  },
+  "out_of_order": {
+   "window": "after"
+  },
+  "plc_reset": {
+   "window": "baseline",
+   "at": 0.2
+  }
+ },
+ "integer_counts": true
+}

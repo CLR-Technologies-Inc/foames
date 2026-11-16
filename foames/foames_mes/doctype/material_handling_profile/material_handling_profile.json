@@ -1,0 +1,297 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-16 00:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "title",
+  "item",
+  "cb_head",
+  "mpc_level",
+  "mpc_label",
+  "expert_oversight",
+  "sb_factors",
+  "factors_help",
+  "hazard_rating",
+  "exposure_band",
+  "moisture_sensitivity",
+  "storage_temperature",
+  "cb_factors",
+  "atmosphere",
+  "cleanliness",
+  "esd_sensitivity",
+  "physical_form",
+  "sb_time",
+  "shortest_time_limit_hours",
+  "critical_attributes",
+  "cb_time",
+  "conditioning_steps",
+  "conditioning_minutes",
+  "sb_result",
+  "mpc_drivers",
+  "cb_result",
+  "default_dispatch",
+  "safety_multiplier",
+  "sb_notes",
+  "handling_notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "MHP-.#####",
+   "default": "MHP-.#####",
+   "hidden": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "The material or material family, for example Two-part epoxy, Part A"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Data",
+   "label": "Item",
+   "in_standard_filter": 1,
+   "description": "The item code in the ERP, when the profile is for one item. Kept as text; the ERP stays the item master."
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "mpc_level",
+   "fieldtype": "Int",
+   "label": "MPC Level",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "mpc_label",
+   "fieldtype": "Data",
+   "label": "MPC",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "expert_oversight",
+   "fieldtype": "Select",
+   "label": "Expert Oversight",
+   "options": "none\nsingle\nteam",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_factors",
+   "fieldtype": "Section Break",
+   "label": "Handling factors"
+  },
+  {
+   "fieldname": "factors_help",
+   "fieldtype": "HTML",
+   "label": "Factors Help",
+   "options": "<p class='text-muted small'>Each factor uses the wording of the standard it comes from (safety data sheet, specification or SOP). The highest factor sets the MPC level; three or more factors at a moderate score or above raise it one more.</p>"
+  },
+  {
+   "fieldname": "hazard_rating",
+   "fieldtype": "Select",
+   "label": "Hazard (NFPA 704 highest rating, or GHS)",
+   "options": "\n0 - Minimal\n1 - Slight / GHS Warning\n2 - Moderate\n3 - Serious / GHS Danger\n4 - Severe",
+   "description": "Source: NFPA 704; GHS (UN Globally Harmonized System)"
+  },
+  {
+   "fieldname": "exposure_band",
+   "fieldtype": "Select",
+   "label": "Occupational exposure band",
+   "options": "\nNone\nOEB 1\nOEB 2\nOEB 3\nOEB 4\nOEB 5",
+   "description": "Source: OEB 1-5 banding of occupational exposure limits"
+  },
+  {
+   "fieldname": "moisture_sensitivity",
+   "fieldtype": "Select",
+   "label": "Moisture sensitivity level",
+   "options": "\nNot sensitive\nMSL 1\nMSL 2\nMSL 2a\nMSL 3\nMSL 4\nMSL 5\nMSL 5a\nMSL 6",
+   "description": "Source: IPC/JEDEC J-STD-033 (floor life after the dry pack is opened)"
+  },
+  {
+   "fieldname": "storage_temperature",
+   "fieldtype": "Select",
+   "label": "Storage temperature",
+   "options": "\nAmbient\nControlled room temperature\nRefrigerated (2-8 C)\nFrozen\nCryogenic",
+   "description": "Source: USP <659> packaging and storage requirements; cold chain practice"
+  },
+  {
+   "fieldname": "cb_factors",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "atmosphere",
+   "fieldtype": "Select",
+   "label": "Atmosphere (dry process)",
+   "options": "\nAmbient\nLow humidity\nDry room\nInert gas\nGlovebox or isolator",
+   "description": "Source: Dew point controlled dry rooms; inert gas handling; isolators"
+  },
+  {
+   "fieldname": "cleanliness",
+   "fieldtype": "Select",
+   "label": "Cleanroom class at point of use",
+   "options": "\nNot controlled\nISO 8\nISO 7\nISO 6\nISO 5\nISO 4 or cleaner",
+   "description": "Source: ISO 14644-1 cleanroom classes"
+  },
+  {
+   "fieldname": "esd_sensitivity",
+   "fieldtype": "Select",
+   "label": "Electrostatic discharge sensitivity",
+   "options": "\nNot sensitive\nESD sensitive\nHBM Class 0 (under 250 V)",
+   "description": "Source: ANSI/ESD S20.20; ANSI/ESDA/JEDEC JS-001 HBM classes"
+  },
+  {
+   "fieldname": "physical_form",
+   "fieldtype": "Select",
+   "label": "Physical form",
+   "options": "\nDiscrete rigid\nDiscrete fragile\nFree-flowing bulk or liquid\nCohesive powder, paste or viscous liquid\nCompressed gas or cryogenic liquid",
+   "description": "Source: Bulk solids flowability (Carr index, Hausner ratio, USP <1174>)"
+  },
+  {
+   "fieldname": "sb_time",
+   "fieldtype": "Section Break",
+   "label": "Time and preparation"
+  },
+  {
+   "fieldname": "shortest_time_limit_hours",
+   "fieldtype": "Float",
+   "label": "Shortest Time Limit (hours)",
+   "description": "The tightest of shelf life, hold time, queue-time limit, floor life, out-time or pot life. 0 means none. Source: ICH Q1A shelf life; hold-time studies; SEMI fab queue-time limits; J-STD-033 floor life"
+  },
+  {
+   "fieldname": "critical_attributes",
+   "fieldtype": "Int",
+   "label": "Critical Material Attributes",
+   "description": "Attributes checked at receipt or before use. Source: ICH Q8 critical material attributes"
+  },
+  {
+   "fieldname": "cb_time",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "conditioning_steps",
+   "fieldtype": "Int",
+   "label": "Conditioning Steps",
+   "description": "Steps before the material can be used: thaw, degas, bake, acclimatise, premix"
+  },
+  {
+   "fieldname": "conditioning_minutes",
+   "fieldtype": "Float",
+   "label": "Conditioning Minutes",
+   "description": "Time those steps take. Added to a bin's replenishment lead time in the line-dry forecast."
+  },
+  {
+   "fieldname": "sb_result",
+   "fieldtype": "Section Break",
+   "label": "Result"
+  },
+  {
+   "fieldname": "mpc_drivers",
+   "fieldtype": "Small Text",
+   "label": "Drivers",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_result",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_dispatch",
+   "fieldtype": "Data",
+   "label": "Suggested Dispatch Rule",
+   "read_only": 1
+  },
+  {
+   "fieldname": "safety_multiplier",
+   "fieldtype": "Float",
+   "label": "Line-dry Safety Multiplier",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_notes",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "handling_notes",
+   "fieldtype": "Text Editor",
+   "label": "Handling Notes"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-16 00:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Material Handling Profile",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "title",
+ "show_title_field_in_link": 1,
+ "search_fields": "item,mpc_level",
+ "description": "How complex a material is to handle and process: its Material Processing Complexity (MPC) level 1 to 5 from standard handling factors",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ]
+}

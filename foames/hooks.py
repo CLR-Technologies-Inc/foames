@@ -108,6 +108,46 @@ doc_events["Job Card"] = {
 	],
 }
 
+# Read-only mode
+# --------------
+# Every write to another system passes one gate, foames.foames_kernel.write_gate. While a connector
+# is read-only (the default for a new site and for every new connector), its writes wait as Pending
+# Writes for an authorised operator's electronic sign-off, or are refused, and each step is logged
+# against its work order, Job Card or process run in the Write Audit Log. See docs/read-only-mode.md.
+#
+# The adapter outboxes the gate holds: outbox DocType -> its connector key, or "field:<fieldname>"
+# when each row names its connector. The outbox's claim() asks the gate before it sends a posting.
+foames_write_gated_outboxes = {
+	"ERPNext Outbox": "ERPNext",
+	"S4HANA Outbox": "S4HANA",
+	"Insights Hub Outbox": "INSIGHTS_HUB",
+	"MES Outbox": "field:connection",
+}
+doc_events |= {
+	doctype: {
+		"after_insert": "foames.foames_kernel.write_gate.outbox_queued",
+		"on_update": "foames.foames_kernel.write_gate.outbox_updated",
+	}
+	for doctype in foames_write_gated_outboxes
+}
+# Writes that do not go through an outbox (a SCADA or historian write, a change a connector asks
+# FoaMES to make) are registered here and requested with write_gate.request_write(connector, key,
+# arguments), which performs them, holds them for sign-off, or refuses them.
+# foames_write_actions = {"myapp.write_setpoint": "myapp.scada.write_setpoint"}
+#
+# Other apps add tools to the MCP server with this hook: dotted paths of functions that return a list
+# of foames.foames_mcp.protocol.Tool. Their writes pass the gate like the core's.
+foames_mcp_tools = ["foames.foames_adapters.tulip.reads.mcp_tools"]
+
+# Permissions
+# -----------
+# A Private recognition is seen only by the person recognized, the giver and supervisors.
+
+has_permission = {"Recognition": "foames.foames_mes.doctype.recognition.recognition.has_permission"}
+permission_query_conditions = {
+	"Recognition": "foames.foames_mes.doctype.recognition.recognition.get_permission_query_conditions"
+}
+
 # Machine data and the floor
 # --------------------------
 # Other apps extend the MES module through these hooks. Each entry is a dotted path.
@@ -130,12 +170,21 @@ foames_floor_snapshot_extensions = [
 	"foames.foames_adapters.erpnext.rollup.mark_current_job_cards",
 	# The data layer on Floor View: bound signals and their freshness per machine.
 	"foames.foames_topology.floor.extend_snapshot",
+	# Lineside bins and material queues, and each machine's hours to dry.
+	"foames.foames_mes.material_flow.extend_snapshot",
+	# Each machine's current and next operations from the published Production Schedule.
+	"foames.foames_mes.doctype.production_schedule.production_schedule.extend_snapshot",
 ]
 foames_suggestion_rules = [
 	"foames.foames_adapters.erpnext.floor.running_without_job_card",
 	"foames.foames_adapters.erpnext.rollup.current_job_card_not_open",
 	"foames.foames_adapters.s4hana.rollup.confirmation_rejected",
 	"foames.foames_adapters.insights_hub.rollup.posting_rejected",
+	# P&ID instruments linked to a machine that stopped reporting or read at a range limit.
+	"foames.foames_pid.rules.instrument_signals",
+	# A machine reporting Running while an active permit holds locks on it.
+	"foames.foames_ehs.rules.running_under_lockout",
+	"foames.foames_mes.doctype.production_schedule.production_schedule.behind_schedule",
 ]
 foames_machine_job_changed = [
 	"foames.foames_adapters.erpnext.rollup.on_job_changed",
@@ -146,6 +195,34 @@ foames_machine_job_changed = [
 foames_machine_state_changed = [
 	"foames.foames_adapters.erpnext.workstation.on_state_changed",
 	"foames.foames_adapters.insights_hub.rollup.on_state_changed",
+	# Raises a Critical suggestion the moment a machine under an active lockout permit reports Running.
+	"foames.foames_ehs.rules.on_state_changed",
+]
+
+# Production scheduling
+# ---------------------
+# Demand sources fill a Production Schedule's rows ("Get Operations"). Each dotted path is called with
+# (start, end, line) and returns a list of Production Schedule Job values. The ERPNext adapter adds its
+# open Job Cards; it only reads ERPNext.
+#
+# Cycle time estimators answer how many seconds one unit takes on a machine when a row gives no run
+# time or cycle time. Each is called with (row: dict, machine: dict) and returns seconds or None; the
+# first answer wins, and the machine's Ideal Cycle Seconds is the fallback.
+# foames_cycle_time_estimators = ["myapp.timing.seconds_per_unit"]
+
+foames_schedule_demand_sources = [
+	"foames.foames_adapters.erpnext.schedule.demand",
+]
+
+# Material flow
+# -------------
+# Lineside stock is read from the ERP, never written. Each stock reader is called with (item, location)
+# and returns a dict with at least actual_qty, or None when it does not know the item; the first answer
+# wins. The ERPNext adapter reads its Bin table.
+# foames_stock_readers = ["myapp.stock.read_stock"]
+
+foames_stock_readers = [
+	"foames.foames_adapters.erpnext.stock.read_stock",
 ]
 
 # Process mining
@@ -162,6 +239,16 @@ foames_machine_state_changed = [
 # foames.foames_topology.ingest), checked the same way as one posted to the ingest API.
 #
 # foames_topology_collectors = ["myapp.topology.report"]
+
+# Commissioning
+# -------------
+# Other apps take part in equipment handover through these hooks. Each entry is a dotted path.
+#
+# foames_commissioning_readiness_checks = ["myapp.qualification.blockers"]  # (package) -> list of blocker dicts
+# foames_commissioning_handed_over = ["myapp.qualification.on_handover"]  # (package) after handover
+
+# A handed-over package opens the IQ of each machine in it (see foames/foames_validation/commissioning.py).
+foames_commissioning_handed_over = ["foames.foames_validation.commissioning.on_handover"]
 
 # Scheduled Tasks
 # ---------------
@@ -192,12 +279,20 @@ scheduler_events = {
 			"foames.foames_adapters.erpnext.rollup.roll_up_all",
 			"foames.foames_adapters.s4hana.rollup.roll_up_all",
 			"foames.foames_adapters.insights_hub.rollup.roll_up_all",
+			# Reads lineside stock, forecasts when each line runs dry, keeps queue readiness current and
+			# raises suggestions for bins running dry, queue-time limits, starved machines and full buffers.
+			"foames.foames_mes.tasks.check_material_flow",
 		],
+		# Monday 06:00, after the daily OEE run has closed Sunday: highlights per line for the week
+		# that just ended; does nothing when turned off.
+		"0 6 * * 1": ["foames.foames_mes.tasks.recognize_team_highlights"],
 	},
 	"hourly": [
 		"foames.foames_mes.tasks.run_suggestion_rules",
 		# Reads every Maintenance Plan's meter and raises suggestions for plans coming due.
 		"foames.foames_mes.tasks.check_maintenance_plans",
+		# Expires permits to work, and raises suggestions for overdue safety actions, investigations and reviews.
+		"foames.foames_ehs.tasks.check_ehs",
 	],
 	"daily": [
 		# Raises suggestions for risks above tolerance, overdue risk reviews and control verifications,
@@ -206,6 +301,16 @@ scheduler_events = {
 		"foames.foames_mes.tasks.compute_daily_oee",
 		# Looks up External References that are still Unverified or Missing in their ERP.
 		"foames.foames_kernel.tasks.refresh_external_references",
+		# Raises suggestions for NPI gates that are due or overdue and for overdue gate conditions.
+		"foames.foames_life_sciences.tasks.check_npi_gates",
+		# Recognizes people for the milestones they reached; does nothing when turned off.
+		"foames.foames_mes.tasks.recognize_milestones",
+		# Raises suggestions for overdue commissioning punch items and packages past their planned handover.
+		"foames.foames_commissioning.tasks.check_commissioning",
+		# Reads the floor for every Released PFMEA and raises review suggestions where it disagrees.
+		"foames.foames_mes.tasks.check_pfmeas",
+		# Raises suggestions for equipment and process qualifications that are due soon or expired.
+		"foames.foames_validation.tasks.check_requalification",
 		# Makes approved SOP revisions effective on their date and raises suggestions for SOP reviews
 		# coming due and for people not trained on the current revision in time.
 		"foames.foames_mes.doctype.standard_operating_procedure.standard_operating_procedure.check_sops",
@@ -231,4 +336,4 @@ doctype_js = {
 # Testing
 # -------
 
-before_tests = "foames.install.after_install"
+before_tests = "foames.install.before_tests"

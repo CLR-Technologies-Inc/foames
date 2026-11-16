@@ -297,6 +297,12 @@ def claim(name: str):
 	if doc.needs_check or doc.blocking_posting():
 		frappe.db.commit()  # nosemgrep
 		return None
+	# Read-only mode: a posting a read-only connector would send waits for an operator's sign-off.
+	from foames.foames_kernel.write_gate import outbox_may_send
+
+	if not outbox_may_send(doc):
+		frappe.db.commit()  # nosemgrep
+		return None
 	doc.flags.verify_first = doc.status == "Unknown"
 	frappe.db.set_value(
 		"MES Outbox", name, {"status": "Sending", "last_attempt_at": now_datetime()}, update_modified=False

@@ -1,0 +1,173 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 21:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "job",
+  "operation",
+  "sequence",
+  "quantity",
+  "due_date",
+  "priority",
+  "cb_where",
+  "machines",
+  "machine_type",
+  "setup_group",
+  "sb_time",
+  "setup_minutes",
+  "run_minutes",
+  "cycle_seconds",
+  "cb_time",
+  "transfer_minutes",
+  "release_date",
+  "sb_source",
+  "job_reference",
+  "cb_source",
+  "source"
+ ],
+ "fields": [
+  {
+   "fieldname": "job",
+   "fieldtype": "Data",
+   "label": "Job",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2,
+   "description": "Order, batch or campaign this operation belongs to; its operations run in sequence order"
+  },
+  {
+   "fieldname": "operation",
+   "fieldtype": "Data",
+   "label": "Operation",
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "sequence",
+   "fieldtype": "Int",
+   "label": "Sequence",
+   "in_list_view": 1,
+   "columns": 1,
+   "default": "10"
+  },
+  {
+   "fieldname": "quantity",
+   "fieldtype": "Float",
+   "label": "Quantity",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "due_date",
+   "fieldtype": "Datetime",
+   "label": "Due",
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Int",
+   "label": "Priority",
+   "default": "0",
+   "description": "Higher is more urgent"
+  },
+  {
+   "fieldname": "cb_where",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "machines",
+   "fieldtype": "Small Text",
+   "label": "Machines",
+   "description": "Machines it may run on, one per line or comma separated. Empty: any machine of the machine type, or any machine in the schedule's scope"
+  },
+  {
+   "fieldname": "machine_type",
+   "fieldtype": "Data",
+   "label": "Machine Type"
+  },
+  {
+   "fieldname": "setup_group",
+   "fieldtype": "Data",
+   "label": "Setup Group",
+   "description": "Back-to-back operations of the same group on one machine share one setup"
+  },
+  {
+   "fieldname": "sb_time",
+   "fieldtype": "Section Break",
+   "label": "Time"
+  },
+  {
+   "fieldname": "setup_minutes",
+   "fieldtype": "Float",
+   "label": "Setup Minutes"
+  },
+  {
+   "fieldname": "run_minutes",
+   "fieldtype": "Float",
+   "label": "Run Minutes",
+   "description": "Total run time. Empty: quantity times the cycle time"
+  },
+  {
+   "fieldname": "cycle_seconds",
+   "fieldtype": "Float",
+   "label": "Cycle Seconds per Unit",
+   "description": "Empty: an estimator hook's figure, else the machine's Ideal Cycle Seconds"
+  },
+  {
+   "fieldname": "cb_time",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "transfer_minutes",
+   "fieldtype": "Float",
+   "label": "Transfer Minutes",
+   "description": "Wait after the previous operation of the job ends (move, cure, queue)"
+  },
+  {
+   "fieldname": "release_date",
+   "fieldtype": "Datetime",
+   "label": "Not Before"
+  },
+  {
+   "fieldname": "sb_source",
+   "fieldtype": "Section Break",
+   "label": "Source",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "job_reference",
+   "fieldtype": "Link",
+   "label": "Job Reference",
+   "options": "External Reference",
+   "description": "The ERP record (for example a Job Card). A machine already working on it keeps it"
+  },
+  {
+   "fieldname": "cb_source",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Data",
+   "label": "Source",
+   "read_only": 1,
+   "default": "Manual"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 21:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Production Schedule Job",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0,
+ "istable": 1,
+ "editable_grid": 1
+}
