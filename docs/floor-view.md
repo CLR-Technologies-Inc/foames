@@ -100,6 +100,11 @@ Everything the page shows comes from one call, `foames.foames_mes.api.get_floor_
      "top_reason": "Planned maintenance", "top_minutes": 45}
   ],
   "external_references": [],
+  "recognitions": [
+    {"name": "REC-2026-00031", "kind": "Helping Hand", "recipient": "Ana Ruiz", "team": "Line 1",
+     "machine": "press-1", "message": "Swapped the die in record time", "from": "Bo Chen",
+     "recognized_at": "2026-10-30 11:20:04"}
+  ],
   "open_suggestions": [
     {"name": "SUG-2026-00007", "title": "Jam is 60% of downtime on press-2", "category": "Downtime",
      "severity": "Info", "agent": "foames-rules", "reference_doctype": "Machine", "reference_name": "press-2"}
@@ -107,7 +112,7 @@ Everything the page shows comes from one call, `foames.foames_mes.api.get_floor_
 }
 ```
 
-`external_references` lists only references with status Missing, and only when the caller may read External Reference. Other apps add sections to the snapshot through the `foames_floor_snapshot_extensions` hook. The same call is what an external agent or a SCADA screen uses to read the floor, so the page and the agents always see the same numbers.
+`external_references` lists only references with status Missing, and only when the caller may read External Reference. `recognitions` holds the recent thanks shown on the page; private ones and people who opted out never appear in it (see [recognition.md](recognition.md)). Other apps add sections to the snapshot through the `foames_floor_snapshot_extensions` hook. The same call is what an external agent or a SCADA screen uses to read the floor, so the page and the agents always see the same numbers.
 
 ## Roles at a glance
 

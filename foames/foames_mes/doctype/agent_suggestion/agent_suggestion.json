@@ -12,6 +12,7 @@
   "cb_head",
   "status",
   "agent",
+  "credited_to",
   "reference_doctype",
   "reference_name",
   "sb_body",
@@ -76,6 +77,13 @@
    "label": "Agent",
    "description": "Who raised it: the built-in rules, or the name of an external agent",
    "in_list_view": 1
+  },
+  {
+   "fieldname": "credited_to",
+   "fieldtype": "Link",
+   "label": "Idea From",
+   "options": "User",
+   "description": "The person whose idea this is. When the suggestion is Done, FoaMES recognizes them for it"
   },
   {
    "fieldname": "reference_doctype",

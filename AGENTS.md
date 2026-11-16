@@ -11,7 +11,7 @@ FoaMES is an ERP-agnostic manufacturing execution system built as a single Frapp
 | Module | Package | Holds |
 | --- | --- | --- |
 | FoaMES Kernel | `foames/foames_kernel` | `External Reference`, `FoaMES Settings` |
-| FoaMES MES | `foames/foames_mes` | Machine, Machine Event, Downtime Reason and Record, Machine Data Settings, Shift Pattern, OEE Period, Agent Suggestion, Andon Call and Call Type, Maintenance Plan and Work Order, Cycle Time Standard, Work Instruction and Work Instruction Run, PFMEA, Production Schedule and Scheduled Operation, Standard Operating Procedure and SOP Acknowledgement, the Floor View page, the gateways, the API |
+| FoaMES MES | `foames/foames_mes` | Machine, Machine Event, Downtime Reason and Record, Machine Data Settings, Shift Pattern, OEE Period, Agent Suggestion, Andon Call and Call Type, Maintenance Plan and Work Order, Cycle Time Standard, Recognition and its settings, Work Instruction and Work Instruction Run, PFMEA, Production Schedule and Scheduled Operation, Standard Operating Procedure and SOP Acknowledgement, the Floor View page, the gateways, the API |
 | FoaMES Adapters | `foames/foames_adapters` | The adapter contract and registry, one subpackage per vendor (each with its own `AGENTS.md`), the shared Integration workspace |
 | FoaMES Commissioning | `foames/foames_commissioning` | Commissioning Package, Commissioning Checklist Template, Commissioning Test, Loop Check, Punch Item, the Punch List and Commissioning Status reports, handover readiness |
 | FoaMES Process Mining | `foames/foames_process_mining` | Event Log Source, Process Event Log, the event extractors, the XES and OCEL exports, discovery and conformance analysis, and their API |
@@ -32,7 +32,7 @@ Keep these whatever you build. A pull request that breaks one will not be merged
 4. **Unknown time is loss.** The OEE ledger is built from state events with Downtime Records overlaid, and an Unknown state is never run time. A machine that stops reporting gets an Unknown state event from the scheduler's staleness check (source System), and the Sparkplug gateway writes one at once on NDEATH or DDEATH. Do not add code that infers output or run time from the absence of events.
 5. **Agents suggest; people act.** Anything an agent or a rule finds becomes an `Agent Suggestion` with evidence. FoaMES does not write tags, send commands to SCADA, change machine state on its own, or post to an ERP without an explicit, idempotent posting a person configured.
 6. **Postings to an ERP are idempotent and sequenced.** An idempotency key per business event, a marker written into the created document, a check before resending after an unclear answer, exponential backoff, strict order within a sequence group. The adapters' outboxes are the model; the details are in [foames/foames_adapters/AGENTS.md](foames/foames_adapters/AGENTS.md). Follow it for any new write path.
-7. **Pure logic stays pure.** `oee.py`, `counters.py`, `shifts.py`, `andon.py`, `suggestions.py`, `maintenance.py`, `cycle_time.py`, `foames_commissioning/commissioning.py`, `work_instructions.py`, `pfmea.py`, `scheduling.py`, `sop.py`, `signing.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, `foames_ehs/ehs.py`, the process-mining core, `foames_validation/qualification.py` and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe, and so do the arithmetic, parsing and protocol modules of each adapter (each vendor's `AGENTS.md` lists its own). Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
+7. **Pure logic stays pure.** `oee.py`, `counters.py`, `shifts.py`, `andon.py`, `recognition.py`, `suggestions.py`, `maintenance.py`, `cycle_time.py`, `foames_commissioning/commissioning.py`, `work_instructions.py`, `pfmea.py`, `scheduling.py`, `sop.py`, `signing.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, `foames_ehs/ehs.py`, the process-mining core, `foames_validation/qualification.py` and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe, and so do the arithmetic, parsing and protocol modules of each adapter (each vendor's `AGENTS.md` lists its own). Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
 8. **Secrets live in Password fields** of a Settings DocType (`Machine Data Settings`, or the adapter's own Settings), read with `get_password`. Never in code, hooks or site config, never logged.
 9. **Both Frappe versions.** Use `foames.tests_compat.IntegrationTestCase` for site tests. Avoid APIs that exist in only one of v15 and v16.
 
@@ -56,7 +56,7 @@ foames/
   foames_mes/
     api.py                    ingest_machine_events, get_floor_snapshot, run_suggestion_rules, post_suggestion
     floor.py                  floor_snapshot, collect_findings
-    oee.py  counters.py  shifts.py  suggestions.py  signing.py  kpi.py  spc.py  maintenance.py  pfmea.py   pure logic (kpi.py: report roll-ups, shifts.py: shift calendars, spc.py: control charts, pfmea.py: action priority and observed occurrence)
+    oee.py  counters.py  shifts.py  suggestions.py  signing.py  kpi.py  spc.py  maintenance.py  pfmea.py  recognition.py   pure logic (kpi.py: report roll-ups, shifts.py: shift calendars, spc.py: control charts, pfmea.py: action priority and observed occurrence, recognition.py: milestones, team highlights, floor privacy)
     cycle_time.py             pure: automatic and manual time, projections, scenarios, calibration; cycle_time_api.py serves them
     scheduling.py             pure: finite-capacity scheduling (dispatching rules, working windows, behind-schedule findings)
     sop.py                    pure: SOP revision lifecycle, sign-off, periodic review and training status
@@ -68,6 +68,7 @@ foames/
                               Machine Data Settings (+ Machine Node Map), Shift Pattern (+ shifts, non-working days),
                               OEE Period, Agent Suggestion, Andon Call, Andon Call Type,
                               Maintenance Plan, Maintenance Work Order, Cycle Time Standard (+ elements),
+                              Recognition, Recognition Settings (+ Recognition Opt Out),
                               Work Instruction (+ steps), Work Instruction Run (+ step results), PFMEA (+ PFMEA Item),
                               Production Schedule (+ Production Schedule Job), Scheduled Operation (calendar and Gantt views),
                               Standard Operating Procedure (+ applicability, approvals, training roles), SOP Acknowledgement
@@ -172,6 +173,10 @@ Whitelisted methods, called as `/api/method/<dotted path>`. Authentication is Fr
 | `foames.foames_mes.cycle_time_api.project_time` | GET or POST | read on Cycle Time Standard (+ Machine Event with `use_observed`) | Elapsed, automatic and operator time for a quantity; with `changes`, a what-if scenario and its savings |
 | `foames.foames_mes.cycle_time_api.project_operations` | GET or POST | read on Cycle Time Standard | Projections for many `{key, standard or machine, quantity}` rows at once, for a scheduler |
 | `foames.foames_mes.cycle_time_api.compare_with_observed` / `get_observed_cycle` | GET | read on Cycle Time Standard and Machine Event | A standard against the machine's observed running and idle time per cycle |
+| `foames.foames_mes.doctype.recognition.recognition.give_recognition` | POST | create on Recognition | Thank a person (`recipient`) or a team (`team`): `message`, `kind`, `machine`, `private` |
+| `foames.foames_mes.doctype.recognition.recognition.withdraw_recognition` | POST | the giver or a supervisor | Withdraw a recognition |
+| `foames.foames_mes.doctype.recognition.recognition.list_recognitions` | GET | read on Recognition | Recent recognitions the user may see |
+| `foames.foames_mes.doctype.recognition.recognition.get_my_recognition_preferences` / `set_my_recognition_preferences` | GET / POST | logged in | The user's own floor and milestone opt-out |
 | `foames.foames_mes.doctype.work_instruction.work_instruction.list_instructions_for_machine` | GET | read on Work Instruction | Released instructions that apply at a `machine`, most specific first |
 | `foames.foames_mes.doctype.work_instruction.work_instruction.release` / `make_obsolete` / `new_revision` | POST | write (release: FoaMES Engineer, Quality or System Manager); create for `new_revision` | Revision control of an instruction |
 | `foames.foames_mes.doctype.work_instruction_run.work_instruction_run.start_run` | POST | create on Work Instruction Run | Start a released instruction at a machine (`work_instruction`, `machine`, `job_reference`) |

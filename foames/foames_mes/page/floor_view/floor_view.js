@@ -20,6 +20,14 @@ frappe.pages["floor-view"].on_page_load = function (wrapper) {
 			});
 		});
 	}
+	if (frappe.model.can_create("Recognition")) {
+		page.add_inner_button(
+			__("Give Kudos"),
+			() => give_recognition_dialog(view),
+			__("Recognition")
+		);
+		page.add_inner_button(__("My Preferences"), () => preferences_dialog(), __("Recognition"));
+	}
 	if (frappe.model.can_create("Andon Call")) {
 		page.set_primary_action(__("Call for Help"), () => raise_andon_dialog(view));
 	}
@@ -73,6 +81,9 @@ class FloorView {
 			.foames-floor .wi-run { margin-top: 6px; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,.9); color: #222; display: inline-block; cursor: pointer; }
 			.foames-floor .wi-run.On.Hold { background: #ffcdd2; font-weight: 600; }
 			@keyframes foames-andon { 50% { background: #ffeb3b; } }
+			.foames-floor .kudos { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+			.foames-floor .kudo { border-left: 4px solid #2e7d32; padding: 6px 10px; background: var(--card-bg); border-radius: 4px; }
+			.foames-floor .kudo.Team-Highlight { border-color: #1565c0; } .foames-floor .kudo.Milestone { border-color: #8e24aa; }
 		</style>`);
 	}
 
@@ -132,11 +143,13 @@ class FloorView {
 				</div>`
 			)
 			.join("");
+		const kudos = (snap.recognitions || []).map((r) => recognition_card(r)).join("");
 		this.$body.find(".content").remove();
 		this.$body.append(`<div class="content">
 			<div class="grid">${
 				tiles || `<p>${__("No machines yet. Create a Machine to see it here.")}</p>`
 			}</div>
+			${kudos ? `<h3>${__("Recognition")}</h3><div class="kudos">${kudos}</div>` : ""}
 			<h3>${__("Open suggestions")} (${snap.open_suggestions.length})</h3>
 			${suggestions || `<p class="text-muted">${__("None")}</p>`}
 			<p class="text-muted small">${__("As of")} ${frappe.datetime.str_to_user(snap.as_of)}</p>
@@ -227,6 +240,99 @@ function raise_andon_dialog(view) {
 		},
 	});
 	dialog.show();
+}
+
+function recognition_card(r) {
+	const esc = frappe.utils.escape_html;
+	const who = [r.recipient, r.machine].filter(Boolean).map(esc).join(" · ");
+	const head = who ? ` · ${who}` : "";
+	const from = r.from ? __("from {0}", [esc(r.from)]) + " · " : "";
+	const when = r.recognized_at ? frappe.datetime.prettyDate(r.recognized_at) : "";
+	const kind = esc((r.kind || "").replace(/ /g, "-"));
+	return `<div class="kudo ${kind}">
+		<b>${__(r.kind)}</b>${head}
+		<div>${esc(r.message || "")}</div>
+		<small class="text-muted">${from}${when}</small>
+	</div>`;
+}
+
+function give_recognition_dialog(view) {
+	const dialog = new frappe.ui.Dialog({
+		title: __("Give Kudos"),
+		fields: [
+			{
+				fieldname: "kind",
+				label: __("For"),
+				fieldtype: "Select",
+				options: ["Kudos", "Helping Hand", "Improvement", "Safety", "Quality"],
+				default: "Kudos",
+				reqd: 1,
+			},
+			{
+				fieldname: "recipient",
+				label: __("Person"),
+				fieldtype: "Link",
+				options: "User",
+				description: __("Leave empty to recognize a whole team"),
+				get_query: () => ({ filters: { user_type: "System User", enabled: 1 } }),
+			},
+			{ fieldname: "team", label: __("Team, line or crew"), fieldtype: "Data" },
+			{ fieldname: "machine", label: __("Machine"), fieldtype: "Link", options: "Machine" },
+			{ fieldname: "message", label: __("What for"), fieldtype: "Small Text", reqd: 1 },
+			{
+				fieldname: "private",
+				label: __("Private: only they and supervisors see it"),
+				fieldtype: "Check",
+			},
+		],
+		primary_action_label: __("Send"),
+		primary_action(values) {
+			frappe
+				.call({
+					method: "foames.foames_mes.doctype.recognition.recognition.give_recognition",
+					args: values,
+				})
+				.then(() => {
+					dialog.hide();
+					frappe.show_alert({ message: __("Thanks sent"), indicator: "green" });
+					view.refresh();
+				});
+		},
+	});
+	dialog.show();
+}
+
+function preferences_dialog() {
+	const base = "foames.foames_mes.doctype.recognition.recognition.";
+	frappe.call(base + "get_my_recognition_preferences").then((r) => {
+		const dialog = new frappe.ui.Dialog({
+			title: __("Recognition Preferences"),
+			fields: [
+				{
+					fieldname: "show_on_floor",
+					label: __("Show my name on the Floor View"),
+					fieldtype: "Check",
+					default: r.message.show_on_floor ? 1 : 0,
+				},
+				{
+					fieldname: "milestones",
+					label: __("Recognize my milestones"),
+					fieldtype: "Check",
+					default: r.message.milestones ? 1 : 0,
+				},
+			],
+			primary_action_label: __("Save"),
+			primary_action(values) {
+				frappe
+					.call({ method: base + "set_my_recognition_preferences", args: values })
+					.then(() => {
+						dialog.hide();
+						frappe.show_alert({ message: __("Saved"), indicator: "green" });
+					});
+			},
+		});
+		dialog.show();
+	});
 }
 
 // Work instructions

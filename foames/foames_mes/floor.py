@@ -18,6 +18,7 @@ from frappe.utils import add_days, get_datetime, now_datetime
 
 from foames.foames_mes.counters import minutes_between
 from foames.foames_mes.doctype.andon_call.andon_call import open_andon_calls
+from foames.foames_mes.doctype.recognition.recognition import floor_recognitions
 from foames.foames_mes.doctype.shift_pattern.shift_pattern import load_pattern
 from foames.foames_mes.doctype.work_instruction_run.work_instruction_run import active_runs
 from foames.foames_mes.shifts import window_at
@@ -99,6 +100,8 @@ def floor_snapshot(days: int = 1) -> dict:
 		"downtime_by_machine": downtime,
 		"external_references": references,
 		"andon_calls": andon,
+		# Recent thanks to people and teams. Private ones and people who opted out never appear.
+		"recognitions": floor_recognitions(now) if frappe.has_permission("Recognition", "read") else [],
 		"work_instruction_runs": runs,
 		"open_suggestions": frappe.get_all(
 			"Agent Suggestion",
