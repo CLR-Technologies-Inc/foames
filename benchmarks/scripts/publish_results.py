@@ -174,6 +174,14 @@ def _cells(rows):
 	return out
 
 
+def _use(cfg: dict) -> str:
+	"""What the model was built for (agents.json "_use"); anything but coding is marked off-label."""
+	use = cfg.get("_use", "")
+	if not use:
+		return "-"
+	return use if use.startswith(("coding", "agentic coding")) else f"{use} (off-label)"
+
+
 def agent_page(name, a, s, task_ecl, ecl, run_date, workflow_run):
 	cfg, rows = a["cfg"], a["rows"]
 	model, tier, harness = (
@@ -199,7 +207,7 @@ def agent_page(name, a, s, task_ecl, ecl, run_date, workflow_run):
 		"<!-- SPDX-License-Identifier: Apache-2.0 -->",
 		"",
 		f"- **Run dates (UTC):** started {starts[0] if starts else 'n/a'}, last run finished {finished[-1] if finished else 'n/a'}",
-		f"- **Model:** `{model or '-'}` ({tier or 'calibration'} tier)"
+		f"- **Model:** `{model or '-'}` ({tier or 'calibration'} tier, built for {_use(cfg)})"
 		+ (f", {note('model-digest')}" if note("model-digest") else ""),
 		f"- **Harness:** {harness or 'built in'} {note('aider-version')}".rstrip(),
 		f"- **Where it ran:** {note('environment') or 'GitHub-hosted runner'}; sandbox {s['sandbox']}"
@@ -403,6 +411,10 @@ def main(argv=None):
 		"- Aider prints token counts rounded to the nearest hundred above 1,000, so token totals are approximate. "
 		"Local models report no cost, so their token counts may also read zero."
 	)
+	use_note = (
+		'- "Built for" is what the model\'s makers tuned it for. Models marked off-label (general chat, reasoning, tiny '
+		"or domain models) are not meant for agentic coding; they are here to show how far each kind gets on FoaMES work."
+	)
 	cpu_note = (
 		"- Local models on GitHub-hosted runners ran on CPU (4 vCPU, 16 GB). Speed is not scored against them here "
 		"beyond the efficiency term in the composite; read quality."
@@ -419,13 +431,13 @@ def main(argv=None):
 		"",
 		bar_note,
 		"",
-		"| Agent | Model | Tier | Ran on | Runs | Clears bar | Success (95 % CI) | Quality | Composite | Mean time | Tokens in / out | Cost | List-price equivalent | ECL reached |",
-		"| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+		"| Agent | Model | Built for | Tier | Ran on | Runs | Clears bar | Success (95 % CI) | Quality | Composite | Mean time | Tokens in / out | Cost | List-price equivalent | ECL reached |",
+		"| --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
 	]
 	for o in ranked + calibration:
 		s = o["s"]
 		lines.append(
-			f"| [{o['agent']}]({o['agent']}.md) | `{s['model'] or '-'}` | {s['tier'] or 'calibration'} | {o['env'] or 'runner'} | "
+			f"| [{o['agent']}]({o['agent']}.md) | `{s['model'] or '-'}` | {_use(o['cfg'])} | {s['tier'] or 'calibration'} | {o['env'] or 'runner'} | "
 			f"{s['runs']} | {o['cleared']} / {len(task_ids)} | {_pct(s['success_rate'])} {_ci(s)} | {_num(s['quality'])} | "
 			f"{_num(s['composite'])} | {_num(s['mean_seconds'], '{:.0f} s')} | {o['tokens'][0]:,} / {o['tokens'][1]:,} | "
 			f"{_money(s['total_cost_usd'])} | {_money(o['list_price'])} | "
@@ -476,6 +488,7 @@ def main(argv=None):
 			if a.get("_skip_reason")
 		],
 		cpu_note,
+		use_note,
 		*_run_notes(opts.out),
 		"",
 	]

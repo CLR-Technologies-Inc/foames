@@ -15,6 +15,7 @@ the provider listed). It never prints or writes the key.
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import os
 import urllib.error
@@ -101,6 +102,29 @@ def groq_works(key: str, model: str, min_tpm: int) -> tuple[bool, str, int]:
 	return status == 200 and (tpm == 0 or tpm >= min_tpm), why, tpm
 
 
+NVIDIA = "https://integrate.api.nvidia.com/v1"
+
+
+def nvidia_models(key: str) -> list[str]:
+	status, _, d = _get(f"{NVIDIA}/models", {"Authorization": f"Bearer {key}"})
+	LISTED["nvidia"] = f"model list HTTP {status} {_err(d)}".strip()
+	return sorted("nvidia_nim/" + m["id"] for m in d.get("data", []))
+
+
+def nvidia_works(key: str, model: str) -> tuple[bool, str]:
+	status, _, d = _get(
+		f"{NVIDIA}/chat/completions",
+		{"Authorization": f"Bearer {key}"},
+		{
+			"model": model.split("/", 1)[1],
+			"messages": [{"role": "user", "content": "Say OK."}],
+			"max_tokens": 16,
+		},
+	)
+	# A slow answer (status 0, a timeout) still counts: shared NIM endpoints queue at busy times.
+	return status in (200, 0), f"HTTP {status or 'timeout'} {_err(d)}".strip()
+
+
 def openrouter_models() -> dict[str, int]:
 	_, _, d = _get("https://openrouter.ai/api/v1/models")
 	return {"openrouter/" + m["id"]: int(m.get("context_length") or 0) for m in d.get("data", [])}
@@ -152,6 +176,18 @@ def pick(agent: dict, notes: Path) -> str:
 				fits.append((tpm, m))
 		if fits:
 			return _done(max(fits)[1], listed, tried, notes)
+	elif provider == "nvidia_nim":
+		# Candidates are glob patterns over the listed ids; within a pattern the newest-looking id goes first.
+		listed = nvidia_models(key)
+		for c in agent["_model_candidates"]:
+			matches = sorted(fnmatch.filter(listed, c["model"]), reverse=True)
+			if not matches:
+				tried.append(f"{c['model']}: not listed")
+			for m in matches[:3]:
+				ok, why = nvidia_works(key, m)
+				tried.append(f"{m}: {why}")
+				if ok:
+					return _done(m, listed, tried, notes)
 	elif provider == "openrouter":
 		ctx = openrouter_models()
 		listed = sorted(ctx)

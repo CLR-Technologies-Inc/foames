@@ -54,6 +54,7 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
           CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
         run: |
           python3 - <<'PY'
           import json, os, sys
@@ -134,7 +135,8 @@ jobs:
           for i in $(seq 1 30); do curl -sf http://127.0.0.1:11434/api/version && break; sleep 2; done || (ollama serve > ollama.log 2>&1 &)
           for i in $(seq 1 30); do curl -sf http://127.0.0.1:11434/api/version && break; sleep 2; done
           MODEL=$(python3 -c "import json;a={x['name']:x for x in json.load(open('benchmarks/agents.json'))['agents']}['${{ matrix.agent }}'];print(a['model'].split('/',1)[1])")
-          ollama pull "$MODEL"
+          # An Ollama tag can be renamed or withdrawn; say so plainly instead of failing later in aider.
+          ollama pull "$MODEL" || { echo "::error::ollama pull $MODEL failed (tag not in the Ollama library today?)"; exit 1; }
           ollama --version | tee notes/ollama-version.txt
           DIGEST=$(ollama list | awk -v m="$MODEL" '$1==m{print $2}')
           echo "Ollama $MODEL digest $DIGEST, pulled $(date -u +%Y-%m-%d)" | tee notes/model-digest.txt
@@ -146,6 +148,7 @@ jobs:
           GEMINI_API_KEY: ${{ startsWith(matrix.agent, 'aider-gemini-') && secrets.GEMINI_API_KEY || '' }}
           GROQ_API_KEY: ${{ startsWith(matrix.agent, 'aider-groq-') && secrets.GROQ_API_KEY || '' }}
           OPENROUTER_API_KEY: ${{ startsWith(matrix.agent, 'aider-openrouter-') && secrets.OPENROUTER_API_KEY || '' }}
+          NVIDIA_API_KEY: ${{ startsWith(matrix.agent, 'aider-nvidia-') && secrets.NVIDIA_API_KEY || '' }}
         run: |
           # Free catalogues change, so an agent with _model_candidates gets the first one usable today.
           python benchmarks/scripts/pick_hosted_model.py "${{ matrix.agent }}" --notes notes
@@ -163,6 +166,8 @@ jobs:
           OPENROUTER_API_KEY: ${{ startsWith(matrix.agent, 'aider-openrouter-') && secrets.OPENROUTER_API_KEY || '' }}
           MISTRAL_API_KEY: ${{ startsWith(matrix.agent, 'aider-mistral-') && secrets.MISTRAL_API_KEY || '' }}
           CEREBRAS_API_KEY: ${{ startsWith(matrix.agent, 'aider-cerebras-') && secrets.CEREBRAS_API_KEY || '' }}
+          # NVIDIA Build (NIM): the secret is NVIDIA_API_KEY; litellm reads it as NVIDIA_NIM_API_KEY.
+          NVIDIA_NIM_API_KEY: ${{ startsWith(matrix.agent, 'aider-nvidia-') && secrets.NVIDIA_API_KEY || '' }}
           OUT: runs/${{ steps.names.outputs.slug }}
         run: |
           python -m foames_bench run --agents "${{ matrix.agent }}" --reps "${{ inputs.reps || '1' }}" \
