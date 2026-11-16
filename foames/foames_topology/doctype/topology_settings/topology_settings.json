@@ -1,0 +1,117 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-15 20:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "sync_enabled",
+  "default_tenant",
+  "cb_head",
+  "stale_after_seconds",
+  "include_erp_records",
+  "include_kpis",
+  "sb_last",
+  "last_sync_at",
+  "cb_last",
+  "last_sync_summary"
+ ],
+ "fields": [
+  {
+   "fieldname": "sync_enabled",
+   "fieldtype": "Check",
+   "label": "Sync From FoaMES Records",
+   "default": "1",
+   "description": "Every 15 minutes, mirror Machines, machine data sources, P&ID components, OEE and ERP references into the graph"
+  },
+  {
+   "fieldname": "default_tenant",
+   "fieldtype": "Link",
+   "label": "Default Tenant",
+   "options": "Topology Tenant",
+   "description": "The tenant the sync gives the assets it creates. Empty means shared."
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "stale_after_seconds",
+   "fieldtype": "Int",
+   "label": "Stale After (s)",
+   "default": "900",
+   "description": "A signal with no reading for this long shows as stale"
+  },
+  {
+   "fieldname": "include_erp_records",
+   "fieldtype": "Check",
+   "label": "Include ERP Records",
+   "default": "1"
+  },
+  {
+   "fieldname": "include_kpis",
+   "fieldtype": "Check",
+   "label": "Include KPIs",
+   "default": "1"
+  },
+  {
+   "fieldname": "sb_last",
+   "fieldtype": "Section Break",
+   "label": "Last Sync"
+  },
+  {
+   "fieldname": "last_sync_at",
+   "fieldtype": "Datetime",
+   "label": "Last Sync At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_last",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_sync_summary",
+   "fieldtype": "Small Text",
+   "label": "Summary",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 20:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Topology",
+ "name": "Topology Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "issingle": 1
+}

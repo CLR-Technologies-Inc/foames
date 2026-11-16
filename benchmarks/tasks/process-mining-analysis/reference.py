@@ -1,3 +1,6 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Reference solution for process-mining-analysis: FoaMES's own process-mining module."""
 
 import os

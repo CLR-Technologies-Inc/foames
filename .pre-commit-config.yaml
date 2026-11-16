@@ -1,3 +1,6 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 exclude: 'node_modules|.git'
 default_stages: [pre-commit]
 fail_fast: false
@@ -62,6 +65,15 @@ repos:
                 foames/templates/includes/.*|
                 foames/public/js/lib/.*
             )$
+
+  - repo: local
+    hooks:
+      - id: license-headers
+        name: "Check license headers"
+        entry: python .github/scripts/check_license_headers.py
+        language: system
+        pass_filenames: false
+        always_run: true
 
 ci:
     autoupdate_schedule: weekly
