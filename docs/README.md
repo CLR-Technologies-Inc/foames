@@ -32,6 +32,7 @@ Start with [overview.md](overview.md) for what FoaMES records, then [installatio
 | [scheduling.md](scheduling.md) | Production scheduling: finite-capacity plans from shift calendars, maintenance and cycle times, dispatching rules, publishing, the Gantt view, the behind-schedule rule, demand from an ERP and cycle-time hooks |
 | [maintenance.md](maintenance.md) | Preventive maintenance: plans by calendar, run hours or counts, work orders, the hourly check and its suggestions, the Maintenance Due List |
 | [topology.md](topology.md) | The topology graph: the physical layer, the data layer over it and Signal Bindings, the sync, collectors, tenant and provider isolation, Topology View, the Floor View data layer, findings, Mermaid and Grafana exports |
+| [commissioning.md](commissioning.md) | Equipment commissioning: packages, FAT and SAT with signed steps, loop checks, the A/B/C punch list, handover readiness and acceptance, the daily suggestions, the Punch List and Commissioning Status reports |
 | [spc.md](spc.md) | Control charts and run rules on machine measurements, and the suggestions they raise |
 | [validation.md](validation.md) | Equipment qualification (IQ, OQ, PQ) and process validation (PPQ, CPV): protocols, acceptance criteria, capability from machine data, executions with evidence and deviations, approval, requalification |
 | [sops.md](sops.md) | Standard operating procedures as controlled documents: revisions, sign-off, effective dates, periodic review, operator acknowledgement and training, the SOP Training Matrix |

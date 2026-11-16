@@ -13,6 +13,7 @@ FoaMES is an ERP-agnostic manufacturing execution system built as a single Frapp
 | FoaMES Kernel | `foames/foames_kernel` | `External Reference`, `FoaMES Settings` |
 | FoaMES MES | `foames/foames_mes` | Machine, Machine Event, Downtime Reason and Record, Machine Data Settings, Shift Pattern, OEE Period, Agent Suggestion, Andon Call and Call Type, Maintenance Plan and Work Order, Cycle Time Standard, Work Instruction and Work Instruction Run, PFMEA, Production Schedule and Scheduled Operation, Standard Operating Procedure and SOP Acknowledgement, the Floor View page, the gateways, the API |
 | FoaMES Adapters | `foames/foames_adapters` | The adapter contract and registry, one subpackage per vendor (each with its own `AGENTS.md`), the shared Integration workspace |
+| FoaMES Commissioning | `foames/foames_commissioning` | Commissioning Package, Commissioning Checklist Template, Commissioning Test, Loop Check, Punch Item, the Punch List and Commissioning Status reports, handover readiness |
 | FoaMES Process Mining | `foames/foames_process_mining` | Event Log Source, Process Event Log, the event extractors, the XES and OCEL exports, discovery and conformance analysis, and their API |
 | FoaMES Validation | `foames/foames_validation` | Validation Protocol and Acceptance Criterion, Validation Execution and Result, the qualification rules, the Qualification Status report, the daily requalification check |
 | MCP server | `foames/foames_mcp` | The MCP tool catalogue, the Streamable HTTP endpoint, the stdio bridge, read methods for agents |
@@ -30,7 +31,7 @@ Keep these whatever you build. A pull request that breaks one will not be merged
 4. **Unknown time is loss.** The OEE ledger is built from state events with Downtime Records overlaid, and an Unknown state is never run time. A machine that stops reporting gets an Unknown state event from the scheduler's staleness check (source System), and the Sparkplug gateway writes one at once on NDEATH or DDEATH. Do not add code that infers output or run time from the absence of events.
 5. **Agents suggest; people act.** Anything an agent or a rule finds becomes an `Agent Suggestion` with evidence. FoaMES does not write tags, send commands to SCADA, change machine state on its own, or post to an ERP without an explicit, idempotent posting a person configured.
 6. **Postings to an ERP are idempotent and sequenced.** An idempotency key per business event, a marker written into the created document, a check before resending after an unclear answer, exponential backoff, strict order within a sequence group. The adapters' outboxes are the model; the details are in [foames/foames_adapters/AGENTS.md](foames/foames_adapters/AGENTS.md). Follow it for any new write path.
-7. **Pure logic stays pure.** `oee.py`, `counters.py`, `shifts.py`, `andon.py`, `suggestions.py`, `maintenance.py`, `cycle_time.py`, `work_instructions.py`, `pfmea.py`, `scheduling.py`, `sop.py`, `signing.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, the process-mining core, `foames_validation/qualification.py` and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe, and so do the arithmetic, parsing and protocol modules of each adapter (each vendor's `AGENTS.md` lists its own). Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
+7. **Pure logic stays pure.** `oee.py`, `counters.py`, `shifts.py`, `andon.py`, `suggestions.py`, `maintenance.py`, `cycle_time.py`, `foames_commissioning/commissioning.py`, `work_instructions.py`, `pfmea.py`, `scheduling.py`, `sop.py`, `signing.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, the process-mining core, `foames_validation/qualification.py` and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe, and so do the arithmetic, parsing and protocol modules of each adapter (each vendor's `AGENTS.md` lists its own). Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
 8. **Secrets live in Password fields** of a Settings DocType (`Machine Data Settings`, or the adapter's own Settings), read with `get_password`. Never in code, hooks or site config, never logged.
 9. **Both Frappe versions.** Use `foames.tests_compat.IntegrationTestCase` for site tests. Avoid APIs that exist in only one of v15 and v16.
 
@@ -82,6 +83,11 @@ foames/
     <vendor>/                 one subpackage per vendor adapter, each with its own AGENTS.md
     doctype/  report/         the adapters' Settings and Outbox DocTypes and shared reports
     workspace/  number_card/  dashboard_chart/  foames_adapters_dashboard/   the Integration workspace
+  foames_commissioning/
+    commissioning.py          pure logic: test steps and the test sequence, loop check points, punch categories, handover readiness
+    doctype/                  Commissioning Package (+ items), Commissioning Checklist Template (+ items),
+                              Commissioning Test (+ steps), Loop Check (+ points), Punch Item
+    report/                   Punch List, Commissioning Status
   foames_process_mining/
     eventlog.py  xes.py  ocel.py  discovery.py  conformance.py   pure logic: the event log, the XES and
                               OCEL 2.0 formats, directly-follows discovery and performance, conformance
@@ -121,6 +127,8 @@ All of them are Frappe hooks: another app lists dotted paths in its own `hooks.p
 | `foames_floor_snapshot_extensions` | `(snapshot: dict, since, now)`, mutate in place | Add a section to the floor snapshot, so the page, the rules and external agents see it |
 | `foames_suggestion_rules` | `(snapshot: dict) -> list[dict]` | Add rules; each finding dict needs `rule_key`, `title`, `category`, `suggestion`, `severity`, optional `reference_doctype`, `reference_name`, `evidence` |
 | `foames_process_event_extractors` | `(since, until)`, returns an iterable of `foames.foames_process_mining.eventlog.Event` | Add your own records to the process-mining event log |
+| `foames_commissioning_readiness_checks` | `(package_doc) -> list[dict]` of blockers with `kind`, `reference`, `message` | Hold a Commissioning Package's handover back on your own conditions |
+| `foames_commissioning_handed_over` | `(package_doc)` after the package is handed over | Start what follows commissioning, for example a qualification (IQ/OQ/PQ) record, and link it in the package's Qualification fields |
 | `foames_schedule_demand_sources` | `(start, end, line) -> list[dict]` of Production Schedule Job values | Fill a Production Schedule's rows from an ERP or a planning tool (Get Operations) |
 | `foames_cycle_time_estimators` | `(row: dict, machine: dict) -> seconds per unit or None` | Give the scheduler a cycle time when a row has none; the first answer wins, then the machine's Ideal Cycle Seconds |
 

@@ -43,7 +43,7 @@
    "fieldname": "category",
    "fieldtype": "Select",
    "label": "Category",
-   "options": "Yield\nDowntime\nQuality\nRelease\nMachine Data\nMaintenance\nERP\nAndon\nWork Instruction\nSchedule\nOther",
+   "options": "Yield\nDowntime\nQuality\nRelease\nMachine Data\nMaintenance\nCommissioning\nERP\nAndon\nWork Instruction\nSchedule\nOther",
    "reqd": 1,
    "in_list_view": 1,
    "in_standard_filter": 1
