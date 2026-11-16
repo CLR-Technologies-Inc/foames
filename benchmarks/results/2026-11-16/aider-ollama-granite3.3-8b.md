@@ -9,7 +9,6 @@
 - **Where it ran:** GitHub-hosted runner (4 vCPU, 15 GB, CPU only); sandbox docker, image `sha256:235dcdb6be71`, Ollama ollama version is 0.40.16
 - **FoaMES commit:** `a1c95f786e96`
 - Aider with granite3.3:8b (IBM, Apache-2.0) served by Ollama on the same machine. Quality over speed: the timeout is ten times the task budget. Cost is electricity and time, recorded as $0.
-- Workflow run: https://github.com/CLR-Technologies-Inc/foames/actions/runs/43805918094
 
 | Runs | Success (95 % CI) | Quality | Correctness | Process | Composite | Mean time | Tokens in / cached / out | Cost | List-price equivalent | ECL reached |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |

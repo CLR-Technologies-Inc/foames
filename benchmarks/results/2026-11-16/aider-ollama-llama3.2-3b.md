@@ -9,7 +9,6 @@
 - **Where it ran:** GitHub-hosted runner (4 vCPU, 15 GB, CPU only); sandbox docker, image `sha256:9efbb593cac5`, Ollama ollama version is 0.40.16
 - **FoaMES commit:** `a5e355aa7bce`
 - Aider with llama3.2:3b (Meta, Llama 3.2 Community License) served by Ollama on the same machine. Built for tiny, so it is off-label for agentic coding. Quality over speed: the timeout is thirteen times the task budget. Cost is electricity and time, recorded as $0.
-- Workflow run: https://github.com/CLR-Technologies-Inc/foames/actions/runs/43805918094
 
 | Runs | Success (95 % CI) | Quality | Correctness | Process | Composite | Mean time | Tokens in / cached / out | Cost | List-price equivalent | ECL reached |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |

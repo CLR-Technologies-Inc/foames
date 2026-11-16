@@ -9,7 +9,6 @@
 - **Where it ran:** GitHub-hosted runner (4 vCPU, 15 GB, CPU only); sandbox docker, image `sha256:64f5a60e9cbf`, Ollama ollama version is 0.40.16
 - **FoaMES commit:** `a5e355aa7bce`
 - Aider with falcon3:10b (TII, TII Falcon License 2.0 (Apache-based)) served by Ollama on the same machine. Built for general chat, so it is off-label for agentic coding. Quality over speed: the timeout is thirteen times the task budget. Cost is electricity and time, recorded as $0.
-- Workflow run: https://github.com/CLR-Technologies-Inc/foames/actions/runs/43805918094
 
 | Runs | Success (95 % CI) | Quality | Correctness | Process | Composite | Mean time | Tokens in / cached / out | Cost | List-price equivalent | ECL reached |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |

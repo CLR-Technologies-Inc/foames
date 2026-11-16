@@ -9,7 +9,6 @@
 - **Where it ran:** GitHub-hosted runner; sandbox built-in
 - **FoaMES commit:** `11c643fbf2e7`
 - Applies the task's reference solution. Validates tasks and the grader.
-- Workflow run: https://github.com/CLR-Technologies-Inc/foames/actions/runs/43805918094
 
 | Runs | Success (95 % CI) | Quality | Correctness | Process | Composite | Mean time | Tokens in / cached / out | Cost | List-price equivalent | ECL reached |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |

@@ -11,7 +11,6 @@
 - **Where it ran:** GitHub-hosted runner, model on the provider's free API tier; sandbox docker, image `sha256:3d5036987ecd`
 - **FoaMES commit:** `2cbb32a9719c`, `37ac1b3533e3`
 - Aider on a free API tier; needs the GEMINI_API_KEY Actions secret. Google AI Studio free tier. The job picks the first candidate model the key can list (Google retired gemini-2.5-flash for new users in 2026-11). Free tiers can use prompts for training: send only public benchmark scenarios.
-- Workflow run: https://github.com/CLR-Technologies-Inc/foames/actions/runs/43805918094
 
 | Runs | Success (95 % CI) | Quality | Correctness | Process | Composite | Mean time | Tokens in / cached / out | Cost | List-price equivalent | ECL reached |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
