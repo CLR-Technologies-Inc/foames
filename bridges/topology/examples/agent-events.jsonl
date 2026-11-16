@@ -1,0 +1,4 @@
+{"time": "2026-11-15T10:00:00Z", "agent": "orchestrator", "task": "T-10", "status": "running", "title": "Weekly line review", "host": "gateway-1"}
+{"time": "2026-11-15T10:01:00Z", "agent": "planner", "task": "T-11", "status": "running", "title": "Re-plan line 2", "host": "gpu-box", "delegated_by": "orchestrator", "parent_task": "T-10"}
+{"time": "2026-11-15T10:05:00Z", "agent": "planner", "task": "T-11", "status": "done", "title": "Re-plan line 2", "host": "gpu-box"}
+{"time": "2026-11-15T10:06:00Z", "agent": "maintenance-agent", "task": "T-12", "status": "waiting", "title": "Check pump P-201", "host": "gpu-box", "delegated_by": "orchestrator", "parent_task": "T-10", "target": "machine:P-201"}
