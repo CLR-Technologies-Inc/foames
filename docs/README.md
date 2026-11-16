@@ -40,6 +40,7 @@ Start with [overview.md](overview.md) for what FoaMES records, then [installatio
 | [spc.md](spc.md) | Control charts and run rules on machine measurements, and the suggestions they raise |
 | [validation.md](validation.md) | Equipment qualification (IQ, OQ, PQ) and process validation (PPQ, CPV): protocols, acceptance criteria, capability from machine data, executions with evidence and deviations, approval, requalification |
 | [sops.md](sops.md) | Standard operating procedures as controlled documents: revisions, sign-off, effective dates, periodic review, operator acknowledgement and training, the SOP Training Matrix |
+| [life-sciences.md](life-sciences.md) | Biopharma and medical device manufacturing: NPI stage gates and the Phase Review Discipline (boards, phase reviews, launch readiness), the product requirements document and its trace matrix, MSAT tech transfer packages and comparability, PD simulation (DoE, response surfaces, what-if, design space, scale-up) |
 | [dashboards.md](dashboards.md) | The role workspaces, number cards, dashboard charts and the script reports: OEE by machine, line and shift, downtime Pareto, MTBF and MTTR, suggestion status, outbox health, process throughput, andon response, the maintenance due list |
 | [risk-management.md](risk-management.md) | Enterprise risk management: the risk register, inherent and residual ratings, responses, tolerance and appetite, the hierarchy of controls with verification and effectiveness, templates, links to hazard assessments, PFMEAs, SOPs and maintenance, the daily check, the register and heat map |
 
@@ -48,7 +49,7 @@ Start with [overview.md](overview.md) for what FoaMES records, then [installatio
 | Page | What it covers |
 | --- | --- |
 | [../AGENTS.md](../AGENTS.md) | The guide for coding agents and developers building on or integrating FoaMES: invariants, extension hooks, API surface, tests |
-| [mcp.md](mcp.md) | The MCP server: connecting Claude Desktop, Claude Code or any MCP client with an API key, the 35 tools, permissions, limits |
+| [mcp.md](mcp.md) | The MCP server: connecting Claude Desktop, Claude Code or any MCP client with an API key, the 40 tools, permissions, limits |
 | [agents/floor-agent.md](agents/floor-agent.md) | The playbook for an agent that reads the floor snapshot and raises suggestions, with the MCP tool names |
 | [agents/research-to-code.md](agents/research-to-code.md) | The playbook for turning a public paper into a FoaMES change: sourcing rules, go or no-go triage, data mapping, invariant check, landing zones, test-first from the paper; [research-to-code-example.md](agents/research-to-code-example.md) is a worked run |
 | [agents/discovery/](agents/discovery/README.md) | Discovery skills: one per vendor, for an agent and a plant operator to find out, read-only and safely, how a site's installation is set up (endpoints, versions, objects, auth, tag namespaces) before a connector is configured |

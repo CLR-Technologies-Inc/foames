@@ -1,0 +1,322 @@
+{
+ "actions": [],
+ "creation": "2026-11-15 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "tech_transfer_package",
+  "attribute",
+  "cb_head",
+  "outcome",
+  "reviewed_by",
+  "reviewed_on",
+  "sb_rule",
+  "approach",
+  "limits",
+  "lower",
+  "upper",
+  "cb_rule",
+  "margin",
+  "k",
+  "coverage",
+  "sb_results",
+  "results",
+  "sb_summary",
+  "sending_n",
+  "sending_mean",
+  "sending_sd",
+  "cb_summary",
+  "receiving_n",
+  "receiving_mean",
+  "receiving_sd",
+  "cb_interval",
+  "interval_low",
+  "interval_high",
+  "out_of_spec",
+  "sb_detail",
+  "outcome_detail",
+  "reviewer_comment",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "CMP-.YYYY.-",
+   "default": "CMP-.YYYY.-",
+   "hidden": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "tech_transfer_package",
+   "fieldtype": "Link",
+   "label": "Tech Transfer Package",
+   "options": "Tech Transfer Package",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "attribute",
+   "fieldtype": "Data",
+   "label": "Attribute",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "A quality attribute of the package"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "outcome",
+   "fieldtype": "Select",
+   "label": "Outcome",
+   "options": "\nComparable\nNot Comparable\nInsufficient Data\nDescriptive Only",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "reviewed_by",
+   "fieldtype": "Link",
+   "label": "Reviewed By",
+   "options": "User",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "reviewed_on",
+   "fieldtype": "Datetime",
+   "label": "Reviewed On",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "sb_rule",
+   "fieldtype": "Section Break",
+   "label": "Approach (from the package)"
+  },
+  {
+   "fieldname": "approach",
+   "fieldtype": "Data",
+   "label": "Approach",
+   "read_only": 1
+  },
+  {
+   "fieldname": "limits",
+   "fieldtype": "Data",
+   "label": "Acceptance Limits",
+   "read_only": 1
+  },
+  {
+   "fieldname": "lower",
+   "fieldtype": "Float",
+   "label": "Lower Limit",
+   "read_only": 1
+  },
+  {
+   "fieldname": "upper",
+   "fieldtype": "Float",
+   "label": "Upper Limit",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_rule",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "margin",
+   "fieldtype": "Float",
+   "label": "Equivalence Margin",
+   "read_only": 1
+  },
+  {
+   "fieldname": "k",
+   "fieldtype": "Float",
+   "label": "Quality Range k",
+   "read_only": 1
+  },
+  {
+   "fieldname": "coverage",
+   "fieldtype": "Percent",
+   "label": "Required Coverage",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_results",
+   "fieldtype": "Section Break",
+   "label": "Batch Results"
+  },
+  {
+   "fieldname": "results",
+   "fieldtype": "Table",
+   "label": "Results",
+   "options": "Comparability Result",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sb_summary",
+   "fieldtype": "Section Break",
+   "label": "Summary"
+  },
+  {
+   "fieldname": "sending_n",
+   "fieldtype": "Int",
+   "label": "Sending Batches",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sending_mean",
+   "fieldtype": "Float",
+   "label": "Sending Mean",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sending_sd",
+   "fieldtype": "Float",
+   "label": "Sending SD",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_summary",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "receiving_n",
+   "fieldtype": "Int",
+   "label": "Receiving Batches",
+   "read_only": 1
+  },
+  {
+   "fieldname": "receiving_mean",
+   "fieldtype": "Float",
+   "label": "Receiving Mean",
+   "read_only": 1
+  },
+  {
+   "fieldname": "receiving_sd",
+   "fieldtype": "Float",
+   "label": "Receiving SD",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_interval",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "interval_low",
+   "fieldtype": "Float",
+   "label": "Interval Low",
+   "read_only": 1
+  },
+  {
+   "fieldname": "interval_high",
+   "fieldtype": "Float",
+   "label": "Interval High",
+   "read_only": 1
+  },
+  {
+   "fieldname": "out_of_spec",
+   "fieldtype": "Int",
+   "label": "Receiving Out of Limits",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_detail",
+   "fieldtype": "Section Break",
+   "label": "Detail"
+  },
+  {
+   "fieldname": "outcome_detail",
+   "fieldtype": "Small Text",
+   "label": "Outcome Detail",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reviewer_comment",
+   "fieldtype": "Small Text",
+   "label": "Reviewer Comment"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "options": "Comparability Assessment",
+   "read_only": 1,
+   "no_copy": 1,
+   "print_hide": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Life Sciences",
+ "name": "Comparability Assessment",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "is_submittable": 1,
+ "title_field": "attribute",
+ "show_title_field_in_link": 1,
+ "search_fields": "tech_transfer_package,attribute,outcome",
+ "description": "Comparability of one quality attribute between the sending and the receiving site, judged by the package's approach"
+}

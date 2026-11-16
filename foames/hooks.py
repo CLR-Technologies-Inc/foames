@@ -282,6 +282,8 @@ scheduler_events = {
 		"foames.foames_mes.tasks.compute_daily_oee",
 		# Looks up External References that are still Unverified or Missing in their ERP.
 		"foames.foames_kernel.tasks.refresh_external_references",
+		# Raises suggestions for NPI gates that are due or overdue and for overdue gate conditions.
+		"foames.foames_life_sciences.tasks.check_npi_gates",
 		# Recognizes people for the milestones they reached; does nothing when turned off.
 		"foames.foames_mes.tasks.recognize_milestones",
 		# Raises suggestions for overdue commissioning punch items and packages past their planned handover.

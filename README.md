@@ -97,6 +97,7 @@ The full guide, including roles, the scheduler, running the gateways and a smoke
 | [docs/recognition.md](docs/recognition.md) | Appreciating operators: kudos, credited ideas, milestones and weekly team highlights on the Floor View, with privacy controls |
 | [docs/scheduling.md](docs/scheduling.md) | Finite-capacity production scheduling from shift calendars, maintenance and cycle times, with dispatching rules, a Gantt view and ERP demand |
 | [docs/spc.md](docs/spc.md) | Control charts (I-MR, X-bar R) and Nelson / Western Electric run rules on machine measurements |
+| [docs/life-sciences.md](docs/life-sciences.md) | Biopharma and medical device manufacturing: NPI stage gates and phase reviews, product requirements and tracing, MSAT tech transfer and comparability, PD simulation |
 | [docs/validation.md](docs/validation.md) | Equipment qualification (IQ, OQ, PQ) and process validation (PPQ, CPV) with acceptance criteria, capability from machine data, evidence, deviations and requalification |
 | [docs/dashboards.md](docs/dashboards.md) | Role workspaces, dashboards, number cards and the script reports (OEE trends, downtime Pareto, MTBF and MTTR, suggestions, outbox health, process throughput) |
 | [docs/read-only-mode.md](docs/read-only-mode.md) | Read-only mode (RO mode): connectors read first, every write waits for an operator's electronic sign-off logged against its work order, and the approval path for regulated plants |

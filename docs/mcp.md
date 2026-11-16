@@ -2,7 +2,7 @@
 
 FoaMES speaks the Model Context Protocol (MCP), so an agent in Claude Desktop, Claude Code, Cursor or any other MCP client can read the plant floor and raise suggestions through tools, with no custom integration. The server exposes the public FoaMES API and nothing more: every tool is one whitelisted method that is already callable at `/api/method/...`, run as the user whose API key the agent holds, with that user's permissions.
 
-The 35 tools cover machines and their state, machine events, downtime, OEE, automatic and manual time projections, the floor snapshot, Agent Suggestions, the P&ID tag register and drawings, process mining (event logs, discovery, conformance, export), qualification status and ERP reference reads through whichever adapters are registered on the site. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act. In [read-only mode](read-only-mode.md) a writing tool other than the suggestion tools does not run: the call waits as a Pending Write for a person's electronic sign-off, and the agent is told its name. Three more tools read the mode, the pending writes and the write audit trail, and apps can add tools of their own (the Tulip adapter adds six read-only Tulip tools).
+The 40 tools cover machines and their state, machine events, downtime, OEE, automatic and manual time projections, the floor snapshot, Agent Suggestions, the P&ID tag register and drawings, process mining (event logs, discovery, conformance, export), qualification status, life-sciences programs (NPI status, requirement tracing, tech transfer packages, PD studies, scale-up) and ERP reference reads through whichever adapters are registered on the site. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act. In [read-only mode](read-only-mode.md) a writing tool other than the suggestion tools does not run: the call waits as a Pending Write for a person's electronic sign-off, and the agent is told its name. Three more tools read the mode, the pending writes and the write audit trail, and apps can add tools of their own (the Tulip adapter adds six read-only Tulip tools).
 
 ## Two ways to connect
 
@@ -76,6 +76,9 @@ Permissions are the DocType permissions of the user behind the key, checked by t
 | `foames_get_qualification_status` | read on Validation Execution (Quality, Engineer, Supervisor, Maintenance, Operator) |
 | `foames_list_erp_systems` | any logged-in user |
 | `foames_list_external_references`, `foames_lookup_erp_record` | read on External Reference (System Manager by default) |
+| `foames_get_npi_status` | read on NPI Program (Engineer, Quality, Supervisor, Operator) |
+| `foames_get_requirements_trace`, `foames_get_tech_transfer_package`, `foames_get_pd_study` | read on Product Requirements Document / Tech Transfer Package / PD Simulation Study |
+| `foames_scale_up` | any logged-in user (arithmetic only) |
 
 `foames_get_machine` returns the sections the user may read and leaves the others out, so an Operator sees the machine and its downtime but not sections they lack the role for.
 
@@ -114,6 +117,11 @@ Permissions are the DocType permissions of the user behind the key, checked by t
 | `foames_list_erp_systems()` | Registered adapters, availability, default system, reference types |
 | `foames_list_external_references(erp_system, reference_type, status, limit)` | External References with resolution status |
 | `foames_lookup_erp_record(reference_type, external_id, erp_system)` | One ERP record through its adapter; creates nothing |
+| `foames_get_npi_status(program, include_closed)` | NPI programs: stage, status, next gate, open required deliverables and phase review criteria, phase reviews held, open gate conditions ([life-sciences.md](life-sciences.md)) |
+| `foames_get_requirements_trace(document)` | A product requirements document's trace matrix, gaps and coverage |
+| `foames_get_tech_transfer_package(package)` | CPPs with NOR and PAR, CQAs with limits and comparability outcome, deliverables, what blocks approval |
+| `foames_get_pd_study(study)` | A PD simulation study's factors, runs, fitted models and last what-if |
+| `foames_scale_up(small_volume_l, large_volume_l, impeller_diameter_m, rpm, ...)` | Stirred-vessel scale-up for constant P/V, tip speed, Re and mixing time, with kLa |
 | `foames_get_write_mode()` | Read-only mode, site-wide and per connector, the sign-off role, how many writes wait |
 | `foames_list_pending_writes(status, connector, work_order, job_card, process_run, machine, limit)` | Writes held for sign-off and how they were signed |
 | `foames_get_write_audit_trail(work_order, job_card, process_run, machine, pending_write, connector, limit)` | The Write Audit Log for an order, job, run, machine or connector |
