@@ -3,17 +3,17 @@
 <!-- Copyright (c) 2026 CLR Technologies Inc. and contributors -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
-- **Run dates (UTC):** started 2026-11-16T08:40:57+00:00, last run finished 2026-11-16T20:04:29+00:00
+- **Run dates (UTC):** started 2026-11-16T08:40:57+00:00, last run finished 2026-11-16T20:17:16+00:00
 - **Model:** `nvidia_nim/poolside/laguna-xs-2.1` (oss tier, built for coding), API model id nvidia_nim/poolside/laguna-xs-2.1, called 2026-11-16 (picked from the agent's candidates; the provider may update a model behind an unversioned id)
 - nvidia_nim/poolside/laguna-xs-2.1: HTTP 200
 - **Harness:** aider aider 0.86.1
-- **Where it ran:** GitHub-hosted runner, model on the provider's free API tier; sandbox docker, image `sha256:8c67795b97e9`
-- **FoaMES commit:** `1a844a1fd738`, `46a75d6abb2f`, `711c83b57a8e`, `d3d465fd3689`
+- **Where it ran:** GitHub-hosted runner, model on the provider's free API tier; sandbox docker, image `sha256:7a5da34b8914`
+- **FoaMES commit:** `1a844a1fd738`, `3e0e16e82697`, `46a75d6abb2f`, `711c83b57a8e`, `d3d465fd3689`
 - Aider on NVIDIA Build's free API (NIM, OpenAI-compatible); needs the NVIDIA_API_KEY Actions secret. Model family: coding (Poolside Laguna). The job picks the newest listed id that matches the candidates and answers a test call. About 40 requests a minute, shared by every NVIDIA agent, and NVIDIA logs prompts: send only public benchmark scenarios.
 
 | Runs | Success (95 % CI) | Quality | Correctness | Process | Composite | Mean time | Tokens in / cached / out | Cost | List-price equivalent | ECL reached |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| 28 | 0% (0% to 12%) | 0.16 | 0.21 | 0.10 | 0.12 | 2045 s | 2,657,000 / 0 / 47,658 | $0.00 | n/a | none |
+| 35 | 0% (0% to 10%) | 0.15 | 0.20 | 0.10 | 0.12 | 2212 s | 3,746,000 / 0 / 74,342 | $0.00 | n/a | none |
 
 | Task | ECL | Complexity | Finished (UTC) | Success | Quality | Correctness | Process | Time | Tokens in / out | Exit | Notes |
 | --- | ---: | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
@@ -30,6 +30,13 @@
 | sector-313-textile-mills (rep 1) | - | medium | 2026-11-16T13:45 | fail | 0.10 | 0.15 | 0.04 | 3600 s | 0 / 0 | None | timed out, broke an invariant |
 | sector-314-carpet (rep 1) | - | medium | 2026-11-16T14:06 | fail | 0.10 | 0.15 | 0.04 | 1259 s | 230,000 / 65 | 0 | broke an invariant |
 | sector-315-apparel (rep 1) | - | medium | 2026-11-16T15:09 | fail | 0.11 | 0.15 | 0.06 | 1732 s | 211,000 / 4,000 | 0 | broke an invariant |
+| sector-316-footwear (rep 1) | - | medium | 2026-11-16T15:11 | fail | 0.10 | 0.15 | 0.04 | 1862 s | 211,000 / 97 | 0 | broke an invariant |
+| sector-321-wood (rep 1) | - | medium | 2026-11-16T15:57 | fail | 0.10 | 0.15 | 0.04 | 2701 s | 445,000 / 9,087 | 0 | broke an invariant |
+| sector-322-paper (rep 1) | - | medium | 2026-11-16T16:57 | fail | 0.10 | 0.15 | 0.04 | 3600 s | 0 / 0 | None | timed out, broke an invariant |
+| sector-323-printing (rep 1) | - | medium | 2026-11-16T17:36 | fail | 0.39 | 0.18 | 0.63 | 2347 s | 219,000 / 4,500 | 0 | broke an invariant |
+| sector-324-refining (rep 1) | - | medium | 2026-11-16T18:36 | fail | 0.10 | 0.15 | 0.04 | 3600 s | 0 / 0 | None | timed out, broke an invariant |
+| sector-325-chemicals (rep 1) | - | medium | 2026-11-16T19:36 | fail | 0.10 | 0.15 | 0.04 | 3600 s | 0 / 0 | None | timed out, broke an invariant |
+| sector-3254-pharmaceuticals (rep 1) | - | medium | 2026-11-16T20:17 | fail | 0.10 | 0.15 | 0.04 | 2449 s | 214,000 / 13,000 | 0 | broke an invariant |
 | sector-326-plastics (rep 1) | - | medium | 2026-11-16T14:58 | fail | 0.13 | 0.15 | 0.11 | 1037 s | 220,000 / 3,700 | 0 | broke an invariant |
 | sector-3272-glass (rep 1) | - | medium | 2026-11-16T15:04 | fail | 0.10 | 0.15 | 0.04 | 349 s | 225,000 / 65 | 0 | broke an invariant |
 | sector-3273-cement (rep 1) | - | medium | 2026-11-16T16:04 | fail | 0.10 | 0.15 | 0.04 | 3600 s | 0 / 0 | None | timed out, broke an invariant |

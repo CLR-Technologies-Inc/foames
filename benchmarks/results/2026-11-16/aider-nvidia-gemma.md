@@ -5,15 +5,16 @@
 
 - **Run dates (UTC):** started 2026-11-16T08:46:39+00:00, last run finished 2026-11-16T15:37:42+00:00
 - **Model:** `nvidia_nim/google/gemma-4-31b-it` (oss tier, built for general chat (off-label)), API model id nvidia_nim/google/gemma-4-31b-it, called 2026-11-16 (picked from the agent's candidates; the provider may update a model behind an unversioned id)
+- nvidia_nim/google/gemma-4-31b-it: HTTP 200; API model id nvidia_nim/google/gemma-4-31b-it, called 2026-11-16 (picked from the agent's candidates; the provider may update a model behind an unversioned id)
 - nvidia_nim/google/gemma-4-31b-it: HTTP timeout TimeoutError: The read operation timed out
 - **Harness:** aider aider 0.86.1
 - **Where it ran:** GitHub-hosted runner, model on the provider's free API tier; sandbox docker, image `sha256:1fea8f92849d`
-- **FoaMES commit:** `1a844a1fd738`, `711c83b57a8e`, `90d9f6049e71`, `d3d465fd3689`
+- **FoaMES commit:** `1a844a1fd738`, `3e0e16e82697`, `711c83b57a8e`, `90d9f6049e71`, `d3d465fd3689`
 - Aider on NVIDIA Build's free API (NIM, OpenAI-compatible); needs the NVIDIA_API_KEY Actions secret. Model family: general chat (Google Gemma). The job picks the newest listed id that matches the candidates and answers a test call. About 40 requests a minute, shared by every NVIDIA agent, and NVIDIA logs prompts: send only public benchmark scenarios.
 
 | Runs | Success (95 % CI) | Quality | Correctness | Process | Composite | Mean time | Tokens in / cached / out | Cost | List-price equivalent | ECL reached |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| 28 | 4% (1% to 18%) | 0.20 | 0.26 | 0.15 | 0.16 | 940 s | 116,000 / 0 / 20,749 | $0.00 | n/a | none |
+| 35 | 3% (0% to 14%) | 0.18 | 0.23 | 0.12 | 0.14 | 788 s | 116,000 / 0 / 20,749 | $0.00 | n/a | none |
 
 | Task | ECL | Complexity | Finished (UTC) | Success | Quality | Correctness | Process | Time | Tokens in / out | Exit | Notes |
 | --- | ---: | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
@@ -30,6 +31,13 @@
 | sector-313-textile-mills (rep 1) | - | medium | 2026-11-16T13:24 | fail | 0.10 | 0.15 | 0.04 | 272 s | 0 / 0 | 0 | broke an invariant |
 | sector-314-carpet (rep 1) | - | medium | 2026-11-16T13:28 | fail | 0.10 | 0.15 | 0.04 | 211 s | 0 / 0 | 0 | broke an invariant |
 | sector-315-apparel (rep 1) | - | medium | 2026-11-16T13:38 | fail | 0.10 | 0.15 | 0.04 | 603 s | 0 / 0 | 0 | broke an invariant |
+| sector-316-footwear (rep 1) | - | medium | 2026-11-16T14:46 | fail | 0.10 | 0.15 | 0.04 | 192 s | 0 / 0 | 0 | broke an invariant |
+| sector-321-wood (rep 1) | - | medium | 2026-11-16T14:49 | fail | 0.10 | 0.15 | 0.04 | 193 s | 0 / 0 | 0 | broke an invariant |
+| sector-322-paper (rep 1) | - | medium | 2026-11-16T14:52 | fail | 0.10 | 0.15 | 0.04 | 161 s | 0 / 0 | 0 | broke an invariant |
+| sector-323-printing (rep 1) | - | medium | 2026-11-16T14:59 | fail | 0.10 | 0.15 | 0.04 | 435 s | 0 / 0 | 0 | broke an invariant |
+| sector-324-refining (rep 1) | - | medium | 2026-11-16T15:01 | fail | 0.10 | 0.15 | 0.04 | 90 s | 0 / 0 | 0 | broke an invariant |
+| sector-325-chemicals (rep 1) | - | medium | 2026-11-16T15:02 | fail | 0.10 | 0.15 | 0.04 | 84 s | 0 / 0 | 0 | broke an invariant |
+| sector-3254-pharmaceuticals (rep 1) | - | medium | 2026-11-16T15:04 | fail | 0.10 | 0.15 | 0.04 | 88 s | 0 / 0 | 0 | broke an invariant |
 | sector-326-plastics (rep 1) | - | medium | 2026-11-16T14:57 | fail | 0.10 | 0.15 | 0.04 | 802 s | 0 / 0 | 0 | broke an invariant |
 | sector-3272-glass (rep 1) | - | medium | 2026-11-16T15:05 | fail | 0.10 | 0.15 | 0.04 | 479 s | 0 / 0 | 0 | broke an invariant |
 | sector-3273-cement (rep 1) | - | medium | 2026-11-16T15:10 | fail | 0.10 | 0.15 | 0.04 | 279 s | 0 / 0 | 0 | broke an invariant |

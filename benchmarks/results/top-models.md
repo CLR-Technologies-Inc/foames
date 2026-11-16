@@ -13,7 +13,7 @@ How well each model did as a coding agent on FoaMES manufacturing tasks: repairi
 | 5 | `gemini/gemini-3.8-flash` | aider, Gemini API free tier | - | 6 | 67% (30% to 90%) | none | $0.00 |
 | 6 | `openrouter/thinkingmachines/inkling-2-small:free` | aider, OpenRouter free model | - | 6 | 50% (19% to 81%) | none | $0.00 |
 | 7 | `ollama_chat/gpt-oss:20b` | aider, Ollama on a 4-vCPU CPU runner | reasoning (off-label) | 6 | 17% (3% to 56%) | none | $0.00 |
-| 8 | `nvidia_nim/google/gemma-4-31b-it` | aider, NVIDIA Build free credits | general chat (off-label) | 28 | 4% (1% to 18%) | none | $0.00 |
+| 8 | `nvidia_nim/google/gemma-4-31b-it` | aider, NVIDIA Build free credits | general chat (off-label) | 35 | 3% (0% to 14%) | none | $0.00 |
 | 9 | `nvidia_nim/openai/gpt-oss-20b` | aider, NVIDIA Build free credits | reasoning (off-label) | 35 | 3% (0% to 14%) | none | $0.00 |
 
 \* From the FoaMES agent benchmark, report [2026-11-16](https://github.com/CLR-Technologies-Inc/foames/blob/main/benchmarks/results/2026-11-16/README.md). Read these numbers with care:
