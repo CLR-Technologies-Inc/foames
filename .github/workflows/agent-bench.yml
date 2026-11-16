@@ -17,7 +17,7 @@ on:
     inputs:
       agents:
         description: Comma-separated agent names from benchmarks/agents.json
-        default: aider-ghm-gpt-4.1,aider-ghm-gpt-4.1-mini,aider-ghm-gpt-4o-mini,aider-ollama-qwen2.5-coder-7b,aider-ollama-qwen2.5-coder-3b
+        default: aider-ghm-gpt-4.1,aider-ghm-gpt-4.1-mini,aider-ghm-gpt-4o-mini,aider-ollama-qwen2.5-coder-7b,aider-ollama-qwen2.5-coder-3b,aider-gemini-2.5-flash,aider-groq-gpt-oss-120b,aider-openrouter-qwen3-coder-free,aider-mistral-devstral,aider-cerebras-gpt-oss-120b
       reps:
         description: Repetitions of each task
         default: "1"
@@ -44,17 +44,42 @@ jobs:
       contents: read
       models: read
     steps:
+      - uses: actions/checkout@v4
       - id: plan
         env:
-          AGENTS: ${{ inputs.agents || 'aider-ghm-gpt-4.1,aider-ghm-gpt-4.1-mini,aider-ghm-gpt-4o-mini,aider-ollama-qwen2.5-coder-7b,aider-ollama-qwen2.5-coder-3b' }}
+          AGENTS: ${{ inputs.agents || 'aider-ghm-gpt-4.1,aider-ghm-gpt-4.1-mini,aider-ghm-gpt-4o-mini,aider-ollama-qwen2.5-coder-7b,aider-ollama-qwen2.5-coder-3b,aider-gemini-2.5-flash,aider-groq-gpt-oss-120b,aider-openrouter-qwen3-coder-free,aider-mistral-devstral,aider-cerebras-gpt-oss-120b' }}
+          # Only whether each is set is read here; the values never leave the bench job's sandbox.
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
         run: |
-          python3 -c "import json,os;print('agents='+json.dumps([a.strip() for a in os.environ['AGENTS'].split(',') if a.strip()]))" >> "$GITHUB_OUTPUT"
+          python3 - <<'PY'
+          import json, os
+          cfg = {a["name"]: a for a in json.load(open("benchmarks/agents.json"))["agents"]}
+          wanted = [a.strip() for a in os.environ["AGENTS"].split(",") if a.strip()]
+          run, skipped = [], []
+          for name in wanted:
+              secret = cfg.get(name, {}).get("_secret")
+              (skipped if name not in cfg or (secret and not os.environ.get(secret)) else run).append(name)
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write("agents=" + json.dumps(run) + "\n")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write("Running: " + ", ".join(run) + "\n\n")
+              for name in skipped:
+                  secret = cfg.get(name, {}).get("_secret", "?")
+                  f.write(f"- skipped {name}: " + ("not in agents.json" if name not in cfg else f"no {secret} secret") + "\n")
+          print("run", run, "skipped", skipped)
+          PY
       - name: GitHub Models catalog (what this token can reach)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          curl -sS https://models.github.ai/catalog/models -H "Authorization: Bearer $GH_TOKEN" \
-            -H "Accept: application/vnd.github+json" -o catalog.json || true
+          curl -sS -w '\nHTTP %{http_code}\n' https://models.github.ai/catalog/models \
+            -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" -o catalog.json || true
+          head -c 300 catalog.json; echo
           python3 - <<'PY'
           import json
           try:
@@ -106,12 +131,21 @@ jobs:
         env:
           # Only the GitHub Models agents use it; it can read models and this public repository only.
           OPENAI_API_KEY: ${{ startsWith(matrix.agent, 'aider-ghm-') && secrets.GITHUB_TOKEN || '' }}
+          # Free-tier provider keys, from Actions secrets. Each agent's sandbox passes in only its own.
+          GEMINI_API_KEY: ${{ startsWith(matrix.agent, 'aider-gemini-') && secrets.GEMINI_API_KEY || '' }}
+          GROQ_API_KEY: ${{ startsWith(matrix.agent, 'aider-groq-') && secrets.GROQ_API_KEY || '' }}
+          OPENROUTER_API_KEY: ${{ startsWith(matrix.agent, 'aider-openrouter-') && secrets.OPENROUTER_API_KEY || '' }}
+          MISTRAL_API_KEY: ${{ startsWith(matrix.agent, 'aider-mistral-') && secrets.MISTRAL_API_KEY || '' }}
+          CEREBRAS_API_KEY: ${{ startsWith(matrix.agent, 'aider-cerebras-') && secrets.CEREBRAS_API_KEY || '' }}
           TASKS: ${{ github.event_name == 'push' && 'counter-reset' || inputs.tasks || '' }}
         run: |
           python -m foames_bench validate
           python -m foames_bench run --agents "${{ matrix.agent }}" --reps "${{ inputs.reps || '1' }}" \
             ${TASKS:+--tasks $TASKS} --sandbox docker --out "runs/${{ matrix.agent }}"
           python -m foames_bench report "runs/${{ matrix.agent }}" || true
+          cat "runs/${{ matrix.agent }}/summary.md" >> "$GITHUB_STEP_SUMMARY" || true
+          # The end of each agent transcript, in the log, for debugging a failed run.
+          for f in runs/${{ matrix.agent }}/*/*/rep-*/agent.std*; do echo "::group::$f"; tail -c 6000 "$f"; echo "::endgroup::"; done
           cp ../aider-version.txt ../image-id.txt "runs/${{ matrix.agent }}/"
           cp ../model-info.txt ../ollama-version.txt "runs/${{ matrix.agent }}/" 2>/dev/null || true
       - uses: actions/upload-artifact@v4
@@ -126,7 +160,8 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      # Write only to commit the report back to a claude/ working branch (never to main).
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -148,3 +183,12 @@ jobs:
         with:
           name: bench-report
           path: benchmarks/results
+      - name: Commit the report to the working branch
+        if: startsWith(github.ref_name, 'claude/')
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898499+github-actions[bot]@users.noreply.github.com"
+          git add benchmarks/results
+          git diff --cached --quiet && exit 0
+          git commit -m "Add agent benchmark results from run ${{ github.run_id }}"
+          git pull --rebase origin "${{ github.ref_name }}" && git push origin "HEAD:${{ github.ref_name }}"
