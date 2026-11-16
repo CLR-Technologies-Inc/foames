@@ -229,7 +229,9 @@ def get_material_readiness(machine: str, hours: float = 0) -> dict:
 	frappe.has_permission("Material Queue Entry", "read", throw=True)
 	require_read("Machine", machine)
 	result = material_readiness(machine, float(hours or 0))
-	# material_readiness also serves the scheduler; narrow its rows to what the caller may read.
+	# The verdict is the machine's, over every bin: hiding a dry bin from the caller must not turn
+	# "short" into "ok". Only the rows are narrowed to what the caller may read.
+	ok = result["ok"]
 	bins = set(readable("Lineside Bin", [b["name"] for b in result["short"]]))
 	queues = set(readable("Material Queue", sorted({e["queue"] for e in result["ready"]})))
 	entries = set(
@@ -237,7 +239,7 @@ def get_material_readiness(machine: str, hours: float = 0) -> dict:
 	)
 	result["short"] = [b for b in result["short"] if b["name"] in bins]
 	result["ready"] = [e for e in result["ready"] if e["queue"] in queues and e["name"] in entries]
-	result["ok"] = not result["short"]
+	result["ok"] = ok
 	return result
 
 
