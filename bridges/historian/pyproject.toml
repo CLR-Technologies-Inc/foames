@@ -20,5 +20,5 @@ mssql = ["pyodbc"]               # an Ignition historian on SQL Server (needs th
 foames-historian = "foames_historian.__main__:main"
 
 [build-system]
-requires = ["flit_core >=3.4,<4"]
+requires = ["flit_core >=3.4,<5"]
 build-backend = "flit_core.buildapi"
