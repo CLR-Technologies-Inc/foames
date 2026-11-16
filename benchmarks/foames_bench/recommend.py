@@ -1,8 +1,9 @@
 # Copyright (c) 2026, CLR Technologies Inc. and contributors
 # For license information, please see license.txt
 
-"""Which model tier to start with for a project's TRL and process complexity, and, given benchmark
-results, which of your agents actually qualifies for that cell and at what cost."""
+"""Which model tier to start with for a project's TRL and process complexity, optionally raised by
+the Equipment Complexity Level (ECL) of the machine involved, and, given benchmark results, which of
+your agents actually qualifies for that cell and at what cost."""
 
 import json
 from collections import defaultdict
@@ -12,6 +13,10 @@ from foames_bench.paths import DATA_DIR
 
 TRL_BANDS = ("1-3", "4-6", "7-9")
 COMPLEXITIES = ("low", "medium", "high")
+ECLS = (1, 2, 3, 4, 5)
+TIER_ORDER = ("oss", "baseline", "frontier")
+HUMAN_EXPERT = "Human Expert Recommended"  # ECL 4: one expert
+EXPERT_TEAM = "Expert Team Required"  # ECL 5: a distributed team of experts
 
 
 def load() -> dict:
@@ -34,6 +39,41 @@ def cell(trl: int, complexity: str) -> dict:
 		**data["cells"][band(trl)][complexity],
 		"as_of": data["as_of"],
 	}
+
+
+def ecl_level(ecl: int) -> dict:
+	if ecl not in ECLS:
+		raise ValueError("ECL runs from 1 to 5")
+	return {"ecl": ecl, **load()["ecl"]["levels"][str(ecl)]}
+
+
+def _rank(tier: str | None) -> int:
+	return TIER_ORDER.index(tier) if tier in TIER_ORDER else -1
+
+
+def with_ecl(rec: dict, ecl: int | None) -> dict:
+	"""Apply an ECL to a TRL x complexity cell: the primary tier is raised to the ECL's minimum tier,
+	an alternative below that minimum is dropped, and at ECLs flagged for a human expert the result
+	says so: one expert at ECL 4, a distributed team of experts at ECL 5. At an ECL with no
+	adequate tier, no agent qualifies."""
+	if ecl is None:
+		return rec
+	level = ecl_level(ecl)
+	out = dict(rec, ecl=ecl, ecl_name=level["name"], min_tier=level["min_tier"])
+	out["human_expert_recommended"] = level["human_expert_recommended"]
+	out["human_oversight"] = level.get("human_oversight")
+	if level["min_tier"] is None:
+		out["primary"] = None
+		out["alternative"] = None
+		out["why"] = f"ECL {ecl} ({level['name']}): {level['model_note']} {rec['why']}"
+	else:
+		if _rank(level["min_tier"]) > _rank(rec["primary"]):
+			out["primary"] = level["min_tier"]
+		if rec["alternative"] and _rank(rec["alternative"]) < _rank(level["min_tier"]):
+			out["alternative"] = None
+	if level.get("human_oversight"):
+		out["human_review"] = f"{level['human_oversight']}: {level['oversight_note']} {rec['human_review']}"
+	return out
 
 
 def qualify(rows: list[dict], recommendation: dict) -> list[dict]:
@@ -65,9 +105,11 @@ def qualify(rows: list[dict], recommendation: dict) -> list[dict]:
 				"cost_per_success_usd": round(cost / successes, 4)
 				if cost is not None and successes
 				else None,
+				"below_ecl_tier": _below_ecl_tier(rs[0]["agent_tier"], recommendation),
 				"qualifies": not (wanted - tasks_run)
 				and all_success
-				and quality >= recommendation["min_quality"],
+				and quality >= recommendation["min_quality"]
+				and not _below_ecl_tier(rs[0]["agent_tier"], recommendation),
 			}
 		)
 	ranked.sort(
@@ -78,6 +120,39 @@ def qualify(rows: list[dict], recommendation: dict) -> list[dict]:
 		)
 	)
 	return ranked
+
+
+def _below_ecl_tier(tier: str | None, recommendation: dict) -> bool:
+	"""True when an ECL applies and the agent's tier does not reach its minimum (or no tier does)."""
+	if "ecl" not in recommendation:
+		return False
+	if recommendation["min_tier"] is None:
+		return True
+	return _rank(tier) < _rank(recommendation["min_tier"])
+
+
+def ecl_markdown() -> str:
+	data = load()
+	tiers = data["tiers"]
+	intro = (
+		"Equipment Complexity Level (ECL): the minimum model tier adequate for the equipment, "
+		f"as of {data['as_of']}. A prior, not a benchmark result."
+	)
+	lines = [
+		intro,
+		"",
+		"| ECL | Equipment | Examples | USP <1058> | IEC 61508 | GAMP 5 | Minimum tier | Agent role |",
+		"| --- | --- | --- | --- | --- | --- | --- | --- |",
+	]
+	for n in ECLS:
+		x = data["ecl"]["levels"][str(n)]
+		tier = tiers[x["min_tier"]]["label"] if x["min_tier"] else "none adequate"
+		if x.get("human_oversight"):
+			tier += f", **{x['human_oversight']}**"
+		lines.append(
+			f"| {n} | {x['name']} | {x['examples']} | {x['usp_1058']} | {x['iec_61508']} | {x['gamp_5']} | {tier} | {x['agent_role']} |"
+		)
+	return "\n".join(lines) + "\n"
 
 
 def matrix_markdown() -> str:
@@ -96,4 +171,4 @@ def matrix_markdown() -> str:
 			alt = tiers[x["alternative"]]["label"] if x["alternative"] else "none"
 			cells.append(f"**{tiers[x['primary']]['label']}** (alt: {alt}); min quality {x['min_quality']}")
 		lines.append(f"| {b} | " + " | ".join(cells) + " |")
-	return "\n".join(lines) + "\n"
+	return "\n".join(lines) + "\n\n" + ecl_markdown()
