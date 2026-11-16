@@ -11,7 +11,7 @@ Every agent here is [aider](https://aider.chat) in the benchmark's Docker sandbo
 
 | Agents | Where the model runs | Key |
 | --- | --- | --- |
-| `aider-ollama-*` | Ollama on the runner (4 vCPU, 16 GB, no GPU) | None. Models up to about 20B: Qwen2.5-Coder 7B and 14B, Qwen3 8B and 14B, IBM Granite 3.3 8B, gpt-oss 20b. One job per model and task, with a timeout of ten times the task budget, because quality matters here, not speed. |
+| `aider-ollama-*` | Ollama on the runner (4 vCPU, 16 GB, no GPU) | None. Models up to about 20B: Qwen2.5-Coder 7B and 14B, Qwen3 8B and 14B, IBM Granite 3.3 8B, gpt-oss 20b. One job per model and task, with a timeout of thirteen times the task budget (it still fits the 6-hour job limit) and up to an hour for each model request, because quality matters here, not speed. |
 | `aider-ollama-qwen3-coder-30b`, `aider-ollama-devstral-24b` (and gpt-oss 20b on a GPU) | A free notebook GPU: [notebooks/foames-bench-gpu.ipynb](../notebooks/foames-bench-gpu.ipynb) on Kaggle (T4 x2, about 30 GPU hours a week, runs headless) or Colab (one T4) | A free Kaggle account, phone-verified for GPU and internet. Notebooks have no Docker: the run uses the `unshare` sandbox when allowed and is marked `none` otherwise. |
 
 Every local model here is published under Apache-2.0 by a known publisher (Alibaba Qwen, IBM, OpenAI, Mistral AI). Models with research-only or custom licences are left out.
@@ -48,3 +48,7 @@ Each report folder is named after the date its runs started (`benchmarks/results
 
 A push run whose `run-request.txt` has a `report: raw` line commits only its run files under `benchmarks/results/<date>/runs/`, so it can finish while a longer run is still going without the two rewriting the same README. To rebuild the pages from everything in a day's folder, run `python benchmarks/scripts/publish_results.py --runs benchmarks/results/<date>/runs --out benchmarks/results/<date>`.
 A `collect: <run id> <run id>` line runs no agents: the report job downloads those workflow runs' `run-*` artifacts and adds them to the day's report (with `report: raw`, only the run files). It is how a run whose own report job could not keep its files is added afterwards.
+
+## Why the first local run scored like the no-op agent
+
+In the first full run (2026-11-16, workflow run 43784200629), most local-model jobs sent no tokens back. On 4 CPU cores, reading a prompt of 8,000 to 17,000 tokens took a 7B to 20B model longer than aider's default 600-second request timeout. Aider then cancelled the request and retried it nine times, and it gave up after about 91 minutes with nothing written. The local agents now pass `--timeout 3600`, so a slow answer is waited for instead of retried.
