@@ -1,0 +1,1 @@
+- The README has an agent benchmark results table: one row per model and provider with what it was built for (off-label models marked), pass rate, ECL reached and a link to the dated report, plus the providers skipped and why. The benchmark workflow refreshes it with every report.

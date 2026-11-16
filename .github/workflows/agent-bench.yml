@@ -231,6 +231,8 @@ jobs:
           python benchmarks/scripts/publish_results.py --runs runs --out-root benchmarks/results $RAW \
             --workflow-run "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" | tee report.log
           cat "$(ls -td benchmarks/results/*/ | head -1)README.md" >> "$GITHUB_STEP_SUMMARY" || true
+          # The results table in the repository README, from every dated report.
+          python benchmarks/scripts/readme_status.py
       - uses: actions/upload-artifact@v4
         with:
           name: bench-report
@@ -240,7 +242,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898499+github-actions[bot]@users.noreply.github.com"
-          git add benchmarks/results
+          git add benchmarks/results README.md
           git diff --cached --quiet && exit 0
           git commit -m "Add agent benchmark results from run ${{ github.run_id }}"
           for i in 1 2 3; do git pull --rebase origin "${{ github.ref_name }}" && git push origin "HEAD:${{ github.ref_name }}" && break; sleep 10; done
