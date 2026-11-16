@@ -60,3 +60,10 @@ def check_maintenance_plans():
 	from foames.foames_mes.doctype.maintenance_plan.maintenance_plan import check_maintenance_plans as check
 
 	return check()
+
+
+def check_pfmeas():
+	"""Scheduled daily: compare each Released PFMEA with what the floor recorded and raise suggestions."""
+	from foames.foames_mes.doctype.pfmea.pfmea import check_pfmeas as check
+
+	return check()

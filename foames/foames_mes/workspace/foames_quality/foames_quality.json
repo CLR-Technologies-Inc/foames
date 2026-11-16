@@ -35,7 +35,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Quality",
-   "link_count": 5,
+   "link_count": 8,
    "onboard": 0,
    "type": "Card Break"
   },
@@ -90,6 +90,39 @@
    "label": "SPC Control Chart",
    "link_count": 0,
    "link_to": "SPC Control Chart",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "PFMEA",
+   "link_count": 0,
+   "link_to": "PFMEA",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "PFMEA Risk Register",
+   "link_count": 0,
+   "link_to": "PFMEA Risk Register",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "PFMEA Control Plan",
+   "link_count": 0,
+   "link_to": "PFMEA Control Plan",
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
