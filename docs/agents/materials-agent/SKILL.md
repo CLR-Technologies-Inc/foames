@@ -41,7 +41,6 @@ In full mode, FoaMES's own material check already raises suggestions every 10 mi
 <!-- tools:start -->
 Read: `foames_get_floor_snapshot`, `foames_list_machines`, `foames_get_machine`, `foames_get_equipment_profile`, `foames_list_downtime`, `foames_downtime_by_reason`, `foames_list_downtime_reasons`, `foames_get_oee`, `foames_list_suggestions`, `foames_get_suggestion`. Write (suggest mode only): `foames_post_suggestion`.
 <!-- tools:end -->
-<!-- optional-tools: foames_get_material_status, foames_get_dispatch_list, foames_get_material_readiness, foames_get_write_mode -->
 
 ## Procedure (full mode)
 
