@@ -8,7 +8,7 @@
  "aider-ollama-qwq-32b": "Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet)",
  "aider-ollama-deepseek-r1-32b": "Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet)",
  "aider-ollama-qwen3-30b": "Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet)",
- "aider-nvidia-*": "Queued in Actions since 2026-11-16 04:45 UTC behind the local-model jobs (run 43805934998)",
+ "aider-nvidia-*": "Running in Actions (runs 43805934998 and the 2026-11-16 08:40 UTC rerun with corrected model candidates)",
  "aider-ollama-qwen2.5-coder-7b": "Running in Actions (run 43796612771)",
  "aider-ollama-qwen2.5-coder-14b": "Running in Actions (run 43796612771)",
  "aider-ollama-qwen3-8b": "Running in Actions (run 43796612771)",

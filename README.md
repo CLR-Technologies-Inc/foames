@@ -147,14 +147,18 @@ Each agent runs the same tasks in the [agent benchmark](benchmarks/README.md): t
 
 | Agent | Model | Built for | Report | Tasks run | Pass rate | ECL reached |
 | --- | --- | --- | --- | ---: | ---: | --- |
-| aider-nvidia-deepseek | picked at run time | coding and general | Queued in Actions since 2026-11-16 04:45 UTC behind the local-model jobs (run 43805934998) | - | - | - |
-| aider-nvidia-kimi | picked at run time | agentic coding | Queued in Actions since 2026-11-16 04:45 UTC behind the local-model jobs (run 43805934998) | - | - | - |
-| aider-nvidia-glm | picked at run time | agentic coding | Queued in Actions since 2026-11-16 04:45 UTC behind the local-model jobs (run 43805934998) | - | - | - |
-| aider-nvidia-minimax | picked at run time | agentic coding | Queued in Actions since 2026-11-16 04:45 UTC behind the local-model jobs (run 43805934998) | - | - | - |
-| aider-nvidia-qwen3-coder | picked at run time | coding | Queued in Actions since 2026-11-16 04:45 UTC behind the local-model jobs (run 43805934998) | - | - | - |
-| aider-nvidia-gpt-oss-120b | picked at run time | reasoning (off-label) | Queued in Actions since 2026-11-16 04:45 UTC behind the local-model jobs (run 43805934998) | - | - | - |
-| aider-nvidia-nemotron | picked at run time | reasoning (off-label) | Queued in Actions since 2026-11-16 04:45 UTC behind the local-model jobs (run 43805934998) | - | - | - |
-| aider-nvidia-llama | picked at run time | general chat (off-label) | Queued in Actions since 2026-11-16 04:45 UTC behind the local-model jobs (run 43805934998) | - | - | - |
+| aider-nvidia-deepseek | picked at run time | coding and general | Running in Actions (runs 43805934998 and the 2026-11-16 08:40 UTC rerun with corrected model candidates) | - | - | - |
+| aider-nvidia-kimi | picked at run time | agentic coding | Skipped: NVIDIA Build listed no Kimi model for this key on 2026-11-16 | - | - | - |
+| aider-nvidia-glm | picked at run time | agentic coding | Running in Actions (runs 43805934998 and the 2026-11-16 08:40 UTC rerun with corrected model candidates) | - | - | - |
+| aider-nvidia-minimax | picked at run time | agentic coding | Running in Actions (runs 43805934998 and the 2026-11-16 08:40 UTC rerun with corrected model candidates) | - | - | - |
+| aider-nvidia-qwen3-coder | picked at run time | coding | Skipped: NVIDIA Build listed no Qwen3-Coder model for this key on 2026-11-16 | - | - | - |
+| aider-nvidia-gpt-oss-120b | picked at run time | reasoning (off-label) | Running in Actions (runs 43805934998 and the 2026-11-16 08:40 UTC rerun with corrected model candidates) | - | - | - |
+| aider-nvidia-nemotron | picked at run time | reasoning (off-label) | Running in Actions (runs 43805934998 and the 2026-11-16 08:40 UTC rerun with corrected model candidates) | - | - | - |
+| aider-nvidia-llama | picked at run time | general chat (off-label) | Running in Actions (runs 43805934998 and the 2026-11-16 08:40 UTC rerun with corrected model candidates) | - | - | - |
+| aider-nvidia-mistral-large | picked at run time | general chat (off-label) | Running in Actions (runs 43805934998 and the 2026-11-16 08:40 UTC rerun with corrected model candidates) | - | - | - |
+| aider-nvidia-gemma | picked at run time | general chat (off-label) | Running in Actions (runs 43805934998 and the 2026-11-16 08:40 UTC rerun with corrected model candidates) | - | - | - |
+| aider-nvidia-laguna | picked at run time | coding | Running in Actions (runs 43805934998 and the 2026-11-16 08:40 UTC rerun with corrected model candidates) | - | - | - |
+| aider-nvidia-step | picked at run time | general chat (off-label) | Running in Actions (runs 43805934998 and the 2026-11-16 08:40 UTC rerun with corrected model candidates) | - | - | - |
 
 **Groq, free tier**
 

@@ -4,7 +4,6 @@
 # Optional lines: "agents: a, b", "tasks: x y" (empty: every runner-sized local model, every keyed provider,
 # every pure task), "report: raw" (commit only the run files, for a run that overlaps another) and
 # "collect: <run id> ..." (run no agents; add those workflow runs' results to the report).
-2026-11-16T08:22Z rerun the Gemini spc-ewma-chart task after the free daily quota reset
-agents: aider-gemini-flash
-tasks: spc-ewma-chart
+2026-11-16T08:40Z NVIDIA agents whose candidates were not in the catalogue, plus four more NVIDIA models
+agents: aider-nvidia-deepseek, aider-nvidia-gpt-oss-120b, aider-nvidia-llama, aider-nvidia-mistral-large, aider-nvidia-gemma, aider-nvidia-laguna, aider-nvidia-step
 report: raw
