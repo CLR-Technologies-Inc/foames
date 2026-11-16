@@ -80,6 +80,10 @@ Isolation is one of two defences. The runner also hashes the task folder, the ha
 
 A second suite, `sector-case-study`, has 29 tasks: one per major industrial sector (the NAICS manufacturing subsectors, plus oil and gas, mining and utilities), each built on an improvement reported in a public US government document or record from DOE, EPA or NIST MEP. The agent measures a week before and a week after the change from FoaMES machine events, checks the document's claim against the measurement, and writes the case study up. All of them share one specification and one grader, so results compare across sectors. Run them with `--suite sector-case-study`; `run` without `--suite` or `--tasks` runs only the six tasks above. The sectors, sources and scoring are in [docs/sector-case-studies.md](docs/sector-case-studies.md).
 
+### Manufacturing-data validation
+
+A separate, deterministic track checks FoaMES itself rather than an agent. `foames-bench data` replays public manufacturing datasets through FoaMES's counter, OEE ledger, SPC and process-mining code, and compares each result with a value computed independently from the raw rows. The first three datasets are CNC changeovers, a beverage bottling line, and SECOM semiconductor quality. Datasets are downloaded into a local cache with their license and checksums checked, never vendored. `--synthetic` runs offline on invented data in the same shapes. See [docs/manufacturing-data.md](docs/manufacturing-data.md).
+
 The tasks use only public FoaMES code and invented data. Each one lives in [tasks/](tasks/) with its prompt, an optional setup that plants the defect, hidden tests, and a reference solution. Hidden tests and reference solutions are never copied into the agent's workspace, the [sandbox](#sandbox) keeps the agent from reading them elsewhere, and a run that edits them fails. They are public in this repository, though, so a model trained on it may have seen them; see [docs/methodology.md](docs/methodology.md#contamination).
 
 ## Scoring
@@ -108,13 +112,14 @@ Four agents, six tasks and two repetitions are 48 runs. At an assumed $1 a run t
 benchmarks/
   agents.json              agent command lines, usage parsers, prices, sandbox options
   sandbox/Dockerfile       the image agents run in with --sandbox docker
-  foames_bench/            the harness (cli, runner, workspace, sandbox, agents, grading, scoring, usage, report, recommend)
+  foames_bench/            the harness (cli, runner, workspace, sandbox, agents, grading, scoring, usage, report, recommend, mfgdata)
     stubs/frappe/          a stand-in so FoaMES's pure modules import without a bench
     inspect_eval.py        optional Inspect AI front end (experimental)
   tasks/<id>/              task.json, prompt.md, setup.py, reference.py, hidden/
   tasks/_<family>/         what a family of tasks shares (the sector case studies)
   data/recommendations.json  the TRL x complexity matrix
-  docs/                    methodology, model matrix, writing tasks, sector case studies
+  datasets/manifest.json   public manufacturing datasets for `foames-bench data` (sources, licenses, columns)
+  docs/                    methodology, model matrix, writing tasks, sector case studies, manufacturing data
   tests/                   self-tests of the harness
 ```
 

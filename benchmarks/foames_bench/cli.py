@@ -1,7 +1,7 @@
 # Copyright (c) 2026 CLR Technologies Inc. and contributors
 # SPDX-License-Identifier: Apache-2.0
 
-"""foames-bench: list, validate, run, report and recommend."""
+"""foames-bench: list, validate, run, report and recommend; `data` runs the manufacturing-data track."""
 
 import argparse
 import json
@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from foames_bench import agents as agents_mod
-from foames_bench import grading, recommend, report, runner, sandbox, scoring, workspace
+from foames_bench import grading, mfgdata, recommend, report, runner, sandbox, scoring, workspace
 from foames_bench import tasks as tasks_mod
 from foames_bench.paths import BENCH_ROOT, repo_root
 
@@ -285,6 +285,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 	s = sub.add_parser("matrix", help="print the TRL x complexity matrix and the ECL table")
 	s.set_defaults(fn=cmd_matrix)
+
+	mfgdata.add_parser(sub)
 
 	s = sub.add_parser("estimate", help="pilot budget arithmetic")
 	s.add_argument("--agents", type=int, default=4)
