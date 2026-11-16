@@ -1,0 +1,2 @@
+API model id nvidia_nim/mistralai/mistral-large-4-1t-a52b, called 2026-11-16 (picked from the agent's candidates; the provider may update a model behind an unversioned id)
+- nvidia_nim/mistralai/mistral-large-4-1t-a52b: HTTP 200

@@ -1,0 +1,61 @@
+{
+ "bench_version": "0.1.0",
+ "foames_commit": "711c83b57a8e38310c97f180cb1e6cc0e26c0f20",
+ "source": {
+  "dirty": true,
+  "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "changes": [
+   "?? notes/"
+  ]
+ },
+ "python": "3.12.16",
+ "platform": "Linux-7.0.0-1019-azure-x86_64-with-glibc2.43",
+ "started_at": "2026-11-16T08:49:02+00:00",
+ "reps": 1,
+ "tasks": [
+  "counter-reset",
+  "erp-retry-after",
+  "oee-unknown-time",
+  "process-mining-analysis",
+  "process-spec-network-loss",
+  "sector-211-oil-gas",
+  "sector-212-mining",
+  "sector-2213-wastewater",
+  "sector-311-food",
+  "sector-312-beverage",
+  "sector-313-textile-mills",
+  "sector-314-carpet",
+  "sector-315-apparel",
+  "sector-316-footwear",
+  "sector-321-wood",
+  "sector-322-paper",
+  "sector-323-printing",
+  "sector-324-refining",
+  "sector-325-chemicals",
+  "sector-3254-pharmaceuticals",
+  "sector-326-plastics",
+  "sector-3272-glass",
+  "sector-3273-cement",
+  "sector-331-aluminum",
+  "sector-3315-foundry",
+  "sector-332-forging",
+  "sector-332-machine-shop",
+  "sector-333-machinery",
+  "sector-3344-semiconductors",
+  "sector-335-electrical-equipment",
+  "sector-3361-motor-vehicles",
+  "sector-3364-aerospace",
+  "sector-337-furniture",
+  "sector-3391-medical-devices",
+  "spc-ewma-chart"
+ ],
+ "agents": [
+  {
+   "name": "aider-nvidia-gpt-oss-120b",
+   "model": "nvidia_nim/openai/gpt-oss-20b",
+   "tier": "oss",
+   "harness": "aider",
+   "sandbox": "docker"
+  }
+ ]
+}
