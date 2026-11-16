@@ -67,6 +67,18 @@ class TestUsageParsers(unittest.TestCase):
 		u = usage.parse("gemini-json", out)
 		self.assertEqual((u.input_tokens, u.output_tokens, u.cached_input_tokens), (10, 6, 3))
 
+	def test_aider_lines_are_summed(self):
+		out = (
+			"Tokens: 2.6k sent, 325 received. Cost: $0.00 message, $0.00 session.\n"
+			"Tokens: 9,100 sent, 1.2k cache hit, 1.1k received.\n"
+		)
+		u = usage.parse("aider-text", out)
+		self.assertEqual(
+			(u.input_tokens, u.output_tokens, u.cached_input_tokens, u.turns), (11700, 1425, 1200, 2)
+		)
+		# A zero session cost means aider did not know the price, not that the run was free.
+		self.assertIsNone(u.cost_usd)
+
 	def test_garbage_is_unknown(self):
 		u = usage.parse("claude-json", "not json at all")
 		self.assertIsNone(u.cost_usd)

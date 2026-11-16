@@ -1,0 +1,8 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+# Changing this file on a working branch starts the Agent benchmark workflow there.
+# Optional lines: "agents: a, b", "tasks: x y" (empty: every runner-sized local model, every keyed provider,
+# every pure task), "report: raw" (commit only the run files, for a run that overlaps another) and
+# "collect: <run id> ..." (run no agents; add those workflow runs' results to the report).
+2026-11-16T04:50Z NVIDIA Build agents, now that NVIDIA_API_KEY is set
+agents: aider-nvidia-deepseek, aider-nvidia-kimi, aider-nvidia-glm, aider-nvidia-minimax, aider-nvidia-qwen3-coder, aider-nvidia-gpt-oss-120b, aider-nvidia-nemotron, aider-nvidia-llama

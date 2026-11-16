@@ -1,0 +1,32 @@
+{
+ "bench_version": "0.1.0",
+ "foames_commit": "ac71285e4838cb4a0a76e1c19861e4ca7a00af02",
+ "source": {
+  "dirty": true,
+  "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "changes": [
+   "?? notes/"
+  ]
+ },
+ "python": "3.12.16",
+ "platform": "Linux-7.0.0-1016-aws-x86_64-with-glibc2.43",
+ "started_at": "2026-11-16T01:26:37+00:00",
+ "reps": 1,
+ "tasks": [
+  "counter-reset",
+  "erp-retry-after",
+  "oee-unknown-time",
+  "process-mining-analysis",
+  "process-spec-network-loss",
+  "spc-ewma-chart"
+ ],
+ "agents": [
+  {
+   "name": "aider-openrouter-free",
+   "model": "openrouter/thinkingmachines/inkling-2-small:free",
+   "tier": "oss",
+   "harness": "aider",
+   "sandbox": "docker"
+  }
+ ]
+}

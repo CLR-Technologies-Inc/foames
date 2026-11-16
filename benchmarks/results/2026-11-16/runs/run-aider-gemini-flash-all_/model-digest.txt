@@ -1,0 +1,2 @@
+API model id gemini/gemini-3.8-flash, called 2026-11-16 (picked from the agent's candidates; the provider may update a model behind an unversioned id)
+- gemini/gemini-3.8-flash: HTTP 200

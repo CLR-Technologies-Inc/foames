@@ -1,0 +1,40 @@
+diff --git a/BENCH_NOTES.md b/BENCH_NOTES.md
+new file mode 100644
+index 0000000..460a14a
+--- /dev/null
++++ b/BENCH_NOTES.md
+@@ -0,0 +1 @@
++Reference solution. counter_delta treated a drop in the running total as a new count from zero, so the restart added the post-restart total as production. A drop is now a reset or an out-of-order reading and yields zero, as AGENTS.md invariant 3 says; a wrap is counted only when the rollover is known. The parts made between the restart and the next reading cannot be recovered from the counter alone and are not invented.
+diff --git a/foames/foames_mes/counters.py b/foames/foames_mes/counters.py
+index 8d9e51f..5d51621 100644
+--- a/foames/foames_mes/counters.py
++++ b/foames/foames_mes/counters.py
+@@ -28,8 +28,8 @@ def counter_delta(previous: float | None, current: float, rollover: int | float
+ 	if rollover and rollover > 0 and previous <= rollover:
+ 		# The counter wrapped: count up to the rollover, then from zero.
+ 		return float(rollover - previous + current)
+-	# The counter restarted from zero: count what it has made since.
+-	return float(current)
++	# A reset or an out-of-order reading. Nothing is invented.
++	return 0.0
+ 
+ 
+ def minutes_between(start, end) -> float:
+diff --git a/foames/foames_mes/test_counter_reset.py b/foames/foames_mes/test_counter_reset.py
+new file mode 100644
+index 0000000..fe73b68
+--- /dev/null
++++ b/foames/foames_mes/test_counter_reset.py
+@@ -0,0 +1,12 @@
++import unittest
++
++from foames.foames_mes.counters import counter_delta
++
++
++class TestCounterReset(unittest.TestCase):
++	def test_reset_counts_nothing(self):
++		self.assertEqual(counter_delta(48112, 0), 0.0)
++		self.assertEqual(counter_delta(48112, 37), 0.0)
++
++	def test_known_rollover_still_wraps(self):
++		self.assertEqual(counter_delta(65530, 4, rollover=65535), 9.0)
