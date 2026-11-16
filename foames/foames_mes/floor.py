@@ -73,11 +73,14 @@ def floor_snapshot(days: int = 1, for_user: bool = False) -> dict:
 		else {}
 	)
 	andon = record_scope.filter_rows(open_andon_calls(now), allowed) if may_read("Andon Call") else []
-	runs = record_scope.filter_rows(active_runs(now), allowed) if may_read("Work Instruction Run") else []
+	runs = (
+		record_scope.filter_rows(active_runs(now, for_user=for_user), allowed)
+		if may_read("Work Instruction Run")
+		else []
+	)
 	if for_user:
-		# The rows come from queries that skip permissions; keep the records the reader may open.
+		# Andon calls come from a query that skips permissions; keep the calls the reader may open.
 		andon = _readable_rows("Andon Call", andon)
-		runs = _readable_rows("Work Instruction Run", runs)
 	read_counts = may_read("Machine Event")
 	read_oee = may_read("OEE Period")
 	for m in machines:

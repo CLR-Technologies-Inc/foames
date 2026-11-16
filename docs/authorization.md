@@ -18,6 +18,7 @@ A User Permission limited to other DocTypes ("Applicable For") does not restrict
 | Surface | Scope |
 | --- | --- |
 | `get_floor_snapshot` (Floor View, the API, the MCP tool `foames_get_floor_snapshot`) | The reader's machines. Counts need read on Machine Event, OEE on OEE Period, downtime on Downtime Record, the ERP job on External Reference (without it, the snapshot says only that a job is set). Suggestions, Andon Calls, Work Instruction Runs, recognitions and every section an extension adds are scrubbed of other machines (`record_scope.scrub`). `snapshot["scope"]` names the reader and their machines. |
+| `list_active_runs` (Work Instruction Runs) | The runs the reader may read, through `frappe.get_list`, before any step detail is loaded; a named machine outside their area is refused like a missing one. |
 | The MCP read tools (`foames.foames_mcp.reads`) | `frappe.get_list` for every list. A single record is read through `access.require_read`, which raises the same error for a record that does not exist and one the reader may not read, so an error never confirms that a record outside the reader's area exists. |
 | `get_qualification_status`, the Qualification Status report | Only protocols and executions the reader may read, and no row for a machine outside their area. |
 | `get_material_status`, `get_material_readiness`, `get_dispatch_list` | The reader's bins and queues; a named machine or queue outside their area is refused like a missing one. Readiness keeps the machine's verdict: a short bin the reader cannot see still makes `ok` false. |

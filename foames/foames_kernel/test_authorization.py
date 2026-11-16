@@ -111,6 +111,24 @@ class TestRecordScope(IntegrationTestCase):
 			with self.assertRaises(frappe.PermissionError):
 				get_material_status(machine=AREA_B)
 
+	def test_active_runs_keep_to_the_runs_a_reader_may_read(self):
+		from foames.foames_mes.doctype.work_instruction_run.test_work_instruction_run import make_instruction
+		from foames.foames_mes.doctype.work_instruction_run.work_instruction_run import (
+			list_active_runs,
+			start_run,
+		)
+
+		instruction = make_instruction("T-AUTH-WI").name
+		mine, other = (start_run(instruction, AREA_A)["name"] for _ in range(2))
+		add_user_permission("Work Instruction Run", mine, READER_A)
+		with as_user(READER_A):
+			self.assertEqual([r.name for r in list_active_runs(AREA_A)], [mine])
+			self.assertEqual([r.name for r in list_active_runs()], [mine])
+			snapshot = get_floor_snapshot()
+			with self.assertRaises(frappe.PermissionError):
+				list_active_runs(AREA_B)
+		self.assertEqual({r["name"] for r in snapshot["work_instruction_runs"]} & {mine, other}, {mine})
+
 	def test_validation_status_keeps_to_the_area(self):
 		make_protocol("IQ", machine=AREA_A, title="IQ of A")
 		make_protocol("IQ", machine=AREA_B, title="IQ of B")
