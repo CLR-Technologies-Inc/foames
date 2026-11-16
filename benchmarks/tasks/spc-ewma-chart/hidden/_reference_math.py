@@ -1,3 +1,6 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """An independent EWMA computation the hidden tests compare against."""
 
 import itertools

@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Grade a finished run: hidden tests by group, the repository's own tests as regressions, the
 tests the agent wrote, the scope of its change, purity of pure modules, and a written rubric for

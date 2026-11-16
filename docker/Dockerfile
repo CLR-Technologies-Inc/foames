@@ -1,9 +1,12 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 # Development bench for FoaMES tests.
 #
 # One image with Python, Node, Yarn, a MariaDB client and frappe-bench. The bench itself is created
 # at first start by scripts/setup-bench.sh into the bench-data volume, so this image never has to be
 # rebuilt when Frappe, ERPNext or FoaMES change. Rebuild it only to change the Python or Node version.
-ARG PYTHON_VERSION=3.12
+ARG PYTHON_VERSION=3.14
 ARG NODE_VERSION=24
 
 FROM node:${NODE_VERSION}-bookworm-slim AS node

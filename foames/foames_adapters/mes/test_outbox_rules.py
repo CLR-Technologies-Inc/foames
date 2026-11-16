@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """The shared outbox rules: the generic request in its three idempotency kinds, profile
 operations, the verify-first search and the outcome of every kind of answer. No Frappe site needed."""

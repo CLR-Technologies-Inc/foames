@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """A clean copy of FoaMES for one run. The copy leaves out benchmarks/ (so the hidden tests and the
 reference solutions stay out of the agent's reach) and the original git history (so the task's

@@ -1,3 +1,6 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 # Development bench for FoaMES: Frappe on MariaDB and Redis, with ERPNext optional.
 #
 #   cp .env.example .env          # pick the Frappe branch, Python, Node, MariaDB and ERPNext
@@ -48,9 +51,9 @@ services:
     build:
       context: .
       args:
-        PYTHON_VERSION: ${PYTHON_VERSION:-3.12}
+        PYTHON_VERSION: ${PYTHON_VERSION:-3.14}
         NODE_VERSION: ${NODE_VERSION:-24}
-    image: foames-dev-bench:py${PYTHON_VERSION:-3.12}-node${NODE_VERSION:-24}
+    image: foames-dev-bench:py${PYTHON_VERSION:-3.14}-node${NODE_VERSION:-24}
     depends_on:
       mariadb:
         condition: service_healthy

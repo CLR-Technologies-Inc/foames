@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Posting rules for the ERPNext outbox: which operations exist, what each needs, how a posting is
 made idempotent, how an error is classified and when a failed posting is retried.

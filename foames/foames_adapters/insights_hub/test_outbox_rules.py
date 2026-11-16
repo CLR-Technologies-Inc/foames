@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """The outbox rules on their own: markers, prepared payloads, the verify-first search and the
 outcome of every kind of answer. No Frappe site needed."""

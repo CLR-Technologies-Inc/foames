@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Reads of what the floor needs from S/4HANA: an order with its operations, components and
 status; the confirmations and goods movements already posted for it; a routing with its
