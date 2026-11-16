@@ -60,3 +60,10 @@ def check_maintenance_plans():
 	from foames.foames_mes.doctype.maintenance_plan.maintenance_plan import check_maintenance_plans as check
 
 	return check()
+
+
+def check_material_flow():
+	"""Scheduled every 10 minutes: lineside stock, the line-dry forecast and material queues."""
+	from foames.foames_mes.material_flow import check_material_flow as check
+
+	return check()

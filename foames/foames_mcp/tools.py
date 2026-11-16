@@ -74,7 +74,16 @@ WINDOW_AND_SOURCES = {
 
 MACHINE_STATES = ["Unknown", "Running", "Idle", "Down", "Setup"]
 EVENT_TYPES = ["State", "Count", "Measurement", "Alarm", "Message"]
-SUGGESTION_CATEGORIES = ["Yield", "Downtime", "Quality", "Release", "Machine Data", "ERP", "Other"]
+SUGGESTION_CATEGORIES = [
+	"Yield",
+	"Downtime",
+	"Quality",
+	"Release",
+	"Machine Data",
+	"ERP",
+	"Material",
+	"Other",
+]
 SEVERITIES = ["Info", "Warning", "Critical"]
 SUGGESTION_STATUSES = ["Open", "Accepted", "Dismissed", "Done"]
 REFERENCE_STATUSES = ["Unverified", "Resolved", "Missing"]
@@ -187,6 +196,38 @@ TOOLS: list[Tool] = [
 		description="The whole floor as one object: every enabled machine with its state, counts over the window, minutes since its last count and latest OEE; downtime per machine with the top reason; ERP references that resolved as Missing; open suggestions; and any section another app adds. Needs read on Machine.",
 		method=f"{MES_API}.get_floor_snapshot",
 		input_schema=_schema({"days": _i("Window in days (default 1)", minimum=1, maximum=90)}),
+	),
+	# Material flow -------------------------------------------------------------------------
+	Tool(
+		name="foames_get_material_status",
+		title="Material status",
+		description="Lineside bins and material queues as last checked, for the floor or one machine: estimated stock on hand, use per hour, hours until the line runs dry, the quantity to call for, queue waiting and ready counts, and each material's MPC level (Material Processing Complexity 1-5). The ERP stays the inventory system of record; this is FoaMES's lineside view. Needs read on Lineside Bin and Material Queue.",
+		method=f"{MES_API}.get_material_status",
+		input_schema=_schema({"machine": MACHINE}),
+	),
+	Tool(
+		name="foames_get_dispatch_list",
+		title="Material dispatch list",
+		description="Material that may start now in one queue, in the order the queue's dispatch rule (FIFO, Priority, Earliest Due, Earliest Expiry) picks it. Leaves out entries still in their minimum wait, past their queue-time limit, expired or on hold; those need a person's decision. Needs read on Material Queue Entry.",
+		method=f"{MES_API}.get_dispatch_list",
+		input_schema=_schema({"queue": _s("Material Queue name")}, ["queue"]),
+	),
+	Tool(
+		name="foames_get_material_readiness",
+		title="Material readiness",
+		description="Whether a machine has the material to run for the next hours: lineside bins that run dry inside the window (or are dry now) and queue entries ready to start. Use it before suggesting what a machine should start. Needs read on Lineside Bin and Material Queue Entry.",
+		method=f"{MES_API}.get_material_readiness",
+		input_schema=_schema(
+			{
+				"machine": MACHINE,
+				"hours": {
+					"type": "number",
+					"description": "Window in hours (default 0: now only)",
+					"minimum": 0,
+				},
+			},
+			["machine"],
+		),
 	),
 	Tool(
 		name="foames_list_suggestions",

@@ -1,0 +1,318 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-16 00:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "queue",
+  "machine",
+  "status",
+  "readiness",
+  "cb_head",
+  "item",
+  "batch",
+  "quantity",
+  "uom",
+  "job_reference",
+  "sb_dispatch",
+  "priority",
+  "due_at",
+  "cb_dispatch",
+  "material_profile",
+  "mpc_level",
+  "sb_time",
+  "arrived_at",
+  "min_wait_minutes",
+  "max_wait_minutes",
+  "expires_at",
+  "cb_time",
+  "ready_at",
+  "limit_at",
+  "started_at",
+  "finished_at",
+  "sb_decisions",
+  "hold_reason",
+  "override_reason",
+  "cb_decisions",
+  "expert_review"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "MQE-.YYYY.-.#####",
+   "default": "MQE-.YYYY.-.#####",
+   "hidden": 1
+  },
+  {
+   "fieldname": "queue",
+   "fieldtype": "Link",
+   "label": "Queue",
+   "options": "Material Queue",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "read_only": 1,
+   "fetch_from": "queue.machine",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Waiting\nIn Process\nOn Hold\nDone\nWithdrawn",
+   "default": "Waiting",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "readiness",
+   "fieldtype": "Select",
+   "label": "Readiness",
+   "options": "Conditioning\nReady\nQ-time Warning\nQ-time Exceeded\nExpired\nOn Hold\nIn Process",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Data",
+   "label": "Item",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "The item code in the ERP"
+  },
+  {
+   "fieldname": "batch",
+   "fieldtype": "Data",
+   "label": "Lot or Batch",
+   "description": "The lot or batch id in the ERP, when there is one"
+  },
+  {
+   "fieldname": "quantity",
+   "fieldtype": "Float",
+   "label": "Quantity"
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Data",
+   "label": "Unit"
+  },
+  {
+   "fieldname": "job_reference",
+   "fieldtype": "Data",
+   "label": "Job",
+   "description": "The work order, job card or order operation this material is for, as the ERP names it"
+  },
+  {
+   "fieldname": "sb_dispatch",
+   "fieldtype": "Section Break",
+   "label": "Dispatch"
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Int",
+   "label": "Priority",
+   "default": "0",
+   "description": "Higher starts first under the Priority rule"
+  },
+  {
+   "fieldname": "due_at",
+   "fieldtype": "Datetime",
+   "label": "Due At"
+  },
+  {
+   "fieldname": "cb_dispatch",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "material_profile",
+   "fieldtype": "Link",
+   "label": "Material Handling Profile",
+   "options": "Material Handling Profile"
+  },
+  {
+   "fieldname": "mpc_level",
+   "fieldtype": "Int",
+   "label": "MPC Level",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_time",
+   "fieldtype": "Section Break",
+   "label": "Queue time"
+  },
+  {
+   "fieldname": "arrived_at",
+   "fieldtype": "Datetime",
+   "label": "Arrived At",
+   "reqd": 1,
+   "default": "Now"
+  },
+  {
+   "fieldname": "min_wait_minutes",
+   "fieldtype": "Float",
+   "label": "Minimum Wait (minutes)",
+   "description": "Cure, degas, cool or thaw time before it may start"
+  },
+  {
+   "fieldname": "max_wait_minutes",
+   "fieldtype": "Float",
+   "label": "Maximum Wait (minutes)",
+   "description": "Queue-time limit (Q-time), hold time, floor life or out-time left when it arrived. 0 means none."
+  },
+  {
+   "fieldname": "expires_at",
+   "fieldtype": "Datetime",
+   "label": "Expires At",
+   "description": "Shelf-life or retest date of the lot"
+  },
+  {
+   "fieldname": "cb_time",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ready_at",
+   "fieldtype": "Datetime",
+   "label": "Ready At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "limit_at",
+   "fieldtype": "Datetime",
+   "label": "Queue-time Limit At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "started_at",
+   "fieldtype": "Datetime",
+   "label": "Started At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "finished_at",
+   "fieldtype": "Datetime",
+   "label": "Finished At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_decisions",
+   "fieldtype": "Section Break",
+   "label": "Holds and decisions"
+  },
+  {
+   "fieldname": "hold_reason",
+   "fieldtype": "Small Text",
+   "label": "Hold Reason",
+   "depends_on": "eval:doc.status=='On Hold'"
+  },
+  {
+   "fieldname": "override_reason",
+   "fieldtype": "Small Text",
+   "label": "Start Past Limit: Reason",
+   "description": "Needed to start material past its queue-time limit or expiry. Only FoaMES Quality or FoaMES Engineer can give it."
+  },
+  {
+   "fieldname": "cb_decisions",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "expert_review",
+   "fieldtype": "Small Text",
+   "label": "Expert Review",
+   "description": "Who reviewed the handling before start. Needed for MPC 5 material; recommended for MPC 4."
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-16 00:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Material Queue Entry",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "item",
+ "search_fields": "queue,item,batch,job_reference",
+ "description": "Material waiting in a queue in front of a machine, with its minimum and maximum wait",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Integration",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ]
+}

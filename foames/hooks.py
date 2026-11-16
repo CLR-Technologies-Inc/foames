@@ -125,6 +125,8 @@ doc_events["Job Card"] = {
 foames_floor_snapshot_extensions = [
 	"foames.foames_adapters.erpnext.floor.extend_snapshot",
 	"foames.foames_adapters.erpnext.rollup.mark_current_job_cards",
+	# Lineside bins and material queues, and each machine's hours to dry.
+	"foames.foames_mes.material_flow.extend_snapshot",
 ]
 foames_suggestion_rules = [
 	"foames.foames_adapters.erpnext.floor.running_without_job_card",
@@ -141,6 +143,17 @@ foames_machine_job_changed = [
 foames_machine_state_changed = [
 	"foames.foames_adapters.erpnext.workstation.on_state_changed",
 	"foames.foames_adapters.insights_hub.rollup.on_state_changed",
+]
+
+# Material flow
+# -------------
+# Lineside stock is read from the ERP, never written. Each stock reader is called with (item, location)
+# and returns a dict with at least actual_qty, or None when it does not know the item; the first answer
+# wins. The ERPNext adapter reads its Bin table.
+# foames_stock_readers = ["myapp.stock.read_stock"]
+
+foames_stock_readers = [
+	"foames.foames_adapters.erpnext.stock.read_stock",
 ]
 
 # Process mining
@@ -176,6 +189,9 @@ scheduler_events = {
 			"foames.foames_adapters.erpnext.rollup.roll_up_all",
 			"foames.foames_adapters.s4hana.rollup.roll_up_all",
 			"foames.foames_adapters.insights_hub.rollup.roll_up_all",
+			# Reads lineside stock, forecasts when each line runs dry, keeps queue readiness current and
+			# raises suggestions for bins running dry, queue-time limits, starved machines and full buffers.
+			"foames.foames_mes.tasks.check_material_flow",
 		],
 	},
 	"hourly": [
