@@ -141,8 +141,10 @@ def eligibility(tier: str | None, ecl) -> dict:
 		return {
 			**out,
 			"eligible": False,
-			"reason": f"No model tier is adequate at ECL {info['ecl']}: {EXPERT_TEAM}. "
-			"An agent may only list options for the expert team",
+			"reason": (
+				f"No model tier is adequate at ECL {info['ecl']}: {EXPERT_TEAM}. "
+				+ "An agent may only list options for the expert team"
+			),
 		}
 	if tier is None:
 		return {
