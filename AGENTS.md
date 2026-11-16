@@ -10,7 +10,7 @@ FoaMES is an ERP-agnostic manufacturing execution system built as a single Frapp
 
 | Module | Package | Holds |
 | --- | --- | --- |
-| FoaMES Kernel | `foames/foames_kernel` | `External Reference`, `FoaMES Settings` |
+| FoaMES Kernel | `foames/foames_kernel` | `External Reference`, `FoaMES Settings`, read-only mode: `Connector Write Policy`, `Pending Write`, `Write Audit Log`, the write gate (`write_gate.py`) and its pure rules (`write_policy.py`) |
 | FoaMES MES | `foames/foames_mes` | Machine, Machine Event, Downtime Reason and Record, Machine Data Settings, Shift Pattern, OEE Period, Agent Suggestion, Andon Call and Call Type, Maintenance Plan and Work Order, Cycle Time Standard, Recognition and its settings, Work Instruction and Work Instruction Run, PFMEA, Production Schedule and Scheduled Operation, Standard Operating Procedure and SOP Acknowledgement, the Floor View page, the gateways, the API |
 | FoaMES Adapters | `foames/foames_adapters` | The adapter contract and registry, one subpackage per vendor (each with its own `AGENTS.md`), the shared Integration workspace |
 | FoaMES Commissioning | `foames/foames_commissioning` | Commissioning Package, Commissioning Checklist Template, Commissioning Test, Loop Check, Punch Item, the Punch List and Commissioning Status reports, handover readiness |
@@ -31,9 +31,9 @@ Keep these whatever you build. A pull request that breaks one will not be merged
 2. **Adapters are registered, not hard-wired.** New ERPs come through the `foames_erp_adapters` hook and subclass `foames.foames_adapters.base.ERPAdapter`. See [docs/adapters.md](docs/adapters.md#writing-an-adapter-for-another-erp) and [foames/foames_adapters/AGENTS.md](foames/foames_adapters/AGENTS.md).
 3. **Counters never invent production.** Machines send running totals; FoaMES stores the delta against the previous reading of the same counter. A first reading, a reset, or an out-of-order reading yields zero; a wrap is counted only when the machine's Counter Rollover is known. The rules are in `foames/foames_mes/counters.py`.
 4. **Unknown time is loss.** The OEE ledger is built from state events with Downtime Records overlaid, and an Unknown state is never run time. A machine that stops reporting gets an Unknown state event from the scheduler's staleness check (source System), and the Sparkplug gateway writes one at once on NDEATH or DDEATH. Do not add code that infers output or run time from the absence of events.
-5. **Agents suggest; people act.** Anything an agent or a rule finds becomes an `Agent Suggestion` with evidence. FoaMES does not write tags, send commands to SCADA, change machine state on its own, or post to an ERP without an explicit, idempotent posting a person configured.
+5. **Agents suggest; people act.** Anything an agent or a rule finds becomes an `Agent Suggestion` with evidence. FoaMES does not write tags, send commands to SCADA, change machine state on its own, or post to an ERP without an explicit, idempotent posting a person configured. Every write to another system, and every write an agent or connector makes, passes the read-only gate (`foames_kernel/write_gate.py`, see [docs/read-only-mode.md](docs/read-only-mode.md)): add a new write path behind it, never around it.
 6. **Postings to an ERP are idempotent and sequenced.** An idempotency key per business event, a marker written into the created document, a check before resending after an unclear answer, exponential backoff, strict order within a sequence group. The adapters' outboxes are the model; the details are in [foames/foames_adapters/AGENTS.md](foames/foames_adapters/AGENTS.md). Follow it for any new write path.
-7. **Pure logic stays pure.** `oee.py`, `counters.py`, `shifts.py`, `andon.py`, `recognition.py`, `suggestions.py`, `maintenance.py`, `cycle_time.py`, `foames_commissioning/commissioning.py`, `work_instructions.py`, `pfmea.py`, `scheduling.py`, `sop.py`, `signing.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, `foames_ehs/ehs.py`, the process-mining core, `foames_pid/isa51.py`, `dexpi.py`, `svg.py`, `linking.py`, `register.py`, `overlay.py`, `foames_validation/qualification.py` and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe, and so do the arithmetic, parsing and protocol modules of each adapter (each vendor's `AGENTS.md` lists its own). Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
+7. **Pure logic stays pure.** `foames_kernel/write_policy.py`, `oee.py`, `counters.py`, `shifts.py`, `andon.py`, `recognition.py`, `suggestions.py`, `maintenance.py`, `cycle_time.py`, `foames_commissioning/commissioning.py`, `work_instructions.py`, `pfmea.py`, `scheduling.py`, `sop.py`, `signing.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, `foames_ehs/ehs.py`, the process-mining core, `foames_pid/isa51.py`, `dexpi.py`, `svg.py`, `linking.py`, `register.py`, `overlay.py`, `foames_validation/qualification.py` and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe, and so do the arithmetic, parsing and protocol modules of each adapter (each vendor's `AGENTS.md` lists its own). Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
 8. **Secrets live in Password fields** of a Settings DocType (`Machine Data Settings`, or the adapter's own Settings), read with `get_password`. Never in code, hooks or site config, never logged.
 9. **Both Frappe versions.** Use `foames.tests_compat.IntegrationTestCase` for site tests. Avoid APIs that exist in only one of v15 and v16.
 
@@ -53,7 +53,9 @@ foames/
   hooks.py                    app hooks: adapters, scheduler events, extension hook names
   install.py                  creates the six FoaMES roles before DocTypes are synced
   tests_compat.py             IntegrationTestCase that works on v15 and v16
-  foames_kernel/doctype/      External Reference (get_reference, make_reference_key), FoaMES Settings
+  foames_kernel/doctype/      External Reference (get_reference, make_reference_key), FoaMES Settings,
+                              Connector Write Policy, Pending Write, Write Audit Log
+  foames_kernel/write_gate.py the read-only gate every write passes; write_policy.py its pure rules
   foames_mes/
     api.py                    ingest_machine_events, get_floor_snapshot, run_suggestion_rules, post_suggestion
     floor.py                  floor_snapshot, collect_findings
@@ -141,6 +143,9 @@ All of them are Frappe hooks: another app lists dotted paths in its own `hooks.p
 | `foames_floor_snapshot_extensions` | `(snapshot: dict, since, now)`, mutate in place | Add a section to the floor snapshot, so the page, the rules and external agents see it |
 | `foames_suggestion_rules` | `(snapshot: dict) -> list[dict]` | Add rules; each finding dict needs `rule_key`, `title`, `category`, `suggestion`, `severity`, optional `reference_doctype`, `reference_name`, `evidence` |
 | `foames_process_event_extractors` | `(since, until)`, returns an iterable of `foames.foames_process_mining.eventlog.Event` | Add your own records to the process-mining event log |
+| `foames_write_gated_outboxes` | (dict: outbox DocType -> connector key or `field:<fieldname>`) | Put an outbox behind the read-only gate; its `claim` calls `write_gate.outbox_may_send(doc)` |
+| `foames_write_actions` | (dict: action key -> dotted path) | Register a write that is not an outbox posting, to be requested with `write_gate.request_write` |
+| `foames_mcp_tools` | `() -> list[foames.foames_mcp.protocol.Tool]` | Add tools to the MCP server |
 | `foames_commissioning_readiness_checks` | `(package_doc) -> list[dict]` of blockers with `kind`, `reference`, `message` | Hold a Commissioning Package's handover back on your own conditions |
 | `foames_commissioning_handed_over` | `(package_doc)` after the package is handed over | Start what follows commissioning, for example a qualification (IQ/OQ/PQ) record, and link it in the package's Qualification fields |
 | `foames_schedule_demand_sources` | `(start, end, line) -> list[dict]` of Production Schedule Job values | Fill a Production Schedule's rows from an ERP or a planning tool (Get Operations) |

@@ -2,7 +2,7 @@
 
 FoaMES speaks the Model Context Protocol (MCP), so an agent in Claude Desktop, Claude Code, Cursor or any other MCP client can read the plant floor and raise suggestions through tools, with no custom integration. The server exposes the public FoaMES API and nothing more: every tool is one whitelisted method that is already callable at `/api/method/...`, run as the user whose API key the agent holds, with that user's permissions.
 
-The 32 tools cover machines and their state, machine events, downtime, OEE, automatic and manual time projections, the floor snapshot, Agent Suggestions, the P&ID tag register and drawings, process mining (event logs, discovery, conformance, export), qualification status and ERP reference reads through whichever adapters are registered on the site. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act.
+The 35 tools cover machines and their state, machine events, downtime, OEE, automatic and manual time projections, the floor snapshot, Agent Suggestions, the P&ID tag register and drawings, process mining (event logs, discovery, conformance, export), qualification status and ERP reference reads through whichever adapters are registered on the site. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act. In [read-only mode](read-only-mode.md) a writing tool other than the suggestion tools does not run: the call waits as a Pending Write for a person's electronic sign-off, and the agent is told its name. Three more tools read the mode, the pending writes and the write audit trail, and apps can add tools of their own (the Tulip adapter adds six read-only Tulip tools).
 
 ## Two ways to connect
 
@@ -114,6 +114,10 @@ Permissions are the DocType permissions of the user behind the key, checked by t
 | `foames_list_erp_systems()` | Registered adapters, availability, default system, reference types |
 | `foames_list_external_references(erp_system, reference_type, status, limit)` | External References with resolution status |
 | `foames_lookup_erp_record(reference_type, external_id, erp_system)` | One ERP record through its adapter; creates nothing |
+| `foames_get_write_mode()` | Read-only mode, site-wide and per connector, the sign-off role, how many writes wait |
+| `foames_list_pending_writes(status, connector, work_order, job_card, process_run, machine, limit)` | Writes held for sign-off and how they were signed |
+| `foames_get_write_audit_trail(work_order, job_card, process_run, machine, pending_write, connector, limit)` | The Write Audit Log for an order, job, run, machine or connector |
+| `foames_tulip_*` (registered by the Tulip adapter) | Tulip tables, table records and counts, machines and stations, read through Tulip's API ([vendors/tulip](vendors/tulip/README.md)) |
 
 Every tool carries its input schema and annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`) in `tools/list`, so a client can show which tools write. The server's `initialize` response includes the agent instructions from [agents/floor-agent.md](agents/floor-agent.md) in short form.
 
@@ -124,12 +128,13 @@ Datetimes are in the site's local time, `YYYY-MM-DD HH:MM:SS`; ISO 8601 strings 
 - **Stateless.** The server issues no session id and keeps nothing between messages. Each POST carries one JSON-RPC message and returns one JSON response, or `202 Accepted` for a notification. JSON-RPC batches are not accepted (they left the MCP specification in revision 2025-06-18). A `GET` for the server-to-client stream is refused by the framework (the endpoint accepts POST only), which the specification allows for a server that does not push messages; clients treat it as non-fatal.
 - **Protocol revisions** 2024-11-05, 2025-03-26, 2025-06-18 and 2025-11-25 are negotiated through `initialize`; a client that offers another revision gets 2025-11-25 back.
 - **Errors.** A permission or validation failure in a tool is a tool result with `isError` and the message. Any other exception is logged in the site's Error Log and reported to the agent only by type, so nothing internal leaks. A failing tool's database writes are rolled back.
+- **Read-only mode.** While the site or the `mcp` Connector Write Policy is read-only, `foames_set_current_job` (and any writing tool an app adds) answers `{"status": "Awaiting Sign-off", "pending_write": ...}` and writes nothing; with *Block* it answers an error. Suggestions run unless the site holds them too. See [read-only-mode.md](read-only-mode.md).
 - **Writes commit** at the end of the request as for any Frappe API call. The writing tools create Agent Suggestions or set a machine's current job; `foames_post_suggestion` with a `rule_key` that is already open returns the open suggestion instead of creating a second one.
 - **Throughput.** The bridge handles messages one at a time; a client that sends a `ping` during a long `foames_mining_discover` gets its answer after it. The HTTP endpoint runs under the site's normal workers.
 
 ## Extending the catalogue
 
-The catalogue is `foames/foames_mcp/tools.py`: a list of `Tool(name, description, method, input_schema, read_only, ...)` records, each bound to a dotted path of a whitelisted method. Adding a tool is adding one record for a method that already exists and does its own permission check. A unit test holds every method to an allow-list of public API packages, so a tool cannot reach outside them by accident. Another app that wants its own tools should run its own MCP server rather than editing this list; `foames.foames_mcp.protocol.Server` is reusable for that.
+The catalogue is `foames/foames_mcp/tools.py`: a list of `Tool(name, description, method, input_schema, read_only, ...)` records, each bound to a dotted path of a whitelisted method. Adding a tool is adding one record for a method that already exists and does its own permission check. A unit test holds every method to an allow-list of public API packages, so a tool cannot reach outside them by accident. Another app adds tools without editing this list through the `foames_mcp_tools` hook: dotted paths of functions that return a list of `Tool` records (a tool may not take a core tool's name). Their methods must be whitelisted and do their own permission checks, and their writes pass the read-only gate like the core's.
 
 ## Tests
 

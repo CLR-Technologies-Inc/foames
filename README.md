@@ -24,6 +24,8 @@ FoaMES is a single Frappe app that depends on the Frappe framework only. ERP sys
 
 FoaMES records never use Link fields to ERP DocTypes. They store an `External Reference` (ERP system, reference type, external ID) and the matching adapter resolves it. An adapter is available only when its ERP can be reached from the site. Adapters are registered through the `foames_erp_adapters` hook, so other apps can add more. See [docs/adapters.md](docs/adapters.md).
 
+Connectors start **read-only**. A new site runs in [read-only mode](docs/read-only-mode.md): every write to an ERP, another MES, SCADA or a historian, and every write an agent makes over MCP, waits for an authorised operator's electronic signature (meaning, reason, user, time) or is refused, and each step is logged against its work order, Job Card or process run in a hash-chained audit log. A plant approves each connector's writes when its change control is ready.
+
 Which ERPs and other manufacturing systems have an adapter, and what each one reads, posts and needs, is described per vendor under [docs/vendors/](docs/vendors/README.md). Nothing in the core depends on any of them.
 
 ## Integrations
@@ -97,6 +99,7 @@ The full guide, including roles, the scheduler, running the gateways and a smoke
 | [docs/spc.md](docs/spc.md) | Control charts (I-MR, X-bar R) and Nelson / Western Electric run rules on machine measurements |
 | [docs/validation.md](docs/validation.md) | Equipment qualification (IQ, OQ, PQ) and process validation (PPQ, CPV) with acceptance criteria, capability from machine data, evidence, deviations and requalification |
 | [docs/dashboards.md](docs/dashboards.md) | Role workspaces, dashboards, number cards and the script reports (OEE trends, downtime Pareto, MTBF and MTTR, suggestions, outbox health, process throughput) |
+| [docs/read-only-mode.md](docs/read-only-mode.md) | Read-only mode (RO mode): connectors read first, every write waits for an operator's electronic sign-off logged against its work order, and the approval path for regulated plants |
 | [docs/sbom.md](docs/sbom.md) | The CycloneDX 1.7 SBOM and cryptography bill of materials published with every release |
 | [docs/process-mining.md](docs/process-mining.md) | Event logs, discovery, conformance, XES and OCEL export |
 | [docs/mcp.md](docs/mcp.md) | The MCP server: connecting Claude Desktop, Claude Code or any MCP client, the tools, permissions |
@@ -122,6 +125,7 @@ GitHub Actions runs the tests on Frappe v15 and v16 without an ERP, and on Frapp
 
 - [frappe/erpnext#50827](https://github.com/frappe/erpnext/issues/50827) asked for real-time machine monitoring, plant floor visibility, downtime tracking, OEE, work order and job card tracking, and PLC/IoT integration in ERPNext. It was closed as a product in its own right, and FoaMES takes up that requirement list.
 - The counter-delta, owed-count and coverage ideas follow public MES practice, including the [FactorySemantics MES](https://github.com/factorysemantics/factorysemantics-mes) design notes (Apache-2.0).
+- Read-only mode, with connector writes signed off by an operator and logged against the work order so regulated plants can approve the rollout, was suggested by Ramakrishna Gampa.
 - [Floorgraph](https://github.com/s1dharthpv/floorgraph) by [s1dharthpv](https://github.com/s1dharthpv) (MIT) is an earlier shop-floor execution app for ERPNext built in response to that issue. FoaMES is an independent implementation. If any Floorgraph code is ever reused, its MIT notice will ship with it.
 
 ## License

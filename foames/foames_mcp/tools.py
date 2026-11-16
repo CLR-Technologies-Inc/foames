@@ -12,6 +12,11 @@ Tools read the plant (machines, events, downtime, OEE, the floor snapshot, sugge
 mining, ERP references). The only writes are `foames_post_suggestion` and
 `foames_run_suggestion_rules`, which create Agent Suggestions for people to act on, and
 `foames_set_current_job`, which records which job a machine is on. Agents suggest; people act.
+
+Read-only mode: while the site or the MCP server's Connector Write Policy is read-only, a call to a
+writing tool other than the suggestion tools does not run. It waits as a Pending Write for an
+authorised person's electronic sign-off (or is refused), and the agent is told so. The
+`foames_*write*` tools below read the mode, the waiting writes and the audit trail; no tool signs.
 """
 
 from __future__ import annotations
@@ -24,6 +29,7 @@ MINING = "foames.foames_process_mining.api"
 ADAPTERS = "foames.foames_adapters"
 READS = "foames.foames_mcp.reads"
 CYCLE = "foames.foames_mes.cycle_time_api"
+GATE = "foames.foames_kernel.write_gate"
 PID = "foames.foames_pid.api"
 VALIDATION = "foames.foames_validation.api"
 
@@ -36,6 +42,9 @@ ALLOWED_METHOD_PREFIXES = (
 	ADAPTERS + ".get_available_erp_systems",
 	READS,
 	CYCLE,
+	GATE + ".get_write_mode",
+	GATE + ".list_pending_writes",
+	GATE + ".get_write_audit_trail",
 	# The P&ID reads only; importing a register and applying links stay with people on the desk.
 	*(
 		f"{PID}.{method}"
@@ -55,7 +64,9 @@ raise suggestions. Rules: suggest, never act (releases, holds, dispositions and 
 by people); quote the numbers you relied on in `evidence`; time without a machine signal is loss, \
 never production, so do not infer output from silence. Start with foames_get_floor_snapshot for the \
 whole floor, foames_list_machines for one machine at a time, foames_get_oee for any window, and the \
-foames_mining_* tools for how work really flows. Datetimes are the site's local time, \
+foames_mining_* tools for how work really flows. FoaMES may be in read-only mode \
+(foames_get_write_mode): then a write you ask for is held for a person's electronic sign-off instead \
+of being made, and the answer names the Pending Write; do not repeat the call. Datetimes are the site's local time, \
 formatted YYYY-MM-DD HH:MM:SS."""
 
 
@@ -259,6 +270,7 @@ TOOLS: list[Tool] = [
 			["title", "category", "suggestion", "agent"],
 		),
 		read_only=False,
+		suggests=True,
 		idempotent=False,
 	),
 	Tool(
@@ -268,11 +280,12 @@ TOOLS: list[Tool] = [
 		method=f"{MES_API}.run_suggestion_rules",
 		input_schema=_schema({"days": _i("Window in days (default 1)", minimum=1, maximum=90)}),
 		read_only=False,
+		suggests=True,
 	),
 	Tool(
 		name="foames_set_current_job",
 		title="Set a machine's current job",
-		description="Tell FoaMES which job a machine is working on, so its counts and run time from that moment belong to the job and the ERP adapter can roll up the job that ended. `reference` is the name of an External Reference of type Job Card (any ERP); omit it to end the current job. Changes no ERP record. Needs write on Machine.",
+		description="Tell FoaMES which job a machine is working on, so its counts and run time from that moment belong to the job and the ERP adapter can roll up the job that ended. `reference` is the name of an External Reference of type Job Card (any ERP); omit it to end the current job. Changes no ERP record. Needs write on Machine. In read-only mode the change waits for a person's sign-off.",
 		method=f"{MES_API}.set_current_job",
 		input_schema=_schema(
 			{
@@ -473,6 +486,60 @@ TOOLS: list[Tool] = [
 				"erp_system": _s("ERP system key; defaults to the site's default ERP system"),
 			},
 			["reference_type", "external_id"],
+		),
+	),
+	# Read-only mode -------------------------------------------------------------------------
+	Tool(
+		name="foames_get_write_mode",
+		title="Get the read-only mode",
+		description="Whether FoaMES is in read-only mode, site-wide and per connector (adapter, MES connection, bridge, this MCP server), what happens to a write (held for sign-off or blocked), the role that signs, and how many writes wait. Needs read on Connector Write Policy.",
+		method=f"{GATE}.get_write_mode",
+		input_schema=_schema({}),
+	),
+	Tool(
+		name="foames_list_pending_writes",
+		title="List pending writes",
+		description="Writes held by read-only mode, newest first: what would be written, by which connector, for which work order, Job Card, process run or machine, who asked, and who signed it off with what meaning and reason. Needs read on Pending Write.",
+		method=f"{GATE}.list_pending_writes",
+		input_schema=_schema(
+			{
+				"status": _s(
+					"Only writes in this status",
+					enum=[
+						"Awaiting Sign-off",
+						"Approved",
+						"Released",
+						"Executed",
+						"Rejected",
+						"Blocked",
+						"Failed",
+						"Withdrawn",
+					],
+				),
+				"connector": _s("Only writes of this connector key"),
+				"work_order": _s("Only writes logged against this work order"),
+				"job_card": _s("Only writes logged against this Job Card"),
+				"process_run": _s("Only writes logged against this process run"),
+				"machine": MACHINE,
+				"limit": LIMIT,
+			}
+		),
+	),
+	Tool(
+		name="foames_get_write_audit_trail",
+		title="Get the write audit trail",
+		description="The Write Audit Log, oldest first: every write requested, held, blocked, signed, rejected, released or executed, and every change to read-only mode, with user, time and reason. Filter by work order, Job Card, process run, machine, Pending Write or connector. Needs read on Write Audit Log.",
+		method=f"{GATE}.get_write_audit_trail",
+		input_schema=_schema(
+			{
+				"work_order": _s("Work order the entries are logged against"),
+				"job_card": _s("Job Card the entries are logged against"),
+				"process_run": _s("Process run the entries are logged against"),
+				"machine": MACHINE,
+				"pending_write": _s("Name of a Pending Write"),
+				"connector": _s("Connector key"),
+				"limit": LIMIT,
+			}
 		),
 	),
 	Tool(

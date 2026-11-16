@@ -10,6 +10,7 @@ Start with [overview.md](overview.md) for what FoaMES records, then [installatio
 | [dev-bench.md](dev-bench.md) | The Docker dev bench: the whole test suite locally on Frappe v15 or v16, with an optional ERP app |
 | [adapters.md](adapters.md) | External References, running without an ERP, writing an adapter for another ERP (vendor-neutral) |
 | [machine-data.md](machine-data.md) | How machine events reach FoaMES: the signed webhook, MQTT, OPC UA and Sparkplug B, the event shape, counter rules |
+| [read-only-mode.md](read-only-mode.md) | Read-only mode: connectors read first, every write waits for an operator's electronic sign-off or is refused, the hash-chained Write Audit Log against work orders and Job Cards, and the approval path for a regulated (21 CFR Part 11-style) plant |
 | [sbom.md](sbom.md) | The CycloneDX 1.7 SBOM: where to get it, what is in it (dependencies, the cryptography bill of materials, connected services), building and validating it |
 | [licensing.md](licensing.md) | The Apache-2.0 license, the source file header, and the license of each dependency and borrowed idea |
 
@@ -47,7 +48,7 @@ Start with [overview.md](overview.md) for what FoaMES records, then [installatio
 | Page | What it covers |
 | --- | --- |
 | [../AGENTS.md](../AGENTS.md) | The guide for coding agents and developers building on or integrating FoaMES: invariants, extension hooks, API surface, tests |
-| [mcp.md](mcp.md) | The MCP server: connecting Claude Desktop, Claude Code or any MCP client with an API key, the 32 tools, permissions, limits |
+| [mcp.md](mcp.md) | The MCP server: connecting Claude Desktop, Claude Code or any MCP client with an API key, the 35 tools, permissions, limits |
 | [agents/floor-agent.md](agents/floor-agent.md) | The playbook for an agent that reads the floor snapshot and raises suggestions, with the MCP tool names |
 | [agents/research-to-code.md](agents/research-to-code.md) | The playbook for turning a public paper into a FoaMES change: sourcing rules, go or no-go triage, data mapping, invariant check, landing zones, test-first from the paper; [research-to-code-example.md](agents/research-to-code-example.md) is a worked run |
 | [case-studies/README.md](case-studies/README.md) | Scaffolds for case studies of discrete, process and logistics improvements (changeover, yield and energy, electric trucks, autonomous trucks), with a shared template and honesty rules |
