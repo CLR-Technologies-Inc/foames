@@ -12,6 +12,7 @@ from frappe.utils import add_days, add_to_date, get_datetime, getdate, nowdate
 
 from foames.foames_validation import qualification as q
 from foames.foames_validation.api import get_qualification_status, subject_status
+from foames.foames_validation.commissioning import on_handover
 from foames.foames_validation.report.qualification_status.qualification_status import execute as status_report
 from foames.foames_validation.tasks import check_requalification
 from foames.tests_compat import IntegrationTestCase
@@ -381,3 +382,60 @@ class TestValidation(IntegrationTestCase):
 			self.assertEqual(execution.executed_by, OPERATOR)
 			with self.assertRaises(frappe.PermissionError):
 				execution.submit()
+
+
+def make_package(machine=MACHINE):
+	return frappe.get_doc(
+		{
+			"doctype": "Commissioning Package",
+			"title": "T-VAL handover",
+			"items": [
+				{"equipment_tag": "VAL-1", "description": "Filler", "machine": machine},
+				{"equipment_tag": "VAL-2", "description": "Conveyor without a machine record"},
+			],
+			"require_fat": 0,
+			"require_mechanical_completion": 0,
+			"require_pre_commissioning": 0,
+			"require_sat": 0,
+			"require_functional_test": 0,
+			"require_performance_test": 0,
+		}
+	).insert()
+
+
+class TestCommissioningHandover(IntegrationTestCase):
+	def setUp(self):
+		super().setUp()
+		make_machine(MACHINE)
+		make_user(OPERATOR, "FoaMES Operator")
+
+	def test_the_hook_is_registered(self):
+		self.assertIn(
+			"foames.foames_validation.commissioning.on_handover",
+			frappe.get_hooks("foames_commissioning_handed_over"),
+		)
+
+	def test_handover_opens_the_iq(self):
+		protocol = make_protocol("IQ")
+		package = make_package()
+		result = on_handover(package)
+		self.assertEqual(len(result["executions"]), 1)
+		execution = frappe.get_doc("Validation Execution", result["executions"][0])
+		self.assertEqual((execution.protocol, execution.docstatus), (protocol.name, 0))
+		self.assertEqual(execution.commissioning_package, package.name)
+		self.assertEqual(
+			frappe.db.get_value(
+				"Commissioning Package", package.name, ["qualification_doctype", "qualification_name"]
+			),
+			("Validation Execution", execution.name),
+		)
+		self.assertEqual(on_handover(package)["executions"], [execution.name])  # the draft is reused
+
+	def test_a_machine_without_an_iq_protocol_gets_a_suggestion(self):
+		package = make_package()
+		result = on_handover(package)
+		self.assertEqual(result["executions"], [])
+		suggestion = frappe.get_doc("Agent Suggestion", result["suggestions"][0])
+		self.assertEqual(suggestion.rule_key, f"validation:iq-after-handover:{MACHINE}")
+		self.assertEqual(suggestion.reference_name, package.name)
+		self.assertFalse(frappe.db.get_value("Commissioning Package", package.name, "qualification_name"))

@@ -83,4 +83,4 @@ foames_commissioning_readiness_checks = ["myapp.qualification.blockers"]  # (pac
 foames_commissioning_handed_over = ["myapp.qualification.on_handover"]  # (package)
 ```
 
-A qualification app would use the second hook to open its IQ record for the handed-over equipment and write it back to the package's **Qualification Type** and **Qualification Record** fields. The commissioning arithmetic (step and loop evaluation, the test sequence, punch item rules, readiness) is pure Python in `foames/foames_commissioning/commissioning.py`.
+FoaMES Validation uses the second hook: at handover it opens a draft IQ execution for each machine in the package that has an approved IQ protocol (or raises a suggestion to write one) and writes it back to the package's **Qualification Type** and **Qualification Record** fields; see [validation.md](validation.md#from-commissioning). Another qualification app can register the same hook. The commissioning arithmetic (step and loop evaluation, the test sequence, punch item rules, readiness) is pure Python in `foames/foames_commissioning/commissioning.py`.
