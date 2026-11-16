@@ -1,0 +1,62 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-15 23:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "control",
+  "control_level",
+  "control_function",
+  "verification_method"
+ ],
+ "fields": [
+  {
+   "fieldname": "control",
+   "fieldtype": "Small Text",
+   "label": "Control",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 4
+  },
+  {
+   "fieldname": "control_level",
+   "fieldtype": "Select",
+   "label": "Level",
+   "options": "Elimination\nSubstitution\nEngineering Controls\nAdministrative Controls\nWork Practices\nPPE\nOther Management Control",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "control_function",
+   "fieldtype": "Select",
+   "label": "Function",
+   "options": "Preventive\nDetective\nCorrective\nContingency",
+   "default": "Preventive",
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "verification_method",
+   "fieldtype": "Select",
+   "label": "Verification Method",
+   "options": "\nInspection\nTest\nObservation\nAudit\nMeasurement\nDocument Review",
+   "in_list_view": 1,
+   "columns": 2
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 23:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Risk",
+ "name": "Risk Template Control",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1
+}

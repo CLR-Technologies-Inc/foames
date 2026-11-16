@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """The arithmetic of rolling machine data up to an ERP job: which stretches of a window the
 machine ran, and what the window produced. No Frappe dependency; the roll-up module feeds it

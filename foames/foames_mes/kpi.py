@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """The arithmetic behind the FoaMES reports: OEE roll-ups, the downtime Pareto, MTBF and MTTR,
 specific consumption of metered inputs.

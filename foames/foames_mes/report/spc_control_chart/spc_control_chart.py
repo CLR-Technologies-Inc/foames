@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """A Shewhart control chart of one machine measurement: I-MR over single readings, or X-bar R over
 consecutive subgroups, with the Nelson or Western Electric run rules marked on each point.

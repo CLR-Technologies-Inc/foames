@@ -1,3 +1,6 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """The synthetic event log for process-mining-analysis: 60 work orders through a welding cell.
 Deterministic (fixed seed), invented, and free of any plant's data."""
 

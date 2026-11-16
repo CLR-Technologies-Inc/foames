@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Function imports that undo a posting: cancelling an order confirmation and reversing a material
 document. S/4HANA exposes both as OData function imports (POST with the parameters in the URL),

@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Task manifests. Each task is a folder under tasks/ with task.json, prompt.md, an optional
 setup.py, hidden tests the agent never sees, and a reference solution used to validate the task."""

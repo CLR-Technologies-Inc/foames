@@ -1,3 +1,6 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 # Development bench for FoaMES tests.
 #
 # One image with Python, Node, Yarn, a MariaDB client and frappe-bench. The bench itself is created
