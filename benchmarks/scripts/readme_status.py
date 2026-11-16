@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Rewrite the agent benchmark summary in the repository README.
 
-  python benchmarks/scripts/readme_status.py [--readme README.md]
+  python benchmarks/scripts/readme_status.py
 
 One row per benchmark agent in agents.json (the aider agents and the Claude Code model agents), grouped
 by provider: what the model was built for, the latest dated report it appears in, its pass rate and the
@@ -18,6 +18,7 @@ import json
 from pathlib import Path
 
 BENCH = Path(__file__).resolve().parent.parent
+README = BENCH.parent / "README.md"
 START, END = "<!-- bench-status:start -->", "<!-- bench-status:end -->"
 PROVIDERS = [
 	("claude-code", "Claude Code on a Claude subscription (this account, not the API)"),
@@ -92,8 +93,7 @@ def table(agents: list, results: dict, status: dict) -> list[str]:
 
 def main(argv=None):
 	ap = argparse.ArgumentParser()
-	ap.add_argument("--readme", type=Path, default=BENCH.parent / "README.md")
-	opts = ap.parse_args(argv)
+	ap.parse_args(argv)
 	agents = [
 		a
 		for a in json.loads((BENCH / "agents.json").read_text(encoding="utf-8"))["agents"]
@@ -112,15 +112,15 @@ def main(argv=None):
 		"dated report also gives the same tokens at list price."
 	)
 	block = [START, "", intro, "", *table(agents, latest_results(BENCH / "results"), status), END]
-	text = opts.readme.read_text(encoding="utf-8")
+	text = README.read_text(encoding="utf-8")
 	if START in text:
 		head, rest = text.split(START, 1)
 		text = head + "\n".join(block) + rest.split(END, 1)[1]
 	else:
 		anchor = "## Contributing"
 		text = text.replace(anchor, "## Agent benchmark results\n\n" + "\n".join(block) + "\n\n" + anchor, 1)
-	opts.readme.write_text(text, encoding="utf-8")
-	print(f"updated {opts.readme}")
+	README.write_text(text, encoding="utf-8")
+	print(f"updated {README}")
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Write the "Top performing models" page for the public website.
 
-  python benchmarks/scripts/site_top_models.py [--out benchmarks/results/top-models.md] [--top 10]
+  python benchmarks/scripts/site_top_models.py [--top 10]
 
 Reads the same results as readme_status.py (the newest dated report each agent appears in) and ranks
 the benchmark agents that passed at least one task: by pass rate, then mean quality, then fewer
@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 
 from readme_status import BENCH, latest_results, provider, use
 
@@ -30,6 +29,7 @@ HOW_RUN = {
 	"ollama-runner": "aider, Ollama on a 4-vCPU CPU runner",
 	"ollama-gpu": "aider, Ollama on a notebook GPU",
 }
+OUT = BENCH / "results" / "top-models.md"
 REPO = "https://github.com/CLR-Technologies-Inc/foames/blob/main/benchmarks"
 
 
@@ -88,7 +88,6 @@ def page(rows: list) -> str:
 
 def main(argv=None):
 	ap = argparse.ArgumentParser()
-	ap.add_argument("--out", type=Path, default=BENCH / "results" / "top-models.md")
 	ap.add_argument("--top", type=int, default=10)
 	opts = ap.parse_args(argv)
 	agents = [
@@ -97,8 +96,8 @@ def main(argv=None):
 		if (a["name"].startswith("aider-") and a["name"] != "aider-local")
 		or (a.get("harness") == "claude-code" and a.get("_runs_on") == "subscription")
 	]
-	opts.out.write_text(page(ranked(agents, latest_results(BENCH / "results"), opts.top)), encoding="utf-8")
-	print(f"wrote {opts.out}")
+	OUT.write_text(page(ranked(agents, latest_results(BENCH / "results"), opts.top)), encoding="utf-8")
+	print(f"wrote {OUT}")
 
 
 if __name__ == "__main__":
