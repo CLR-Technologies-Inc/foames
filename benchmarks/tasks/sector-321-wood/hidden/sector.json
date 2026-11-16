@@ -1,0 +1,108 @@
+{
+ "case_id": "sector-321-wood",
+ "sector": "Wood products (sawmill and planing mill, kiln-dried lumber)",
+ "naics": "321",
+ "seed": 321,
+ "source": {
+  "title": "ITAC Assessment: LT0121 (sawmills and planing mills, kiln dried lumber)",
+  "publisher": "U.S. Department of Energy, Industrial Assessment Centers (Louisiana Tech University IAC), assessment database record",
+  "report": "IAC assessment LT0121",
+  "date": "1988 assessment",
+  "url": "https://itac.university/assessment/LT0121",
+  "us_government_work": "DOE Industrial Assessment Center database record written by a DOE-funded university assessment centre; only figures are used",
+  "named_organisations": []
+ },
+ "claim": {
+  "kind": "annual_energy_saving",
+  "value": 33705,
+  "unit": "kWh/yr",
+  "text": "The assessment recommended measures saving 33,705 kWh of electricity a year; the record lists no recommendation as implemented."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-01-12T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-04-13T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   0,
+   24
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6
+ ],
+ "mark_unknown_after_minutes": 30,
+ "production_unit": "MBF",
+ "energy_unit": "kWh",
+ "energy_price": 0.057,
+ "line": {
+  "source_id": "PLANT-A-PLANER-MILL",
+  "description": "Planer mill (kiln-dried lumber out)",
+  "ideal_cycle_seconds": 600.0,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "PLANT-A-MAIN-KWH",
+  "description": "Mill electricity meter",
+  "counter": "energy_kwh",
+  "rollover": 10000000,
+  "every_minutes": 15,
+  "start_value": 0
+ },
+ "baseline": {
+  "rate_per_run_hour": 5.6,
+  "scrap_fraction": 0.03,
+  "down_per_day": 1.2,
+  "down_minutes": 45,
+  "idle_per_day": 1.0,
+  "idle_minutes": 30,
+  "setup_per_day": 0.5,
+  "setup_minutes": 60,
+  "planned_down_per_week": 1,
+  "planned_down_minutes": 240,
+  "energy_base_per_hour": 420,
+  "energy_per_unit": 120
+ },
+ "after": {
+  "rate_per_run_hour": 5.6,
+  "scrap_fraction": 0.03,
+  "down_per_day": 1.2,
+  "down_minutes": 45,
+  "idle_per_day": 1.0,
+  "idle_minutes": 30,
+  "setup_per_day": 0.5,
+  "setup_minutes": 60,
+  "planned_down_per_week": 1,
+  "planned_down_minutes": 240,
+  "energy_base_per_hour": 420,
+  "energy_per_unit": 120
+ },
+ "traps": {
+  "plc_reset": {
+   "window": "baseline",
+   "at": 0.55
+  },
+  "network_gap": {
+   "window": "after",
+   "at": 0.35,
+   "hours": 4
+  },
+  "meter_rollover": {
+   "window": "after",
+   "at": 0.6
+  }
+ },
+ "target_ratio": 0.08
+}

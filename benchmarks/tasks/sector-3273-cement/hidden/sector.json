@@ -1,0 +1,107 @@
+{
+ "case_id": "sector-3273-cement",
+ "sector": "Nonmetallic mineral products (cement)",
+ "naics": "3273",
+ "seed": 3273,
+ "source": {
+  "title": "Fan System Optimization Improves Production and Saves Energy at Ash Grove Cement Plant",
+  "publisher": "U.S. Department of Energy, Office of Industrial Technologies (BestPractices project case study)",
+  "report": "DOE/GO-102002-1599",
+  "date": "2002-05",
+  "url": "https://nrel.gov/docs/fy02osti/32107.pdf",
+  "us_government_work": true,
+  "named_organisations": [
+   "Ash Grove",
+   "MagnaDrive"
+  ]
+ },
+ "claim": {
+  "kind": "annual_energy_saving",
+  "value": 175000,
+  "unit": "kWh/yr",
+  "text": "A mechanical adjustable speed drive on a 125-hp baghouse fan saves 175,000 kWh ($6,000) a year, and production rose 32,000 tons a year (3.5 percent)."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-02-09T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-05-18T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   0,
+   24
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6
+ ],
+ "mark_unknown_after_minutes": 30,
+ "production_unit": "t",
+ "energy_unit": "kWh",
+ "energy_price": 0.0343,
+ "line": {
+  "source_id": "PLANT-A-KILN-1",
+  "description": "Kiln 1 and finish mill (clinker reported as one line)",
+  "ideal_cycle_seconds": 30.0,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "PLANT-A-BAGHOUSE-FAN",
+  "description": "Baghouse fan kWh meter",
+  "counter": "energy_kwh",
+  "rollover": null,
+  "every_minutes": 15,
+  "start_value": 0
+ },
+ "baseline": {
+  "rate_per_run_hour": 104,
+  "scrap_fraction": 0.0,
+  "down_per_day": 0.5,
+  "down_minutes": 60,
+  "idle_per_day": 0.3,
+  "idle_minutes": 30,
+  "setup_per_day": 0.0,
+  "setup_minutes": 0,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 95,
+  "energy_per_unit": 0.0
+ },
+ "after": {
+  "rate_per_run_hour": 108,
+  "scrap_fraction": 0.0,
+  "down_per_day": 0.5,
+  "down_minutes": 60,
+  "idle_per_day": 0.3,
+  "idle_minutes": 30,
+  "setup_per_day": 0.0,
+  "setup_minutes": 0,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 74,
+  "energy_per_unit": 0.0
+ },
+ "traps": {
+  "plc_reset": {
+   "window": "after",
+   "at": 0.6
+  },
+  "network_gap": {
+   "window": "baseline",
+   "at": 0.33,
+   "hours": 5
+  }
+ },
+ "target_ratio": 1.06
+}
