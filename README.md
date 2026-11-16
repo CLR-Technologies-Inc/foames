@@ -1,6 +1,9 @@
 # foames
 
 [![GitHub stars](https://img.shields.io/github/stars/CLR-Technologies-Inc/foames?style=social)](https://github.com/CLR-Technologies-Inc/foames/stargazers)
+[![DeepSource](https://app.deepsource.com/gh/CLR-Technologies-Inc/foames.svg/?label=code+coverage&show_trend=true&token=ty6pE08s0fkat2D9lQsrsSb6)](https://app.deepsource.com/gh/CLR-Technologies-Inc/foames/)
+[![DeepSource](https://app.deepsource.com/gh/CLR-Technologies-Inc/foames.svg/?label=active+issues&show_trend=true&token=ty6pE08s0fkat2D9lQsrsSb6)](https://app.deepsource.com/gh/CLR-Technologies-Inc/foames/)
+[![DeepSource](https://app.deepsource.com/gh/CLR-Technologies-Inc/foames.svg/?label=resolved+issues&show_trend=true&token=ty6pE08s0fkat2D9lQsrsSb6)](https://app.deepsource.com/gh/CLR-Technologies-Inc/foames/)
 
 Free Opensource Agentic MES
 
