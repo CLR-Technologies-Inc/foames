@@ -11,7 +11,10 @@ Every agent here is [aider](https://aider.chat) in the benchmark's Docker sandbo
 
 | Agents | Where the model runs | Key |
 | --- | --- | --- |
-| `aider-ollama-*` | Ollama on the runner (4 vCPU, 16 GB, no GPU) | None. Small coder models only; a 30B model does not fit. |
+| `aider-ollama-*` | Ollama on the runner (4 vCPU, 16 GB, no GPU) | None. Models up to about 20B: Qwen2.5-Coder 7B and 14B, Qwen3 8B and 14B, IBM Granite 3.3 8B, gpt-oss 20b. One job per model and task, with a timeout of ten times the task budget, because quality matters here, not speed. |
+| `aider-ollama-qwen3-coder-30b`, `aider-ollama-devstral-24b` (and gpt-oss 20b on a GPU) | A free notebook GPU: [notebooks/foames-bench-gpu.ipynb](../notebooks/foames-bench-gpu.ipynb) on Kaggle (T4 x2, about 30 GPU hours a week, runs headless) or Colab (one T4) | A free Kaggle account, phone-verified for GPU and internet. Notebooks have no Docker: the run uses the `unshare` sandbox when allowed and is marked `none` otherwise. |
+
+Every local model here is published under Apache-2.0 by a known publisher (Alibaba Qwen, IBM, OpenAI, Mistral AI). Models with research-only or custom licences are left out.
 
 GitHub Models was tried first, because a workflow's own token can call it with no sign-up. On 2026-11-16 every request to `models.github.ai` from a hosted runner, including the catalog and made-up paths, answered `200 OK` with a plain-text body of `OK` and no completion, and the older `models.inference.ai.azure.com` host no longer resolves. It is left out until it answers again.
 
@@ -30,6 +33,10 @@ Each needs one Actions secret (Settings, Secrets and variables, Actions, New rep
 Model names and free-tier limits change often. If a provider renames a model, change its `model` in [agents.json](../agents.json); the workflow needs no change.
 
 Free tiers may keep or train on prompts. The benchmark's tasks are public and use invented data, so that is acceptable here. Do not point these agents at private code.
+
+## Dates and versions
+
+Each report folder is named after the date its runs started (`benchmarks/results/<YYYY-MM-DD>/`). The README gives the start and finish times, the FoaMES commit and when the report was built; each agent's page adds the model's Ollama digest and pull date (or the API model id and call date), the aider version, the sandbox image and where it ran. Hosted model ids such as `gemini-2.5-flash` can change behind the same name, which is why the call date is kept.
 
 ## Reading the results
 
