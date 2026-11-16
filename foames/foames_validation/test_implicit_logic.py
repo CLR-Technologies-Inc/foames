@@ -128,6 +128,20 @@ class TestRequirements(unittest.TestCase):
 			result = iv.evaluate_requirement(check, config)
 			self.assertNotIn("hunter2", iv.canonical(result))
 
+	def test_a_sensitive_path_is_never_compared_with_a_value(self):
+		for op in ("eq", "ne", "in"):
+			with self.assertRaises(iv.DefinitionError):
+				iv.validate_definition(
+					definition(
+						{
+							"key": "r",
+							"kind": "requirement",
+							"assert": {"path": "gateway.password", "op": op, "value": "hunter2"},
+							"sensitive": True,
+						}
+					)
+				)
+
 	def test_missing_configuration_is_indeterminate_never_pass(self):
 		self.assertEqual(self.judge("eq", "gateway.certificate", "x"), iv.INDETERMINATE)
 		self.assertEqual(self.judge("eq", "gateway.security_mode", "x", config=None), iv.INDETERMINATE)
