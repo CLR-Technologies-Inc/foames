@@ -30,6 +30,17 @@ HOW_RUN = {
 	"ollama-gpu": "aider, Ollama on a notebook GPU",
 }
 OUT = BENCH / "results" / "top-models.md"
+# Caveats that hold for one dated report only: (report, agents it names, sentence). A sentence is
+# printed only while at least one of its agents is listed from that report, so a later report that
+# reruns those agents drops it.
+REPORT_NOTES = [
+	(
+		"2026-11-16",
+		{"claude-code-fable-5-2", "claude-code-sonnet-5-5"},
+		"In report 2026-11-16, {names} show no ECL because the SPC task's wording could be read two ways; "
+		+ "it has since been fixed and those runs are kept as graded.",
+	),
+]
 REPO = "https://github.com/CLR-Technologies-Inc/foames/blob/main/benchmarks"
 
 
@@ -68,15 +79,29 @@ def page(rows: list) -> str:
 			f"{s['runs']} | {round(100 * s['success_rate'])}%{rng} | {('ECL ' + str(ecl)) if ecl else 'none'} | "
 			f"${s.get('total_cost_usd', 0):.2f} |"
 		)
+	runs = [s["runs"] for _, _, s, _ in rows] or [0]
+	notes = []
+	for day, names, text in REPORT_NOTES:
+		hit = [a for a, d, _, ecl in rows if d == day and a["name"] in names and not ecl]
+		if hit:
+			notes.append(
+				text.format(
+					names=" and ".join(
+						f"`{s.get('model') or a.get('model', '')}`" for a, _, s, _ in rows if a in hit
+					)
+				)
+			)
 	report = ", ".join(f"[{d}]({REPO}/results/{d}/README.md)" for d in days) or "none yet"
 	lines += [
 		"",
 		"\\* From the FoaMES agent benchmark, report " + report + ". Read these numbers with care:",
 		"",
 		"- Each model ran each task once, so one pass or fail moves a small model's rate a lot; the 95% range shows how much.",
-		"- Not every model ran the same tasks. Most ran the six core tasks; the Claude models and some hosted models also ran the 29 sector case studies, and some hosted runs were cut short by time limits.",
+		f"- Not every model ran the same tasks: the listed models ran between {min(runs)} and {max(runs)} tasks each "
+		+ "(the six core tasks, plus some or all of the 29 sector case studies). The Tasks run column gives each count.",
 		"- The Claude models ran through Claude Code on a Claude subscription, not the API, so they show $0. Other models ran with aider in GitHub Actions on free tiers, or on 4-vCPU runners without a GPU, where most local models ran out of time before they could finish.",
-		"- ECL is the Equipment Complexity Level at which the model passed every task at that level and below. One failed task at a low level gives none. Fable 5.2 and Sonnet 5.5 show none because one task's wording could be read two ways; it has since been fixed and their runs are kept as graded.",
+		"- ECL is the Equipment Complexity Level at which the model passed every task at that level and below. One failed task at a low level gives none."
+		+ "".join(" " + n for n in notes),
 		"- A pass means every invariant test passed: counters never invent production, nothing posts to the ERP twice, and so on. The scores describe this benchmark only, not the models in general.",
 		"- Only models that passed at least one task are listed. The full results, including every model that passed none, are in the dated report and in the [benchmark README]("
 		+ REPO
