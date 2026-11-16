@@ -38,7 +38,7 @@ from collections import deque
 from pathlib import Path
 
 SPEC_VERSION = "1.7"
-SCHEMA_URL = "http://cyclonedx.org/schema/bom-1.7.schema.json"
+SCHEMA_URL = "https://cyclonedx.org/schema/bom-1.7.schema.json"
 REPO_URL = "https://github.com/CLR-Technologies-Inc/foames"
 ROOT_REF = "foames"
 SUPPLIER_REF = "org:clr-technologies"
