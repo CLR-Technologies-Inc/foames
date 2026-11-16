@@ -302,14 +302,22 @@ def _read_property_ack(data: bytes, at: int):
 
 class Client:
 	"""Reads properties from BACnet/IP devices over UDP. `transport` is a socket-like object with
-	sendto, recvfrom and settimeout (a real UDP socket by default); tests pass a stand-in."""
+	sendto, recvfrom and settimeout (a real UDP socket by default); tests pass a stand-in.
 
-	def __init__(self, timeout: float = 3.0, retries: int = 2, local_port: int = 0, transport=None):
+	By default the socket is not bound: the first sendto picks an ephemeral port on the interface
+	that routes to the device, and devices answer ReadProperty to that address. Pass
+	`local_address=(ip, port)` only to answer from a specific interface; it never listens on all."""
+
+	def __init__(self, timeout: float = 3.0, retries: int = 2, local_address=None, transport=None):
 		self.timeout = timeout
 		self.retries = max(int(retries), 0)
 		if transport is None:
 			transport = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-			transport.bind(("", int(local_port)))
+			if local_address:
+				ip, port = local_address
+				if not ip or ip == "0.0.0.0":
+					raise BACnetError("local_address must name one interface, not all of them")
+				transport.bind((ip, int(port)))
 		self.transport = transport
 		self.transport.settimeout(timeout)
 		self._ids = itertools.cycle(range(256))
