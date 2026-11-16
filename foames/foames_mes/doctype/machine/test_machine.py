@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """The machine's current job on any Frappe site: its reference type, its start time, the API and
 the hook other apps (and the ERPNext adapter) use to close the books on a job that ended."""

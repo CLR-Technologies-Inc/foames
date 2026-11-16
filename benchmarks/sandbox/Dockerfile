@@ -1,3 +1,6 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 # The container the benchmark runs agents in: it sees only the task workspace, mounted at
 # /workspace, never the hidden tests or the reference solutions.
 #

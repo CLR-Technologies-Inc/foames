@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """The OData client piece by piece: URLs, headers, authentication, CSRF handling, error mapping and
 literals. The scripted fake answers every HTTP call. No Frappe site needed."""

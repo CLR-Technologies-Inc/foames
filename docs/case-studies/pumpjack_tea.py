@@ -1,3 +1,6 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Techno-economic model for the pumpjack energy comparison (standard grid-fed vs solar-supported).
 
 Standard library only, no Frappe. Every default below is an ILLUSTRATIVE assumption, not a measured
