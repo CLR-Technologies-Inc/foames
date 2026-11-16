@@ -10,6 +10,7 @@ import frappe
 from frappe.utils import cint, getdate, nowdate
 
 from foames.foames_kernel import record_scope
+from foames.foames_kernel.access import readable
 from foames.foames_validation import qualification as q
 
 
@@ -108,7 +109,12 @@ def qualification_rows(
 		if subject:
 			subjects[(subject_type, subject, p.protocol_type)] = {"protocol": p.name, "executions": []}
 	execution_filters = {"protocol_type": protocol_type} if protocol_type else {}
-	for e in _approved_executions(execution_filters, for_user=for_user):
+	executions = _approved_executions(execution_filters, for_user=for_user)
+	if for_user:
+		# An execution the reader may read can rest on a protocol they may not.
+		readable_protocols = set(readable("Validation Protocol", sorted({e.protocol for e in executions})))
+		executions = [e for e in executions if e.protocol in readable_protocols]
+	for e in executions:
 		subject_type, subject = subject_of(e.protocol_type, e.machine, e.process_name)
 		if not subject:
 			continue

@@ -37,7 +37,7 @@ A User Permission limited to other DocTypes ("Applicable For") does not restrict
 | FoaMES Supervisor | As Engineer | Signs Pending Writes (the default sign-off role); may not sign their own request |
 | FoaMES Quality | As Engineer, validation records | Approves validation executions; may tighten a policy |
 | FoaMES Integration | Connector and audit reads | The identity a connector or bridge runs as; its writes wait at the gate |
-| FoaMES Policy Administrator | Connector Write Policies | The only FoaMES role that may **weaken** a policy: turn read-only off, move "when read-only" to a less strict choice, change the sign-off role, create a writable policy or delete a read-only one |
+| FoaMES Policy Administrator | Connector Write Policies | The only FoaMES role that may **weaken** a policy: turn read-only off, move "when read-only" to a less strict choice, change the sign-off role, create a policy that writes or that overrides the site's action or sign-off role, or delete a read-only one |
 | System Manager | Everything | FoaMES Settings (the site's read-only switch); may weaken policies |
 | Agent (an API user) | What its roles and User Permissions allow | Its writes go through the MCP gate; a model's benchmark or capability claim never adds a permission |
 

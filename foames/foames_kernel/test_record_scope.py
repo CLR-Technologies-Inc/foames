@@ -49,6 +49,10 @@ class TestScrub(unittest.TestCase):
 		self.assertEqual(out["machines"][0]["andon"], [{"machine": "M-1"}])
 		self.assertEqual(out["as_of"], "now")
 
+	def test_a_record_held_as_a_dict_value_is_dropped(self):
+		out = s.scrub({"latest": {"machine": "M-9", "text": "hidden"}, "mine": {"machine": "M-1"}}, {"M-1"})
+		self.assertEqual(out, {"mine": {"machine": "M-1"}})
+
 	def test_scrub_keeps_the_mapping_class(self):
 		class AttrDict(dict):
 			__getattr__ = dict.get
@@ -100,9 +104,14 @@ class TestPolicyLoosening(unittest.TestCase):
 			["sign-off role changed"],
 		)
 
-	def test_a_new_writable_policy_loosens_and_a_new_read_only_one_does_not(self):
+	def test_a_new_policy_is_judged_against_the_site_defaults(self):
 		self.assertTrue(s.policy_loosening(None, self.after(read_only=0)))
-		self.assertEqual(s.policy_loosening(None, self.BASE), [])
+		inherit = {"read_only": 1, "when_read_only": "Site default", "sign_off_role": ""}
+		self.assertEqual(s.policy_loosening(None, inherit), [])
+		self.assertEqual(s.policy_loosening(None, {**inherit, "when_read_only": "Block"}), [])
+		# Overriding the site's action or sign-off role weakens what the connector inherits.
+		self.assertTrue(s.policy_loosening(None, {**inherit, "when_read_only": "Queue for sign-off"}))
+		self.assertTrue(s.policy_loosening(None, {**inherit, "sign_off_role": "FoaMES Engineer"}))
 
 
 if __name__ == "__main__":

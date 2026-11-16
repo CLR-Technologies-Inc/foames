@@ -112,6 +112,22 @@ class TestRequirements(unittest.TestCase):
 		self.assertEqual(self.judge("absent", "gateway.password"), iv.PASS)
 		self.assertEqual(self.judge("absent", "gateway.retry"), iv.FAIL)
 
+	def test_a_value_that_may_be_a_secret_is_not_recorded(self):
+		config = {"gateway": {"password": "hunter2", "user": "svc"}}
+		for op, extra in (("absent", {}), ("present", {"sensitive": True})):
+			check = iv.validate_definition(
+				definition(
+					{
+						"key": "r",
+						"kind": "requirement",
+						"assert": {"path": "gateway.password", "op": op},
+						**extra,
+					}
+				)
+			)["checks"][0]
+			result = iv.evaluate_requirement(check, config)
+			self.assertNotIn("hunter2", iv.canonical(result))
+
 	def test_missing_configuration_is_indeterminate_never_pass(self):
 		self.assertEqual(self.judge("eq", "gateway.certificate", "x"), iv.INDETERMINATE)
 		self.assertEqual(self.judge("eq", "gateway.security_mode", "x", config=None), iv.INDETERMINATE)
@@ -183,6 +199,28 @@ class TestMetrology(unittest.TestCase):
 		self.assertEqual(self.parts(self.judge(metrology(grr_percent=8)))["grr"], iv.PASS)
 		self.assertEqual(self.parts(self.judge(metrology(grr_percent=20)))["grr"], iv.MANUAL)
 		self.assertEqual(self.parts(self.judge(metrology(grr_percent=35)))["grr"], iv.FAIL)
+
+	def test_data_side_numbers_are_compared_in_the_check_unit(self):
+		# 0.05 mm of uncertainty is 50 um: a 100 um tolerance gives a ratio of 2, not 2000.
+		check = metrology(unit="um", tolerance=100)
+		self.assertEqual(
+			self.parts(self.judge(check, dataset(unit="mm", uncertainty=0.05)))["uncertainty"], iv.FAIL
+		)
+		self.assertEqual(
+			self.parts(self.judge(check, dataset(unit="mm", uncertainty=0.01)))["uncertainty"], iv.PASS
+		)
+		# Readings in um against a reference and a bias limit in mm.
+		micrometres = [v * 1000 for v in stable()]
+		bias = metrology(unit="mm", reference_value=10.0, bias_limit=0.05)
+		self.assertEqual(self.parts(self.judge(bias, dataset(micrometres, unit="um")))["bias"], iv.PASS)
+
+	def test_offsets_are_compared_in_utc(self):
+		# 12:00-05:00 is 17:00 UTC, after an evaluation at 12:00 UTC.
+		data = dataset()
+		data["measurements"]["bore"]["points"] = readings(stable(), start=AS_OF.replace(hour=11))
+		for point in data["measurements"]["bore"]["points"]:
+			point["t"] += "-05:00"
+		self.assertEqual(self.parts(self.judge(data=data))["time"], iv.INDETERMINATE)
 
 	def test_no_data_is_indeterminate(self):
 		self.assertEqual(self.judge(metrology(measurement="torque"))["outcome"], iv.INDETERMINATE)
@@ -271,6 +309,10 @@ class TestRun(unittest.TestCase):
 		self.assertEqual(sandbox["definition"]["hash"], candidate["definition"]["hash"])
 		self.assertEqual(sandbox["outcome"], candidate["outcome"])
 		self.assertNotEqual(sandbox["input_hash"], candidate["input_hash"])
+
+	def test_non_finite_numbers_are_refused(self):
+		with self.assertRaises(ValueError):
+			self.run_it(capability(), data=dataset([float("nan")] * 30))
 
 	def test_a_changed_bundle_no_longer_verifies(self):
 		bundle = self.run_it(capability(), data=dataset(stable(sd=0.06)))

@@ -74,6 +74,10 @@ def floor_snapshot(days: int = 1, for_user: bool = False) -> dict:
 	)
 	andon = record_scope.filter_rows(open_andon_calls(now), allowed) if may_read("Andon Call") else []
 	runs = record_scope.filter_rows(active_runs(now), allowed) if may_read("Work Instruction Run") else []
+	if for_user:
+		# The rows come from queries that skip permissions; keep the records the reader may open.
+		andon = _readable_rows("Andon Call", andon)
+		runs = _readable_rows("Work Instruction Run", runs)
 	read_counts = may_read("Machine Event")
 	read_oee = may_read("OEE Period")
 	for m in machines:
@@ -150,6 +154,13 @@ def floor_snapshot(days: int = 1, for_user: bool = False) -> dict:
 	for extension in frappe.get_hooks("foames_floor_snapshot_extensions") or []:
 		frappe.get_attr(extension)(snapshot, since, now)
 	return record_scope.scrub(snapshot, allowed) if for_user else snapshot
+
+
+def _readable_rows(doctype: str, rows: list) -> list:
+	from foames.foames_kernel.access import readable
+
+	allowed = set(readable(doctype, [r.name for r in rows]))
+	return [r for r in rows if r.name in allowed]
 
 
 def latest_oee(machine: str, list_of=frappe.get_all) -> dict | None:

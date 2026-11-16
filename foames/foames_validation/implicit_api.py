@@ -16,10 +16,12 @@ record, and a Pass is engineering evidence only.
 from __future__ import annotations
 
 import json
+from datetime import timezone
+from zoneinfo import ZoneInfo
 
 import frappe
 from frappe import _
-from frappe.utils import get_datetime, now_datetime
+from frappe.utils import get_datetime, get_system_timezone, now_datetime
 
 from foames.foames_kernel.access import require_read
 from foames.foames_validation import implicit as iv
@@ -53,6 +55,15 @@ def _json(value, what: str):
 		frappe.throw(_("{0} is not valid JSON").format(what))
 
 
+def _utc(value):
+	"""A site datetime (naive, in the system time zone) as an aware UTC datetime. The evaluator
+	compares every time in UTC, so supplied data may carry any offset."""
+	value = get_datetime(value)
+	if value.tzinfo is None:
+		value = value.replace(tzinfo=ZoneInfo(get_system_timezone()))
+	return value.astimezone(timezone.utc)
+
+
 def site_dataset(machine: str, definition: dict, since, until, measurements: dict | None = None) -> dict:
 	"""The Measurement events of `machine` in [since, until] for every measurement the definition
 	names, read with the caller's permissions. `measurements` adds what the events do not carry:
@@ -73,11 +84,14 @@ def site_dataset(machine: str, definition: dict, since, until, measurements: dic
 			],
 			fields=["measurement_name", "value", "timestamp"],
 			order_by="timestamp asc, creation asc",
-			limit_page_length=MAX_POINTS,
+			limit_page_length=MAX_POINTS + 1,
 		)
 		if names
 		else []
 	)
+	if len(rows) > MAX_POINTS:
+		# A cut window would be judged on part of its data; refuse it instead.
+		frappe.throw(_("The window holds more than {0} readings; narrow since and until").format(MAX_POINTS))
 	meta = measurements or {}
 	out = {}
 	for name in names:
@@ -85,9 +99,7 @@ def site_dataset(machine: str, definition: dict, since, until, measurements: dic
 		out[name] = {
 			**{k: declared[k] for k in ("unit", "instrument", "uncertainty") if k in declared},
 			"points": [
-				{"t": get_datetime(r.timestamp).isoformat(), "v": r.value}
-				for r in rows
-				if r.measurement_name == name
+				{"t": _utc(r.timestamp).isoformat(), "v": r.value} for r in rows if r.measurement_name == name
 			],
 		}
 	return {"id": f"site:{machine}:{since.isoformat()}..{until.isoformat()}", "measurements": out}
@@ -144,9 +156,9 @@ def run_implicit_validation(
 		data, source = None, ""
 	try:
 		bundle = iv.evaluate(
-			checked, data, configuration, now_datetime(), configuration_revision, environment
+			checked, data, configuration, _utc(now_datetime()), configuration_revision, environment
 		)
-	except iv.DefinitionError as error:
+	except ValueError as error:  # a malformed definition, or a non-finite number in the inputs
 		frappe.throw(str(error))
 	bundle["dataset"]["source"] = source
 	bundle["result_hash"] = iv.result_hash(bundle)
@@ -162,7 +174,7 @@ def run_implicit_validation(
 			"environment": environment,
 			"machine": machine,
 			"configuration_revision": configuration_revision,
-			"as_of": get_datetime(bundle["as_of"]),
+			"as_of": now_datetime(),
 			"requested_by": frappe.session.user,
 			"dataset_reference": bundle["dataset"]["id"],
 			"dataset_source": source,
@@ -224,6 +236,8 @@ def verified(doc) -> bool:
 		and bundle.get("outcome") == doc.outcome
 		and bundle.get("input_hash") == doc.input_hash
 		and (bundle.get("configuration") or {}).get("revision") == doc.configuration_revision
+		and (bundle.get("environment") or "") == (doc.environment or "")
+		and ((bundle.get("dataset") or {}).get("source") or "") == (doc.dataset_source or "")
 	)
 
 

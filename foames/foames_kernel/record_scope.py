@@ -64,7 +64,13 @@ def scrub(value, allowed: set[str] | None):
 		return value
 	if isinstance(value, dict):
 		# Keep the mapping's own class (frappe._dict rows stay attribute-readable).
-		return type(value)({key: scrub(item, allowed) for key, item in value.items()})
+		return type(value)(
+			{
+				key: scrub(item, allowed)
+				for key, item in value.items()
+				if not isinstance(item, dict) or in_scope(item, allowed)
+			}
+		)
 	if isinstance(value, (list, tuple)):
 		return [
 			scrub(item, allowed) for item in value if not isinstance(item, dict) or in_scope(item, allowed)
@@ -90,9 +96,12 @@ def policy_loosening(before: dict | None, after: dict) -> list[str]:
 	strict choice, and changing who signs off all loosen it. Tightening is never refused here."""
 	reasons = []
 	if before is None:
+		# A new policy is judged against what the connector gets without one: read-only, the
+		# site's own action, the site's sign-off role.
+		before = {"read_only": 1, "when_read_only": "Site default", "sign_off_role": ""}
 		if not after.get("read_only"):
 			reasons.append("a new policy that lets the connector write")
-		return reasons
+			return reasons
 	if before.get("read_only") and not after.get("read_only"):
 		reasons.append("read-only turned off")
 	was = before.get("when_read_only") or "Site default"

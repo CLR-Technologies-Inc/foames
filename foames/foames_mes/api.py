@@ -214,7 +214,9 @@ def get_dispatch_list(queue: str) -> list[dict]:
 
 	frappe.has_permission("Material Queue Entry", "read", throw=True)
 	require_read("Material Queue", queue)
-	return dispatch_list(queue)
+	rows = dispatch_list(queue)
+	allowed = set(readable("Material Queue Entry", [r["name"] for r in rows]))
+	return [r for r in rows if r["name"] in allowed]
 
 
 @frappe.whitelist()
@@ -226,7 +228,17 @@ def get_material_readiness(machine: str, hours: float = 0) -> dict:
 	frappe.has_permission("Lineside Bin", "read", throw=True)
 	frappe.has_permission("Material Queue Entry", "read", throw=True)
 	require_read("Machine", machine)
-	return material_readiness(machine, float(hours or 0))
+	result = material_readiness(machine, float(hours or 0))
+	# material_readiness also serves the scheduler; narrow its rows to what the caller may read.
+	bins = set(readable("Lineside Bin", [b["name"] for b in result["short"]]))
+	queues = set(readable("Material Queue", sorted({e["queue"] for e in result["ready"]})))
+	entries = set(
+		readable("Material Queue Entry", [e["name"] for e in result["ready"] if e["queue"] in queues])
+	)
+	result["short"] = [b for b in result["short"] if b["name"] in bins]
+	result["ready"] = [e for e in result["ready"] if e["queue"] in queues and e["name"] in entries]
+	result["ok"] = not result["short"]
+	return result
 
 
 @frappe.whitelist(methods=["POST"])

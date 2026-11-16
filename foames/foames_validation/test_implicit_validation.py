@@ -81,6 +81,14 @@ class TestImplicitValidationRun(IntegrationTestCase):
 		with self.assertRaises(api.ImplicitValidationError):
 			api.require_passed(name, "rev-1")
 
+	def test_a_changed_environment_or_source_is_detected(self):
+		for field, value in (("environment", "Production"), ("dataset_source", "Site")):
+			name = run()["name"]
+			frappe.db.set_value(api.RUN, name, field, value)
+			self.assertFalse(api.get_implicit_validation(name)["verified"])
+			with self.assertRaises(api.ImplicitValidationError):
+				api.require_passed(name, "rev-1")
+
 	def test_evidence_cannot_be_created_changed_or_deleted_on_the_desk(self):
 		with self.assertRaises(frappe.PermissionError):
 			frappe.get_doc(
@@ -107,7 +115,10 @@ class TestImplicitValidationRun(IntegrationTestCase):
 			machine=MACHINE,
 			since=START,
 			until=add_to_date(START, hours=2),
-			measurements={"bore": {"unit": "mm", "instrument": INSTRUMENT}},
+			# Far-off due date: this run is judged at the real time of the test run.
+			measurements={
+				"bore": {"unit": "mm", "instrument": {**INSTRUMENT, "calibration_due": "2099-12-31"}}
+			},
 		)
 		self.assertEqual(result["dataset"]["source"], "Site")
 		self.assertEqual(frappe.db.get_value(api.RUN, result["name"], "outcome"), iv.PASS)

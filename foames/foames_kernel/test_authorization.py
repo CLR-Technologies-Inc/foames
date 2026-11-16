@@ -149,6 +149,19 @@ class TestPolicyAuthority(IntegrationTestCase):
 				self.change(ENGINEER, **values)
 		self.assertTrue(write_gate.is_read_only(self.CONNECTOR))
 
+	def test_an_engineer_cannot_create_a_policy_that_overrides_the_site_gate(self):
+		frappe.db.delete("Connector Write Policy", {"connector": self.CONNECTOR})
+		for values in ({"when_read_only": "Queue for sign-off"}, {"sign_off_role": "FoaMES Engineer"}):
+			with as_user(ENGINEER), self.assertRaises(frappe.PermissionError):
+				frappe.get_doc(
+					{
+						"doctype": "Connector Write Policy",
+						"connector": self.CONNECTOR,
+						"read_only": 1,
+						**values,
+					}
+				).insert()
+
 	def test_an_engineer_can_tighten(self):
 		self.change(ENGINEER, when_read_only="Block")
 		self.assertEqual(

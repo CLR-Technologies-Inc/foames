@@ -29,7 +29,7 @@ import json
 import math
 import re
 import statistics
-from datetime import datetime
+from datetime import datetime, timezone
 from itertools import pairwise
 
 from foames.foames_validation import qualification as q
@@ -103,7 +103,9 @@ class DefinitionError(ValueError):
 
 def canonical(value) -> str:
 	"""Canonical JSON: sorted keys, no whitespace, so the same content always hashes the same."""
-	return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=str)
+	return json.dumps(
+		value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False, default=str
+	)
 
 
 def digest(value) -> str:
@@ -124,14 +126,17 @@ def _num(value):
 
 
 def _time(value):
+	"""A time as naive UTC. An aware time is converted; a naive one is taken to be UTC already."""
 	if not value:
 		return None
-	if isinstance(value, datetime):
-		return value.replace(tzinfo=None)
-	try:
-		return datetime.fromisoformat(str(value).replace("Z", "+00:00")).replace(tzinfo=None)
-	except ValueError:
-		return None
+	if not isinstance(value, datetime):
+		try:
+			value = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+		except ValueError:
+			return None
+	if value.tzinfo is not None:
+		value = value.astimezone(timezone.utc)
+	return value.replace(tzinfo=None)
 
 
 def _result(key, kind, outcome, summary, blocking=True, **evidence) -> dict:
@@ -265,7 +270,11 @@ def evaluate_requirement(check: dict, configuration: dict | None) -> dict:
 	if configuration is None:
 		return _result(key, "requirement", INDETERMINATE, "No configuration to check", blocking, path=path)
 	found, actual = _path(configuration, path)
-	evidence = {"path": path, "op": op, "expected": expected, "actual": actual if found else None}
+	# The value at the path is evidence, except where it may be a secret: `absent` exists to catch a
+	# value that should not be there, and `sensitive: true` marks any other such path.
+	hide = op == "absent" or bool(check.get("sensitive"))
+	shown = "(not recorded)" if hide else actual
+	evidence = {"path": path, "op": op, "expected": expected, "actual": shown if found else None}
 	if op == "absent":
 		outcome = FAIL if found else PASS
 		return _result(
@@ -292,7 +301,7 @@ def evaluate_requirement(check: dict, configuration: dict | None) -> dict:
 		key,
 		"requirement",
 		PASS if met else FAIL,
-		f"{path} = {actual!r} ({op} {expected!r}): {'met' if met else 'violated'}",
+		f"{path} = {shown!r} ({op} {expected!r}): {'met' if met else 'violated'}",
 		blocking,
 		**evidence,
 	)
@@ -407,11 +416,26 @@ def evaluate_metrology(check: dict, dataset: dict | None, as_of: datetime) -> di
 			else:
 				part("freshness", PASS, f"Latest reading is {age:g} s old", age=age)
 
+	# Data-side numbers are compared with check-side numbers in the check's unit. A difference
+	# (an uncertainty) scales without the temperature offset; a reading converts in full.
+	def in_check_unit(value, difference=False):
+		if value is None or not expected_unit or not data_unit:
+			return value
+		try:
+			if difference:
+				return value * (
+					convert(1.0, data_unit, expected_unit) - convert(0.0, data_unit, expected_unit)
+				)
+			return convert(value, data_unit, expected_unit)
+		except ValueError:
+			return None  # the unit part has already failed
+
 	# Uncertainty against tolerance (test uncertainty ratio)
-	tolerance, uncertainty = (
-		_num(check.get("tolerance")),
-		_num(check.get("uncertainty", series.get("uncertainty"))),
-	)
+	tolerance = _num(check.get("tolerance"))
+	if check.get("uncertainty") is not None:
+		uncertainty = _num(check.get("uncertainty"))
+	else:
+		uncertainty = in_check_unit(_num(series.get("uncertainty")), difference=True)
 	if tolerance is not None:
 		if uncertainty is None or uncertainty <= 0:
 			part("uncertainty", INDETERMINATE, "No expanded measurement uncertainty on record")
@@ -428,7 +452,7 @@ def evaluate_metrology(check: dict, dataset: dict | None, as_of: datetime) -> di
 	# Bias against a reference standard
 	reference, bias_limit = _num(check.get("reference_value")), _num(check.get("bias_limit"))
 	if reference is not None and bias_limit is not None:
-		values = [_num(p.get("v")) for p in points]
+		values = [in_check_unit(_num(p.get("v"))) for p in points]
 		values = [v for v in values if v is not None]
 		if len(values) < 2:
 			part("bias", INDETERMINATE, "Too few readings of the reference to judge bias")
