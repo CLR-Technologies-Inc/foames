@@ -140,11 +140,12 @@ class Client:
 
 	def __init__(self, host: str, port: int = PORT, timeout: float = 3.0, connect=None):
 		self.host, self.port, self.timeout = host, int(port), timeout
-		self._connect = connect or (
-			lambda: socket.create_connection((self.host, self.port), timeout=self.timeout)
-		)
+		self._connect = connect or self._open
 		self._sock = None
 		self._ids = itertools.cycle(range(1, 0x10000))
+
+	def _open(self):
+		return socket.create_connection((self.host, self.port), timeout=self.timeout)
 
 	def close(self):
 		if self._sock is not None:

@@ -15,16 +15,18 @@ from foames_bms_gateway.config import Config
 log = logging.getLogger("foames_bms_gateway")
 
 
+def _modbus_client(device):
+	return modbus.Client(device.host, device.port, device.timeout)
+
+
 class Readers:
 	"""One BACnet client for every BACnet device and one Modbus client per Modbus device. Tests pass
 	their own factories."""
 
 	def __init__(self, config: Config, bacnet_factory=None, modbus_factory=None):
 		self.config = config
-		self._bacnet_factory = bacnet_factory or (lambda: bacnet.Client())
-		self._modbus_factory = modbus_factory or (
-			lambda device: modbus.Client(device.host, device.port, device.timeout)
-		)
+		self._bacnet_factory = bacnet_factory or bacnet.Client
+		self._modbus_factory = modbus_factory or _modbus_client
 		self._bacnet = None
 		self._modbus = {}
 

@@ -168,7 +168,9 @@ def list_building_alarms(
 
 
 @frappe.whitelist()
-def get_point_history(point: str, since=None, until=None, limit: int = 500) -> dict:
+def get_point_history(
+	point: str, since: str | None = None, until: str | None = None, limit: int = 500
+) -> dict:
 	"""A point's readings, oldest first, in [since, until) (default the last 24 hours)."""
 	doc = frappe.get_doc("Building Point", point)
 	doc.check_permission("read")
@@ -195,8 +197,8 @@ def get_point_history(point: str, since=None, until=None, limit: int = 500) -> d
 
 @frappe.whitelist()
 def get_utility_consumption(
-	from_date=None,
-	to_date=None,
+	from_date: str | None = None,
+	to_date: str | None = None,
 	period: str = "Day",
 	utility: str | None = None,
 	zone: str | None = None,
