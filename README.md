@@ -182,12 +182,12 @@ Each agent runs the same tasks in the [agent benchmark](benchmarks/README.md): t
 
 | Agent | Model | Built for | Report | Tasks run | Pass rate | ECL reached |
 | --- | --- | --- | --- | ---: | ---: | --- |
-| aider-ollama-qwen2.5-coder-7b | `ollama_chat/qwen2.5-coder:7b` | coding | Running in Actions (run 43796612771) | - | - | - |
-| aider-ollama-qwen2.5-coder-14b | `ollama_chat/qwen2.5-coder:14b` | coding | Running in Actions (run 43796612771) | - | - | - |
-| aider-ollama-qwen3-8b | `ollama_chat/qwen3:8b` | general chat (off-label) | Running in Actions (run 43796612771) | - | - | - |
-| aider-ollama-qwen3-14b | `ollama_chat/qwen3:14b` | general chat (off-label) | Running in Actions (run 43796612771) | - | - | - |
-| aider-ollama-granite3.3-8b | `ollama_chat/granite3.3:8b` | coding | Running in Actions (run 43796612771) | - | - | - |
-| aider-ollama-gpt-oss-20b | `ollama_chat/gpt-oss:20b` | reasoning (off-label) | Running in Actions (run 43796612771) | - | - | - |
+| aider-ollama-qwen2.5-coder-7b | `ollama_chat/qwen2.5-coder:7b` | coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-qwen2.5-coder-14b | `ollama_chat/qwen2.5-coder:14b` | coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-qwen3-8b | `ollama_chat/qwen3:8b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-qwen3-14b | `ollama_chat/qwen3:14b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-granite3.3-8b | `ollama_chat/granite3.3:8b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-gpt-oss-20b | `ollama_chat/gpt-oss:20b` | reasoning (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 17% | none |
 | aider-ollama-deepseek-coder-v2-16b | `ollama_chat/deepseek-coder-v2:16b` | coding | Running in Actions (run 43805918094) | - | - | - |
 | aider-ollama-yi-coder-9b | `ollama_chat/yi-coder:9b` | coding | Running in Actions (run 43805918094) | - | - | - |
 | aider-ollama-granite-code-8b | `ollama_chat/granite-code:8b` | coding | Running in Actions (run 43805918094) | - | - | - |

@@ -4,7 +4,7 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 - **Run dates (UTC):** started 2026-11-16T01:26:37+00:00, last run finished 2026-11-16T01:44:28+00:00
-- **Model:** `openrouter/thinkingmachines/inkling-2-small:free` (oss tier), API model id openrouter/thinkingmachines/inkling-2-small:free, called 2026-11-16 (picked from the agent's candidates; the provider may update a model behind an unversioned id)
+- **Model:** `openrouter/thinkingmachines/inkling-2-small:free` (oss tier, built for -), API model id openrouter/thinkingmachines/inkling-2-small:free, called 2026-11-16 (picked from the agent's candidates; the provider may update a model behind an unversioned id)
 - openrouter/qwen/qwen3-coder:free: not listed as free
 - openrouter/openai/gpt-oss-120b:free: not listed as free
 - openrouter/moonshotai/kimi-k2:free: not listed as free
@@ -16,7 +16,7 @@
 - **Where it ran:** GitHub-hosted runner, model on the provider's free API tier; sandbox docker, image `sha256:6166f83c4e86`
 - **FoaMES commit:** `ac71285e4838`
 - Aider on a free API tier; needs the OPENROUTER_API_KEY Actions secret. OpenRouter free model; 50 requests a day without credits. The job picks the first candidate still listed with a :free id (qwen3-coder:free went paid-only in 2026-11), else the free model with the largest context. Free tiers can use prompts for training: send only public benchmark scenarios.
-- Workflow run: https://github.com/CLR-Technologies-Inc/foames/actions/runs/43787796363
+- Workflow run: https://github.com/CLR-Technologies-Inc/foames/actions/runs/43796612771
 
 | Runs | Success (95 % CI) | Quality | Correctness | Process | Composite | Mean time | Tokens in / cached / out | Cost | List-price equivalent | ECL reached |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
