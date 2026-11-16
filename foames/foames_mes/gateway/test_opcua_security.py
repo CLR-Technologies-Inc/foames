@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """OPC UA message security, certificates and username auth taken from Machine Data Settings.
 asyncua is optional, so `apply_security` runs against stand-in modules and a stand-in client."""

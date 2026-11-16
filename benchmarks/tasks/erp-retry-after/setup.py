@@ -1,3 +1,6 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Plant the defect: a server error on a posting is retried blind instead of being checked first,
 so a 5xx that came after S/4HANA committed the posting produces a duplicate."""
 

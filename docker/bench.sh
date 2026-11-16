@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 # Host-side entry point for the FoaMES Docker dev bench.
 #
 #   ./bench.sh up            build the image, start MariaDB/Redis/bench, create the bench and site

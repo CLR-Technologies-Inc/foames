@@ -1,3 +1,6 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Plant the defect: a counter that drops is taken as a fresh count from zero, so a reset or an
 out-of-order reading invents production."""
 

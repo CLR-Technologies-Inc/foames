@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Optional Inspect AI front end. EXPERIMENTAL: written against the Inspect AI and inspect_swe
 documentation, not yet run end to end. The standard-library runner (`foames-bench run`) is the

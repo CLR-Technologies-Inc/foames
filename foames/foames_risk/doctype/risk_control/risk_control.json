@@ -1,0 +1,169 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-15 23:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "control",
+  "control_level",
+  "control_function",
+  "status",
+  "control_owner",
+  "implemented_on",
+  "cb_verify",
+  "verification_method",
+  "verification_interval_days",
+  "verified_on",
+  "verified_by",
+  "verification_result",
+  "effectiveness",
+  "next_verification_on",
+  "sb_evidence",
+  "evidence_doctype",
+  "evidence_name",
+  "cb_evidence",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "control",
+   "fieldtype": "Small Text",
+   "label": "Control",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 3
+  },
+  {
+   "fieldname": "control_level",
+   "fieldtype": "Select",
+   "label": "Level",
+   "options": "Elimination\nSubstitution\nEngineering Controls\nAdministrative Controls\nWork Practices\nPPE\nOther Management Control",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2,
+   "description": "The hierarchy of controls, most effective first"
+  },
+  {
+   "fieldname": "control_function",
+   "fieldtype": "Select",
+   "label": "Function",
+   "options": "Preventive\nDetective\nCorrective\nContingency",
+   "default": "Preventive"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Planned\nIn Place\nRetired",
+   "default": "Planned",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "control_owner",
+   "fieldtype": "Link",
+   "label": "Control Owner",
+   "options": "User"
+  },
+  {
+   "fieldname": "implemented_on",
+   "fieldtype": "Date",
+   "label": "Implemented On"
+  },
+  {
+   "fieldname": "cb_verify",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "verification_method",
+   "fieldtype": "Select",
+   "label": "Verification Method",
+   "options": "\nInspection\nTest\nObservation\nAudit\nMeasurement\nDocument Review"
+  },
+  {
+   "fieldname": "verification_interval_days",
+   "fieldtype": "Int",
+   "label": "Verify Every (days)",
+   "non_negative": 1,
+   "description": "Empty: the Risk Settings interval"
+  },
+  {
+   "fieldname": "verified_on",
+   "fieldtype": "Date",
+   "label": "Last Verified On"
+  },
+  {
+   "fieldname": "verified_by",
+   "fieldtype": "Link",
+   "label": "Verified By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "verification_result",
+   "fieldtype": "Select",
+   "label": "Verification Result",
+   "options": "Not Verified\nPass\nFail",
+   "default": "Not Verified",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "effectiveness",
+   "fieldtype": "Select",
+   "label": "Effectiveness",
+   "options": "Not Assessed\nEffective\nPartially Effective\nIneffective",
+   "default": "Not Assessed",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "next_verification_on",
+   "fieldtype": "Date",
+   "label": "Next Verification",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_evidence",
+   "fieldtype": "Section Break",
+   "label": "Evidence"
+  },
+  {
+   "fieldname": "evidence_doctype",
+   "fieldtype": "Link",
+   "label": "Evidence Type",
+   "options": "DocType",
+   "description": "The record that carries out or proves the control: an SOP or work instruction for a work practice, a maintenance plan for an engineering control, a hazard assessment, a connector write policy"
+  },
+  {
+   "fieldname": "evidence_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Evidence",
+   "options": "evidence_doctype"
+  },
+  {
+   "fieldname": "cb_evidence",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 23:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Risk",
+ "name": "Risk Control",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1
+}

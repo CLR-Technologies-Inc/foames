@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Payloads for production and process order confirmations (`ProdnOrdConf2` in
 API_PROD_ORDER_CONFIRMATION_2_SRV and `ProcOrdConf2` in API_PROC_ORDER_CONFIRMATION_2_SRV).

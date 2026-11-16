@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """The MQTT, OPC UA and Sparkplug B gateways against a site. The message handlers commit after each
 event (they run in long-lived processes), so this module cleans up after itself explicitly."""
