@@ -117,7 +117,8 @@ jobs:
           python-version: "3.12"
       - id: names
         run: |
-          echo "slug=$(echo '${{ matrix.agent }}-${{ contains(matrix.task, ' ') && 'all' || matrix.task }}' | tr -c 'A-Za-z0-9._-' '_')" >> "$GITHUB_OUTPUT"
+          # The workflow run id keeps a rerun of the same agent and tasks from overwriting earlier run files.
+          echo "slug=$(echo '${{ matrix.agent }}-${{ contains(matrix.task, ' ') && 'all' || matrix.task }}-${{ github.run_id }}' | tr -c 'A-Za-z0-9._-' '_')" >> "$GITHUB_OUTPUT"
       - name: Sandbox image with aider
         run: |
           docker build -t foames-bench-agent \
@@ -231,6 +232,9 @@ jobs:
           python benchmarks/scripts/publish_results.py --runs runs --out-root benchmarks/results $RAW \
             --workflow-run "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" | tee report.log
           cat "$(ls -td benchmarks/results/*/ | head -1)README.md" >> "$GITHUB_STEP_SUMMARY" || true
+          # The results table in the repository README, and the website's top models page, from every dated report.
+          python benchmarks/scripts/readme_status.py
+          python benchmarks/scripts/site_top_models.py
       - uses: actions/upload-artifact@v7
         with:
           name: bench-report

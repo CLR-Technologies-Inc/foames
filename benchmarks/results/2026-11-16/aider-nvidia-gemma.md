@@ -3,16 +3,17 @@
 <!-- Copyright (c) 2026 CLR Technologies Inc. and contributors -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
-- **Run dates (UTC):** started 2026-11-16T08:46:39+00:00, last run finished 2026-11-16T13:38:13+00:00
-- **Model:** `nvidia_nim/google/gemma-4-31b-it` (oss tier, built for general chat (off-label))
-- **Harness:** aider
-- **Where it ran:** GitHub-hosted runner; sandbox docker
-- **FoaMES commit:** `711c83b57a8e`
+- **Run dates (UTC):** started 2026-11-16T08:46:39+00:00, last run finished 2026-11-16T15:33:03+00:00
+- **Model:** `nvidia_nim/google/gemma-4-31b-it` (oss tier, built for general chat (off-label)), API model id nvidia_nim/google/gemma-4-31b-it, called 2026-11-16 (picked from the agent's candidates; the provider may update a model behind an unversioned id)
+- nvidia_nim/google/gemma-4-31b-it: HTTP timeout TimeoutError: The read operation timed out
+- **Harness:** aider aider 0.86.1
+- **Where it ran:** GitHub-hosted runner, model on the provider's free API tier; sandbox docker, image `sha256:1fea8f92849d`
+- **FoaMES commit:** `1a844a1fd738`, `711c83b57a8e`, `90d9f6049e71`
 - Aider on NVIDIA Build's free API (NIM, OpenAI-compatible); needs the NVIDIA_API_KEY Actions secret. Model family: general chat (Google Gemma). The job picks the newest listed id that matches the candidates and answers a test call. About 40 requests a minute, shared by every NVIDIA agent, and NVIDIA logs prompts: send only public benchmark scenarios.
 
 | Runs | Success (95 % CI) | Quality | Correctness | Process | Composite | Mean time | Tokens in / cached / out | Cost | List-price equivalent | ECL reached |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| 13 | 8% (1% to 33%) | 0.32 | 0.37 | 0.27 | 0.25 | 1344 s | 99,000 / 0 / 13,149 | $0.00 | n/a | none |
+| 21 | 5% (1% to 23%) | 0.24 | 0.29 | 0.18 | 0.18 | 1100 s | 116,000 / 0 / 20,749 | $0.00 | n/a | none |
 
 | Task | ECL | Complexity | Finished (UTC) | Success | Quality | Correctness | Process | Time | Tokens in / out | Exit | Notes |
 | --- | ---: | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
@@ -29,3 +30,11 @@
 | sector-313-textile-mills (rep 1) | - | medium | 2026-11-16T13:24 | fail | 0.10 | 0.15 | 0.04 | 272 s | 0 / 0 | 0 | broke an invariant |
 | sector-314-carpet (rep 1) | - | medium | 2026-11-16T13:28 | fail | 0.10 | 0.15 | 0.04 | 211 s | 0 / 0 | 0 | broke an invariant |
 | sector-315-apparel (rep 1) | - | medium | 2026-11-16T13:38 | fail | 0.10 | 0.15 | 0.04 | 603 s | 0 / 0 | 0 | broke an invariant |
+| sector-333-machinery (rep 1) | - | medium | 2026-11-16T14:48 | fail | 0.10 | 0.15 | 0.04 | 266 s | 0 / 0 | 0 | broke an invariant |
+| sector-3344-semiconductors (rep 1) | - | medium | 2026-11-16T14:52 | fail | 0.10 | 0.15 | 0.04 | 261 s | 0 / 0 | 0 | broke an invariant |
+| sector-335-electrical-equipment (rep 1) | - | medium | 2026-11-16T14:55 | fail | 0.10 | 0.15 | 0.04 | 174 s | 0 / 0 | 0 | broke an invariant |
+| sector-3361-motor-vehicles (rep 1) | - | medium | 2026-11-16T15:04 | fail | 0.10 | 0.15 | 0.04 | 492 s | 0 / 0 | 0 | broke an invariant |
+| sector-3364-aerospace (rep 1) | - | medium | 2026-11-16T15:09 | fail | 0.10 | 0.15 | 0.04 | 302 s | 0 / 0 | 0 | broke an invariant |
+| sector-337-furniture (rep 1) | - | medium | 2026-11-16T15:13 | fail | 0.10 | 0.15 | 0.04 | 285 s | 0 / 0 | 0 | broke an invariant |
+| sector-3391-medical-devices (rep 1) | - | medium | 2026-11-16T15:33 | fail | 0.10 | 0.15 | 0.04 | 1149 s | 0 / 0 | 0 | broke an invariant |
+| spc-ewma-chart (rep 1) | 2 | medium | 2026-11-16T15:28 | fail | 0.13 | 0.25 | 0.00 | 2700 s | 17,000 / 7,600 | None | timed out, broke an invariant |

@@ -3,16 +3,17 @@
 <!-- Copyright (c) 2026 CLR Technologies Inc. and contributors -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
-- **Run dates (UTC):** started 2026-11-16T08:47:40+00:00, last run finished 2026-11-16T14:17:29+00:00
-- **Model:** `nvidia_nim/deepseek-ai/deepseek-v4.1-flash` (oss tier, built for coding and general)
-- **Harness:** aider
-- **Where it ran:** GitHub-hosted runner; sandbox docker
-- **FoaMES commit:** `711c83b57a8e`
+- **Run dates (UTC):** started 2026-11-16T08:47:40+00:00, last run finished 2026-11-16T15:28:57+00:00
+- **Model:** `nvidia_nim/deepseek-ai/deepseek-v4.1-flash` (oss tier, built for coding and general), API model id nvidia_nim/deepseek-ai/deepseek-v4.1-flash, called 2026-11-16 (picked from the agent's candidates; the provider may update a model behind an unversioned id)
+- nvidia_nim/deepseek-ai/deepseek-v4.1-flash: HTTP timeout TimeoutError: The read operation timed out
+- **Harness:** aider aider 0.86.1
+- **Where it ran:** GitHub-hosted runner, model on the provider's free API tier; sandbox docker, image `sha256:edfb3f0a1e69`
+- **FoaMES commit:** `711c83b57a8e`, `90d9f6049e71`
 - Aider on NVIDIA Build's free API (NIM, OpenAI-compatible); needs the NVIDIA_API_KEY Actions secret. Model family: coding and general (DeepSeek). The job picks the newest listed id that matches the candidates and answers a test call. About 40 requests a minute, shared by every NVIDIA agent, and NVIDIA logs prompts: send only public benchmark scenarios.
 
 | Runs | Success (95 % CI) | Quality | Correctness | Process | Composite | Mean time | Tokens in / cached / out | Cost | List-price equivalent | ECL reached |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| 8 | 0% (0% to 32%) | 0.19 | 0.26 | 0.11 | 0.14 | 2472 s | 23,000 / 0 / 378 | $0.00 | n/a | none |
+| 9 | 0% (0% to 30%) | 0.18 | 0.26 | 0.10 | 0.14 | 2497 s | 23,000 / 0 / 378 | $0.00 | n/a | none |
 
 | Task | ECL | Complexity | Finished (UTC) | Success | Quality | Correctness | Process | Time | Tokens in / out | Exit | Notes |
 | --- | ---: | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
@@ -24,3 +25,4 @@
 | sector-211-oil-gas (rep 1) | - | medium | 2026-11-16T12:17 | fail | 0.10 | 0.15 | 0.04 | 3600 s | 0 / 0 | None | timed out, broke an invariant |
 | sector-212-mining (rep 1) | - | medium | 2026-11-16T13:17 | fail | 0.10 | 0.15 | 0.04 | 3600 s | 0 / 0 | None | timed out, broke an invariant |
 | sector-2213-wastewater (rep 1) | - | medium | 2026-11-16T14:17 | fail | 0.10 | 0.15 | 0.04 | 3600 s | 0 / 0 | None | timed out, broke an invariant |
+| spc-ewma-chart (rep 1) | 2 | medium | 2026-11-16T15:28 | fail | 0.13 | 0.25 | 0.00 | 2700 s | 0 / 0 | None | timed out, broke an invariant |

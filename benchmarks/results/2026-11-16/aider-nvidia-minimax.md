@@ -3,16 +3,17 @@
 <!-- Copyright (c) 2026 CLR Technologies Inc. and contributors -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
-- **Run dates (UTC):** started 2026-11-16T08:45:57+00:00, last run finished 2026-11-16T14:32:11+00:00
-- **Model:** `nvidia_nim/minimaxai/minimax-m3.1-flash` (oss tier, built for agentic coding)
-- **Harness:** aider
-- **Where it ran:** GitHub-hosted runner; sandbox docker
-- **FoaMES commit:** `684820cb9cec`
+- **Run dates (UTC):** started 2026-11-16T08:45:57+00:00, last run finished 2026-11-16T15:25:52+00:00
+- **Model:** `nvidia_nim/minimaxai/minimax-m3.1-flash` (oss tier, built for agentic coding), API model id nvidia_nim/minimaxai/minimax-m3.1-flash, called 2026-11-16 (picked from the agent's candidates; the provider may update a model behind an unversioned id)
+- nvidia_nim/minimaxai/minimax-m3.1-flash: HTTP 200
+- **Harness:** aider aider 0.86.1
+- **Where it ran:** GitHub-hosted runner, model on the provider's free API tier; sandbox docker, image `sha256:88601bf5f75a`
+- **FoaMES commit:** `684820cb9cec`, `90d9f6049e71`
 - Aider on NVIDIA Build's free API (NIM, OpenAI-compatible); needs the NVIDIA_API_KEY Actions secret. Model family: agentic coding (MiniMax). The job picks the newest listed id that matches the candidates and answers a test call. About 40 requests a minute, shared by every NVIDIA agent, and NVIDIA logs prompts: send only public benchmark scenarios.
 
 | Runs | Success (95 % CI) | Quality | Correctness | Process | Composite | Mean time | Tokens in / cached / out | Cost | List-price equivalent | ECL reached |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| 14 | 0% (0% to 22%) | 0.15 | 0.21 | 0.08 | 0.11 | 1481 s | 1,091,000 / 0 / 10,862 | $0.00 | n/a | none |
+| 15 | 0% (0% to 20%) | 0.15 | 0.21 | 0.07 | 0.11 | 1563 s | 1,091,000 / 0 / 10,862 | $0.00 | n/a | none |
 
 | Task | ECL | Complexity | Finished (UTC) | Success | Quality | Correctness | Process | Time | Tokens in / out | Exit | Notes |
 | --- | ---: | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
@@ -30,3 +31,4 @@
 | sector-314-carpet (rep 1) | - | medium | 2026-11-16T13:10 | fail | 0.10 | 0.15 | 0.04 | 1129 s | 172,000 / 4,100 | 0 | broke an invariant |
 | sector-315-apparel (rep 1) | - | medium | 2026-11-16T13:32 | fail | 0.10 | 0.15 | 0.04 | 1317 s | 166,000 / 438 | 0 | broke an invariant |
 | sector-316-footwear (rep 1) | - | medium | 2026-11-16T14:32 | fail | 0.10 | 0.15 | 0.04 | 3600 s | 0 / 0 | None | timed out, broke an invariant |
+| spc-ewma-chart (rep 1) | 2 | medium | 2026-11-16T15:25 | fail | 0.13 | 0.25 | 0.00 | 2700 s | 0 / 0 | None | timed out, broke an invariant |

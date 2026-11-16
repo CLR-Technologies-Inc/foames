@@ -148,17 +148,17 @@ Each agent runs the same tasks in the [agent benchmark](benchmarks/README.md): t
 
 | Agent | Model | Built for | Report | Tasks run | Pass rate | ECL reached |
 | --- | --- | --- | --- | ---: | ---: | --- |
-| aider-nvidia-deepseek | `nvidia_nim/deepseek-ai/deepseek-v4.1-flash` | coding and general | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 8 | 0% | none |
+| aider-nvidia-deepseek | `nvidia_nim/deepseek-ai/deepseek-v4.1-flash` | coding and general | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 9 | 0% | none |
 | aider-nvidia-kimi | picked at run time | agentic coding | Skipped: NVIDIA Build listed no Kimi model for this key on 2026-11-16 | - | - | - |
 | aider-nvidia-glm | `nvidia_nim/z-ai/glm-5.3-flash` | agentic coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
-| aider-nvidia-minimax | `nvidia_nim/minimaxai/minimax-m3.1-flash` | agentic coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 14 | 0% | none |
+| aider-nvidia-minimax | `nvidia_nim/minimaxai/minimax-m3.1-flash` | agentic coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 15 | 0% | none |
 | aider-nvidia-qwen3-coder | picked at run time | coding | Skipped: NVIDIA Build listed no Qwen3-Coder model for this key on 2026-11-16 | - | - | - |
 | aider-nvidia-gpt-oss-120b | `nvidia_nim/openai/gpt-oss-20b` | reasoning (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 35 | 3% | none |
 | aider-nvidia-nemotron | `nvidia_nim/nvidia/nemotron-3-ultra-550b-a55b` | reasoning (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
 | aider-nvidia-llama | `nvidia_nim/meta/llama-3.2-90b-vision-instruct` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 35 | 0% | none |
 | aider-nvidia-mistral-large | `nvidia_nim/mistralai/mistral-large-4-1t-a52b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 35 | 0% | none |
-| aider-nvidia-gemma | `nvidia_nim/google/gemma-4-31b-it` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 13 | 8% | none |
-| aider-nvidia-laguna | `nvidia_nim/poolside/laguna-xs-2.1` | coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 12 | 0% | none |
+| aider-nvidia-gemma | `nvidia_nim/google/gemma-4-31b-it` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 21 | 5% | none |
+| aider-nvidia-laguna | `nvidia_nim/poolside/laguna-xs-2.1` | coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 21 | 0% | none |
 | aider-nvidia-step | `nvidia_nim/stepfun-ai/step-5-preview` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 35 | 0% | none |
 
 **Groq, free tier**
