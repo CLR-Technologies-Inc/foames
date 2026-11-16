@@ -1,0 +1,109 @@
+{
+ "case_id": "sector-322-paper",
+ "sector": "Paper manufacturing (coated paper mill)",
+ "naics": "322",
+ "seed": 322,
+ "source": {
+  "title": "Significant Natural Gas Savings Achieved Following Save Energy Now Assessment (West Linn Paper Company)",
+  "publisher": "U.S. Department of Energy, Industrial Technologies Program (Save Energy Now case study)",
+  "report": "DOE/GO-102008-2525",
+  "date": "2008-03",
+  "url": "https://www1.eere.energy.gov/manufacturing/tech_assistance/pdfs/42352.pdf",
+  "us_government_work": true,
+  "named_organisations": [
+   "West Linn"
+  ]
+ },
+ "claim": {
+  "kind": "annual_energy_saving",
+  "value": 58200,
+  "unit": "MMBtu/yr",
+  "text": "Boiler O2 trim, blowdown heat recovery, a steam header extension and trap repairs save about 58,200 MMBtu ($379,000) of natural gas a year."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-02-16T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-06-15T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   0,
+   24
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6
+ ],
+ "mark_unknown_after_minutes": 30,
+ "production_unit": "t",
+ "energy_unit": "MMBtu",
+ "energy_price": 6.51,
+ "line": {
+  "source_id": "PLANT-A-PM-3",
+  "description": "Paper machine 3 and coater",
+  "ideal_cycle_seconds": 90.0,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "PLANT-A-GAS-MMBTU",
+  "description": "Boiler natural gas meter",
+  "counter": "gas_mmbtu",
+  "rollover": 100000,
+  "every_minutes": 15,
+  "start_value": 0
+ },
+ "baseline": {
+  "rate_per_run_hour": 31,
+  "scrap_fraction": 0.03,
+  "down_per_day": 0.8,
+  "down_minutes": 45,
+  "idle_per_day": 0.5,
+  "idle_minutes": 20,
+  "setup_per_day": 1.5,
+  "setup_minutes": 30,
+  "planned_down_per_week": 1,
+  "planned_down_minutes": 480,
+  "energy_base_per_hour": 60,
+  "energy_per_unit": 5.5
+ },
+ "after": {
+  "rate_per_run_hour": 31,
+  "scrap_fraction": 0.03,
+  "down_per_day": 0.8,
+  "down_minutes": 45,
+  "idle_per_day": 0.5,
+  "idle_minutes": 20,
+  "setup_per_day": 1.5,
+  "setup_minutes": 30,
+  "planned_down_per_week": 1,
+  "planned_down_minutes": 480,
+  "energy_base_per_hour": 55,
+  "energy_per_unit": 5.5
+ },
+ "traps": {
+  "network_gap": {
+   "window": "baseline",
+   "at": 0.25,
+   "hours": 4
+  },
+  "meter_rollover": {
+   "window": "baseline",
+   "at": 0.6
+  },
+  "duplicate": {
+   "window": "after"
+  }
+ },
+ "target_ratio": 1.04
+}

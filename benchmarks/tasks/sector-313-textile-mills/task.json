@@ -1,0 +1,39 @@
+{
+ "id": "sector-313-textile-mills",
+ "title": "Verify a ventilation fan drive saving at a textile mill (NAICS 313)",
+ "family": "sector-case-study",
+ "tier": "pure",
+ "complexity": "medium",
+ "trl_bands": [
+  "4-6",
+  "7-9"
+ ],
+ "dimension": "Measurement and verification of a published improvement from FoaMES events: counter rules, unknown time, OEE, claim against measurement",
+ "hidden": {
+  "functional": [
+   "test_functional.py"
+  ],
+  "invariant": [
+   "test_invariants.py"
+  ]
+ },
+ "regression": [
+  "foames/foames_mes/test_machine_data_logic.py",
+  "foames/foames_mes/test_oee_ledger.py"
+ ],
+ "allowed_paths": [
+  "analysis/*",
+  "case_study.json",
+  "CASE_STUDY.md"
+ ],
+ "deliverables": [
+  "analysis/case_study.py",
+  "case_study.json",
+  "CASE_STUDY.md"
+ ],
+ "rubric": "rubric.json",
+ "budget": {
+  "usd": 1.5,
+  "seconds": 1200
+ }
+}

@@ -1,0 +1,20 @@
+{
+ "file": "CASE_STUDY.md",
+ "sections": ["Summary", "Context", "Measurement design", "Data connection", "Results", "What else changed", "Gaps", "Sources"],
+ "concepts": [
+  {"id": "illustrative", "weight": 1.0, "any": ["illustrative"]},
+  {"id": "claim_vs_measured", "weight": 1.5, "any": ["claim(ed)?\\b.{0,120}measured", "measured\\b.{0,120}claim"]},
+  {"id": "unknown_is_loss", "weight": 1.5, "any": ["unknown.{0,80}loss", "loss.{0,80}unknown", "no (machine )?signal.{0,80}loss"]},
+  {"id": "counter_rules", "weight": 1.0, "any": ["\\breset", "rollover", "out[- ]of[- ]order", "first reading", "running[- ]total"]},
+  {"id": "confounders", "weight": 1.0, "any": ["confound", "production (volume|mix)", "base load", "volume"]},
+  {"id": "government_source", "weight": 1.0, "any": ["(US|U\\.S\\.) government work", "public domain", "Department of Energy", "\\bNIST\\b", "\\bDOE\\b"]},
+  {"id": "people_act", "weight": 0.5, "any": ["people (who own|act)", "suggest", "a person", "human (review|approval)"]},
+  {"id": "anonymised", "weight": 0.5, "any": ["Plant A", "anonymi[sz]ed"]}
+ ],
+ "red_flags": [
+  {"id": "claims_real_measurement", "pattern": "(?<!not )(?<!never )(?<!n't )measured (on|at) (the|this) (plant|site|facility) (by|with) FoaMES"},
+  {"id": "foames_acted", "pattern": "FoaMES (changed|adjusted|switched|turned (off|on)|wrote to) (the )?(machine|compressor|setpoint|tag|ERP)"},
+  {"id": "fills_gap_with_last_state", "pattern": "(?<!not )(?<!never )(?<!n't )(fill|carry) (the )?gaps? (forward )?with (the )?(last|previous)"}
+ ],
+ "red_flag_penalty": 0.15
+}

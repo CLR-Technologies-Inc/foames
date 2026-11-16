@@ -1,0 +1,110 @@
+{
+ "case_id": "sector-2213-wastewater",
+ "sector": "Utilities (municipal wastewater treatment)",
+ "naics": "2213",
+ "seed": 2213,
+ "source": {
+  "title": "Onondaga County Department of Water Environment Protection: Process Optimization Saves Energy at Metropolitan Syracuse Wastewater Treatment Plant",
+  "publisher": "U.S. Department of Energy, Industrial Technologies Program (BestPractices performance spotlight)",
+  "report": "DOE/GO-102005-2136",
+  "date": "2005-12",
+  "url": "https://www.osti.gov/servlets/purl/1218544",
+  "us_government_work": true,
+  "named_organisations": [
+   "Onondaga",
+   "Syracuse"
+  ]
+ },
+ "claim": {
+  "kind": "annual_energy_saving",
+  "value": 2810000,
+  "unit": "kWh/yr",
+  "text": "Process optimisation cut the blowers in service from 21 to 13 and saves about 2.81 million kWh ($207,500) of electricity a year."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-05-11T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-09-14T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   0,
+   24
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6
+ ],
+ "mark_unknown_after_minutes": 30,
+ "production_unit": "MG",
+ "energy_unit": "kWh",
+ "energy_price": 0.0738,
+ "line": {
+  "source_id": "PLANT-A-AERATION",
+  "description": "Secondary treatment (flow treated)",
+  "ideal_cycle_seconds": 900.0,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "PLANT-A-BLOWERS-KWH",
+  "description": "Aeration blowers kWh meter",
+  "counter": "energy_kwh",
+  "rollover": 10000000,
+  "every_minutes": 15,
+  "start_value": 0
+ },
+ "baseline": {
+  "rate_per_run_hour": 3.4,
+  "scrap_fraction": 0.0,
+  "down_per_day": 0.1,
+  "down_minutes": 60,
+  "idle_per_day": 0.0,
+  "idle_minutes": 0,
+  "setup_per_day": 0.0,
+  "setup_minutes": 0,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 1450,
+  "energy_per_unit": 20
+ },
+ "after": {
+  "rate_per_run_hour": 3.3,
+  "scrap_fraction": 0.0,
+  "down_per_day": 0.1,
+  "down_minutes": 60,
+  "idle_per_day": 0.0,
+  "idle_minutes": 0,
+  "setup_per_day": 0.0,
+  "setup_minutes": 0,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 1130,
+  "energy_per_unit": 20
+ },
+ "traps": {
+  "network_gap": {
+   "window": "after",
+   "at": 0.7,
+   "hours": 6
+  },
+  "out_of_order": {
+   "window": "baseline"
+  },
+  "meter_rollover": {
+   "window": "after",
+   "at": 0.35
+  }
+ },
+ "target_ratio": 0.97
+}
