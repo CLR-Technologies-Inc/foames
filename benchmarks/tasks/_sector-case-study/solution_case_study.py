@@ -12,6 +12,7 @@ OEE from foames.foames_mes.oee.compute_oee. The state ledger keeps time without 
 
 import argparse
 import csv
+import io
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -177,8 +178,8 @@ def main(argv=None):
 	opts = parser.parse_args(argv)
 	data = Path(opts.data)
 	case = json.loads((data / "case.json").read_text(encoding="utf-8"))
-	with open(data / "events.csv", newline="", encoding="utf-8") as f:
-		rows = sorted(csv.DictReader(f), key=lambda r: int(r["seq"]))
+	text = (data / "events.csv").read_text(encoding="utf-8")
+	rows = sorted(csv.DictReader(io.StringIO(text, newline="")), key=lambda r: int(r["seq"]))
 	Path(opts.out).write_text(json.dumps(analyse(case, rows), indent=1) + "\n", encoding="utf-8")
 
 
