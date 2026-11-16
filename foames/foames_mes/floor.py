@@ -10,12 +10,20 @@ never has to query DocTypes one by one.
 Other apps add their own sections through the `foames_floor_snapshot_extensions` hook: each
 dotted path is called with the snapshot dict, the start of the window and the current time, and
 adds keys to the dict in place.
+
+A snapshot read for a person or an agent (`for_user=True`, as the API, the Floor View page and the
+MCP tool read it) holds only what that reader may see: the machines their role and user permissions
+allow, the sections of DocTypes they may read, and no row about another machine. Extensions find the
+reader's machines in `snapshot["scope"]["machines"]` (None for a system read) and must keep to them;
+whatever they add is scrubbed of other machines afterwards all the same. The snapshot is built fresh
+on every call and never cached, so one reader's scope cannot reach another.
 """
 
 import frappe
 from frappe.query_builder.functions import Sum
 from frappe.utils import add_days, get_datetime, now_datetime
 
+from foames.foames_kernel import record_scope
 from foames.foames_mes.counters import minutes_between
 from foames.foames_mes.doctype.andon_call.andon_call import open_andon_calls
 from foames.foames_mes.doctype.recognition.recognition import floor_recognitions
@@ -23,33 +31,56 @@ from foames.foames_mes.doctype.shift_pattern.shift_pattern import load_pattern
 from foames.foames_mes.doctype.work_instruction_run.work_instruction_run import active_runs
 from foames.foames_mes.shifts import window_at
 
+MACHINE_FIELDS = [
+	"name",
+	"title",
+	"status",
+	"last_seen",
+	"last_count_at",
+	"machine_type",
+	"ecl",
+	"ideal_cycle_seconds",
+	"current_job_reference",
+	"current_job_since",
+	"shift_pattern",
+]
+SUGGESTION_FIELDS = ["name", "title", "category", "severity", "agent", "reference_doctype", "reference_name"]
 
-def floor_snapshot(days: int = 1) -> dict:
+
+def _reader(for_user: bool):
+	"""(list function, may-read check) for a system read or a read on behalf of the session user."""
+	if not for_user:
+		return frappe.get_all, lambda doctype: True
+
+	def list_for_user(doctype, **kwargs):
+		kwargs.setdefault("limit_page_length", 0)
+		return frappe.get_list(doctype, **kwargs)
+
+	return list_for_user, lambda doctype: bool(frappe.has_permission(doctype, "read"))
+
+
+def floor_snapshot(days: int = 1, for_user: bool = False) -> dict:
+	"""The plant now. A system read (the scheduler's rules) sees every machine; `for_user=True`
+	scopes it to what the session user may read."""
 	now = now_datetime()
 	since = add_days(now, -days)
-	machines = frappe.get_all(
-		"Machine",
-		{"disabled": 0},
-		[
-			"name",
-			"title",
-			"status",
-			"last_seen",
-			"last_count_at",
-			"machine_type",
-			"ecl",
-			"ideal_cycle_seconds",
-			"current_job_reference",
-			"current_job_since",
-			"shift_pattern",
-		],
-		order_by="name",
+	list_of, may_read = _reader(for_user)
+	machines = list_of("Machine", filters={"disabled": 0}, fields=MACHINE_FIELDS, order_by="name")
+	allowed = {m.name for m in machines} if for_user else None
+	jobs = (
+		current_jobs([m.current_job_reference for m in machines if m.current_job_reference], list_of)
+		if may_read("External Reference")
+		else {}
 	)
-	jobs = current_jobs([m.current_job_reference for m in machines if m.current_job_reference])
-	andon = open_andon_calls(now) if frappe.has_permission("Andon Call", "read") else []
-	runs = active_runs(now) if frappe.has_permission("Work Instruction Run", "read") else []
+	andon = record_scope.filter_rows(open_andon_calls(now), allowed) if may_read("Andon Call") else []
+	runs = record_scope.filter_rows(active_runs(now), allowed) if may_read("Work Instruction Run") else []
+	read_counts = may_read("Machine Event")
+	read_oee = may_read("OEE Period")
 	for m in machines:
-		m["current_job"] = jobs.get(m.pop("current_job_reference"))
+		reference = m.pop("current_job_reference")
+		# A reader who may not read External References still sees that a job is set, which the
+		# Machine record itself shows, but not the ERP record behind it.
+		m["current_job"] = jobs.get(reference) or ({"reference": reference} if reference else None)
 		if m["current_job"]:
 			m["current_job"]["since"] = m.current_job_since
 		m.pop("current_job_since")
@@ -64,18 +95,12 @@ def floor_snapshot(days: int = 1) -> dict:
 		m["minutes_since_count"] = (
 			minutes_between(get_datetime(last_count_at), now) if last_count_at else None
 		)
-		m["counts"] = counts_since(m.name, since)
-		m["oee_today"] = frappe.db.get_value(
-			"OEE Period",
-			{"machine": m.name},
-			["oee", "availability", "performance", "quality"],
-			as_dict=True,
-			order_by="from_time desc",
-		)
+		m["counts"] = counts_since(m.name, since) if read_counts else {}
+		m["oee_today"] = latest_oee(m.name, list_of) if read_oee else None
 	downtime = []
 	period = f"{since:%Y-%m-%d} to {now:%Y-%m-%d}"
-	for m in machines:
-		by_reason = downtime_by_reason(m.name, since, now)
+	for m in machines if may_read("Downtime Record") else []:
+		by_reason = downtime_by_reason(m.name, since, now, ignore_permissions=not for_user)
 		classified = {reason: minutes for reason, minutes in by_reason.items() if reason}
 		if classified:
 			top_reason, top_minutes = max(classified.items(), key=lambda item: item[1])
@@ -90,30 +115,53 @@ def floor_snapshot(days: int = 1) -> dict:
 				}
 			)
 	references = (
-		frappe.get_all(
-			"External Reference", {"status": "Missing"}, ["name", "reference_type", "external_id", "status"]
+		list_of(
+			"External Reference",
+			filters={"status": "Missing"},
+			fields=["name", "reference_type", "external_id", "status"],
 		)
-		if frappe.has_permission("External Reference", "read")
+		if may_read("External Reference")
+		else []
+	)
+	suggestions = (
+		record_scope.filter_rows(
+			list_of("Agent Suggestion", filters={"status": "Open"}, fields=SUGGESTION_FIELDS), allowed
+		)
+		if may_read("Agent Suggestion")
 		else []
 	)
 	snapshot = {
 		"as_of": now,
+		"scope": {
+			"user": frappe.session.user if for_user else None,
+			"machines": sorted(allowed) if for_user else None,
+		},
 		"machines": machines,
 		"downtime_by_machine": downtime,
 		"external_references": references,
 		"andon_calls": andon,
 		# Recent thanks to people and teams. Private ones and people who opted out never appear.
-		"recognitions": floor_recognitions(now) if frappe.has_permission("Recognition", "read") else [],
+		"recognitions": record_scope.filter_rows(floor_recognitions(now), allowed)
+		if frappe.has_permission("Recognition", "read")
+		else [],
 		"work_instruction_runs": runs,
-		"open_suggestions": frappe.get_all(
-			"Agent Suggestion",
-			{"status": "Open"},
-			["name", "title", "category", "severity", "agent", "reference_doctype", "reference_name"],
-		),
+		"open_suggestions": suggestions,
 	}
 	for extension in frappe.get_hooks("foames_floor_snapshot_extensions") or []:
 		frappe.get_attr(extension)(snapshot, since, now)
-	return snapshot
+	return record_scope.scrub(snapshot, allowed) if for_user else snapshot
+
+
+def latest_oee(machine: str, list_of=frappe.get_all) -> dict | None:
+	"""The machine's latest OEE Period: oee, availability, performance and quality."""
+	rows = list_of(
+		"OEE Period",
+		filters={"machine": machine},
+		fields=["oee", "availability", "performance", "quality"],
+		order_by="from_time desc",
+		limit_page_length=1,
+	)
+	return rows[0] if rows else None
 
 
 def current_shift(pattern: str | None, now) -> dict | None:
@@ -128,7 +176,7 @@ def current_shift(pattern: str | None, now) -> dict | None:
 	return {"name": window.shift, "start": window.start, "end": window.end}
 
 
-def current_jobs(references: list[str]) -> dict[str, dict]:
+def current_jobs(references: list[str], list_of=frappe.get_all) -> dict[str, dict]:
 	"""External Reference name -> {reference, erp_system, external_id, label, status} for the jobs
 	machines are working on."""
 	if not references:
@@ -141,10 +189,10 @@ def current_jobs(references: list[str]) -> dict[str, dict]:
 			"label": r.label,
 			"status": r.status,
 		}
-		for r in frappe.get_all(
+		for r in list_of(
 			"External Reference",
-			{"name": ("in", references)},
-			["name", "erp_system", "external_id", "label", "status"],
+			filters={"name": ("in", references)},
+			fields=["name", "erp_system", "external_id", "label", "status"],
 		)
 	}
 

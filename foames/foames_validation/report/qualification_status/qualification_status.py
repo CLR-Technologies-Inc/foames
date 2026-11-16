@@ -19,6 +19,7 @@ def execute(filters=None):
 		process=filters.get("process"),
 		protocol_type=filters.get("protocol_type"),
 		due_soon_days=cint(filters.get("due_soon_days")) or DEFAULT_DUE_SOON_DAYS,
+		for_user=True,
 	)
 	if filters.get("status"):
 		rows = [r for r in rows if r["status"] == filters.status]

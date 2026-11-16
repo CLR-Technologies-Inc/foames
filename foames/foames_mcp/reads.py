@@ -17,6 +17,7 @@ from frappe import _
 from frappe.utils import add_days, cint, get_datetime, now_datetime
 
 from foames.foames_adapters import REFERENCE_TYPES, AdapterError, get_adapter, get_adapters
+from foames.foames_kernel.access import require_read
 
 MAX_LIMIT = 1000
 
@@ -143,7 +144,7 @@ def list_machines(
 def get_machine(machine: str) -> dict:
 	from foames.foames_mes.floor import counts_since
 
-	frappe.has_permission("Machine", "read", machine, throw=True)
+	require_read("Machine", machine)
 	doc = frappe.get_doc("Machine", machine)
 	out = {field: doc.get(field) for field in MACHINE_FIELDS}
 	out["counts_last_24h"] = counts_since(machine, add_days(now_datetime(), -1))
@@ -194,7 +195,7 @@ def get_equipment_profile(machine: str, tier: str | None = None) -> dict:
 	an agent of that tier may be tied to it. Reads only."""
 	from foames.foames_mes import ecl as ecl_rules
 
-	frappe.has_permission("Machine", "read", machine, throw=True)
+	require_read("Machine", machine)
 	doc = frappe.get_doc("Machine", machine)
 	level = _ecl_or_throw(doc.ecl)
 	out = {
@@ -328,7 +329,7 @@ def downtime_by_reason(machine: str, since: str | None = None, until: str | None
 	from foames.foames_mes.floor import downtime_by_reason as minutes_by_reason
 
 	frappe.has_permission("Downtime Record", "read", throw=True)
-	frappe.has_permission("Machine", "read", machine, throw=True)
+	require_read("Machine", machine)
 	until = get_datetime(until) if until else now_datetime()
 	since = get_datetime(since) if since else add_days(until, -1)
 	if until <= since:
@@ -406,7 +407,7 @@ def list_suggestions(
 
 @frappe.whitelist()
 def get_suggestion(name: str) -> dict:
-	frappe.has_permission("Agent Suggestion", "read", name, throw=True)
+	require_read("Agent Suggestion", name)
 	doc = frappe.get_doc("Agent Suggestion", name)
 	out = {field: doc.get(field) for field in [*SUGGESTION_FIELDS, "suggestion", "resolution"]}
 	evidence = doc.evidence

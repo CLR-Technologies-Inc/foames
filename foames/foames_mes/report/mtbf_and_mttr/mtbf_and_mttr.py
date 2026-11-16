@@ -30,8 +30,9 @@ def execute(filters=None):
 		r.name for r in frappe.get_all("Downtime Reason", {"category": "Breakdown"}, ["name"])
 	}
 	records = (
-		frappe.get_all(
+		frappe.get_list(  # the reader's role and user permissions apply
 			"Downtime Record",
+			limit_page_length=0,
 			filters=[
 				["machine", "in", list(machines)],
 				["status", "=", "Closed"],

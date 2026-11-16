@@ -10,6 +10,7 @@ Start with [overview.md](overview.md) for what FoaMES records, then [installatio
 | [dev-bench.md](dev-bench.md) | The Docker dev bench: the whole test suite locally on Frappe v15 or v16, with an optional ERP app |
 | [adapters.md](adapters.md) | External References, running without an ERP, writing an adapter for another ERP (vendor-neutral) |
 | [machine-data.md](machine-data.md) | How machine events reach FoaMES: the signed webhook, MQTT, OPC UA and Sparkplug B, the event shape, counter rules |
+| [authorization.md](authorization.md) | Authorization and record scope: the access matrix, restricting a person or agent to an area, what each read surface returns, and who may weaken a connector write policy |
 | [read-only-mode.md](read-only-mode.md) | Read-only mode: connectors read first, every write waits for an operator's electronic sign-off or is refused, the hash-chained Write Audit Log against work orders and Job Cards, and the approval path for a regulated (21 CFR Part 11-style) plant |
 | [sbom.md](sbom.md) | The CycloneDX 1.7 SBOM: where to get it, what is in it (dependencies, the cryptography bill of materials, connected services), building and validating it |
 | [licensing.md](licensing.md) | The Apache-2.0 license, the source file header, and the license of each dependency and borrowed idea |
