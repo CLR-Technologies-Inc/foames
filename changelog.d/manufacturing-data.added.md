@@ -1,0 +1,1 @@
+The benchmark has a manufacturing-data validation track (`foames-bench data`). It replays public CNC changeover, beverage bottling and SECOM datasets through FoaMES's counter, OEE ledger, SPC and process-mining code, and checks each result against an independent calculation. Downloads are license- and checksum-checked.

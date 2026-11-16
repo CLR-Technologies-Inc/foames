@@ -1,0 +1,155 @@
+{
+  "schema": "foames-bench-datasets/1",
+  "updated": "2026-11-16",
+  "note": "Public manufacturing datasets for the manufacturing-data validation track. Nothing here is vendored: `foames-bench data fetch` downloads each dataset into a local cache, checks its license and checksums, and records its provenance. A dataset is fetched only when its status is 'enabled' and the license the source states at download time is one of `licenses`. Column names marked `verified: false` come from the source's documentation, not from the files; the adapter stops with the headers it found when they differ, so the first fetch confirms them.",
+  "stages": {
+    "smoke": {"max_rows": 500, "max_features": 5, "reps": 1, "when": "every relevant code change"},
+    "dev": {"max_rows": 5000, "max_features": 20, "reps": 1, "when": "normal integration testing"},
+    "full": {"max_rows": null, "max_features": 60, "reps": 1, "when": "candidate and release validation"}
+  },
+  "datasets": [
+    {
+      "id": "cnc-changeover",
+      "title": "Five-axis CNC milling with multiple changeovers",
+      "status": "enabled",
+      "priority": 1,
+      "kind": "phase-timeline",
+      "exercises": ["oee time ledger", "process mining: variants, setup durations, event order"],
+      "source": {"type": "zenodo", "record": "15735480", "files": ["*.csv", "*.zip"]},
+      "licenses": ["cc-by-4.0"],
+      "license_verified": false,
+      "citation": "Five-axis CNC milling with multiple changeovers, Zenodo record 15735480. Cite the record's creators and DOI as Zenodo lists them; the provenance file written at fetch time holds both.",
+      "columns": {
+        "verified": false,
+        "timestamp": ["timestamp", "Timestamp", "time", "Time"],
+        "session": ["session", "Session", "session_id", "SessionID"],
+        "phase": ["phase", "Phase", "state", "State", "label", "Label"]
+      },
+      "phase_states": {"setup": "Setup", "changeover": "Setup", "production": "Running", "machining": "Running", "interruption": "Down", "idle": "Idle"},
+      "split": "by session"
+    },
+    {
+      "id": "beverage-bottling",
+      "title": "Industrial beverage bottling line",
+      "status": "enabled",
+      "priority": 2,
+      "kind": "downtime-and-counts",
+      "exercises": ["counter deltas (reset and rollover injection)", "oee time ledger: availability", "downtime reconciliation"],
+      "source": {"type": "zenodo", "record": "18146866", "files": ["*.csv", "*.xlsx", "*.zip"]},
+      "licenses": ["cc-by-4.0"],
+      "license_verified": false,
+      "citation": "Industrial beverage bottling line, Zenodo record 18146866. Cite the record's creators and DOI as Zenodo lists them; the provenance file written at fetch time holds both.",
+      "columns": {
+        "verified": false,
+        "downtime_file": ["downtime", "stop", "event"],
+        "downtime_start": ["start", "Start", "start_time", "Start Time", "downtime_start"],
+        "downtime_end": ["end", "End", "end_time", "End Time", "downtime_end"],
+        "counts_file": ["hourly", "production", "count"],
+        "count_timestamp": ["timestamp", "Timestamp", "hour", "Hour", "datetime", "DateTime"],
+        "count": ["count", "Count", "units", "Units", "production", "Production", "bottles", "Bottles"]
+      },
+      "note": "The source's own efficiency figure is not FoaMES OEE: it comes from aggregated measurements without the planned-time, ideal-cycle-time and quality inputs OEE needs. The track checks availability and counts only."
+    },
+    {
+      "id": "secom",
+      "title": "SECOM semiconductor manufacturing",
+      "status": "enabled",
+      "priority": 3,
+      "kind": "multivariate-quality",
+      "exercises": ["spc: I-MR limits and beyond-limit signals", "missing-value handling", "time-aware signal grading against pass/fail"],
+      "source": {"type": "url", "url": "https://archive.ics.uci.edu/static/public/179/secom.zip", "sha256": null},
+      "licenses": ["cc-by-4.0"],
+      "license_verified": true,
+      "license_evidence": "https://archive.ics.uci.edu/dataset/179/secom states CC BY 4.0 (checked 2026-11-16)",
+      "citation": "McCann, M. & Johnston, A. (2008). SECOM [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C54305",
+      "columns": {
+        "verified": true,
+        "data_file": "secom.data",
+        "labels_file": "secom_labels.data",
+        "label_pass": -1,
+        "label_fail": 1,
+        "timestamp_format": "%d/%m/%Y %H:%M:%S"
+      },
+      "split": "by time: limits from the earliest 30 percent, signals graded on the rest",
+      "note": "An out-of-control point is not a confirmed defect. Precision and recall against the fail labels are reported, never required."
+    },
+    {
+      "id": "noboom",
+      "title": "NoBOOM: anomaly detection in chemical processes",
+      "status": "planned",
+      "priority": 4,
+      "kind": "continuous-process-anomaly",
+      "exercises": ["spc on continuous process signals", "alarm timing"],
+      "source": {"type": "kaggle", "ref": "faebs94/noboom-anomaly-detection-in-chemical-processes"},
+      "licenses": ["cc-by-4.0"],
+      "license_verified": false,
+      "note": "Next continuous-process benchmark. Needs its license confirmed on the source page and a non-Kaggle download (Kaggle needs a signed-in API key) before it is enabled."
+    },
+    {
+      "id": "multistage-continuous-flow",
+      "title": "Multi-stage continuous-flow manufacturing process",
+      "status": "planned",
+      "priority": 5,
+      "kind": "continuous-process",
+      "source": {"type": "kaggle", "ref": "supergus/multistage-continuousflow-manufacturing-process"},
+      "licenses": [],
+      "license_verified": false,
+      "note": "License not yet confirmed."
+    },
+    {
+      "id": "cnc-tool-wear",
+      "title": "CNC mill tool wear (University of Michigan)",
+      "status": "planned",
+      "priority": 6,
+      "kind": "equipment-condition",
+      "source": {"type": "kaggle", "ref": "shasun/tool-wear-detection-in-cnc-mill"},
+      "licenses": ["cc0-1.0"],
+      "license_verified": false,
+      "note": "Reported as CC0; not yet confirmed on the source page."
+    },
+    {
+      "id": "ai4i-2020",
+      "title": "AI4I 2020 predictive maintenance (synthetic)",
+      "status": "planned",
+      "priority": 7,
+      "kind": "maintenance-rules",
+      "source": {"type": "url", "url": "https://archive.ics.uci.edu/static/public/601/ai4i+2020+predictive+maintenance+dataset.zip", "sha256": null},
+      "licenses": ["cc-by-4.0"],
+      "license_verified": true,
+      "license_evidence": "https://archive.ics.uci.edu/dataset/601 states CC BY 4.0 (checked 2026-11-16)",
+      "citation": "AI4I 2020 Predictive Maintenance Dataset [Dataset]. (2020). UCI Machine Learning Repository. https://doi.org/10.24432/C5HS5C",
+      "note": "Synthetic, so it suits fast regression tests of equipment-agent failure rules once those rules exist as pure functions."
+    },
+    {
+      "id": "nasa-cmapss",
+      "title": "NASA C-MAPSS turbofan degradation (simulated)",
+      "status": "planned",
+      "priority": 8,
+      "kind": "degradation",
+      "source": {"type": "kaggle", "ref": "behrad3d/nasa-cmaps"},
+      "licenses": [],
+      "license_verified": false,
+      "note": "Use NASA's own repository copy once its terms are confirmed, not the Kaggle mirror."
+    },
+    {
+      "id": "bosch-production-line",
+      "title": "Bosch production line performance",
+      "status": "later",
+      "kind": "multivariate-quality",
+      "source": {"type": "kaggle", "ref": "competitions/bosch-production-line-performance"},
+      "licenses": [],
+      "license_verified": false,
+      "note": "About 14 GB, and competition data has its own usage terms. Not a starting point."
+    },
+    {
+      "id": "iot-event-log-smart-factory",
+      "title": "IoT-enriched event log for process mining in smart factories",
+      "status": "later",
+      "kind": "event-log",
+      "source": {"type": "zenodo", "record": "7795547"},
+      "licenses": [],
+      "license_verified": false,
+      "note": "About 1.9 GB. Introduce later through a compact, deterministic extract for the XES/OCEL modules."
+    }
+  ]
+}
