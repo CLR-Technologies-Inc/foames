@@ -119,7 +119,8 @@ def main(argv=None):
 	else:
 		anchor = "## Contributing"
 		text = text.replace(anchor, "## Agent benchmark results\n\n" + "\n".join(block) + "\n\n" + anchor, 1)
-	README.write_text(text, encoding="utf-8")
+	with README.open("w", encoding="utf-8") as f:
+		f.write(text)
 	print(f"updated {README}")
 
 
