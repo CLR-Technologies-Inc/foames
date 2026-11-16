@@ -247,6 +247,9 @@ foames_stock_readers = [
 # foames_commissioning_readiness_checks = ["myapp.qualification.blockers"]  # (package) -> list of blocker dicts
 # foames_commissioning_handed_over = ["myapp.qualification.on_handover"]  # (package) after handover
 
+# A handed-over package opens the IQ of each machine in it (see foames/foames_validation/commissioning.py).
+foames_commissioning_handed_over = ["foames.foames_validation.commissioning.on_handover"]
+
 # Scheduled Tasks
 # ---------------
 

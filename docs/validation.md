@@ -82,6 +82,22 @@ can do when only common-cause variation is present; Ppk shows what it did over t
 is the stricter choice for a PPQ. `foames.foames_mes.spc.capability` computes them and has no Frappe
 dependency.
 
+## From commissioning
+
+Qualification starts where [commissioning](commissioning.md) ends. When a Commissioning Package is
+handed over, `foames.foames_validation.commissioning.on_handover` (registered on the
+`foames_commissioning_handed_over` hook) does this for each machine in the package's scope:
+
+- If the machine has an approved IQ protocol, it opens a draft Validation Execution of the latest
+  one, with **Commissioning Package** set, so the IQ can reference the package's handover dossier
+  (`get_handover_dossier`). A draft of that protocol that is already open is reused.
+- If it has none, it raises an Agent Suggestion (Quality, rule key
+  `validation:iq-after-handover:<machine>`) to write and approve one. FoaMES does not write a
+  protocol on its own.
+
+The first execution opened is written back to the package's **Qualification Type** and
+**Qualification Record**.
+
 ## Executing a protocol
 
 Create a **Validation Execution** for an approved protocol (or use **New Execution** on the protocol).
@@ -164,4 +180,5 @@ readings of each critical parameter.
 | `foames/foames_validation/doctype/` | Validation Protocol (+ Validation Acceptance Criterion), Validation Execution (+ Validation Result) |
 | `foames/foames_validation/api.py` | Status per subject, `get_qualification_status` |
 | `foames/foames_validation/tasks.py` | The daily requalification check |
+| `foames/foames_validation/commissioning.py` | Opens the IQ when a commissioning package is handed over |
 | `foames/foames_validation/report/qualification_status/` | The Qualification Status report |
