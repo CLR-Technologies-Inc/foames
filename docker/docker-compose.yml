@@ -48,9 +48,9 @@ services:
     build:
       context: .
       args:
-        PYTHON_VERSION: ${PYTHON_VERSION:-3.12}
+        PYTHON_VERSION: ${PYTHON_VERSION:-3.14}
         NODE_VERSION: ${NODE_VERSION:-24}
-    image: foames-dev-bench:py${PYTHON_VERSION:-3.12}-node${NODE_VERSION:-24}
+    image: foames-dev-bench:py${PYTHON_VERSION:-3.14}-node${NODE_VERSION:-24}
     depends_on:
       mariadb:
         condition: service_healthy
