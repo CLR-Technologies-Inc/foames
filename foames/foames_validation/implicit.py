@@ -242,9 +242,11 @@ def validate_definition(definition: dict) -> dict:
 				raise DefinitionError(f"check {key}: assert needs a path and an op ({', '.join(OPERATORS)})")
 			# A definition is stored with every run and shown to its readers, so a secret has no place
 			# in it: a sensitive path may be tested for presence only, never compared with a value.
-			if check.get("sensitive") and assertion["op"] not in ("present", "absent"):
+			if check.get("sensitive") and (
+				assertion["op"] not in ("present", "absent") or "value" in assertion
+			):
 				raise DefinitionError(
-					f"check {key}: a sensitive path may only be checked with present or absent"
+					f"check {key}: a sensitive path may only be checked with present or absent, and no value"
 				)
 		if check["kind"] in ("metrology", "statistical") and not check.get("measurement"):
 			raise DefinitionError(f"check {key}: name the measurement it reads")

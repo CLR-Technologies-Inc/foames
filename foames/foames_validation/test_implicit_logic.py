@@ -129,7 +129,7 @@ class TestRequirements(unittest.TestCase):
 			self.assertNotIn("hunter2", iv.canonical(result))
 
 	def test_a_sensitive_path_is_never_compared_with_a_value(self):
-		for op in ("eq", "ne", "in"):
+		for op in ("eq", "ne", "in", "present", "absent"):
 			with self.assertRaises(iv.DefinitionError):
 				iv.validate_definition(
 					definition(
