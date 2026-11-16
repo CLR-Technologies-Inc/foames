@@ -4,7 +4,7 @@
 # Optional lines: "agents: a, b", "tasks: x y" (empty: every runner-sized local model, every keyed provider,
 # every pure task), "report: raw" (commit only the run files, for a run that overlaps another) and
 # "collect: <run id> ..." (run no agents; add those workflow runs' results to the report).
-2026-11-16T14:50Z NVIDIA tasks cut off by the 6-hour job limit (4/5)
+2026-11-16T14:50Z NVIDIA tasks cut off by the 6-hour job limit (5/5)
 agents: aider-nvidia-gemma, aider-nvidia-laguna
-tasks: sector-326-plastics sector-3272-glass sector-3273-cement sector-331-aluminum sector-3315-foundry sector-332-forging sector-332-machine-shop
+tasks: sector-333-machinery sector-3344-semiconductors sector-335-electrical-equipment sector-3361-motor-vehicles sector-3364-aerospace sector-337-furniture sector-3391-medical-devices
 report: raw
