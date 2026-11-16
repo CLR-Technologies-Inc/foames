@@ -1,0 +1,27 @@
+{
+ "bench_version": "0.1.0",
+ "foames_commit": "90d9f6049e718d3ed35e9fa24c8d9b0ae7a8b75f",
+ "source": {
+  "dirty": true,
+  "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "changes": [
+   "?? notes/"
+  ]
+ },
+ "python": "3.12.16",
+ "platform": "Linux-7.0.0-1019-azure-x86_64-with-glibc2.43",
+ "started_at": "2026-11-16T14:43:39+00:00",
+ "reps": 1,
+ "tasks": [
+  "spc-ewma-chart"
+ ],
+ "agents": [
+  {
+   "name": "aider-nvidia-gemma",
+   "model": "nvidia_nim/google/gemma-4-31b-it",
+   "tier": "oss",
+   "harness": "aider",
+   "sandbox": "docker"
+  }
+ ]
+}
