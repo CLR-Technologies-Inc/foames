@@ -182,3 +182,7 @@ readings of each critical parameter.
 | `foames/foames_validation/tasks.py` | The daily requalification check |
 | `foames/foames_validation/commissioning.py` | Opens the IQ when a commissioning package is handed over |
 | `foames/foames_validation/report/qualification_status/` | The Qualification Status report |
+
+## Implicit validation
+
+For checks that run before and after a configuration change, sandbox promotion or on a schedule, with hashed evidence that gates read by ID, see [implicit-validation.md](implicit-validation.md). It reuses the capability and control rules above and does not replace a formal execution.

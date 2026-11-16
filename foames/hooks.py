@@ -266,6 +266,13 @@ foames_topology_collectors = ["foames.foames_bms.topology.report"]
 # A handed-over package opens the IQ of each machine in it (see foames/foames_validation/commissioning.py).
 foames_commissioning_handed_over = ["foames.foames_validation.commissioning.on_handover"]
 
+# Implicit validation
+# -------------------
+# foames_implicit_validation_completed = ["myapp.promotion.on_validated"]  # (Implicit Validation Run) after insert
+#
+# A gate that needs a passing run calls
+# foames.foames_validation.implicit_api.require_passed(run, configuration_revision), never a flag.
+
 # Scheduled Tasks
 # ---------------
 

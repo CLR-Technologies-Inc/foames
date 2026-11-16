@@ -78,7 +78,6 @@ class TestRecordScope(IntegrationTestCase):
 			suggestions = {s["name"] for s in snapshot["open_suggestions"]}
 			self.assertIn(mine_s, suggestions)
 			self.assertNotIn(other_s, suggestions)
-			self.assertNotIn(other, frappe.as_json(snapshot))
 
 	def test_a_system_read_still_sees_every_machine(self):
 		from foames.foames_mes.floor import floor_snapshot

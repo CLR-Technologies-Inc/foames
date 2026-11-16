@@ -1,0 +1,231 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2026-11-16 19:00:00.000000",
+ "description": "One implicit validation of a configuration or feature-set revision: requirement, metrology and statistical checks with hashed, reproducible evidence. Engineering evidence, not a formal qualification or an approval.",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "definition_name",
+  "definition_version",
+  "outcome",
+  "cb_head",
+  "trigger",
+  "environment",
+  "machine",
+  "configuration_revision",
+  "sb_evidence",
+  "as_of",
+  "requested_by",
+  "dataset_reference",
+  "dataset_source",
+  "cb_hashes",
+  "input_hash",
+  "result_hash",
+  "summary",
+  "sb_bundle",
+  "definition",
+  "result"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "IVR-.YYYY.-",
+   "default": "IVR-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "definition_name",
+   "fieldtype": "Data",
+   "label": "Definition",
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "definition_version",
+   "fieldtype": "Data",
+   "label": "Definition Version",
+   "read_only": 1
+  },
+  {
+   "fieldname": "outcome",
+   "fieldtype": "Select",
+   "label": "Outcome",
+   "options": "Pass\nFail\nIndeterminate\nManual Review",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "read_only": 1,
+   "description": "Pass only when every blocking check passed; Indeterminate when a blocking check lacked trustworthy evidence"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "trigger",
+   "fieldtype": "Select",
+   "label": "Trigger",
+   "options": "On Demand\nSandbox Change\nConfiguration Proposal\nPre-production Promotion\nPost-change Monitoring\nScheduled CPV",
+   "default": "On Demand",
+   "in_standard_filter": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "environment",
+   "fieldtype": "Select",
+   "label": "Environment",
+   "options": "Sandbox\nIntegration\nProduction Candidate\nProduction",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "in_standard_filter": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "configuration_revision",
+   "fieldtype": "Data",
+   "label": "Configuration Revision",
+   "reqd": 1,
+   "in_standard_filter": 1,
+   "read_only": 1,
+   "description": "The feature-set or configuration revision this evidence is pinned to"
+  },
+  {
+   "fieldname": "sb_evidence",
+   "fieldtype": "Section Break",
+   "label": "Evidence"
+  },
+  {
+   "fieldname": "as_of",
+   "fieldtype": "Datetime",
+   "label": "Evaluated As Of",
+   "read_only": 1
+  },
+  {
+   "fieldname": "requested_by",
+   "fieldtype": "Link",
+   "label": "Requested By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "dataset_reference",
+   "fieldtype": "Data",
+   "label": "Dataset",
+   "read_only": 1,
+   "description": "Where the data came from: a frozen dataset id, or the machine and window read from the site"
+  },
+  {
+   "fieldname": "dataset_source",
+   "fieldtype": "Select",
+   "label": "Dataset Source",
+   "options": "Site\nSupplied",
+   "read_only": 1,
+   "description": "Site: read by FoaMES from Machine Events. Supplied: given by the caller, for sandbox and dry runs"
+  },
+  {
+   "fieldname": "cb_hashes",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "input_hash",
+   "fieldtype": "Data",
+   "label": "Input Hash",
+   "read_only": 1,
+   "description": "SHA-256 of the definition, dataset, configuration, revision, environment and time"
+  },
+  {
+   "fieldname": "result_hash",
+   "fieldtype": "Data",
+   "label": "Result Hash",
+   "read_only": 1,
+   "description": "SHA-256 of the result bundle; recomputed whenever a gate reads this run"
+  },
+  {
+   "fieldname": "summary",
+   "fieldtype": "Small Text",
+   "label": "Summary",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_bundle",
+   "fieldtype": "Section Break",
+   "label": "Bundle",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "definition",
+   "fieldtype": "Code",
+   "label": "Definition",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "fieldname": "result",
+   "fieldtype": "Code",
+   "label": "Result Bundle",
+   "options": "JSON",
+   "read_only": 1
+  }
+ ],
+ "in_create": 1,
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-16 19:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Validation",
+ "name": "Implicit Validation Run",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Integration",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "search_fields": "configuration_revision,definition_name,machine",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "definition_name",
+ "track_changes": 0
+}
