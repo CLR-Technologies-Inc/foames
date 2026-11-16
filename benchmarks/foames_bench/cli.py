@@ -138,10 +138,12 @@ def cmd_recommend(opts):
 	print(
 		f"TRL {opts.trl} (band {rec['band']}), {rec['complexity']} complexity{ecl}, prior as of {rec['as_of']}"
 	)
-	if rec.get("human_expert_recommended"):
-		print(f"  ** {recommend.HUMAN_EXPERT} **")
+	if rec.get("human_oversight"):
+		print(f"  ** {rec['human_oversight']} **")
 	if rec["primary"] is None:
-		print("  Start with: no model tier is adequate at this ECL; agents may list options for an expert")
+		print(
+			"  Start with: no model tier is adequate at this ECL; agents may list options for the expert team"
+		)
 	else:
 		print(f"  Start with: {tiers[rec['primary']]['label']}")
 	if rec["alternative"]:

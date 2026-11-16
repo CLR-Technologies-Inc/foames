@@ -146,6 +146,7 @@ class TestRecommend(unittest.TestCase):
 			self.assertIn(level["min_tier"], (*data["tiers"], None))
 			if level["min_tier"] is None:
 				self.assertTrue(level["human_expert_recommended"], n)
+				self.assertEqual(level["human_oversight"], recommend.EXPERT_TEAM, n)
 		for t in tasks.all_tasks():
 			self.assertTrue(t.machine_class, t.id)
 			self.assertIn(t.ecl, (*recommend.ECLS, None), t.id)
@@ -158,10 +159,13 @@ class TestRecommend(unittest.TestCase):
 		four = recommend.with_ecl(low, 4)
 		self.assertEqual((four["primary"], four["alternative"]), ("frontier", None))
 		self.assertTrue(four["human_expert_recommended"])
+		self.assertEqual(four["human_oversight"], recommend.HUMAN_EXPERT)
 		self.assertTrue(four["human_review"].startswith(recommend.HUMAN_EXPERT))
 		five = recommend.with_ecl(low, 5)
 		self.assertIsNone(five["primary"])
 		self.assertTrue(five["human_expert_recommended"])
+		self.assertEqual(five["human_oversight"], recommend.EXPERT_TEAM)
+		self.assertTrue(five["human_review"].startswith(recommend.EXPERT_TEAM))
 
 	def test_no_agent_qualifies_above_its_ecl(self):
 		row = {

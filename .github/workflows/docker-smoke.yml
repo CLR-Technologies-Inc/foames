@@ -161,6 +161,7 @@ jobs:
           foames-bench recommend --trl 5 --complexity medium --results runs/smoke
           foames-bench recommend --trl 5 --complexity medium --ecl 3 --results runs/smoke
           foames-bench recommend --trl 5 --complexity low --ecl 4 | grep -q "Human Expert Recommended"
+          foames-bench recommend --trl 5 --complexity low --ecl 5 | grep -q "Expert Team Required"
           foames-bench estimate --agents 3 --tasks 6 --reps 2 --per-run 1.00
 
       - name: docker build with PIP_AGENTS (How-to-Add-your-own-agent)

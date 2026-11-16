@@ -125,7 +125,10 @@ def markdown(summary: dict) -> str:
 			f"{s['correctness']:.2f} | {s['process']:.2f} | {s['mean_seconds']:.0f} s | {_money(s['total_cost_usd'])} |"
 		)
 	if any((ecls.get(s["task"]) or 0) >= 4 for s in summary["by_agent_task"]):
-		lines += ["", "Tasks at ECL 4 or 5: Human Expert Recommended, whatever the score."]
+		lines += [
+			"",
+			"Tasks at ECL 4: Human Expert Recommended (one expert). At ECL 5: Expert Team Required. Whatever the score.",
+		]
 	if any("none" in s["sandbox"].split(", ") for s in summary["by_agent"].values()):
 		lines += ["", "Runs with sandbox `none` could read the hidden tests. Do not publish them as results."]
 	return "\n".join(lines) + "\n"

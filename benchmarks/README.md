@@ -92,7 +92,7 @@ Each run records the pass rate with a 95 % interval, first-attempt success, repr
 
 ## Which model for which project
 
-[docs/model-matrix.md](docs/model-matrix.md) gives a starting recommendation for each TRL band (1-3, 4-6, 7-9) and process complexity (low, medium, high): open-weight models, low-cost hosted "baseline" models, or frontier models. It says which benchmark tasks a model must pass to qualify for that cell. **The matrix is dated (2026-11-04) and has not yet been backed by real agent runs.** Run the qualifying tasks with your own agents and `foames-bench recommend --results` ranks them for your cell. Add `--ecl` for the Equipment Complexity Level (1 to 5) of the machine involved: it raises the tier to the ECL's minimum, and at ECL 4 and 5 marks the result "Human Expert Recommended". At ECL 5 no tier is adequate yet, so no agent qualifies.
+[docs/model-matrix.md](docs/model-matrix.md) gives a starting recommendation for each TRL band (1-3, 4-6, 7-9) and process complexity (low, medium, high): open-weight models, low-cost hosted "baseline" models, or frontier models. It says which benchmark tasks a model must pass to qualify for that cell. **The matrix is dated (2026-11-04) and has not yet been backed by real agent runs.** Run the qualifying tasks with your own agents and `foames-bench recommend --results` ranks them for your cell. Add `--ecl` for the Equipment Complexity Level (1 to 5) of the machine involved: it raises the tier to the ECL's minimum, marks ECL 4 "Human Expert Recommended" (one expert), and marks ECL 5 "Expert Team Required" (a distributed team of experts). At ECL 5 no tier is adequate yet, so no agent qualifies.
 
 ## Pilot budget
 

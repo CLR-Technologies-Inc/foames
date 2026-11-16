@@ -2,7 +2,9 @@
 
 Technology readiness levels (TRL) tell a researcher or a student how mature a method is. A manufacturer usually has a different question: *how complex is the machine the agent is being tied to, and is any model good enough to advise on it?* The Equipment Complexity Level (ECL) answers that question. It is a FoaMES concept. Its 1 to 5 scale abstracts what a piece of equipment does into the kind of model needed to reason about it.
 
-Two examples anchor the scale. A torque wrench sits at ECL 1. Its physics is basic (torque is force times lever arm, and a click or a reading at a set point), so a small language model, such as a Phi-class model, is usually enough. A lithography scanner sits at ECL 5. It is made of many tightly coupled subsystems governed by proprietary physics models. Reasoning about it may need a mixture-of-experts frontier model that has not been built yet. Until then, the answer is **Human Expert Recommended**.
+Two examples anchor the scale. A torque wrench sits at ECL 1. Its physics is basic (torque is force times lever arm, and a click or a reading at a set point), so a small language model, such as a Phi-class model, is usually enough. A lithography scanner sits at ECL 5. It is made of many tightly coupled subsystems governed by proprietary physics models. Reasoning about it may need a mixture-of-experts frontier model that has not been built yet. Until then, the answer is **Expert Team Required**.
+
+The top two levels differ in *who* must stay in charge. At ECL 4, one human expert is enough. A photomask (lithography plate) is an example: a single mask specialist can judge an agent's suggestion about writing or inspecting it, so the result is **Human Expert Recommended**. At ECL 5, no single person covers the whole system. Lithography itself spans optics, stages, metrology, resist chemistry and the process, so a distributed team of experts decides together, and the result is **Expert Team Required**.
 
 ## What ECL is built from
 
@@ -26,8 +28,8 @@ As far as we found, no single standard rates equipment by how capable an AI mode
 | 1 | Simple tool or apparatus | Torque wrench, hand gauge, timer, stirrer, scale | A or B | Type A | None or Category 1 | Open weights. A small model, such as a Phi-class model, is usually enough | 4: suggests one action, a person acts |
 | 2 | Single-function machine | Filler, capper, press, conveyor, packaging machine with a PLC and counters | B | Type A, or Type B for the controller | Category 3 | Open weights, if they pass the qualifying tasks | 4 |
 | 3 | Configurable multi-step machine or work cell | CNC machining centre, injection moulding cell, batch reactor with recipes, a line of several machines | C | Type B | Category 4 | Baseline (low-cost hosted) | 4 |
-| 4 | Coupled process equipment | CVD or PVD chamber, bioreactor, heat-treatment furnace with process control | C | Type B | Category 4 or 5 | Frontier, and **Human Expert Recommended** | 3: narrows the options, an expert chooses |
-| 5 | Frontier equipment | Lithography scanner, and other systems of many tightly coupled subsystems | C | Type B | Category 5 | **None adequate. Human Expert Recommended** | 2: lists options for an expert and decides nothing |
+| 4 | Coupled process equipment | Photomask (lithography plate) writing and inspection, CVD or PVD chamber, bioreactor, heat-treatment furnace with process control | C | Type B | Category 4 or 5 | Frontier, and **Human Expert Recommended** (one expert) | 3: narrows the options, the expert chooses |
+| 5 | Frontier equipment | Lithography (the scanner and its process), and other systems of many tightly coupled subsystems | C | Type B | Category 5 | **None adequate. Expert Team Required** (a distributed team of experts) | 2: lists options for the expert team and decides nothing |
 
 The examples are typical, not fixed. A CNC machine with a simple fixed cycle may be ECL 2, and a "simple" press with adaptive force control may be ECL 3. Rate the equipment the agent will actually reason about.
 
@@ -36,8 +38,8 @@ The examples are typical, not fixed. A CNC machine with a simple fixed cycle may
 The benchmark's TRL × complexity matrix picks a starting model tier for a project. ECL then sets a floor under that choice:
 
 1. If the cell's tier is below the ECL's minimum tier, the tier is raised to that minimum, and an alternative below the minimum is dropped.
-2. At ECL 4 and 5, every recommendation is marked **Human Expert Recommended**, whatever the score.
-3. At ECL 5 no tier is adequate, so no agent qualifies, however well it scores. Agents may only list options for an expert.
+2. Whatever the score, every recommendation at ECL 4 is marked **Human Expert Recommended** (one expert), and every one at ECL 5 is marked **Expert Team Required** (a distributed team of experts).
+3. At ECL 5 no tier is adequate, so no agent qualifies, however well it scores. Agents may only list options for the expert team.
 4. When you rank your own agents, an agent whose tier is below the ECL minimum does not qualify, even if it passed the qualifying tasks.
 
 ```bash
@@ -49,7 +51,7 @@ Each benchmark task carries the ECL and machine class of the scenario it simulat
 
 ## Why the expert stays in the loop
 
-FoaMES already ends every agent action in a suggestion that a person accepts (see [Agents suggest, people act](Explanation-Agents-suggest-people-act)). ECL decides *which* person, and how much the agent may narrow the choice first. At low ECL, an operator can judge a suggestion about a torque wrench. At high ECL, only a process or equipment expert can tell a plausible suggestion from a correct one. That is exactly where models are weakest and mistakes cost the most.
+FoaMES already ends every agent action in a suggestion that a person accepts (see [Agents suggest, people act](Explanation-Agents-suggest-people-act)). ECL decides *which* person, and how much the agent may narrow the choice first. At low ECL, an operator can judge a suggestion about a torque wrench. At ECL 4, only an expert in that equipment can tell a plausible suggestion from a correct one. At ECL 5, even one expert can't. The judgement is spread across a team, so the agent's output goes to the team, not to one reviewer. These are exactly the levels where models are weakest and mistakes cost the most.
 
 ## What is planned
 

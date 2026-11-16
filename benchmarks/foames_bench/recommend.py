@@ -15,7 +15,8 @@ TRL_BANDS = ("1-3", "4-6", "7-9")
 COMPLEXITIES = ("low", "medium", "high")
 ECLS = (1, 2, 3, 4, 5)
 TIER_ORDER = ("oss", "baseline", "frontier")
-HUMAN_EXPERT = "Human Expert Recommended"
+HUMAN_EXPERT = "Human Expert Recommended"  # ECL 4: one expert
+EXPERT_TEAM = "Expert Team Required"  # ECL 5: a distributed team of experts
 
 
 def load() -> dict:
@@ -53,12 +54,14 @@ def _rank(tier: str | None) -> int:
 def with_ecl(rec: dict, ecl: int | None) -> dict:
 	"""Apply an ECL to a TRL x complexity cell: the primary tier is raised to the ECL's minimum tier,
 	an alternative below that minimum is dropped, and at ECLs flagged for a human expert the result
-	says so. At an ECL with no adequate tier, no agent qualifies."""
+	says so: one expert at ECL 4, a distributed team of experts at ECL 5. At an ECL with no
+	adequate tier, no agent qualifies."""
 	if ecl is None:
 		return rec
 	level = ecl_level(ecl)
 	out = dict(rec, ecl=ecl, ecl_name=level["name"], min_tier=level["min_tier"])
 	out["human_expert_recommended"] = level["human_expert_recommended"]
+	out["human_oversight"] = level.get("human_oversight")
 	if level["min_tier"] is None:
 		out["primary"] = None
 		out["alternative"] = None
@@ -68,8 +71,8 @@ def with_ecl(rec: dict, ecl: int | None) -> dict:
 			out["primary"] = level["min_tier"]
 		if rec["alternative"] and _rank(rec["alternative"]) < _rank(level["min_tier"]):
 			out["alternative"] = None
-	if level["human_expert_recommended"]:
-		out["human_review"] = f"{HUMAN_EXPERT}. {rec['human_review']}"
+	if level.get("human_oversight"):
+		out["human_review"] = f"{level['human_oversight']}: {level['oversight_note']} {rec['human_review']}"
 	return out
 
 
@@ -144,8 +147,8 @@ def ecl_markdown() -> str:
 	for n in ECLS:
 		x = data["ecl"]["levels"][str(n)]
 		tier = tiers[x["min_tier"]]["label"] if x["min_tier"] else "none adequate"
-		if x["human_expert_recommended"]:
-			tier += f", **{HUMAN_EXPERT}**"
+		if x.get("human_oversight"):
+			tier += f", **{x['human_oversight']}**"
 		lines.append(
 			f"| {n} | {x['name']} | {x['examples']} | {x['usp_1058']} | {x['iec_61508']} | {x['gamp_5']} | {tier} | {x['agent_role']} |"
 		)

@@ -66,7 +66,7 @@ foames-bench recommend --trl 5 --complexity medium --results runs/<run id>
 foames-bench recommend --trl 5 --complexity medium --ecl 3 --results runs/<run id>
 ```
 
-`matrix` prints the starting recommendation for each technology readiness level band and process complexity. It is a dated prior, not a measurement. `recommend --results` keeps your runs of that cell's qualifying tasks and lists the agents that ran all of them, met the minimum quality and succeeded on every repetition, cheapest per success first. Add `--ecl N` when the work is tied to a machine: the [Equipment Complexity Level](Explanation-Equipment-complexity-levels) raises the tier to its minimum, drops agents below that tier, and at ECL 4 and 5 marks the result **Human Expert Recommended**.
+`matrix` prints the starting recommendation for each technology readiness level band and process complexity. It is a dated prior, not a measurement. `recommend --results` keeps your runs of that cell's qualifying tasks and lists the agents that ran all of them, met the minimum quality and succeeded on every repetition, cheapest per success first. Add `--ecl N` when the work is tied to a machine: the [Equipment Complexity Level](Explanation-Equipment-complexity-levels) raises the tier to its minimum, drops agents below that tier, marks ECL 4 **Human Expert Recommended** (one expert), and marks ECL 5 **Expert Team Required** (a distributed team of experts).
 
 ## 6. Report it
 
