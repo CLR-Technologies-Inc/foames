@@ -28,3 +28,7 @@ def after_install():
 	from foames.foames_mes.doctype.andon_call_type.andon_call_type import create_default_call_types
 
 	create_default_call_types()
+
+	from foames.foames_risk.register import create_defaults as create_default_risk_templates
+
+	create_default_risk_templates()

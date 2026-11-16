@@ -187,6 +187,9 @@ scheduler_events = {
 		"foames.foames_mes.tasks.check_maintenance_plans",
 	],
 	"daily": [
+		# Raises suggestions for risks above tolerance, overdue risk reviews and control verifications,
+		# failed controls, breached key risk indicators and linked assessments that now rate higher.
+		"foames.foames_risk.tasks.check_risks",
 		"foames.foames_mes.tasks.compute_daily_oee",
 		# Looks up External References that are still Unverified or Missing in their ERP.
 		"foames.foames_kernel.tasks.refresh_external_references",
@@ -195,6 +198,22 @@ scheduler_events = {
 		"foames.foames_mes.doctype.standard_operating_procedure.standard_operating_procedure.check_sops",
 	],
 }
+
+# Enterprise risk management
+# --------------------------
+# A "Create > Enterprise Risk" button on the detailed assessments a risk can summarise. The forms
+# exist only when their modules are installed; on a site without them the entries are inert.
+doctype_js = {
+	"Hazard Assessment": "public/js/risk_source.js",
+	"PFMEA": "public/js/risk_source.js",
+}
+#
+# Other apps extend the risk register through these hooks; see foames/foames_risk/register.py.
+#
+# foames_risk_linkable_doctypes = ["My Audit Finding"]  # record types a risk may link to
+# foames_risk_source_readers = {"My Assessment": "myapp.risk.rating"}  # (doctype, name) -> rating or None
+# foames_risk_source_values = {"My Assessment": "myapp.risk.new_risk"}  # (doctype, name) -> risk fields
+# foames_risk_evidence_checks = ["myapp.risk.evidence_problem"]  # (doctype, name) -> problem or None
 
 # Testing
 # -------
