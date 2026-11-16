@@ -1,0 +1,246 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 21:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "kind",
+  "recipient_type",
+  "recipient",
+  "team",
+  "machine",
+  "cb_head",
+  "status",
+  "private",
+  "recognized_at",
+  "given_by",
+  "sb_message",
+  "message",
+  "sb_reference",
+  "reference_doctype",
+  "reference_name",
+  "cb_reference",
+  "recognition_key",
+  "evidence"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "REC-.YYYY.-",
+   "default": "REC-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "kind",
+   "fieldtype": "Select",
+   "label": "Kind",
+   "options": "Kudos\nHelping Hand\nImprovement\nSafety\nQuality\nMilestone\nTeam Highlight",
+   "default": "Kudos",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "recipient_type",
+   "fieldtype": "Select",
+   "label": "Recognize",
+   "options": "Person\nTeam",
+   "default": "Person",
+   "reqd": 1
+  },
+  {
+   "fieldname": "recipient",
+   "fieldtype": "Link",
+   "label": "Person",
+   "options": "User",
+   "depends_on": "eval:doc.recipient_type=='Person'",
+   "mandatory_depends_on": "eval:doc.recipient_type=='Person'",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "team",
+   "fieldtype": "Data",
+   "label": "Team",
+   "description": "Line, shift or crew. Required when recognizing a team; for a person it says which team they were with.",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Active\nWithdrawn",
+   "default": "Active",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "private",
+   "fieldtype": "Check",
+   "label": "Private",
+   "default": "0",
+   "description": "Only the person recognized, the giver and supervisors see it, and it never appears on the Floor View"
+  },
+  {
+   "fieldname": "recognized_at",
+   "fieldtype": "Datetime",
+   "label": "Recognized At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "given_by",
+   "fieldtype": "Link",
+   "label": "Given By",
+   "options": "User",
+   "read_only": 1,
+   "description": "Empty for milestones and team highlights, which FoaMES gives"
+  },
+  {
+   "fieldname": "sb_message",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "message",
+   "fieldtype": "Small Text",
+   "label": "Message",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "What you are recognizing, in your own words"
+  },
+  {
+   "fieldname": "sb_reference",
+   "fieldtype": "Section Break",
+   "label": "For",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "label": "Reference DocType",
+   "options": "DocType",
+   "description": "The Agent Suggestion, Andon Call or other record this recognition is for"
+  },
+  {
+   "fieldname": "reference_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Reference Name",
+   "options": "reference_doctype"
+  },
+  {
+   "fieldname": "cb_reference",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "recognition_key",
+   "fieldtype": "Data",
+   "label": "Recognition Key",
+   "read_only": 1,
+   "unique": 1,
+   "no_copy": 1,
+   "description": "Set on milestones and team highlights so each is given once"
+  },
+  {
+   "fieldname": "evidence",
+   "fieldtype": "Code",
+   "label": "Evidence",
+   "options": "JSON",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 21:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Recognition",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "recognized_at",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "kind"
+}

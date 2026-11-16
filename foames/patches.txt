@@ -8,3 +8,4 @@ foames.patches.create_supervisor_and_maintenance_roles
 foames.patches.backfill_machine_last_count
 foames.patches.create_default_andon_call_types
 foames.patches.create_default_risk_templates
+foames.patches.introduce_read_only_mode

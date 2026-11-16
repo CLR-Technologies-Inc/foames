@@ -1,0 +1,138 @@
+diff --git a/BENCH_NOTES.md b/BENCH_NOTES.md
+new file mode 100644
+index 0000000..ba5a945
+--- /dev/null
++++ b/BENCH_NOTES.md
+@@ -0,0 +1 @@
++Reference solution. The duplicate came from send() returning Retry for a 5xx on the POST, so the next attempt posted again without first searching for the marker; a 5xx on a write may come after S/4HANA committed it, so it is Unknown and the retry verifies first (AGENTS.md invariant 6). Retry-After is parsed in both forms and only ever lengthens the wait, capped at six hours. The S4HANA Outbox DocType passes Outcome.retry_after to retry_delay; that call site needs a Frappe site to test.
+diff --git a/foames/foames_adapters/doctype/s4hana_outbox/s4hana_outbox.py b/foames/foames_adapters/doctype/s4hana_outbox/s4hana_outbox.py
+index a07243f..6ef0594 100644
+--- a/foames/foames_adapters/doctype/s4hana_outbox/s4hana_outbox.py
++++ b/foames/foames_adapters/doctype/s4hana_outbox/s4hana_outbox.py
+@@ -79,7 +79,7 @@ class S4HANAOutbox(Document):
+ 					self.attempts, result.error
+ 				)
+ 			else:
+-				self.next_attempt_at = add_to_date(now_datetime(), seconds=outbox.retry_delay(self.attempts))
++				self.next_attempt_at = add_to_date(now_datetime(), seconds=outbox.retry_delay(self.attempts, result.retry_after))
+ 		if self.status == "Failed":
+ 			self.next_attempt_at = None
+ 		self.flags.verify_first = None
+diff --git a/foames/foames_adapters/s4hana/odata.py b/foames/foames_adapters/s4hana/odata.py
+index dfd22ed..f523433 100644
+--- a/foames/foames_adapters/s4hana/odata.py
++++ b/foames/foames_adapters/s4hana/odata.py
+@@ -49,13 +49,16 @@ class ODataError(Exception):
+ 	retry must first check whether the posting already exists.
+ 	"""
+ 
+-	def __init__(self, message, status=None, code=None, details=None, transient=False, maybe_applied=False):
++	def __init__(
++		self, message, status=None, code=None, details=None, transient=False, maybe_applied=False, retry_after=None
++	):
+ 		super().__init__(message)
+ 		self.status = status
+ 		self.code = code
+ 		self.details = details or []
+ 		self.transient = transient
+ 		self.maybe_applied = maybe_applied
++		self.retry_after = retry_after
+ 
+ 
+ TRANSIENT_STATUSES = {408, 429, 500, 502, 503, 504}
+@@ -244,6 +247,25 @@ class ODataClient:
+ 		return data.get("d", data)
+ 
+ 
++def parse_retry_after(value: str | None, now: float | None = None) -> int | None:
++	"""Seconds from a Retry-After header: a delay in seconds or an HTTP date. None when unreadable."""
++	if value is None:
++		return None
++	value = str(value).strip()
++	if value.isdigit():
++		return int(value)
++	try:
++		from email.utils import parsedate_to_datetime
++
++		when = parsedate_to_datetime(value)
++	except (TypeError, ValueError, IndexError):
++		return None
++	if when is None:
++		return None
++	seconds = when.timestamp() - (time.time() if now is None else now)
++	return max(int(round(seconds)), 0)
++
++
+ def error_from_response(
+ 	response: Response, prefix: str = "S/4HANA rejected the request", *, write: bool = True
+ ) -> ODataError:
+@@ -272,6 +294,7 @@ def error_from_response(
+ 		details=details,
+ 		transient=transient,
+ 		maybe_applied=write and status >= 500,
++		retry_after=parse_retry_after(response.header("Retry-After")),
+ 	)
+ 
+ 
+diff --git a/foames/foames_adapters/s4hana/outbox.py b/foames/foames_adapters/s4hana/outbox.py
+index f133c36..bf58c76 100644
+--- a/foames/foames_adapters/s4hana/outbox.py
++++ b/foames/foames_adapters/s4hana/outbox.py
+@@ -123,6 +123,7 @@ class Outcome:
+ 	error: str = ""
+ 	details: list | None = None
+ 	response: dict | None = None
++	retry_after: int | None = None
+ 
+ 
+ def send(client: ODataClient, operation: Operation, payload: dict, verify_first: bool) -> Outcome:
+@@ -138,14 +139,23 @@ def send(client: ODataClient, operation: Operation, payload: dict, verify_first:
+ 		return Outcome("Posted", document_id(operation, created), response=created)
+ 	except ODataError as e:
+ 		if not e.transient:
+-			return Outcome("Failed", error=str(e), details=e.details)
++			return Outcome("Failed", error=str(e), details=e.details, retry_after=e.retry_after)
+ 		# A send that may have reached S/4HANA is checked by marker on the next attempt.
+-		return Outcome("Retry", error=str(e), details=e.details)
+-
+-
+-def retry_delay(attempts: int) -> int:
+-	"""Seconds to wait after the given number of failed attempts: 1, 2, 4 ... minutes, capped at 6 h."""
+-	return min(BASE_DELAY_SECONDS * 2 ** max(attempts - 1, 0), MAX_DELAY_SECONDS)
++		return Outcome(
++			"Unknown" if e.maybe_applied or verify_first else "Retry",
++			error=str(e),
++			details=e.details,
++			retry_after=getattr(e, "retry_after", None),
++		)
++
++
++def retry_delay(attempts: int, retry_after: int | None = None) -> int:
++	"""Seconds to wait after the given number of failed attempts: 1, 2, 4 ... minutes, or longer when
++	the server asked for longer with Retry-After, capped at 6 h."""
++	backoff = BASE_DELAY_SECONDS * 2 ** max(min(attempts, 30) - 1, 0)
++	if retry_after is not None and retry_after > 0:
++		backoff = max(backoff, int(retry_after))
++	return min(backoff, MAX_DELAY_SECONDS)
+ 
+ 
+ def give_up(attempts: int) -> bool:
+diff --git a/foames/foames_adapters/s4hana/test_retry_after.py b/foames/foames_adapters/s4hana/test_retry_after.py
+new file mode 100644
+index 0000000..3fc84bf
+--- /dev/null
++++ b/foames/foames_adapters/s4hana/test_retry_after.py
+@@ -0,0 +1,13 @@
++import unittest
++
++from foames.foames_adapters.s4hana import outbox
++from foames.foames_adapters.s4hana.odata import Response, error_from_response
++
++
++class TestRetryAfter(unittest.TestCase):
++	def test_header_is_read(self):
++		self.assertEqual(error_from_response(Response(429, {"Retry-After": "300"}, b"")).retry_after, 300)
++
++	def test_delay_honours_the_server(self):
++		self.assertEqual(outbox.retry_delay(1, retry_after=300), 300)
++		self.assertEqual(outbox.retry_delay(1), 60)

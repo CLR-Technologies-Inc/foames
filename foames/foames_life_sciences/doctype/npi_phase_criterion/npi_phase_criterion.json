@@ -1,0 +1,80 @@
+{
+ "actions": [],
+ "creation": "2026-11-15 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "stage",
+  "kind",
+  "criterion",
+  "required",
+  "met",
+  "evidence"
+ ],
+ "fields": [
+  {
+   "fieldname": "stage",
+   "fieldtype": "Select",
+   "label": "Stage",
+   "options": "Concept\nFeasibility\nDevelopment\nVerification & Validation\nTransfer\nLaunch",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "kind",
+   "fieldtype": "Select",
+   "label": "Kind",
+   "options": "Entry\nExit",
+   "reqd": 1,
+   "default": "Exit",
+   "in_list_view": 1,
+   "columns": 1,
+   "description": "Entry: ready to hold the phase review. Exit: the stage has achieved what the next one depends on."
+  },
+  {
+   "fieldname": "criterion",
+   "fieldtype": "Data",
+   "label": "Criterion",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 4
+  },
+  {
+   "fieldname": "required",
+   "fieldtype": "Check",
+   "label": "Required",
+   "default": "1",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "met",
+   "fieldtype": "Check",
+   "label": "Met",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "evidence",
+   "fieldtype": "Data",
+   "label": "Evidence",
+   "in_list_view": 1,
+   "columns": 1,
+   "description": "Where it is shown: a document, a report, a deliverable"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Life Sciences",
+ "name": "NPI Phase Criterion",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1,
+ "permissions": []
+}

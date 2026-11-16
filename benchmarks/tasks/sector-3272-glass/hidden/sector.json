@@ -1,0 +1,109 @@
+{
+ "case_id": "sector-3272-glass",
+ "sector": "Nonmetallic mineral products (automotive glass)",
+ "naics": "3272",
+ "seed": 3272,
+ "source": {
+  "title": "Compressed Air System Upgrade Improves Production at an Automotive Glass Plant",
+  "publisher": "U.S. Department of Energy, Office of Industrial Technologies (Glass BestPractices project case study)",
+  "report": "DOE/GO-102003-1657",
+  "date": "2003-02",
+  "url": "https://nrel.gov/docs/fy03osti/33096.pdf",
+  "us_government_work": true,
+  "named_organisations": [
+   "Visteon"
+  ]
+ },
+ "claim": {
+  "kind": "annual_energy_saving",
+  "value": 7900000,
+  "unit": "kWh/yr",
+  "text": "New lubricant-free compressors, leak repair and moving blow-off to blowers cut demand from 4,600 to about 2,800 scfm and save 7.9 million kWh ($238,000) a year."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-05-04T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-09-07T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   0,
+   24
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6
+ ],
+ "mark_unknown_after_minutes": 30,
+ "production_unit": "m2",
+ "energy_unit": "kWh",
+ "energy_price": 0.0301,
+ "line": {
+  "source_id": "PLANT-A-TEMPERING-1",
+  "description": "Tempering and laminating line 1",
+  "ideal_cycle_seconds": 1.5,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "PLANT-A-AIR-KWH",
+  "description": "Compressor house kWh meter",
+  "counter": "energy_kwh",
+  "rollover": 10000000,
+  "every_minutes": 15,
+  "start_value": 0
+ },
+ "baseline": {
+  "rate_per_run_hour": 2000,
+  "scrap_fraction": 0.03,
+  "down_per_day": 1.0,
+  "down_minutes": 40,
+  "idle_per_day": 1.0,
+  "idle_minutes": 20,
+  "setup_per_day": 1.0,
+  "setup_minutes": 60,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 1900,
+  "energy_per_unit": 0.05
+ },
+ "after": {
+  "rate_per_run_hour": 2000,
+  "scrap_fraction": 0.03,
+  "down_per_day": 1.0,
+  "down_minutes": 40,
+  "idle_per_day": 1.0,
+  "idle_minutes": 20,
+  "setup_per_day": 1.0,
+  "setup_minutes": 60,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 1000,
+  "energy_per_unit": 0.05
+ },
+ "traps": {
+  "network_gap": {
+   "window": "after",
+   "at": 0.15,
+   "hours": 8
+  },
+  "out_of_order": {
+   "window": "after"
+  },
+  "meter_rollover": {
+   "window": "baseline",
+   "at": 0.5
+  }
+ },
+ "target_ratio": 1.0
+}

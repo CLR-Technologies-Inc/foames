@@ -75,6 +75,8 @@ def run_one(task, agent, repo: Path, run_dir: Path, keep_workspace: bool = False
 	# A second line of defence, and the only one with --sandbox none: if the agent edits the task,
 	# the harness or the pristine tests, the run is marked as tampered and fails.
 	guarded = [task.path, BENCH_ROOT / "foames_bench", *[repo / p for p in task.regression]]
+	if task.family_path:
+		guarded.append(task.family_path)
 	before = [_tree_hash(p) if p.is_dir() else hashlib.sha256(p.read_bytes()).hexdigest() for p in guarded]
 	result = agents_mod.run(agent, task, ws, run_dir, sandbox=box)
 	after = [_tree_hash(p) if p.is_dir() else hashlib.sha256(p.read_bytes()).hexdigest() for p in guarded]

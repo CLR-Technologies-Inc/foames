@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Part of the same feed system, written for the FoaMES tests in the DEXPI 2.0 model form:
+     tank TK-101 feeds pump P-101 through line 1001; TI-102 reads the tank. -->
+<Model name="feed-system" uri="http://example.org/foames/feed-system">
+  <Import prefix="Core" source="https://data.dexpi.org/models/2.0.0/Core.xml"/>
+  <Import prefix="Plant" source="https://data.dexpi.org/models/2.0.0/Plant.xml"/>
+  <Object type="Core/EngineeringModel">
+    <Components property="ConceptualModel">
+      <Object id="PlantModel1" type="Plant/PlantModel">
+        <Components property="MetaData">
+          <Object id="PlantMetaData1" type="Plant/Diagram.PlantMetaData">
+            <Data property="DrawingNumber"><String>PID-100-002</String></Data>
+            <Data property="RevisionNumber"><String>A</String></Data>
+            <Data property="DrawingName"><String>Feed tank</String></Data>
+          </Object>
+        </Components>
+        <Components property="TaggedPlantItems">
+          <Object id="Tank1" type="Plant/ProcessEquipment.Tank">
+            <Data property="TagName"><String>TK-101</String></Data>
+            <Data property="NominalCapacityVolume">
+              <AggregatedDataValue type="Core/PhysicalQuantities.PhysicalQuantity">
+                <Data property="Unit"><DataReference data="Core/PhysicalQuantities.VolumeUnit.MetreCubed"/></Data>
+                <Data property="Value"><Double>12.0</Double></Data>
+              </AggregatedDataValue>
+            </Data>
+            <Components property="Nozzles">
+              <Object id="Nozzle1" type="Plant/ProcessEquipment.Nozzle"/>
+            </Components>
+          </Object>
+          <Object id="CentrifugalPump1" type="Plant/ProcessEquipment.CentrifugalPump">
+            <Data property="TagNamePrefix"><String>P-</String></Data>
+            <Data property="TagNameSequenceNumber"><String>101</String></Data>
+            <Components property="Nozzles">
+              <Object id="Nozzle2" type="Plant/ProcessEquipment.Nozzle"/>
+            </Components>
+          </Object>
+        </Components>
+        <Components property="PipingNetworkSystems">
+          <Object id="PipingNetworkSystem1" type="Plant/Piping.PipingNetworkSystem">
+            <Data property="LineNumber"><String>1001</String></Data>
+            <Data property="FluidCode"><String>PW</String></Data>
+            <Components property="Segments">
+              <Object id="PipingNetworkSegment1" type="Plant/Piping.PipingNetworkSegment">
+                <Components property="Items">
+                  <Object id="BallValve1" type="Plant/Piping.BallValve">
+                    <Data property="PipingComponentNumber"><String>C1</String></Data>
+                  </Object>
+                </Components>
+                <Components property="Connections">
+                  <Object id="Pipe1" type="Plant/Piping.Pipe">
+                    <References objects="#Nozzle1" property="SourceItem"/>
+                    <References objects="#BallValve1" property="TargetItem"/>
+                  </Object>
+                  <Object id="Pipe2" type="Plant/Piping.Pipe">
+                    <References objects="#BallValve1" property="SourceItem"/>
+                    <References objects="#Nozzle2" property="TargetItem"/>
+                  </Object>
+                </Components>
+              </Object>
+            </Components>
+          </Object>
+        </Components>
+        <Components property="ProcessInstrumentationFunctions">
+          <Object id="ProcessInstrumentationFunction1" type="Plant/Instrumentation.ProcessInstrumentationFunction">
+            <Data property="Location"><DataReference data="Plant/Enumerations.LocationClassification.Field"/></Data>
+            <Data property="ProcessInstrumentationFunctionCategory"><String>T</String></Data>
+            <Data property="ProcessInstrumentationFunctionNumber"><String>-102</String></Data>
+            <Data property="ProcessInstrumentationFunctions"><String>I</String></Data>
+            <Components property="ProcessSignalGeneratingFunctions">
+              <Object id="ProcessSignalGeneratingFunction1" type="Plant/Instrumentation.ProcessSignalGeneratingFunction">
+                <References objects="#Nozzle1" property="SensingLocation"/>
+              </Object>
+            </Components>
+          </Object>
+        </Components>
+      </Object>
+    </Components>
+    <Components property="Diagram">
+      <Object type="Core/Diagram.Diagram">
+        <Data property="Name"><String>PID-100-002</String></Data>
+        <Data property="MinX"><Double>0.0</Double></Data>
+        <Data property="MinY"><Double>0.0</Double></Data>
+        <Data property="MaxX"><Double>420.0</Double></Data>
+        <Data property="MaxY"><Double>297.0</Double></Data>
+        <References objects="#PlantModel1" property="Represents"/>
+        <Components property="Groups">
+          <Object type="Core/Diagram.RepresentationGroup">
+            <Components property="Groups">
+              <Object type="Core/Diagram.Static">
+                <Components property="Elements">
+                  <Object type="Core/Diagram.ShapeUsage">
+                    <Data property="Position">
+                      <AggregatedDataValue type="Core/Diagram.Point">
+                        <Data property="X"><Double>60.0</Double></Data>
+                        <Data property="Y"><Double>150.0</Double></Data>
+                      </AggregatedDataValue>
+                    </Data>
+                  </Object>
+                </Components>
+              </Object>
+            </Components>
+            <References objects="#Tank1" property="Represents"/>
+          </Object>
+          <Object type="Core/Diagram.RepresentationGroup">
+            <Components property="Groups">
+              <Object type="Core/Diagram.Static">
+                <Components property="Elements">
+                  <Object type="Core/Diagram.ShapeUsage">
+                    <Data property="Position">
+                      <AggregatedDataValue type="Core/Diagram.Point">
+                        <Data property="X"><Double>140.0</Double></Data>
+                        <Data property="Y"><Double>120.0</Double></Data>
+                      </AggregatedDataValue>
+                    </Data>
+                  </Object>
+                </Components>
+              </Object>
+            </Components>
+            <References objects="#CentrifugalPump1" property="Represents"/>
+          </Object>
+          <Object type="Core/Diagram.RepresentationGroup">
+            <Components property="Groups">
+              <Object type="Core/Diagram.Static">
+                <Components property="Elements">
+                  <Object type="Core/Diagram.ConnectorLine">
+                    <Data property="InnerPoints">
+                      <AggregatedDataValue type="Core/Diagram.Point">
+                        <Data property="X"><Double>70.0</Double></Data>
+                        <Data property="Y"><Double>120.0</Double></Data>
+                      </AggregatedDataValue>
+                      <AggregatedDataValue type="Core/Diagram.Point">
+                        <Data property="X"><Double>100.0</Double></Data>
+                        <Data property="Y"><Double>120.0</Double></Data>
+                      </AggregatedDataValue>
+                    </Data>
+                  </Object>
+                </Components>
+              </Object>
+            </Components>
+            <References objects="#Pipe1" property="Represents"/>
+          </Object>
+        </Components>
+      </Object>
+    </Components>
+  </Object>
+</Model>

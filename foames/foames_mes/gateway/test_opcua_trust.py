@@ -77,6 +77,15 @@ class TestServerCertificateValidation(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			opcua_trust.load_certificates(b"-----BEGIN CERTIFICATE-----\nabc\n")
 
+	def test_der_ending_in_a_whitespace_byte_is_passed_whole(self):
+		# A DER certificate can end in a byte such as 0x0a or 0x20; it must not be stripped.
+		from unittest import mock
+
+		data = der(self.server) + b"\n"
+		with mock.patch("cryptography.x509.load_der_x509_certificate", return_value="cert") as load:
+			self.assertEqual(opcua_trust.load_certificates(data), ["cert"])
+		load.assert_called_once_with(data)
+
 	def test_a_pinned_leaf_is_trusted_on_its_own(self):
 		summary = self.validate(self.server, [self.server])
 		self.assertEqual(summary["chain_length"], 1)

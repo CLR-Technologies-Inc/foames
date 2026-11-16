@@ -10,10 +10,15 @@ FoaMES is an ERP-agnostic manufacturing execution system built as a single Frapp
 
 | Module | Package | Holds |
 | --- | --- | --- |
-| FoaMES Kernel | `foames/foames_kernel` | `External Reference`, `FoaMES Settings` |
-| FoaMES MES | `foames/foames_mes` | Machine, Machine Event, Downtime Reason and Record, Machine Data Settings, Shift Pattern, OEE Period, Agent Suggestion, Andon Call and Call Type, Maintenance Plan and Work Order, Cycle Time Standard, Standard Operating Procedure and SOP Acknowledgement, the Floor View page, the gateways, the API |
+| FoaMES Kernel | `foames/foames_kernel` | `External Reference`, `FoaMES Settings`, read-only mode: `Connector Write Policy`, `Pending Write`, `Write Audit Log`, the write gate (`write_gate.py`) and its pure rules (`write_policy.py`) |
+| FoaMES MES | `foames/foames_mes` | Machine, Machine Event, Downtime Reason and Record, Machine Data Settings, Shift Pattern, OEE Period, Agent Suggestion, Andon Call and Call Type, Maintenance Plan and Work Order, Cycle Time Standard, Lineside Bin, Material Queue and Entry, Material Handling Profile, Recognition and its settings, Work Instruction and Work Instruction Run, PFMEA, Production Schedule and Scheduled Operation, Standard Operating Procedure and SOP Acknowledgement, the Floor View page, the gateways, the API |
 | FoaMES Adapters | `foames/foames_adapters` | The adapter contract and registry, one subpackage per vendor (each with its own `AGENTS.md`), the shared Integration workspace |
+| FoaMES Commissioning | `foames/foames_commissioning` | Commissioning Package, Commissioning Checklist Template, Commissioning Test, Loop Check, Punch Item, the Punch List and Commissioning Status reports, handover readiness |
 | FoaMES Process Mining | `foames/foames_process_mining` | Event Log Source, Process Event Log, the event extractors, the XES and OCEL exports, discovery and conformance analysis, and their API |
+| FoaMES Life Sciences | `foames/foames_life_sciences` | NPI Program (+ gates, criteria, deliverables), Phase Review Board and Phase Review (the phase review discipline), Product Requirements Document (+ requirements), Tech Transfer Package (+ parameters, attributes), Comparability Assessment, PD Simulation Study (+ factors, responses, runs), the read API, the daily gate check |
+| FoaMES PID | `foames/foames_pid` | PID Component (the tag register), PID Drawing, the ISA-5.1 tag reader, the DEXPI and CSV importers, the P&ID Viewer page, the instrument-signal rule, their API |
+| FoaMES EHS | `foames/foames_ehs` | Safety Incident (+ EHS Action), Safety Permit (+ Permit Isolation Point), Hazard Assessment (+ Hazard Control), Exposure Record (+ Exposure Sample), the lockout and hourly safety checks, the Safety Incident Rates report |
+| FoaMES Validation | `foames/foames_validation` | Validation Protocol and Acceptance Criterion, Validation Execution and Result, the qualification rules, the Qualification Status report, the daily requalification check |
 | MCP server | `foames/foames_mcp` | The MCP tool catalogue, the Streamable HTTP endpoint, the stdio bridge, read methods for agents |
 | FoaMES Risk | `foames/foames_risk` | Enterprise Risk (+ Risk Control, Risk Link, Risk Indicator, Risk Review), Risk Category, Risk Template (+ Risk Template Control), Risk Settings, the Risk Register and Risk Heat Map reports, the FoaMES Risk workspace; the rules are pure, in `risk.py` |
 
@@ -27,9 +32,9 @@ Keep these whatever you build. A pull request that breaks one will not be merged
 2. **Adapters are registered, not hard-wired.** New ERPs come through the `foames_erp_adapters` hook and subclass `foames.foames_adapters.base.ERPAdapter`. See [docs/adapters.md](docs/adapters.md#writing-an-adapter-for-another-erp) and [foames/foames_adapters/AGENTS.md](foames/foames_adapters/AGENTS.md).
 3. **Counters never invent production.** Machines send running totals; FoaMES stores the delta against the previous reading of the same counter. A first reading, a reset, or an out-of-order reading yields zero; a wrap is counted only when the machine's Counter Rollover is known. The rules are in `foames/foames_mes/counters.py`.
 4. **Unknown time is loss.** The OEE ledger is built from state events with Downtime Records overlaid, and an Unknown state is never run time. A machine that stops reporting gets an Unknown state event from the scheduler's staleness check (source System), and the Sparkplug gateway writes one at once on NDEATH or DDEATH. Do not add code that infers output or run time from the absence of events.
-5. **Agents suggest; people act.** Anything an agent or a rule finds becomes an `Agent Suggestion` with evidence. FoaMES does not write tags, send commands to SCADA, change machine state on its own, or post to an ERP without an explicit, idempotent posting a person configured.
+5. **Agents suggest; people act.** Anything an agent or a rule finds becomes an `Agent Suggestion` with evidence. FoaMES does not write tags, send commands to SCADA, change machine state on its own, or post to an ERP without an explicit, idempotent posting a person configured. Every write to another system, and every write an agent or connector makes, passes the read-only gate (`foames_kernel/write_gate.py`, see [docs/read-only-mode.md](docs/read-only-mode.md)): add a new write path behind it, never around it.
 6. **Postings to an ERP are idempotent and sequenced.** An idempotency key per business event, a marker written into the created document, a check before resending after an unclear answer, exponential backoff, strict order within a sequence group. The adapters' outboxes are the model; the details are in [foames/foames_adapters/AGENTS.md](foames/foames_adapters/AGENTS.md). Follow it for any new write path.
-7. **Pure logic stays pure.** `oee.py`, `counters.py`, `shifts.py`, `andon.py`, `suggestions.py`, `maintenance.py`, `cycle_time.py`, `sop.py`, `signing.py`, `ecl.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, the process-mining core and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe, and so do the arithmetic, parsing and protocol modules of each adapter (each vendor's `AGENTS.md` lists its own). Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
+7. **Pure logic stays pure.** `foames_kernel/write_policy.py`, `oee.py`, `counters.py`, `shifts.py`, `andon.py`, `recognition.py`, `suggestions.py`, `maintenance.py`, `cycle_time.py`, `material.py`, `foames_commissioning/commissioning.py`, `work_instructions.py`, `pfmea.py`, `scheduling.py`, `sop.py`, `signing.py`, `ecl.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, `foames_ehs/ehs.py`, the process-mining core, `foames_pid/isa51.py`, `dexpi.py`, `svg.py`, `linking.py`, `register.py`, `overlay.py`, `foames_validation/qualification.py`, the life-sciences rules and arithmetic (`foames_life_sciences/npi.py`, `phase_review.py`, `requirements.py`, `transfer.py`, `stats.py`, `doe.py`, `scaleup.py`) and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe, and so do the arithmetic, parsing and protocol modules of each adapter (each vendor's `AGENTS.md` lists its own). Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
 8. **Secrets live in Password fields** of a Settings DocType (`Machine Data Settings`, or the adapter's own Settings), read with `get_password`. Never in code, hooks or site config, never logged.
 9. **Both Frappe versions.** Use `foames.tests_compat.IntegrationTestCase` for site tests. Avoid APIs that exist in only one of v15 and v16.
 
@@ -49,13 +54,16 @@ foames/
   hooks.py                    app hooks: adapters, scheduler events, extension hook names
   install.py                  creates the six FoaMES roles before DocTypes are synced
   tests_compat.py             IntegrationTestCase that works on v15 and v16
-  foames_kernel/doctype/      External Reference (get_reference, make_reference_key), FoaMES Settings
+  foames_kernel/doctype/      External Reference (get_reference, make_reference_key), FoaMES Settings,
+                              Connector Write Policy, Pending Write, Write Audit Log
+  foames_kernel/write_gate.py the read-only gate every write passes; write_policy.py its pure rules
   foames_mes/
     api.py                    ingest_machine_events, get_floor_snapshot, run_suggestion_rules, post_suggestion
     floor.py                  floor_snapshot, collect_findings
-    oee.py  counters.py  shifts.py  suggestions.py  signing.py  kpi.py  spc.py  maintenance.py   pure logic (kpi.py: report roll-ups, shifts.py: shift calendars, spc.py: control charts)
+    oee.py  counters.py  shifts.py  suggestions.py  signing.py  kpi.py  spc.py  maintenance.py  pfmea.py  recognition.py   pure logic (kpi.py: report roll-ups, shifts.py: shift calendars, spc.py: control charts, pfmea.py: action priority and observed occurrence, recognition.py: milestones, team highlights, floor privacy)
     ecl.py                    pure: Equipment Complexity Level, minimum model tier, agent eligibility and oversight
     cycle_time.py             pure: automatic and manual time, projections, scenarios, calibration; cycle_time_api.py serves them
+    scheduling.py             pure: finite-capacity scheduling (dispatching rules, working windows, behind-schedule findings)
     sop.py                    pure: SOP revision lifecycle, sign-off, periodic review and training status
     cbom.py                   pure: the site CBOM with the deployed certificates; site_cbom.py reads the site and writes it
     spc_monitor.py            SPC over Measurement events: settings, findings, get_control_chart
@@ -65,10 +73,14 @@ foames/
                               Machine Data Settings (+ Machine Node Map), Shift Pattern (+ shifts, non-working days),
                               OEE Period, Agent Suggestion, Andon Call, Andon Call Type,
                               Maintenance Plan, Maintenance Work Order, Cycle Time Standard (+ elements),
+                              Recognition, Recognition Settings (+ Recognition Opt Out),
+                              Work Instruction (+ steps), Work Instruction Run (+ step results), PFMEA (+ PFMEA Item),
+                              Production Schedule (+ Production Schedule Job), Scheduled Operation (calendar and Gantt views),
                               Standard Operating Procedure (+ applicability, approvals, training roles), SOP Acknowledgement
+    work_instructions.py      pure: step captures and limits, step order, two-person sign-off, the rules
     page/floor_view/          the Floor View page
     report/                   OEE Trend, Downtime Pareto, MTBF and MTTR, Suggestion Status, Process Throughput, SPC Control Chart,
-                              Maintenance Due List, SOP Training Matrix
+                              Maintenance Due List, PFMEA Risk Register, PFMEA Control Plan, SOP Training Matrix
     workspace/  number_card/  dashboard_chart/  foames_mes_dashboard/   role workspaces and dashboards
   foames_adapters/
     AGENTS.md                 the adapter layer: contract, rules every adapter keeps, how to add a vendor
@@ -78,12 +90,33 @@ foames/
     <vendor>/                 one subpackage per vendor adapter, each with its own AGENTS.md
     doctype/  report/         the adapters' Settings and Outbox DocTypes and shared reports
     workspace/  number_card/  dashboard_chart/  foames_adapters_dashboard/   the Integration workspace
+  foames_commissioning/
+    commissioning.py          pure logic: test steps and the test sequence, loop check points, punch categories, handover readiness
+    doctype/                  Commissioning Package (+ items), Commissioning Checklist Template (+ items),
+                              Commissioning Test (+ steps), Loop Check (+ points), Punch Item
+    report/                   Punch List, Commissioning Status
   foames_process_mining/
     eventlog.py  xes.py  ocel.py  discovery.py  conformance.py   pure logic: the event log, the XES and
                               OCEL 2.0 formats, directly-follows discovery and performance, conformance
     extractors.py             build_event_log, the built-in machine-state and downtime extractors, field maps
     api.py                    summary, events, discover, check_conformance, export
     doctype/                  Event Log Source, Process Event Log (+ Process Event Log Source)
+  foames_pid/
+    isa51.py  dexpi.py  svg.py  linking.py  register.py  overlay.py   pure logic: ISA-5.1 tags, DEXPI 1.x/2.x
+                              reader, the SVG view, tag-to-signal suggestions, the CSV register, live-value flags
+    api.py  rules.py          the viewer, register and link methods; the instrument-signal suggestion rule
+    doctype/  page/           PID Component (+ attributes), PID Drawing (+ connections), the P&ID Viewer page
+  foames_ehs/
+    ehs.py                    pure logic: recordability, incidence rates, risk matrix, exposure TWA and noise dose,
+                              permit rules, the safety findings
+    rules.py  tasks.py        running-under-lockout (state hook and snapshot rule), the hourly check_ehs
+    doctype/  report/  workspace/   Safety Incident, Safety Permit, Hazard Assessment, Exposure Record; Safety
+                              Incident Rates; the FoaMES Safety workspace
+  foames_validation/
+    qualification.py          pure logic: IQ/OQ/PQ/PPQ/CPV order, criterion evaluation (capability via spc.capability),
+                              execution outcome, validity, qualification status, requalification findings
+    api.py  tasks.py          status per machine or process, get_qualification_status, the daily requalification check
+    doctype/  report/         Validation Protocol, Validation Execution (+ child tables), Qualification Status
   foames_mcp/
     protocol.py               MCP/JSON-RPC server core (pure), tools.py the catalogue (pure)
     api.py                    the Streamable HTTP endpoint; reads.py whitelisted read methods
@@ -112,6 +145,13 @@ All of them are Frappe hooks: another app lists dotted paths in its own `hooks.p
 | `foames_floor_snapshot_extensions` | `(snapshot: dict, since, now)`, mutate in place | Add a section to the floor snapshot, so the page, the rules and external agents see it |
 | `foames_suggestion_rules` | `(snapshot: dict) -> list[dict]` | Add rules; each finding dict needs `rule_key`, `title`, `category`, `suggestion`, `severity`, optional `reference_doctype`, `reference_name`, `evidence` |
 | `foames_process_event_extractors` | `(since, until)`, returns an iterable of `foames.foames_process_mining.eventlog.Event` | Add your own records to the process-mining event log |
+| `foames_write_gated_outboxes` | (dict: outbox DocType -> connector key or `field:<fieldname>`) | Put an outbox behind the read-only gate; its `claim` calls `write_gate.outbox_may_send(doc)` |
+| `foames_write_actions` | (dict: action key -> dotted path) | Register a write that is not an outbox posting, to be requested with `write_gate.request_write` |
+| `foames_mcp_tools` | `() -> list[foames.foames_mcp.protocol.Tool]` | Add tools to the MCP server |
+| `foames_commissioning_readiness_checks` | `(package_doc) -> list[dict]` of blockers with `kind`, `reference`, `message` | Hold a Commissioning Package's handover back on your own conditions |
+| `foames_commissioning_handed_over` | `(package_doc)` after the package is handed over | Start what follows commissioning, for example a qualification (IQ/OQ/PQ) record, and link it in the package's Qualification fields |
+| `foames_schedule_demand_sources` | `(start, end, line) -> list[dict]` of Production Schedule Job values | Fill a Production Schedule's rows from an ERP or a planning tool (Get Operations) |
+| `foames_cycle_time_estimators` | `(row: dict, machine: dict) -> seconds per unit or None` | Give the scheduler a cycle time when a row has none; the first answer wins, then the machine's Ideal Cycle Seconds |
 
 Code entry points you call rather than hook:
 
@@ -146,17 +186,31 @@ Whitelisted methods, called as `/api/method/<dotted path>`. Authentication is Fr
 | `foames.foames_mes.cycle_time_api.project_time` | GET or POST | read on Cycle Time Standard (+ Machine Event with `use_observed`) | Elapsed, automatic and operator time for a quantity; with `changes`, a what-if scenario and its savings |
 | `foames.foames_mes.cycle_time_api.project_operations` | GET or POST | read on Cycle Time Standard | Projections for many `{key, standard or machine, quantity}` rows at once, for a scheduler |
 | `foames.foames_mes.cycle_time_api.compare_with_observed` / `get_observed_cycle` | GET | read on Cycle Time Standard and Machine Event | A standard against the machine's observed running and idle time per cycle |
+| `foames.foames_mes.doctype.recognition.recognition.give_recognition` | POST | create on Recognition | Thank a person (`recipient`) or a team (`team`): `message`, `kind`, `machine`, `private` |
+| `foames.foames_mes.doctype.recognition.recognition.withdraw_recognition` | POST | the giver or a supervisor | Withdraw a recognition |
+| `foames.foames_mes.doctype.recognition.recognition.list_recognitions` | GET | read on Recognition | Recent recognitions the user may see |
+| `foames.foames_mes.doctype.recognition.recognition.get_my_recognition_preferences` / `set_my_recognition_preferences` | GET / POST | logged in | The user's own floor and milestone opt-out |
+| `foames.foames_mes.doctype.work_instruction.work_instruction.list_instructions_for_machine` | GET | read on Work Instruction | Released instructions that apply at a `machine`, most specific first |
+| `foames.foames_mes.doctype.work_instruction.work_instruction.release` / `make_obsolete` / `new_revision` | POST | write (release: FoaMES Engineer, Quality or System Manager); create for `new_revision` | Revision control of an instruction |
+| `foames.foames_mes.doctype.work_instruction_run.work_instruction_run.start_run` | POST | create on Work Instruction Run | Start a released instruction at a machine (`work_instruction`, `machine`, `job_reference`) |
+| `foames.foames_mes.doctype.work_instruction_run.work_instruction_run.record_step` / `sign_off_step` / `release_hold` / `complete_run` / `abort_run` | POST | write on Work Instruction Run (`release_hold`: FoaMES Supervisor, Quality, Engineer or System Manager) | Execute a run step by step |
+| `foames.foames_mes.doctype.work_instruction_run.work_instruction_run.get_run` / `list_active_runs` | GET | read on Work Instruction Run | One run with its steps, or the active runs with the step each is on |
+| `foames.foames_mes.doctype.production_schedule.production_schedule.get_machine_schedule` | GET | read on Scheduled Operation | The published scheduled operations from now (`machine`, `days`) |
 | `foames.foames_adapters.get_available_erp_systems` | GET | logged in | Registered adapters and their availability |
 | `foames.foames_process_mining.api.summary`, `events`, `discover`, `check_conformance`, `export` | GET or POST | read on Process Event Log | Process mining over a saved `event_log` or a log built from `since`, `until` and `sources`; `discover` takes `dot=1`, `check_conformance` takes `model`, `export` takes `fmt=xes` or `ocel` |
+| `foames.foames_pid.api.get_drawing_view`, `get_live_values`, `get_drawing`, `list_components`, `get_component` | GET | read on PID Drawing / PID Component | The P&ID as SVG with live states and values, the tag register, one tag with its value and connections |
+| `foames.foames_pid.api.parse_instrument_tag` | GET | logged in | ISA-5.1 reading of a tag |
+| `foames.foames_pid.api.suggest_links` / `apply_links` | GET / POST | read / write on PID Component | Candidate tag-to-signal links; apply the ones a person chose |
+| `foames.foames_pid.api.import_tag_register` / `export_tag_register` | POST / GET | create / read on PID Component | The instrument index and equipment list as CSV |
 | `foames.foames_mcp.reads.*` | GET | read on the DocType listed | Agent-friendly reads: machines, events, downtime, OEE periods, suggestions, ERP systems and references, event logs |
 | `foames.foames_mcp.api.mcp` | POST | logged in; each tool checks its own | The MCP endpoint (Streamable HTTP) |
 | `foames.foames_risk.doctype.enterprise_risk.enterprise_risk.create_from_template` / `create_from_source` | POST | create on Enterprise Risk | A new risk from a Risk Template (`template`, `title`, `machine`), or summarising a hazard assessment or PFMEA (`doctype`, `name`) linked as its Source |
 | `foames.foames_risk.doctype.enterprise_risk.enterprise_risk.record_review` | POST | write on Enterprise Risk | Record the periodic review (`name`, `notes`) |
 | `foames.foames_risk.doctype.enterprise_risk.enterprise_risk.accept_residual_risk` | POST | FoaMES Supervisor or System Manager | Management accepts the residual risk at its current score (`name`, `justification`) |
 
-Document methods callable with `frm.call` or `run_doc_method`: `External Reference.resolve`, `Event Log Source.preview`, `Process Event Log.extract`, `discover`, `check_against`, `export_file`.
+Document methods callable with `frm.call` or `run_doc_method`: `Production Schedule.get_operations`, `build`, `publish`, `copy_to_draft`, `External Reference.resolve`, `Event Log Source.preview`, `Process Event Log.extract`, `discover`, `check_against`, `export_file`, `PID Drawing.import_dexpi`.
 
-The event shape, state aliases and signing scheme are in [docs/machine-data.md](docs/machine-data.md); the event log, its sources and the analyses are in [docs/process-mining.md](docs/process-mining.md).
+The event shape, state aliases and signing scheme are in [docs/machine-data.md](docs/machine-data.md); the event log, its sources and the analyses are in [docs/process-mining.md](docs/process-mining.md); P&IDs, DEXPI and the tag register in [docs/pid.md](docs/pid.md).
 
 **MCP.** The same surface is available to agents as MCP tools: `POST /api/method/foames.foames_mcp.api.mcp` is a Streamable HTTP MCP server authenticated with the API key, and `python -m foames.foames_mcp` is a stdio bridge to it for desktop clients. The catalogue is `foames/foames_mcp/tools.py`; each tool is one whitelisted method above, run as the key's user. Setup and the tool list are in [docs/mcp.md](docs/mcp.md). To expose a new whitelisted method to agents, add a `Tool` record there; the method keeps its own permission check.
 
@@ -174,6 +228,8 @@ The event shape, state aliases and signing scheme are in [docs/machine-data.md](
 
 **Mine records from another DocType or app.** For a DocType on the site, create an Event Log Source with a field map (case, activity, timestamp, optional end timestamp, resource, filters, object fields) and check it with **Preview events**; the DocType is named as text and the source is skipped when it is not installed. For records your app builds itself, register a `foames_process_event_extractors` hook that yields `Event` objects. New analyses go in the pure modules with a test in `test_process_mining_logic.py`, and are exposed through `api.py` or a Process Event Log method.
 
+**Bring in a plant's P&IDs.** Import DEXPI where the P&ID tool exports it, an instrument index as CSV otherwise; the importers live in the pure modules of `foames/foames_pid` with their tests in `test_pid_logic.py`, and `PID Drawing.apply_diagram` is the one place that writes a parsed drawing to the register. Re-imports must never overwrite what people set on the FoaMES side of a tag (machine, signal, range, ERP reference). Tag-to-signal links are suggested with a reason and applied by a person. See [docs/pid.md](docs/pid.md).
+
 **Add a scheduled job.** Register it in `scheduler_events` in `hooks.py` and make it idempotent, as `compute_daily_oee` is (it skips a period that already exists).
 
 **Add cryptography, a secret or a connected service.** Update `sbom/curated.json` in the same pull request: it feeds the cryptography bill of materials and the `services` list of the published CycloneDX SBOM, which the dependency scan cannot see. See [docs/sbom.md](docs/sbom.md#keeping-it-true).
@@ -185,6 +241,7 @@ The event shape, state aliases and signing scheme are in [docs/machine-data.md](
 python -m unittest foames.foames_mes.test_oee_and_rules foames.foames_mes.test_machine_data_logic foames.foames_mes.test_sparkplug foames.foames_mes.test_kpi
 python -m unittest foames.foames_mes.gateway.test_opcua_trust foames.foames_mes.test_cbom   # need the cryptography package
 python -m unittest foames.foames_process_mining.test_process_mining_logic foames.foames_mcp.test_mcp_protocol
+python -m unittest foames.foames_pid.test_pid_logic
 
 # everything, on a bench
 bench --site <site> set-config allow_tests true
@@ -202,5 +259,6 @@ Adapter tests never need a vendor's production system: a remote system is tested
 - Strings shown to users go through `frappe._`.
 - A DocType's Python file holds the document class and the module-level functions that operate on it; the arithmetic it needs lives in a pure module next to it.
 - Commit messages say what changed and why. Credit third-party code and ship its license notice with it.
+- Do not edit `CHANGELOG.md` or `__version__`. Add a fragment under `changelog.d/` (`<pr>.<category>.md`) for a user-facing change; releases collect them. Versions and pre-releases: [docs/versioning.md](docs/versioning.md).
 - Do not add a vendor's proprietary code, API metadata or SDK to the repository. Each adapter talks to the vendor's published interfaces only; what that means for a particular vendor is in its `AGENTS.md`.
 - Keep vendor facts out of this file and the vendor-neutral pages in `docs/`. They belong in the vendor's `AGENTS.md` and its folder under `docs/vendors/`. `README.md` names integrations only in its Integrations section: one row per integration with its kind, its status (alpha or planned) and a link to its guide, and no settings, hooks or analysis.

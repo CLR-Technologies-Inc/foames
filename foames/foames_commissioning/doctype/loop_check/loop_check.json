@@ -1,0 +1,300 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 21:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "package",
+  "tag",
+  "loop_type",
+  "description",
+  "equipment_tag",
+  "machine",
+  "cb_head",
+  "status",
+  "signal_path",
+  "control_system_address",
+  "punch_category",
+  "cancelled",
+  "sb_range",
+  "range_low",
+  "range_high",
+  "cb_range",
+  "engineering_unit",
+  "tolerance_percent",
+  "sb_points",
+  "points",
+  "sb_checks",
+  "alarms_verified",
+  "interlocks_verified",
+  "cb_checks",
+  "checked_by",
+  "checked_on",
+  "punch_item",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "LPC-.YYYY.-",
+   "default": "LPC-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "package",
+   "fieldtype": "Link",
+   "label": "Package",
+   "options": "Commissioning Package",
+   "reqd": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "tag",
+   "fieldtype": "Data",
+   "label": "Tag",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "The instrument or signal tag"
+  },
+  {
+   "fieldname": "loop_type",
+   "fieldtype": "Select",
+   "label": "Loop Type",
+   "options": "Analog Input\nAnalog Output\nDigital Input\nDigital Output",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "label": "Description"
+  },
+  {
+   "fieldname": "equipment_tag",
+   "fieldtype": "Data",
+   "label": "Equipment Tag",
+   "description": "The package equipment the loop belongs to"
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Not Started\nIn Progress\nPassed\nFailed\nCancelled",
+   "default": "Not Started",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "signal_path",
+   "fieldtype": "Small Text",
+   "label": "Signal Path",
+   "description": "Field device to junction box to I/O channel"
+  },
+  {
+   "fieldname": "control_system_address",
+   "fieldtype": "Data",
+   "label": "Control System Address"
+  },
+  {
+   "fieldname": "punch_category",
+   "fieldtype": "Select",
+   "label": "Punch Category",
+   "options": "A\nB\nC",
+   "default": "A",
+   "description": "The category of the punch item raised when the loop fails"
+  },
+  {
+   "fieldname": "cancelled",
+   "fieldtype": "Check",
+   "label": "Cancelled",
+   "default": "0"
+  },
+  {
+   "fieldname": "sb_range",
+   "fieldtype": "Section Break",
+   "label": "Range",
+   "depends_on": "eval:['Analog Input','Analog Output'].includes(doc.loop_type)"
+  },
+  {
+   "fieldname": "range_low",
+   "fieldtype": "Float",
+   "label": "Range Low"
+  },
+  {
+   "fieldname": "range_high",
+   "fieldtype": "Float",
+   "label": "Range High"
+  },
+  {
+   "fieldname": "cb_range",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "engineering_unit",
+   "fieldtype": "Data",
+   "label": "Engineering Unit"
+  },
+  {
+   "fieldname": "tolerance_percent",
+   "fieldtype": "Float",
+   "label": "Tolerance (% of Span)",
+   "default": "1"
+  },
+  {
+   "fieldname": "sb_points",
+   "fieldtype": "Section Break",
+   "label": "Check Points"
+  },
+  {
+   "fieldname": "points",
+   "fieldtype": "Table",
+   "label": "Points",
+   "options": "Loop Check Point",
+   "description": "Filled with the usual points when left empty: five across the span, or On and Off"
+  },
+  {
+   "fieldname": "sb_checks",
+   "fieldtype": "Section Break",
+   "label": "Further Checks"
+  },
+  {
+   "fieldname": "alarms_verified",
+   "fieldtype": "Check",
+   "label": "Alarms Verified",
+   "default": "0"
+  },
+  {
+   "fieldname": "interlocks_verified",
+   "fieldtype": "Check",
+   "label": "Interlocks Verified",
+   "default": "0"
+  },
+  {
+   "fieldname": "cb_checks",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "checked_by",
+   "fieldtype": "Link",
+   "label": "Checked By",
+   "options": "User"
+  },
+  {
+   "fieldname": "checked_on",
+   "fieldtype": "Datetime",
+   "label": "Checked On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "punch_item",
+   "fieldtype": "Link",
+   "label": "Punch Item",
+   "options": "Punch Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 21:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Commissioning",
+ "name": "Loop Check",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "tag",
+ "show_title_field_in_link": 1,
+ "search_fields": "tag,package",
+ "description": "A check of one instrument loop from field device to control system"
+}

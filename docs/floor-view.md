@@ -20,6 +20,8 @@ One tile per enabled Machine, in code order. The colour is the machine's current
 
 Each tile also shows when the machine was last seen, how many minutes since its last count ("No counts today" when there is none in the window), the good and scrap counts over the last day, and "OEE n %" from the machine's most recent OEE Period when one exists. Clicking a tile opens the Machine record.
 
+A tile also shows the machine's open andon calls (see [andon.md](andon.md)) and its active work instruction runs, with the step each one is on. Clicking a run's badge opens it in the runner; **Work Instructions** at the top starts a new one (see [work-instructions.md](work-instructions.md)).
+
 A grey tile is the one to look at first. Unknown time is loss in OEE, and a machine that was counting and then went quiet usually means a gateway, network or PLC problem rather than a stopped machine.
 
 ## Downtime
@@ -76,6 +78,8 @@ Andon calls that miss their targets are escalated by their own five-minute task 
 
 The count-based rules measure from the machine's last count ever, so a machine that counted yesterday and runs without counting today is caught; a machine that has never counted at all, for example a new machine whose counter signal was never wired, shows on the Floor View as "No counts today" instead. They use the machine's last-seen time in their rule key, so a machine that goes quiet again after a fix raises a fresh suggestion. The downtime rule keys on machine, reason and the dated window, so it raises at most once per day per reason; a suggestion that was accepted, dismissed or done is reopened only when the finding recurs under the same key.
 
+P&ID instruments linked to a machine add their own rule, for signals that went silent or read at a range limit; see [pid.md](pid.md#the-suggestion-rule).
+
 Other apps register further rules through the `foames_suggestion_rules` hook, and external agents post their own suggestions through the API. Both are described in [agents/floor-agent.md](agents/floor-agent.md).
 
 ## The floor snapshot
@@ -98,6 +102,11 @@ Everything the page shows comes from one call, `foames.foames_mes.api.get_floor_
      "top_reason": "Planned maintenance", "top_minutes": 45}
   ],
   "external_references": [],
+  "recognitions": [
+    {"name": "REC-2026-00031", "kind": "Helping Hand", "recipient": "Ana Ruiz", "team": "Line 1",
+     "machine": "press-1", "message": "Swapped the die in record time", "from": "Bo Chen",
+     "recognized_at": "2026-10-30 11:20:04"}
+  ],
   "open_suggestions": [
     {"name": "SUG-2026-00007", "title": "Jam is 60% of downtime on press-2", "category": "Downtime",
      "severity": "Info", "agent": "foames-rules", "reference_doctype": "Machine", "reference_name": "press-2"}
@@ -105,7 +114,7 @@ Everything the page shows comes from one call, `foames.foames_mes.api.get_floor_
 }
 ```
 
-`external_references` lists only references with status Missing, and only when the caller may read External Reference. Other apps add sections to the snapshot through the `foames_floor_snapshot_extensions` hook. The same call is what an external agent or a SCADA screen uses to read the floor, so the page and the agents always see the same numbers.
+`external_references` lists only references with status Missing, and only when the caller may read External Reference. `recognitions` holds the recent thanks shown on the page; private ones and people who opted out never appear in it (see [recognition.md](recognition.md)). Other apps add sections to the snapshot through the `foames_floor_snapshot_extensions` hook. The same call is what an external agent or a SCADA screen uses to read the floor, so the page and the agents always see the same numbers.
 
 ## Roles at a glance
 

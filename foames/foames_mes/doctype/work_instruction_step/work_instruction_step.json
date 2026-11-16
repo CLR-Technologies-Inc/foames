@@ -1,0 +1,206 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 21:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "capture",
+  "optional",
+  "estimated_minutes",
+  "cb_step",
+  "sign_off_role",
+  "stop_on_fail",
+  "sb_content",
+  "instruction",
+  "image",
+  "cb_media",
+  "attachment",
+  "video_url",
+  "sb_capture",
+  "unit",
+  "has_lower_limit",
+  "lower_limit",
+  "target_value",
+  "has_upper_limit",
+  "upper_limit",
+  "cb_capture",
+  "choices",
+  "failing_choices",
+  "post_measurement",
+  "measurement_name"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 3
+  },
+  {
+   "fieldname": "capture",
+   "fieldtype": "Select",
+   "label": "Capture",
+   "options": "Confirm\nPass/Fail\nNumber\nText\nChoice",
+   "default": "Confirm",
+   "in_list_view": 1,
+   "columns": 2,
+   "description": "What the operator records: a confirmation, a pass or fail check, a number, text, or one of a list of answers"
+  },
+  {
+   "fieldname": "optional",
+   "fieldtype": "Check",
+   "label": "Optional",
+   "default": "0",
+   "description": "The operator may skip this step"
+  },
+  {
+   "fieldname": "estimated_minutes",
+   "fieldtype": "Float",
+   "label": "Estimated (min)",
+   "precision": "1"
+  },
+  {
+   "fieldname": "cb_step",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sign_off_role",
+   "fieldtype": "Link",
+   "label": "Sign-off Role",
+   "options": "Role",
+   "description": "A second person with this role must sign the step off before the next step; not the person who did it"
+  },
+  {
+   "fieldname": "stop_on_fail",
+   "fieldtype": "Check",
+   "label": "Stop on Fail",
+   "default": "0",
+   "description": "A failed result puts the run on hold until a supervisor records a disposition"
+  },
+  {
+   "fieldname": "sb_content",
+   "fieldtype": "Section Break",
+   "label": "Instruction"
+  },
+  {
+   "fieldname": "instruction",
+   "fieldtype": "Text Editor",
+   "label": "Instruction"
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Image"
+  },
+  {
+   "fieldname": "cb_media",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "attachment",
+   "fieldtype": "Attach",
+   "label": "Attachment",
+   "description": "A drawing, a PDF or a video file"
+  },
+  {
+   "fieldname": "video_url",
+   "fieldtype": "Data",
+   "label": "Video URL",
+   "options": "URL"
+  },
+  {
+   "fieldname": "sb_capture",
+   "fieldtype": "Section Break",
+   "label": "Capture",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "unit",
+   "fieldtype": "Data",
+   "label": "Unit",
+   "depends_on": "eval:doc.capture=='Number'"
+  },
+  {
+   "fieldname": "has_lower_limit",
+   "fieldtype": "Check",
+   "label": "Has Lower Limit",
+   "default": "0",
+   "depends_on": "eval:doc.capture=='Number'"
+  },
+  {
+   "fieldname": "lower_limit",
+   "fieldtype": "Float",
+   "label": "Lower Limit",
+   "depends_on": "eval:doc.has_lower_limit"
+  },
+  {
+   "fieldname": "target_value",
+   "fieldtype": "Float",
+   "label": "Target",
+   "depends_on": "eval:doc.capture=='Number'"
+  },
+  {
+   "fieldname": "has_upper_limit",
+   "fieldtype": "Check",
+   "label": "Has Upper Limit",
+   "default": "0",
+   "depends_on": "eval:doc.capture=='Number'"
+  },
+  {
+   "fieldname": "upper_limit",
+   "fieldtype": "Float",
+   "label": "Upper Limit",
+   "depends_on": "eval:doc.has_upper_limit"
+  },
+  {
+   "fieldname": "cb_capture",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "choices",
+   "fieldtype": "Small Text",
+   "label": "Answers",
+   "depends_on": "eval:doc.capture=='Choice'",
+   "description": "One answer per line"
+  },
+  {
+   "fieldname": "failing_choices",
+   "fieldtype": "Small Text",
+   "label": "Failing Answers",
+   "depends_on": "eval:doc.capture=='Choice'",
+   "description": "Answers, one per line, that fail the step"
+  },
+  {
+   "fieldname": "post_measurement",
+   "fieldtype": "Check",
+   "label": "Post as Measurement",
+   "default": "0",
+   "depends_on": "eval:doc.capture=='Number'",
+   "description": "Also record the value as a Measurement event on the run's machine, so SPC charts it"
+  },
+  {
+   "fieldname": "measurement_name",
+   "fieldtype": "Data",
+   "label": "Measurement Name",
+   "depends_on": "eval:doc.post_measurement"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "istable": 1,
+ "editable_grid": 0,
+ "links": [],
+ "modified": "2026-11-14 21:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Work Instruction Step",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}

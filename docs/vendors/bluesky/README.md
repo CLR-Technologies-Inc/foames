@@ -79,3 +79,7 @@ cd bridges/bluesky && python -m unittest discover -s tests -v
 ```
 
 The tests need nothing installed. When run from a checkout of this repository they also pass every mapped event through FoaMES's own `normalise_event` and check the signature against `foames.foames_mes.signing`; when Bluesky and ophyd are installed they map a real `count` plan as well.
+
+## Read-only mode
+
+The Bluesky bridge reads runs and posts them to FoaMES as Measurement events; it writes nothing to Bluesky, Tiled or the instruments. In [read-only mode](../../read-only-mode.md) it keeps working as it is, because data coming into FoaMES is the read side of a connector. A write back to the beamline or a database would have to be registered in `foames_write_actions` and requested through the write gate.

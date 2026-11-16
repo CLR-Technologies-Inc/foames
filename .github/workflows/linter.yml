@@ -27,6 +27,9 @@ jobs:
           python-version: '3.14'
           cache: pip
       - uses: pre-commit/action@v3.0.0
+        env:
+          # These run as their own jobs in the Disclosure workflow.
+          SKIP: name-guard,name-guard-commit-msg,gitleaks
 
       - name: Download Semgrep rules
         run: git clone --depth 1 https://github.com/frappe/semgrep-rules.git frappe-semgrep-rules

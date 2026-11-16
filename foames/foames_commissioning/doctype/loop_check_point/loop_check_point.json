@@ -1,0 +1,105 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 21:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "percent_of_span",
+  "expected_value",
+  "as_found",
+  "as_left",
+  "error_percent",
+  "expected_state",
+  "observed_state",
+  "result",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "percent_of_span",
+   "fieldtype": "Float",
+   "label": "Percent of Span",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "expected_value",
+   "fieldtype": "Float",
+   "label": "Expected Value",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "as_found",
+   "fieldtype": "Data",
+   "label": "As Found",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "as_left",
+   "fieldtype": "Data",
+   "label": "As Left",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "error_percent",
+   "fieldtype": "Float",
+   "label": "Error (% of Span)",
+   "read_only": 1,
+   "precision": "3",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "expected_state",
+   "fieldtype": "Select",
+   "label": "Expected State",
+   "options": "\nOn\nOff",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "observed_state",
+   "fieldtype": "Select",
+   "label": "Observed State",
+   "options": "\nOn\nOff",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "result",
+   "fieldtype": "Select",
+   "label": "Result",
+   "options": "Pending\nPass\nFail",
+   "default": "Pending",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks",
+   "in_list_view": 1,
+   "columns": 2
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 21:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Commissioning",
+ "name": "Loop Check Point",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0,
+ "istable": 1,
+ "editable_grid": 1
+}

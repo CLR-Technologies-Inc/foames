@@ -27,7 +27,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Floor",
-   "link_count": 4,
+   "link_count": 7,
    "onboard": 0,
    "type": "Card Break"
   },
@@ -71,6 +71,39 @@
    "label": "Andon Call",
    "link_count": 0,
    "link_to": "Andon Call",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Recognition",
+   "link_count": 0,
+   "link_to": "Recognition",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Work Instruction Run",
+   "link_count": 0,
+   "link_to": "Work Instruction Run",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Work Instruction",
+   "link_count": 0,
+   "link_to": "Work Instruction",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -136,7 +169,7 @@
    "type": "Link"
   }
  ],
- "modified": "2026-11-03 21:00:00.000000",
+ "modified": "2026-11-14 21:30:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES MES",
  "name": "FoaMES Operator",

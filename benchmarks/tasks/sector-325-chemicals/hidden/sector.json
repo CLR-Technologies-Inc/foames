@@ -1,0 +1,109 @@
+{
+ "case_id": "sector-325-chemicals",
+ "sector": "Chemical manufacturing (petrochemicals)",
+ "naics": "325",
+ "seed": 325,
+ "source": {
+  "title": "Dow Chemical Company: Assessment Leads to Steam System Energy Savings in a Petrochemical Plant",
+  "publisher": "U.S. Department of Energy, Industrial Technologies Program (Save Energy Now case study)",
+  "report": "DOE/GO-102007-2467",
+  "date": "2007-11",
+  "url": "https://www1.eere.energy.gov/manufacturing/tech_assistance/pdfs/42009.pdf",
+  "us_government_work": true,
+  "named_organisations": [
+   "Dow"
+  ]
+ },
+ "claim": {
+  "kind": "annual_energy_saving",
+  "value": 272000,
+  "unit": "MMBtu/yr",
+  "text": "Retrofitting steam traps and repairing steam leaks saves 272,000 MMBtu of natural gas ($1.9 million) a year."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-03-02T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-06-29T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   0,
+   24
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6
+ ],
+ "mark_unknown_after_minutes": 30,
+ "production_unit": "t",
+ "energy_unit": "MMBtu",
+ "energy_price": 6.99,
+ "line": {
+  "source_id": "PLANT-A-GLYCOL-ETHERS",
+  "description": "Glycol ethers unit (product rundown reported as one line)",
+  "ideal_cycle_seconds": 6.0,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "PLANT-A-STEAM-MMBTU",
+  "description": "Site steam header fuel meter",
+  "counter": "steam_mmbtu",
+  "rollover": 1000000,
+  "every_minutes": 15,
+  "start_value": 0
+ },
+ "baseline": {
+  "rate_per_run_hour": 520,
+  "scrap_fraction": 0.0,
+  "down_per_day": 0.4,
+  "down_minutes": 60,
+  "idle_per_day": 0.3,
+  "idle_minutes": 30,
+  "setup_per_day": 0.0,
+  "setup_minutes": 0,
+  "planned_down_per_week": 1,
+  "planned_down_minutes": 300,
+  "energy_base_per_hour": 250,
+  "energy_per_unit": 0.4
+ },
+ "after": {
+  "rate_per_run_hour": 520,
+  "scrap_fraction": 0.0,
+  "down_per_day": 0.4,
+  "down_minutes": 60,
+  "idle_per_day": 0.3,
+  "idle_minutes": 30,
+  "setup_per_day": 0.0,
+  "setup_minutes": 0,
+  "planned_down_per_week": 1,
+  "planned_down_minutes": 300,
+  "energy_base_per_hour": 220,
+  "energy_per_unit": 0.4
+ },
+ "traps": {
+  "out_of_order": {
+   "window": "baseline"
+  },
+  "network_gap": {
+   "window": "after",
+   "at": 0.55,
+   "hours": 3
+  },
+  "meter_rollover": {
+   "window": "after",
+   "at": 0.8
+  }
+ },
+ "target_ratio": 0.96
+}

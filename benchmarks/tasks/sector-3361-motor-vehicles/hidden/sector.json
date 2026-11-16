@@ -1,0 +1,113 @@
+{
+ "case_id": "sector-3361-motor-vehicles",
+ "sector": "Transportation equipment (motor vehicle assembly)",
+ "naics": "3361",
+ "seed": 3361,
+ "source": {
+  "title": "Chrysler: Save Energy Now Assessment Enables a Vehicle Assembly Complex to Achieve Significant Natural Gas Savings",
+  "publisher": "U.S. Department of Energy, Industrial Technologies Program (Save Energy Now case study)",
+  "report": "DOE/GO-102008-2485",
+  "date": "2008-02",
+  "url": "https://nrel.gov/docs/fy08osti/42136.pdf",
+  "us_government_work": true,
+  "named_organisations": [
+   "Chrysler",
+   "Dodge"
+  ]
+ },
+ "claim": {
+  "kind": "annual_energy_saving",
+  "value": 70000,
+  "unit": "MMBtu/yr",
+  "text": "Boiler operation, steam trap repairs, O2 probes and blowdown controls save more than 70,000 MMBtu ($627,000) a year for $125,000."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-01-12T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-03-16T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   6,
+   22
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4
+ ],
+ "mark_unknown_after_minutes": 30,
+ "production_unit": "vehicles",
+ "energy_unit": "MMBtu",
+ "energy_price": 8.96,
+ "line": {
+  "source_id": "PLANT-A-FINAL-ASSEMBLY",
+  "description": "Final assembly line (vehicles off line)",
+  "ideal_cycle_seconds": 60.0,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "PLANT-A-BOILER-GAS",
+  "description": "Boiler house natural gas meter",
+  "counter": "gas_mmbtu",
+  "rollover": 1000000,
+  "every_minutes": 15,
+  "start_value": 0
+ },
+ "baseline": {
+  "rate_per_run_hour": 55,
+  "scrap_fraction": 0.005,
+  "down_per_day": 2,
+  "down_minutes": 25,
+  "idle_per_day": 3,
+  "idle_minutes": 10,
+  "setup_per_day": 0.2,
+  "setup_minutes": 30,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 205,
+  "energy_per_unit": 1.0
+ },
+ "after": {
+  "rate_per_run_hour": 55,
+  "scrap_fraction": 0.005,
+  "down_per_day": 2,
+  "down_minutes": 25,
+  "idle_per_day": 3,
+  "idle_minutes": 10,
+  "setup_per_day": 0.2,
+  "setup_minutes": 30,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 197,
+  "energy_per_unit": 1.0
+ },
+ "traps": {
+  "plc_reset": {
+   "window": "baseline",
+   "at": 0.6
+  },
+  "out_of_order": {
+   "window": "after"
+  },
+  "network_gap": {
+   "window": "after",
+   "at": 0.25,
+   "hours": 4
+  },
+  "meter_rollover": {
+   "window": "after",
+   "at": 0.5
+  }
+ },
+ "target_ratio": 0.88,
+ "integer_counts": true
+}

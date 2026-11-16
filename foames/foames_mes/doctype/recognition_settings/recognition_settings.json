@@ -1,0 +1,150 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 21:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "sb_floor",
+  "floor_days",
+  "show_names_on_floor",
+  "cb_floor",
+  "notify_recipient",
+  "sb_auto",
+  "milestones_enabled",
+  "milestone_thresholds",
+  "cb_auto",
+  "team_highlights_enabled",
+  "oee_gain_points",
+  "min_planned_hours",
+  "sb_privacy",
+  "opt_out"
+ ],
+ "fields": [
+  {
+   "fieldname": "sb_floor",
+   "fieldtype": "Section Break",
+   "label": "Floor View"
+  },
+  {
+   "fieldname": "floor_days",
+   "fieldtype": "Int",
+   "label": "Show on the Floor For (days)",
+   "default": "7",
+   "non_negative": 1,
+   "description": "Recognitions this recent appear on the Floor View. 0 hides the section"
+  },
+  {
+   "fieldname": "show_names_on_floor",
+   "fieldtype": "Check",
+   "label": "Show Names on the Floor",
+   "default": "1",
+   "description": "Off: people are shown by their team, or as a teammate"
+  },
+  {
+   "fieldname": "cb_floor",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "notify_recipient",
+   "fieldtype": "Check",
+   "label": "Notify the Person Recognized",
+   "default": "1"
+  },
+  {
+   "fieldname": "sb_auto",
+   "fieldtype": "Section Break",
+   "label": "Given by FoaMES"
+  },
+  {
+   "fieldname": "milestones_enabled",
+   "fieldtype": "Check",
+   "label": "Milestones",
+   "default": "1",
+   "description": "Daily: recognize people for andon calls answered, suggestions carried out and ideas put into practice"
+  },
+  {
+   "fieldname": "milestone_thresholds",
+   "fieldtype": "Data",
+   "label": "Milestone Thresholds",
+   "default": "1,10,25,50,100,250,500,1000"
+  },
+  {
+   "fieldname": "cb_auto",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "team_highlights_enabled",
+   "fieldtype": "Check",
+   "label": "Team Highlights",
+   "default": "1",
+   "description": "Weekly, per line: OEE up, best week, zero scrap, quality up, every call for help answered on time"
+  },
+  {
+   "fieldname": "oee_gain_points",
+   "fieldtype": "Float",
+   "label": "OEE Gain Worth a Highlight (points)",
+   "default": "5"
+  },
+  {
+   "fieldname": "min_planned_hours",
+   "fieldtype": "Float",
+   "label": "Minimum Planned Hours in the Week",
+   "default": "8",
+   "description": "A line with less planned time in the week gets no OEE or quality highlight"
+  },
+  {
+   "fieldname": "sb_privacy",
+   "fieldtype": "Section Break",
+   "label": "Privacy",
+   "description": "People who keep their name off the Floor View or want no milestones. Anyone can set this for themselves with Recognition > My Preferences on the Floor View."
+  },
+  {
+   "fieldname": "opt_out",
+   "fieldtype": "Table",
+   "label": "Opted Out",
+   "options": "Recognition Opt Out"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 21:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Recognition Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0,
+ "issingle": 1
+}

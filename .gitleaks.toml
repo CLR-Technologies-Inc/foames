@@ -1,0 +1,18 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
+# gitleaks configuration: the default rules, minus test fixtures that hold fake credentials
+# on purpose (for example the secret detectors' own tests) and the dev bench's example env file.
+
+title = "FoaMES gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Test fixtures and documented placeholders"
+paths = [
+  '''(^|/)test_[^/]*\.py$''',
+  '''(^|/)tests/''',
+  '''^docker/\.env\.example$''',
+]

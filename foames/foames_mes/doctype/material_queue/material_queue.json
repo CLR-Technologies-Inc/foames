@@ -1,0 +1,209 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-16 00:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "title",
+  "machine",
+  "work_centre",
+  "disabled",
+  "cb_head",
+  "discipline",
+  "capacity",
+  "qtime_warn_percent",
+  "sb_status",
+  "waiting_count",
+  "ready_count",
+  "waiting_quantity",
+  "cb_status",
+  "oldest_wait_minutes",
+  "last_activity",
+  "last_checked"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "MQ-.####",
+   "default": "MQ-.####",
+   "hidden": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "For example Cure oven 2 input queue"
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "The machine or work centre this queue feeds"
+  },
+  {
+   "fieldname": "work_centre",
+   "fieldtype": "Data",
+   "label": "Work Centre"
+  },
+  {
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled",
+   "default": "0"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "discipline",
+   "fieldtype": "Select",
+   "label": "Dispatch Rule",
+   "options": "FIFO\nPriority\nEarliest Due\nEarliest Expiry",
+   "default": "FIFO",
+   "reqd": 1,
+   "description": "FIFO: first in, first out. Priority: highest priority first. Earliest Due: nearest due time first. Earliest Expiry: nearest queue-time limit or expiry first (FEFO)."
+  },
+  {
+   "fieldname": "capacity",
+   "fieldtype": "Int",
+   "label": "Buffer Capacity",
+   "description": "Entries the buffer holds. When it is full the machines feeding it are blocked. 0 means unlimited."
+  },
+  {
+   "fieldname": "qtime_warn_percent",
+   "fieldtype": "Percent",
+   "label": "Q-time Warning",
+   "default": "80",
+   "description": "Warn when an entry has used this share of its maximum wait"
+  },
+  {
+   "fieldname": "sb_status",
+   "fieldtype": "Section Break",
+   "label": "Now"
+  },
+  {
+   "fieldname": "waiting_count",
+   "fieldtype": "Int",
+   "label": "Waiting",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "ready_count",
+   "fieldtype": "Int",
+   "label": "Ready",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "waiting_quantity",
+   "fieldtype": "Float",
+   "label": "Waiting Quantity",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_status",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "oldest_wait_minutes",
+   "fieldtype": "Float",
+   "label": "Oldest Wait (minutes)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_activity",
+   "fieldtype": "Datetime",
+   "label": "Last Start or Finish",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_checked",
+   "fieldtype": "Datetime",
+   "label": "Last Checked",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-16 00:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Material Queue",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "title",
+ "show_title_field_in_link": 1,
+ "search_fields": "machine,work_centre",
+ "description": "Material waiting in front of a machine or work centre: dispatch rule, buffer capacity and queue-time warnings",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Integration",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ]
+}

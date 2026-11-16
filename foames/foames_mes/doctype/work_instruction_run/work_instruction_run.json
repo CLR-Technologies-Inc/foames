@@ -1,0 +1,307 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 21:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "work_instruction",
+  "title",
+  "instruction_code",
+  "revision",
+  "machine",
+  "job_reference",
+  "cb_head",
+  "status",
+  "started_at",
+  "started_by",
+  "completed_at",
+  "completed_by",
+  "sb_progress",
+  "steps_done",
+  "steps_total",
+  "failed_steps",
+  "cb_progress",
+  "estimated_minutes",
+  "duration_minutes",
+  "sb_hold",
+  "hold_reason",
+  "disposition",
+  "cb_hold",
+  "disposition_by",
+  "abort_reason",
+  "sb_steps",
+  "steps"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "WIR-.YYYY.-",
+   "default": "WIR-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "work_instruction",
+   "fieldtype": "Link",
+   "label": "Work Instruction",
+   "options": "Work Instruction",
+   "reqd": 1,
+   "set_only_once": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "read_only": 1,
+   "fetch_from": "work_instruction.title"
+  },
+  {
+   "fieldname": "instruction_code",
+   "fieldtype": "Data",
+   "label": "Instruction Code",
+   "read_only": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "revision",
+   "fieldtype": "Int",
+   "label": "Revision",
+   "read_only": 1
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "set_only_once": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "job_reference",
+   "fieldtype": "Link",
+   "label": "Job",
+   "options": "External Reference",
+   "set_only_once": 1,
+   "description": "The ERP job the run was for; the machine's current job when left empty"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "In Progress\nOn Hold\nCompleted\nAborted",
+   "default": "In Progress",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "started_at",
+   "fieldtype": "Datetime",
+   "label": "Started At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "started_by",
+   "fieldtype": "Link",
+   "label": "Started By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "completed_at",
+   "fieldtype": "Datetime",
+   "label": "Ended At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "completed_by",
+   "fieldtype": "Link",
+   "label": "Ended By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_progress",
+   "fieldtype": "Section Break",
+   "label": "Progress"
+  },
+  {
+   "fieldname": "steps_done",
+   "fieldtype": "Int",
+   "label": "Steps Done",
+   "read_only": 1
+  },
+  {
+   "fieldname": "steps_total",
+   "fieldtype": "Int",
+   "label": "Steps",
+   "read_only": 1
+  },
+  {
+   "fieldname": "failed_steps",
+   "fieldtype": "Int",
+   "label": "Failed Steps",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "cb_progress",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "estimated_minutes",
+   "fieldtype": "Float",
+   "label": "Estimated (min)",
+   "read_only": 1,
+   "precision": "1"
+  },
+  {
+   "fieldname": "duration_minutes",
+   "fieldtype": "Float",
+   "label": "Duration (min)",
+   "read_only": 1,
+   "precision": "1"
+  },
+  {
+   "fieldname": "sb_hold",
+   "fieldtype": "Section Break",
+   "label": "Hold and Abort",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "hold_reason",
+   "fieldtype": "Small Text",
+   "label": "Hold Reason",
+   "read_only": 1
+  },
+  {
+   "fieldname": "disposition",
+   "fieldtype": "Small Text",
+   "label": "Disposition",
+   "read_only": 1,
+   "description": "What the supervisor decided when releasing the hold"
+  },
+  {
+   "fieldname": "cb_hold",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "disposition_by",
+   "fieldtype": "Link",
+   "label": "Disposition By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "abort_reason",
+   "fieldtype": "Small Text",
+   "label": "Abort Reason",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_steps",
+   "fieldtype": "Section Break",
+   "label": "Steps"
+  },
+  {
+   "fieldname": "steps",
+   "fieldtype": "Table",
+   "label": "Steps",
+   "options": "Work Instruction Run Step",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 21:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Work Instruction Run",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "started_at",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "title"
+}
