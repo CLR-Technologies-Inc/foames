@@ -39,9 +39,9 @@ jobs:
     name: SBOM (Frappe ${{ matrix.frappe-line }})
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -84,7 +84,7 @@ jobs:
             --out "dist/foames-${version}-frappe-${{ matrix.frappe-line }}.cdx.json" \
             --validate
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: sbom-frappe-${{ matrix.frappe-line }}
           path: dist/*.cdx.json
@@ -98,7 +98,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: sbom-frappe-*
           merge-multiple: true
