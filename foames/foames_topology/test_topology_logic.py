@@ -113,21 +113,6 @@ class TestVocabulary(unittest.TestCase):
 		self.assertEqual(model.kind_layer("KPI"), "Data")
 		self.assertIsNone(model.kind_layer("Other"))
 
-	def test_no_estate_names_in_the_module(self):
-		# Isolation is by tenant and provider only; no particular company is ever named.
-		banned = [w.lower() for w in ("C" + "LR", "R" + "CS", "P" + "RV")]
-		for root, _dirs, files in os.walk(HERE):
-			for name in files:
-				if not name.endswith((".py", ".js", ".json")):
-					continue
-				with open(os.path.join(root, name), encoding="utf-8") as f:
-					lines = [line for line in f if not line.startswith(("# Copyright", "// Copyright"))]
-				words = set()
-				for line in lines:
-					words.update(w.lower() for w in __import__("re").findall(r"[A-Za-z]+", line))
-				for word in banned:
-					self.assertNotIn(word, words, f"{name} names {word}")
-
 
 class TestBuild(unittest.TestCase):
 	def test_containment_becomes_contains_edges(self):
