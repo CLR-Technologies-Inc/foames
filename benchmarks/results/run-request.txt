@@ -4,7 +4,7 @@
 # Optional lines: "agents: a, b", "tasks: x y" (empty: every runner-sized local model, every keyed provider,
 # every pure task), "report: raw" (commit only the run files, for a run that overlaps another) and
 # "collect: <run id> ..." (run no agents; add those workflow runs' results to the report).
-2026-11-16T13:05Z Gemini spc-ewma-chart again: the 08:22 rerun got HTTP 503 (overloaded) from Google
-agents: aider-gemini-flash
+2026-11-16T14:50Z NVIDIA tasks cut off by the 6-hour job limit (1/5: SPC)
+agents: aider-nvidia-deepseek, aider-nvidia-gemma, aider-nvidia-minimax
 tasks: spc-ewma-chart
 report: raw
