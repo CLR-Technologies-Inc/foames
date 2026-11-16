@@ -4,6 +4,6 @@
 # Optional lines: "agents: a, b", "tasks: x y" (empty: every runner-sized local model, every keyed provider,
 # every pure task), "report: raw" (commit only the run files, for a run that overlaps another) and
 # "collect: <run id> ..." (run no agents; add those workflow runs' results to the report).
-2026-11-16T03:20Z local models again with a 1-hour request timeout (the first run timed out at aider's 600 s default)
-agents: aider-ollama-qwen2.5-coder-7b, aider-ollama-qwen2.5-coder-14b, aider-ollama-qwen3-8b, aider-ollama-qwen3-14b, aider-ollama-granite3.3-8b, aider-ollama-gpt-oss-20b
+2026-11-16T03:25Z add the OpenRouter free-model run (workflow run 43786138142), whose own report could not keep its files
+collect: 43786138142
 report: raw
