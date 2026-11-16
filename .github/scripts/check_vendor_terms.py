@@ -41,6 +41,12 @@ TIMEOUT = 30
 DELAY = 2.0  # seconds between requests to the same host
 
 
+MANUAL_INTRO = (
+	"These are never fetched automatically. Read each one in a browser, compare it with its row in "
+	"docs/vendor-interoperability.md, and record the review date in .github/vendor-terms/state.json."
+)
+
+
 class _TextExtractor(html.parser.HTMLParser):
 	"""Keeps visible text, drops scripts, styles and markup."""
 
@@ -206,8 +212,7 @@ def report(results: list[dict], include_manual: bool) -> str:
 		lines += [
 			"## Pages a person must review",
 			"",
-			"These are never fetched automatically. Read each one in a browser, compare it with its row in "
-			"docs/vendor-interoperability.md, and record the review date in .github/vendor-terms/state.json.",
+			MANUAL_INTRO,
 			"",
 			"| Vendor | Page | Why manual | Last reviewed |",
 			"| --- | --- | --- | --- |",
