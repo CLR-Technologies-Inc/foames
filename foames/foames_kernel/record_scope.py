@@ -58,11 +58,13 @@ def filter_rows(rows: Iterable, allowed: set[str] | None) -> list:
 def scrub(value, allowed: set[str] | None):
 	"""Drop, at every depth of a dict or list, each dict that names a machine outside `allowed`.
 	Used as the last step of an aggregate read, so a section an extension added cannot leak a
-	machine the reader may not see. Returns a new structure; scalars are kept as they are."""
+	machine the reader may not see. Returns a new structure of the same types; scalars are kept as
+	they are."""
 	if allowed is None:
 		return value
 	if isinstance(value, dict):
-		return {key: scrub(item, allowed) for key, item in value.items()}
+		# Keep the mapping's own class (frappe._dict rows stay attribute-readable).
+		return type(value)({key: scrub(item, allowed) for key, item in value.items()})
 	if isinstance(value, (list, tuple)):
 		return [
 			scrub(item, allowed) for item in value if not isinstance(item, dict) or in_scope(item, allowed)

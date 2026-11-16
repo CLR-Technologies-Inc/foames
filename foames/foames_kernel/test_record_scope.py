@@ -49,6 +49,13 @@ class TestScrub(unittest.TestCase):
 		self.assertEqual(out["machines"][0]["andon"], [{"machine": "M-1"}])
 		self.assertEqual(out["as_of"], "now")
 
+	def test_scrub_keeps_the_mapping_class(self):
+		class AttrDict(dict):
+			__getattr__ = dict.get
+
+		out = s.scrub({"machines": [AttrDict(name="M-1")]}, {"M-1"})
+		self.assertEqual(out["machines"][0].name, "M-1")
+
 	def test_scrub_without_restriction_is_identity(self):
 		value = {"a": [{"machine": "M-9"}]}
 		self.assertIs(s.scrub(value, None), value)
