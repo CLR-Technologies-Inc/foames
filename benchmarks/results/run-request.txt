@@ -1,3 +1,4 @@
 # SPDX-License-Identifier: Apache-2.0
 # Changing this file on a working branch starts the Agent benchmark workflow there.
-2026-11-16T01:05Z first full run: six local Ollama models, all pure tasks, one repetition
+# Optional lines: "agents: a, b" and "tasks: x y" (empty: every runner-sized local model, every keyed provider, every pure task).
+2026-11-16T01:10Z first full run: local Ollama models and the Gemini, Groq and OpenRouter free tiers, all pure tasks, one repetition

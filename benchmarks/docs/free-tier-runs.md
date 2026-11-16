@@ -27,8 +27,8 @@ Each needs one Actions secret (Settings, Secrets and variables, Actions, New rep
 | `aider-gemini-2.5-flash` | Google AI Studio (Gemini API) free tier | `GEMINI_API_KEY` | aistudio.google.com, Get API key |
 | `aider-groq-gpt-oss-120b` | Groq free tier (tokens-per-minute limits are tight) | `GROQ_API_KEY` | console.groq.com, API keys |
 | `aider-openrouter-qwen3-coder-free` | OpenRouter `:free` models (50 requests a day without credits) | `OPENROUTER_API_KEY` | openrouter.ai, Keys |
-| `aider-mistral-devstral` | Mistral La Plateforme, free Experiment plan | `MISTRAL_API_KEY` | console.mistral.ai, API keys |
-| `aider-cerebras-gpt-oss-120b` | Cerebras Inference free tier | `CEREBRAS_API_KEY` | cloud.cerebras.ai, API keys |
+
+Mistral (`aider-mistral-devstral`, `MISTRAL_API_KEY`) and Cerebras (`aider-cerebras-gpt-oss-120b`, `CEREBRAS_API_KEY`) are configured but skipped by default: on 2026-11-16 both asked for a credit card at sign-up, so they are not a no-cost tier here. Devstral still runs, as open weights, through the GPU notebook.
 
 Model names and free-tier limits change often. If a provider renames a model, change its `model` in [agents.json](../agents.json); the workflow needs no change.
 

@@ -28,6 +28,7 @@ environment.txt (where it ran). They are shown on the agent's page.
 
 import argparse
 import json
+import shutil
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -229,16 +230,31 @@ def main(argv=None):
 	all_rows = [r for a in agents.values() for r in a["rows"]]
 	if not all_rows:
 		raise SystemExit(f"no results.jsonl under {opts.runs}")
-	summary = report.summarise(all_rows)
-	reference = reference_scores(all_rows)
-	task_ids = sorted({r["task"] for r in all_rows})
-	task_ecl = {t.id: t.ecl for t in tasks_mod.all_tasks()}
 	starts = sorted(m.get("started_at", "") for a in agents.values() for m in a["manifests"] if m.get("started_at"))
-	finishes = sorted(r.get("finished_at", "") for r in all_rows if r.get("finished_at"))
 	run_date = _date(starts[0] if starts else "")
 	if opts.out is None:
 		opts.out = opts.out_root / run_date
 	opts.out.mkdir(parents=True, exist_ok=True)
+	# Keep each run directory's small files (results, manifest, notes) under <out>/runs/<name>, so a
+	# later workflow run of the same day adds to this report instead of replacing it. A directory of
+	# the same name (the same agent and task) is replaced by the newer one.
+	kept = opts.out / "runs"
+	for src in sorted(opts.runs.rglob("results.jsonl")):
+		if kept in src.parents:
+			continue
+		dest = kept / src.parent.name
+		shutil.rmtree(dest, ignore_errors=True)
+		dest.mkdir(parents=True)
+		for f in [src, *src.parent.glob("manifest.json"), *src.parent.glob("*.txt")]:
+			shutil.copy2(f, dest / f.name)
+	agents = collect(kept)
+	all_rows = [r for a in agents.values() for r in a["rows"]]
+	starts = sorted(m.get("started_at", "") for a in agents.values() for m in a["manifests"] if m.get("started_at"))
+	summary = report.summarise(all_rows)
+	reference = reference_scores(all_rows)
+	task_ids = sorted({r["task"] for r in all_rows})
+	task_ecl = {t.id: t.ecl for t in tasks_mod.all_tasks()}
+	finishes = sorted(r.get("finished_at", "") for r in all_rows if r.get("finished_at"))
 	published = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 	overview = []
@@ -380,6 +396,11 @@ def main(argv=None):
 		"counted). The list-price equivalent prices the same tokens at the provider's paid list price.",
 		"- Aider prints token counts rounded to the nearest hundred above 1,000, so token totals are approximate. "
 		"Local models report no cost, so their token counts may also read zero.",
+		*[
+			f"- Not run: `{a['name']}`: {a['_skip_reason']}."
+			for a in json.loads((BENCH / "agents.json").read_text())["agents"]
+			if a.get("_skip_reason")
+		],
 		"- Local models on GitHub-hosted runners ran on CPU (4 vCPU, 16 GB). Speed is not scored against them here "
 		"beyond the efficiency term in the composite; read quality.",
 		"",

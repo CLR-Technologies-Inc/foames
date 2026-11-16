@@ -47,6 +47,7 @@ jobs:
         env:
           AGENTS: ${{ inputs.agents || '' }}
           TASKS: ${{ inputs.tasks || '' }}
+          EVENT: ${{ github.event_name }}
           # Only whether each is set is read here; the values never leave the bench job's sandbox.
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
@@ -60,15 +61,26 @@ jobs:
           from foames_bench import tasks as tasks_mod
           cfg = {a["name"]: a for a in json.load(open("benchmarks/agents.json"))["agents"]}
           aider = [n for n, a in cfg.items() if n.startswith("aider-") and n != "aider-local"]
-          wanted = [a.strip() for a in os.environ["AGENTS"].split(",") if a.strip()] or [
-              n for n in aider if cfg[n].get("_runs_on", "runner") == "runner"]
-          tasks = os.environ["TASKS"].split() or [t.id for t in tasks_mod.all_tasks("pure")]
+          agents_in, tasks_in = os.environ["AGENTS"], os.environ["TASKS"]
+          if os.environ["EVENT"] == "push":
+              # A push run reads "agents:" and "tasks:" lines from the request file.
+              for line in open("benchmarks/results/run-request.txt"):
+                  key, _, value = line.partition(":")
+                  if key.strip() == "agents":
+                      agents_in = value
+                  elif key.strip() == "tasks":
+                      tasks_in = value
+          wanted = [a.strip() for a in agents_in.split(",") if a.strip()] or [
+              n for n in aider if cfg[n].get("_runs_on", "runner") == "runner" and not cfg[n].get("_skip_reason")]
+          tasks = tasks_in.split() or [t.id for t in tasks_mod.all_tasks("pure")]
           include, skipped = [], []
           for name in wanted:
               a = cfg.get(name)
               secret = (a or {}).get("_secret")
               if a is None:
                   skipped.append(f"{name}: not in agents.json")
+              elif a.get("_skip_reason"):
+                  skipped.append(f"{name}: {a['_skip_reason']}")
               elif secret and not os.environ.get(secret):
                   skipped.append(f"{name}: no {secret} secret")
               elif a.get("_runs_on") == "gpu":
