@@ -1,0 +1,37 @@
+{
+ "bench_version": "0.1.0",
+ "foames_commit": "c8bf84e10b92502bf9fb4c35b69640829130c290",
+ "source": {
+  "dirty": false
+ },
+ "python": "3.13.18",
+ "platform": "Linux-6.18.44-fc-v470-x86_64-with-glibc2.39",
+ "started_at": "2026-11-16T05:12:08+00:00",
+ "reps": 1,
+ "tasks": [
+  "sector-211-oil-gas",
+  "sector-212-mining",
+  "sector-2213-wastewater",
+  "sector-311-food",
+  "sector-312-beverage",
+  "sector-313-textile-mills",
+  "sector-314-carpet",
+  "sector-315-apparel",
+  "sector-316-footwear",
+  "sector-321-wood",
+  "sector-322-paper",
+  "sector-323-printing",
+  "sector-324-refining",
+  "sector-325-chemicals",
+  "sector-3254-pharmaceuticals"
+ ],
+ "agents": [
+  {
+   "name": "claude-code-opus-5-5",
+   "model": "claude-opus-5-5",
+   "tier": "frontier",
+   "harness": "claude-code",
+   "sandbox": "unshare"
+  }
+ ]
+}

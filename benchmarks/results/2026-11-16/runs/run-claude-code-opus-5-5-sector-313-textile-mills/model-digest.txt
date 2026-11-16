@@ -1,0 +1,1 @@
+Claude Code 2.1.325 (CLI), model claude-opus-5-5, called 2026-11-16 through this account's Claude subscription (not the API); the model behind an alias may be updated by Anthropic

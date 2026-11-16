@@ -1,0 +1,36 @@
+{
+ "bench_version": "0.1.0",
+ "foames_commit": "c8bf84e10b92502bf9fb4c35b69640829130c290",
+ "source": {
+  "dirty": false
+ },
+ "python": "3.13.18",
+ "platform": "Linux-6.18.44-fc-v470-x86_64-with-glibc2.39",
+ "started_at": "2026-11-16T05:12:08+00:00",
+ "reps": 1,
+ "tasks": [
+  "sector-326-plastics",
+  "sector-3272-glass",
+  "sector-3273-cement",
+  "sector-331-aluminum",
+  "sector-3315-foundry",
+  "sector-332-forging",
+  "sector-332-machine-shop",
+  "sector-333-machinery",
+  "sector-3344-semiconductors",
+  "sector-335-electrical-equipment",
+  "sector-3361-motor-vehicles",
+  "sector-3364-aerospace",
+  "sector-337-furniture",
+  "sector-3391-medical-devices"
+ ],
+ "agents": [
+  {
+   "name": "claude-code-sonnet-5-5",
+   "model": "claude-sonnet-5-5",
+   "tier": "baseline",
+   "harness": "claude-code",
+   "sandbox": "unshare"
+  }
+ ]
+}
