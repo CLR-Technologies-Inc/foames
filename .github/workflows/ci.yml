@@ -55,6 +55,8 @@ jobs:
         run: python .github/scripts/check_discovery_skills.py
       - name: Test the check
         run: python -m unittest discover -s .github/scripts -p "test_*.py" -v
+      - name: Check the version and changelog fragments
+        run: python .github/scripts/release.py check
 
   tests:
     runs-on: ubuntu-latest

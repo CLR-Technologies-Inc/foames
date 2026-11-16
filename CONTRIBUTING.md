@@ -31,6 +31,7 @@ See [Installation](README.md#installation) and [Contributing](README.md#contribu
   ```
 
   Frappe's DocType generator writes a header that points at `license.txt`; replace it with this one.
+- Add a changelog fragment under [`changelog.d/`](changelog.d/README.md) for a user-facing change, for example `changelog.d/81.added.md`. Do not edit `CHANGELOG.md` or the version: both change only at release time ([docs/versioning.md](docs/versioning.md)).
 - Credit any third-party code you include and keep its license notice with it. Only code under a license compatible with Apache-2.0 can be included, and GPL code (ERPNext included) cannot be copied into FoaMES. See [docs/licensing.md](docs/licensing.md).
 
 ## Keeping private information out

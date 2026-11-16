@@ -259,5 +259,6 @@ Adapter tests never need a vendor's production system: a remote system is tested
 - Strings shown to users go through `frappe._`.
 - A DocType's Python file holds the document class and the module-level functions that operate on it; the arithmetic it needs lives in a pure module next to it.
 - Commit messages say what changed and why. Credit third-party code and ship its license notice with it.
+- Do not edit `CHANGELOG.md` or `__version__`. Add a fragment under `changelog.d/` (`<pr>.<category>.md`) for a user-facing change; releases collect them. Versions and pre-releases: [docs/versioning.md](docs/versioning.md).
 - Do not add a vendor's proprietary code, API metadata or SDK to the repository. Each adapter talks to the vendor's published interfaces only; what that means for a particular vendor is in its `AGENTS.md`.
 - Keep vendor facts out of this file and the vendor-neutral pages in `docs/`. They belong in the vendor's `AGENTS.md` and its folder under `docs/vendors/`. `README.md` names integrations only in its Integrations section: one row per integration with its kind, its status (alpha or planned) and a link to its guide, and no settings, hooks or analysis.
