@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """A saved extraction: the events in a window from chosen sources, kept as JSON on the record so
 the same log can be analysed, compared and exported again. Extraction runs on demand from the

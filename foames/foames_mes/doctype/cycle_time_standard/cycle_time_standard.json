@@ -1,0 +1,274 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 21:30:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "title",
+  "machine",
+  "is_default",
+  "disabled",
+  "cb_head",
+  "operation_reference",
+  "item_reference",
+  "parts_per_cycle",
+  "allowance_percent",
+  "sb_elements",
+  "elements",
+  "sb_cost",
+  "labor_rate",
+  "cb_cost",
+  "machine_rate",
+  "sb_cycle",
+  "cycle_seconds",
+  "automatic_seconds",
+  "manual_seconds",
+  "cb_cycle1",
+  "manual_external_seconds",
+  "manual_internal_seconds",
+  "machine_waits_seconds",
+  "cb_cycle2",
+  "automation_percent",
+  "machines_per_operator",
+  "setup_seconds"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "CTS-.#####",
+   "default": "CTS-.#####",
+   "hidden": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "The operation, for example Turn shaft OP20"
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "Where the operation runs. Needed to compare with what the machine actually did"
+  },
+  {
+   "fieldname": "is_default",
+   "fieldtype": "Check",
+   "label": "Default for Machine",
+   "default": "0",
+   "description": "Used when a projection names only the machine. One per machine"
+  },
+  {
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled",
+   "default": "0"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "operation_reference",
+   "fieldtype": "Link",
+   "label": "ERP Operation",
+   "options": "External Reference",
+   "description": "Optional External Reference of type Operation"
+  },
+  {
+   "fieldname": "item_reference",
+   "fieldtype": "Link",
+   "label": "ERP Item",
+   "options": "External Reference",
+   "description": "Optional External Reference of type Item"
+  },
+  {
+   "fieldname": "parts_per_cycle",
+   "fieldtype": "Float",
+   "label": "Parts per Cycle",
+   "default": "1",
+   "reqd": 1
+  },
+  {
+   "fieldname": "allowance_percent",
+   "fieldtype": "Percent",
+   "label": "Allowance (%)",
+   "default": "0",
+   "description": "Personal, fatigue and delay allowance added to manual time"
+  },
+  {
+   "fieldname": "sb_elements",
+   "fieldtype": "Section Break",
+   "label": "Elements"
+  },
+  {
+   "fieldname": "elements",
+   "fieldtype": "Table",
+   "label": "Elements",
+   "options": "Cycle Time Element",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sb_cost",
+   "fieldtype": "Section Break",
+   "label": "Rates",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "labor_rate",
+   "fieldtype": "Float",
+   "label": "Labor Rate per Hour",
+   "description": "Optional, for cost per part and scenario savings"
+  },
+  {
+   "fieldname": "cb_cost",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "machine_rate",
+   "fieldtype": "Float",
+   "label": "Machine Rate per Hour"
+  },
+  {
+   "fieldname": "sb_cycle",
+   "fieldtype": "Section Break",
+   "label": "One Cycle"
+  },
+  {
+   "fieldname": "cycle_seconds",
+   "fieldtype": "Float",
+   "label": "Cycle (s)",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "automatic_seconds",
+   "fieldtype": "Float",
+   "label": "Automatic (s)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "manual_seconds",
+   "fieldtype": "Float",
+   "label": "Manual (s)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_cycle1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "manual_external_seconds",
+   "fieldtype": "Float",
+   "label": "Manual, Machine Waits (s)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "manual_internal_seconds",
+   "fieldtype": "Float",
+   "label": "Manual, While Machine Runs (s)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "machine_waits_seconds",
+   "fieldtype": "Float",
+   "label": "Machine Waits for Operator (s)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_cycle2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "automation_percent",
+   "fieldtype": "Percent",
+   "label": "Automatic Share (%)",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "machines_per_operator",
+   "fieldtype": "Float",
+   "label": "Machines per Operator",
+   "read_only": 1
+  },
+  {
+   "fieldname": "setup_seconds",
+   "fieldtype": "Float",
+   "label": "Batch Time (s)",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 21:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "Cycle Time Standard",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "title",
+ "show_title_field_in_link": 1,
+ "search_fields": "machine",
+ "description": "An operation's standard time split into automatic (machine) and manual (operator) elements, for time projections and automation scenarios"
+}

@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """The machine-event webhook end to end on a Frappe site: signatures, roles, body shapes, time zones
 and what processing does for a Guest caller."""

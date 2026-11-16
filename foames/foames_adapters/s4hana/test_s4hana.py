@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Tests for the S/4HANA client, entity mapping, outbox rules, IDoc parsing and adapter. They need no
 Frappe site and no S/4HANA system: a scripted fake answers the HTTP calls."""

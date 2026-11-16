@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Run unittest files by path and write one JSON line per test. Started in a subprocess by the
 grader, with the workspace first on sys.path, so the tests import the agent's code.
