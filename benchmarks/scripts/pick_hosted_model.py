@@ -77,7 +77,7 @@ def groq_models(key: str) -> list[str]:
 	return ["groq/" + m["id"] for m in d.get("data", [])]
 
 
-def groq_works(key: str, model: str, min_tpm: int) -> tuple[bool, str]:
+def groq_works(key: str, model: str, min_tpm: int) -> tuple[bool, str, int]:
 	status, headers, d = _get(
 		"https://api.groq.com/openai/v1/chat/completions",
 		{"Authorization": f"Bearer {key}"},
@@ -86,7 +86,7 @@ def groq_works(key: str, model: str, min_tpm: int) -> tuple[bool, str]:
 	h = {k.lower(): v for k, v in headers.items()}
 	tpm = int(h.get("x-ratelimit-limit-tokens", "0") or 0)
 	why = f"HTTP {status} {_err(d)}, tokens per minute {tpm or 'unknown'}, requests per day {h.get('x-ratelimit-limit-requests', 'unknown')}"
-	return status == 200 and (tpm == 0 or tpm >= min_tpm), why
+	return status == 200 and (tpm == 0 or tpm >= min_tpm), why, tpm
 
 
 def openrouter_models() -> dict[str, int]:
@@ -120,10 +120,23 @@ def pick(agent: dict, notes: Path) -> str:
 			if listed and c["model"] not in listed:
 				tried.append(f"{c['model']}: not listed")
 				continue
-			ok, why = groq_works(key, c["model"], c.get("min_tpm", 0))
+			ok, why, _ = groq_works(key, c["model"], c.get("min_tpm", 0))
 			tried.append(f"{c['model']}: {why}")
 			if ok:
 				return _done(c["model"], listed, tried, notes)
+		# None of the named candidates fits: try the other listed chat models and take the one with the
+		# largest tokens-per-minute limit that still fits an aider request.
+		need = max((c.get("min_tpm", 0) for c in agent["_model_candidates"]), default=0)
+		skip = ("whisper", "tts", "guard", "playai", "orpheus", "compound", "distil")
+		named = {c["model"] for c in agent["_model_candidates"]}
+		fits = []
+		for m in [m for m in listed if m not in named and not any(k in m for k in skip)][:20]:
+			ok, why, tpm = groq_works(key, m, need)
+			tried.append(f"{m}: {why}")
+			if ok:
+				fits.append((tpm, m))
+		if fits:
+			return _done(max(fits)[1], listed, tried, notes)
 	elif provider == "openrouter":
 		ctx = openrouter_models()
 		listed = sorted(ctx)
@@ -146,6 +159,8 @@ def pick(agent: dict, notes: Path) -> str:
 def _done(model: str, listed: list[str], tried: list[str], notes: Path) -> str:
 	notes.mkdir(parents=True, exist_ok=True)
 	day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+	if not model:
+		print("Models the provider listed:", ", ".join(listed) or "none")
 	head = f"API model id {model}, called {day} (picked from the agent's candidates; the provider may update a model behind an unversioned id)" if model else f"No usable model on {day}"
 	(notes / "model-digest.txt").write_text(head + "\n" + "".join(f"- {t}\n" for t in tried), encoding="utf-8")
 	(notes / "provider-models.txt").write_text("\n".join(listed) + "\n", encoding="utf-8")
