@@ -25,6 +25,34 @@ worktrees/
 design/
 .design/
 
+# Secrets and site configuration never belong in the repository.
+.env.*
+!.env.example
+!docker/.env.example
+site_config.json
+common_site_config.json
+sites/
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.jks
+id_rsa*
+id_ed25519*
+.netrc
+.pypirc
+*.secret
+secrets/
+
+# Held work and exports that are kept outside the repository.
+*.bundle
+*.patch
+*.diff
+*.docx
+*.pptx
+*.xlsx
+
 # Discovery reports hold a plant's own configuration; they stay on the operator's machine.
 # See docs/agents/discovery/README.md.
 .foames-discovery/
