@@ -47,3 +47,4 @@ Each report folder is named after the date its runs started (`benchmarks/results
 ## Overlapping runs
 
 A push run whose `run-request.txt` has a `report: raw` line commits only its run files under `benchmarks/results/<date>/runs/`, so it can finish while a longer run is still going without the two rewriting the same README. To rebuild the pages from everything in a day's folder, run `python benchmarks/scripts/publish_results.py --runs benchmarks/results/<date>/runs --out benchmarks/results/<date>`.
+A `collect: <run id> <run id>` line runs no agents: the report job downloads those workflow runs' `run-*` artifacts and adds them to the day's report (with `report: raw`, only the run files). It is how a run whose own report job could not keep its files is added afterwards.
