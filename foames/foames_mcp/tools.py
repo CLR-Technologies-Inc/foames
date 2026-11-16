@@ -24,6 +24,7 @@ MINING = "foames.foames_process_mining.api"
 ADAPTERS = "foames.foames_adapters"
 READS = "foames.foames_mcp.reads"
 CYCLE = "foames.foames_mes.cycle_time_api"
+PID = "foames.foames_pid.api"
 VALIDATION = "foames.foames_validation.api"
 
 # Packages a tool's method may live in. The catalogue test holds every tool to this list, so a
@@ -35,6 +36,17 @@ ALLOWED_METHOD_PREFIXES = (
 	ADAPTERS + ".get_available_erp_systems",
 	READS,
 	CYCLE,
+	# The P&ID reads only; importing a register and applying links stay with people on the desk.
+	*(
+		f"{PID}.{method}"
+		for method in (
+			"list_components",
+			"get_component",
+			"get_drawing",
+			"parse_instrument_tag",
+			"suggest_links",
+		)
+	),
 	VALIDATION + ".get_qualification_status",
 )
 
@@ -271,6 +283,55 @@ TOOLS: list[Tool] = [
 			["machine"],
 		),
 		read_only=False,
+	),
+	# P&IDs -------------------------------------------------------------------------------
+	Tool(
+		name="foames_pid_list_components",
+		title="List P&ID components",
+		description="The P&ID tag register: equipment, instruments, lines and valves with their ISA-5.1 meaning, the drawing they are on, what they are located on, and the machine and signal that carry their live value. Needs read on PID Component.",
+		method=f"{PID}.list_components",
+		input_schema=_schema(
+			{
+				"drawing": _s("Only components on this P&ID drawing number"),
+				"component_type": _s(
+					"Only this type", enum=["Equipment", "Instrument", "Line", "Valve", "Actuator", "Other"]
+				),
+				"machine": MACHINE,
+				"linked": _i(
+					"1: only components linked to a machine; 0: only those not linked", minimum=0, maximum=1
+				),
+				"search": _s("Text to find in the tag or description"),
+				"limit": LIMIT,
+			}
+		),
+	),
+	Tool(
+		name="foames_pid_get_component",
+		title="Get a P&ID component",
+		description="One tag in detail: its register entry, the ISA-5.1 reading of the tag, its latest value with a flag (high or low: at a calibrated range limit; stale; none: never reported), the components located on it and its process and signal connections on the drawings. Needs read on PID Component.",
+		method=f"{PID}.get_component",
+		input_schema=_schema({"tag": _s("The tag, for example FIC-101 or P-101")}, ["tag"]),
+	),
+	Tool(
+		name="foames_pid_get_drawing",
+		title="Get a P&ID drawing",
+		description="A P&ID drawing's title block, every component on it and its process and signal connections (what feeds what, along which line). Use it to reason about what is upstream or downstream of a machine or instrument. Needs read on PID Drawing.",
+		method=f"{PID}.get_drawing",
+		input_schema=_schema({"drawing": _s("The drawing number")}, ["drawing"]),
+	),
+	Tool(
+		name="foames_pid_parse_tag",
+		title="Read an instrument tag",
+		description="Read an instrument tag by the ISA-5.1 identification letters: measured variable, modifiers, functions (indicate, control, transmit, switch, alarm, valve ...), loop number. Works on any tag; needs no record.",
+		method=f"{PID}.parse_instrument_tag",
+		input_schema=_schema({"tag": _s("An instrument tag, for example PDT-2003A or 10-LSHH-305")}, ["tag"]),
+	),
+	Tool(
+		name="foames_pid_suggest_links",
+		title="Suggest P&ID signal links",
+		description="Candidate links between unlinked P&ID tags and the machines and signals FoaMES receives (machine codes, mapped OPC UA nodes and Sparkplug metrics, measurement names seen in the last 30 days), each with its reason. Reads only: a person applies links on the desk. Needs read on PID Component.",
+		method=f"{PID}.suggest_links",
+		input_schema=_schema({"drawing": _s("Only tags on this drawing")}),
 	),
 	# Process mining ------------------------------------------------------------------------
 	Tool(

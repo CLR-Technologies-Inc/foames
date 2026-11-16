@@ -78,6 +78,8 @@ Andon calls that miss their targets are escalated by their own five-minute task 
 
 The count-based rules measure from the machine's last count ever, so a machine that counted yesterday and runs without counting today is caught; a machine that has never counted at all, for example a new machine whose counter signal was never wired, shows on the Floor View as "No counts today" instead. They use the machine's last-seen time in their rule key, so a machine that goes quiet again after a fix raises a fresh suggestion. The downtime rule keys on machine, reason and the dated window, so it raises at most once per day per reason; a suggestion that was accepted, dismissed or done is reopened only when the finding recurs under the same key.
 
+P&ID instruments linked to a machine add their own rule, for signals that went silent or read at a range limit; see [pid.md](pid.md#the-suggestion-rule).
+
 Other apps register further rules through the `foames_suggestion_rules` hook, and external agents post their own suggestions through the API. Both are described in [agents/floor-agent.md](agents/floor-agent.md).
 
 ## The floor snapshot

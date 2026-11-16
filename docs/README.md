@@ -33,6 +33,7 @@ Start with [overview.md](overview.md) for what FoaMES records, then [installatio
 | [scheduling.md](scheduling.md) | Production scheduling: finite-capacity plans from shift calendars, maintenance and cycle times, dispatching rules, publishing, the Gantt view, the behind-schedule rule, demand from an ERP and cycle-time hooks |
 | [maintenance.md](maintenance.md) | Preventive maintenance: plans by calendar, run hours or counts, work orders, the hourly check and its suggestions, the Maintenance Due List |
 | [topology.md](topology.md) | The topology graph: the physical layer, the data layer over it and Signal Bindings, the sync, collectors, tenant and provider isolation, Topology View, the Floor View data layer, findings, Mermaid and Grafana exports |
+| [pid.md](pid.md) | P&IDs: the tag register and ISA-5.1 tags, DEXPI and CSV import, linking tags to live signals, the P&ID Viewer, the instrument-signal rule, the agent tools |
 | [ehs.md](ehs.md) | Environmental health and safety: incidents and near misses with calculated recordability, permits to work and the running-under-lockout check, hazard assessments, exposure monitoring, the hourly check, incident rates |
 | [commissioning.md](commissioning.md) | Equipment commissioning: packages, FAT and SAT with signed steps, loop checks, the A/B/C punch list, handover readiness and acceptance, the daily suggestions, the Punch List and Commissioning Status reports |
 | [spc.md](spc.md) | Control charts and run rules on machine measurements, and the suggestions they raise |
@@ -46,7 +47,7 @@ Start with [overview.md](overview.md) for what FoaMES records, then [installatio
 | Page | What it covers |
 | --- | --- |
 | [../AGENTS.md](../AGENTS.md) | The guide for coding agents and developers building on or integrating FoaMES: invariants, extension hooks, API surface, tests |
-| [mcp.md](mcp.md) | The MCP server: connecting Claude Desktop, Claude Code or any MCP client with an API key, the 27 tools, permissions, limits |
+| [mcp.md](mcp.md) | The MCP server: connecting Claude Desktop, Claude Code or any MCP client with an API key, the 32 tools, permissions, limits |
 | [agents/floor-agent.md](agents/floor-agent.md) | The playbook for an agent that reads the floor snapshot and raises suggestions, with the MCP tool names |
 | [agents/research-to-code.md](agents/research-to-code.md) | The playbook for turning a public paper into a FoaMES change: sourcing rules, go or no-go triage, data mapping, invariant check, landing zones, test-first from the paper; [research-to-code-example.md](agents/research-to-code-example.md) is a worked run |
 | [case-studies/README.md](case-studies/README.md) | Scaffolds for case studies of discrete, process and logistics improvements (changeover, yield and energy, electric trucks, autonomous trucks), with a shared template and honesty rules |
