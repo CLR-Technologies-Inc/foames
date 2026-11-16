@@ -18,6 +18,7 @@ import argparse
 import fnmatch
 import json
 import os
+import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
@@ -112,6 +113,17 @@ def nvidia_models(key: str) -> list[str]:
 
 
 def nvidia_works(key: str, model: str) -> tuple[bool, str]:
+	# Shared NIM endpoints answer 429 or 5xx while busy (for example "content safety screening is
+	# temporarily unavailable"); try again a few times before giving up on the model.
+	for wait in (30, 60, 120, 0):
+		ok, why = _nvidia_call(key, model)
+		if ok or not any(why.startswith(f"HTTP {c}") for c in ("429", "500", "502", "503", "504")):
+			return ok, why
+		time.sleep(wait)
+	return ok, why
+
+
+def _nvidia_call(key: str, model: str) -> tuple[bool, str]:
 	status, _, d = _get(
 		f"{NVIDIA}/chat/completions",
 		{"Authorization": f"Bearer {key}"},

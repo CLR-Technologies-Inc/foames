@@ -1,0 +1,27 @@
+{
+ "bench_version": "0.1.0",
+ "foames_commit": "a5e355aa7bce6dcaafe31c3c3e650c05faddf584",
+ "source": {
+  "dirty": true,
+  "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "changes": [
+   "?? notes/"
+  ]
+ },
+ "python": "3.12.16",
+ "platform": "Linux-7.0.0-1016-aws-x86_64-with-glibc2.43",
+ "started_at": "2026-11-16T08:17:54+00:00",
+ "reps": 1,
+ "tasks": [
+  "counter-reset"
+ ],
+ "agents": [
+  {
+   "name": "aider-ollama-deepscaler-1.5b",
+   "model": "ollama_chat/deepscaler:1.5b",
+   "tier": "oss",
+   "harness": "aider",
+   "sandbox": "docker"
+  }
+ ]
+}

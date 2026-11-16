@@ -1,0 +1,2 @@
+API model id nvidia_nim/deepseek-ai/deepseek-v4.1-flash, called 2026-11-16 (picked from the agent's candidates; the provider may update a model behind an unversioned id)
+- nvidia_nim/deepseek-ai/deepseek-v4.1-flash: HTTP timeout TimeoutError: The read operation timed out

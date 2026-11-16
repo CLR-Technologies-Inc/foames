@@ -1,0 +1,15 @@
+{
+ "_comment": "Notes for agents with no published result yet, shown in the README benchmark table. A key ending in * matches a name prefix. Delete an entry once its results are in a dated report.",
+ "aider-ollama-qwen3-coder-30b": "Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet)",
+ "aider-ollama-devstral-24b": "Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet)",
+ "aider-ollama-gemma3-27b": "Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet)",
+ "aider-ollama-mistral-small3.2-24b": "Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet)",
+ "aider-ollama-magistral-24b": "Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet)",
+ "aider-ollama-qwq-32b": "Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet)",
+ "aider-ollama-deepseek-r1-32b": "Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet)",
+ "aider-ollama-qwen3-30b": "Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet)",
+ "claude-code-opus-5": "Not run: older model, left out to stay inside the subscription's shared 5-hour usage limit",
+ "claude-code-opus-4-8": "Not run: older model, left out to stay inside the subscription's shared 5-hour usage limit",
+ "claude-code-sonnet-4-5": "Not run: older model, left out to stay inside the subscription's shared 5-hour usage limit",
+ "claude-code-haiku-4-5": "Not run: older model, left out to stay inside the subscription's shared 5-hour usage limit"
+}

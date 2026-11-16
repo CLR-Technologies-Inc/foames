@@ -1,0 +1,33 @@
+{
+ "bench_version": "0.1.0",
+ "foames_commit": "1a844a1fd73863f0f71186148e1e7c7165600f90",
+ "source": {
+  "dirty": true,
+  "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "changes": [
+   "?? notes/"
+  ]
+ },
+ "python": "3.12.16",
+ "platform": "Linux-7.0.0-1016-aws-x86_64-with-glibc2.43",
+ "started_at": "2026-11-16T14:44:05+00:00",
+ "reps": 1,
+ "tasks": [
+  "sector-333-machinery",
+  "sector-3344-semiconductors",
+  "sector-335-electrical-equipment",
+  "sector-3361-motor-vehicles",
+  "sector-3364-aerospace",
+  "sector-337-furniture",
+  "sector-3391-medical-devices"
+ ],
+ "agents": [
+  {
+   "name": "aider-nvidia-gemma",
+   "model": "nvidia_nim/google/gemma-4-31b-it",
+   "tier": "oss",
+   "harness": "aider",
+   "sandbox": "docker"
+  }
+ ]
+}

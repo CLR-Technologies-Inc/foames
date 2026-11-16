@@ -1,0 +1,1 @@
+Ollama smollm2:1.7b digest cef4a1e09247, pulled 2026-11-16

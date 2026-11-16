@@ -1,0 +1,1 @@
+GitHub-hosted runner (4 vCPU, 15 GB, CPU only)

@@ -1,0 +1,33 @@
+{
+ "bench_version": "0.1.0",
+ "foames_commit": "d3d465fd36897dfffdb97a9774f47241ea4159b7",
+ "source": {
+  "dirty": true,
+  "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "changes": [
+   "?? notes/"
+  ]
+ },
+ "python": "3.12.16",
+ "platform": "Linux-7.0.0-1016-aws-x86_64-with-glibc2.43",
+ "started_at": "2026-11-16T14:43:57+00:00",
+ "reps": 1,
+ "tasks": [
+  "sector-326-plastics",
+  "sector-3272-glass",
+  "sector-3273-cement",
+  "sector-331-aluminum",
+  "sector-3315-foundry",
+  "sector-332-forging",
+  "sector-332-machine-shop"
+ ],
+ "agents": [
+  {
+   "name": "aider-nvidia-gemma",
+   "model": "nvidia_nim/google/gemma-4-31b-it",
+   "tier": "oss",
+   "harness": "aider",
+   "sandbox": "docker"
+  }
+ ]
+}

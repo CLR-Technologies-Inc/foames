@@ -1,0 +1,1 @@
+Ollama qwen3:8b digest 500a1f067a9f, pulled 2026-11-16

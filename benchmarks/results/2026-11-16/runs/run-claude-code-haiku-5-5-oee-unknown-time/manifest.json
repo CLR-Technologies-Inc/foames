@@ -1,0 +1,23 @@
+{
+ "bench_version": "0.1.0",
+ "foames_commit": "c8bf84e10b92502bf9fb4c35b69640829130c290",
+ "source": {
+  "dirty": false
+ },
+ "python": "3.13.18",
+ "platform": "Linux-6.18.44-fc-v470-x86_64-with-glibc2.39",
+ "started_at": "2026-11-16T14:57:00+00:00",
+ "reps": 1,
+ "tasks": [
+  "oee-unknown-time"
+ ],
+ "agents": [
+  {
+   "name": "claude-code-haiku-5-5",
+   "model": "claude-haiku-5-5",
+   "tier": "baseline",
+   "harness": "claude-code",
+   "sandbox": "unshare"
+  }
+ ]
+}

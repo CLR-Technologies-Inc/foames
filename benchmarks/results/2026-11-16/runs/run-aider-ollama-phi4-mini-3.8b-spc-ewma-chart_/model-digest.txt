@@ -1,0 +1,1 @@
+Ollama phi4-mini:3.8b digest 78fad5d182a7, pulled 2026-11-16

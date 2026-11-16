@@ -1,0 +1,1 @@
+Ollama granite3.3:2b digest 07bd1f170855, pulled 2026-11-16

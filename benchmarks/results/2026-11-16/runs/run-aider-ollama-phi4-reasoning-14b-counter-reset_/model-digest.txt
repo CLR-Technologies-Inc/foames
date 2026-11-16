@@ -1,0 +1,1 @@
+Ollama phi4-reasoning:14b digest 47e2630ccbcd, pulled 2026-11-16

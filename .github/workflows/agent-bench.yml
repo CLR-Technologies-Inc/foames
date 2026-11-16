@@ -116,8 +116,15 @@ jobs:
         with:
           python-version: "3.12"
       - id: names
+        env:
+          AGENT: ${{ matrix.agent }}
+          TASK: ${{ matrix.task }}
+          RUN_ID: ${{ github.run_id }}
         run: |
-          echo "slug=$(echo '${{ matrix.agent }}-${{ contains(matrix.task, ' ') && 'all' || matrix.task }}' | tr -c 'A-Za-z0-9._-' '_')" >> "$GITHUB_OUTPUT"
+          # The workflow run id keeps a rerun of the same agent and tasks from overwriting earlier run files.
+          # Values come in through env, not inline expressions, so they cannot inject shell.
+          case "$TASK" in *" "*) t=all ;; *) t="$TASK" ;; esac
+          echo "slug=$(printf '%s' "$AGENT-$t-$RUN_ID" | tr -c 'A-Za-z0-9._-' '_')" >> "$GITHUB_OUTPUT"
       - name: Sandbox image with aider
         run: |
           docker build -t foames-bench-agent \
@@ -231,6 +238,9 @@ jobs:
           python benchmarks/scripts/publish_results.py --runs runs --out-root benchmarks/results $RAW \
             --workflow-run "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" | tee report.log
           cat "$(ls -td benchmarks/results/*/ | head -1)README.md" >> "$GITHUB_STEP_SUMMARY" || true
+          # The results table in the repository README, and the website's top models page, from every dated report.
+          python benchmarks/scripts/readme_status.py
+          python benchmarks/scripts/site_top_models.py
       - uses: actions/upload-artifact@v7
         with:
           name: bench-report
@@ -240,7 +250,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898499+github-actions[bot]@users.noreply.github.com"
-          git add benchmarks/results
+          git add benchmarks/results README.md
           git diff --cached --quiet && exit 0
           git commit -m "Add agent benchmark results from run ${{ github.run_id }}"
           for i in 1 2 3; do git pull --rebase origin "${{ github.ref_name }}" && git push origin "HEAD:${{ github.ref_name }}" && break; sleep 10; done

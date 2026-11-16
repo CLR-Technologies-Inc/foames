@@ -1,0 +1,3 @@
+API model id nvidia_nim/openai/gpt-oss-20b, called 2026-11-16 (picked from the agent's candidates; the provider may update a model behind an unversioned id)
+- nvidia_nim/openai/gpt-oss-120b: not listed
+- nvidia_nim/openai/gpt-oss-20b: HTTP timeout TimeoutError: The read operation timed out

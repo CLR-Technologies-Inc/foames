@@ -116,6 +116,126 @@ The full guide, including roles, the scheduler, running the gateways and a smoke
 | [docs/agents/discovery/](docs/agents/discovery/README.md) | For an agent and a plant operator discovering, read-only, how a site's ERP, MES, SCADA or historian is set up before a connector is configured |
 | [benchmarks/README.md](benchmarks/README.md) | A benchmark of coding agents on FoaMES tasks, with model recommendations by TRL and process complexity |
 
+## Agent benchmark results
+
+<!-- bench-status:start -->
+
+Each agent runs the same tasks in the [agent benchmark](benchmarks/README.md): the six core tasks, and for the Claude Code agents the 29 sector case studies. Pass rate is the share of runs whose every invariant test passed. ECL reached is the highest Equipment Complexity Level at which the agent passed every task at that level and below, among the levels its model tier may claim. Off-label models were not built for agentic coding and are here to show how far each kind gets. Free tiers and the subscription cost $0; each dated report also gives the same tokens at list price.
+
+**Claude Code on a Claude subscription (this account, not the API)**
+
+| Agent | Model | Built for | Report | Tasks run | Pass rate | ECL reached |
+| --- | --- | --- | --- | ---: | ---: | --- |
+| claude-code-haiku-5-5 | `claude-haiku-5-5` | agentic coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 35 | 94% | ECL 2 |
+| claude-code-sonnet-5-5 | `claude-sonnet-5-5` | agentic coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 35 | 94% | none |
+| claude-code-opus-5-5 | `claude-opus-5-5` | agentic coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 35 | 97% | ECL 2 |
+| claude-code-fable-5-2 | `claude-fable-5-2` | agentic coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 35 | 97% | none |
+| claude-code-opus-5 | `claude-opus-5` | agentic coding | Not run: older model, left out to stay inside the subscription's shared 5-hour usage limit | - | - | - |
+| claude-code-opus-4-8 | `claude-opus-4-8` | agentic coding | Not run: older model, left out to stay inside the subscription's shared 5-hour usage limit | - | - | - |
+| claude-code-sonnet-4-5 | `claude-sonnet-4-5` | agentic coding | Not run: older model, left out to stay inside the subscription's shared 5-hour usage limit | - | - | - |
+| claude-code-haiku-4-5 | `claude-haiku-4-5` | agentic coding | Not run: older model, left out to stay inside the subscription's shared 5-hour usage limit | - | - | - |
+
+**Google Gemini API, free tier**
+
+| Agent | Model | Built for | Report | Tasks run | Pass rate | ECL reached |
+| --- | --- | --- | --- | ---: | ---: | --- |
+| aider-gemini-flash | `gemini/gemini-3.8-flash` | - | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 67% | none |
+
+**OpenRouter, free models**
+
+| Agent | Model | Built for | Report | Tasks run | Pass rate | ECL reached |
+| --- | --- | --- | --- | ---: | ---: | --- |
+| aider-openrouter-free | `openrouter/thinkingmachines/inkling-2-small:free` | - | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 50% | none |
+
+**NVIDIA Build (NIM), free development credits**
+
+| Agent | Model | Built for | Report | Tasks run | Pass rate | ECL reached |
+| --- | --- | --- | --- | ---: | ---: | --- |
+| aider-nvidia-deepseek | `nvidia_nim/deepseek-ai/deepseek-v4.1-flash` | coding and general | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 9 | 0% | none |
+| aider-nvidia-kimi | picked at run time | agentic coding | Skipped: NVIDIA Build listed no Kimi model for this key on 2026-11-16 | - | - | - |
+| aider-nvidia-glm | `nvidia_nim/z-ai/glm-5.3-flash` | agentic coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-nvidia-minimax | `nvidia_nim/minimaxai/minimax-m3.1-flash` | agentic coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 15 | 0% | none |
+| aider-nvidia-qwen3-coder | picked at run time | coding | Skipped: NVIDIA Build listed no Qwen3-Coder model for this key on 2026-11-16 | - | - | - |
+| aider-nvidia-gpt-oss-120b | `nvidia_nim/openai/gpt-oss-20b` | reasoning (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 35 | 3% | none |
+| aider-nvidia-nemotron | `nvidia_nim/nvidia/nemotron-3-ultra-550b-a55b` | reasoning (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-nvidia-llama | `nvidia_nim/meta/llama-3.2-90b-vision-instruct` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 35 | 0% | none |
+| aider-nvidia-mistral-large | `nvidia_nim/mistralai/mistral-large-4-1t-a52b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 35 | 0% | none |
+| aider-nvidia-gemma | `nvidia_nim/google/gemma-4-31b-it` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 35 | 3% | none |
+| aider-nvidia-laguna | `nvidia_nim/poolside/laguna-xs-2.1` | coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 35 | 0% | none |
+| aider-nvidia-step | `nvidia_nim/stepfun-ai/step-5-preview` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 35 | 0% | none |
+
+**Groq, free tier**
+
+| Agent | Model | Built for | Report | Tasks run | Pass rate | ECL reached |
+| --- | --- | --- | --- | ---: | ---: | --- |
+| aider-groq-free | picked at run time | - | Skipped: Groq's free tier allowed at most 8,000 tokens a minute on every chat model it listed (2026-11-16), less than one aider request (about 12,700 tokens) | - | - | - |
+
+**Mistral, free tier**
+
+| Agent | Model | Built for | Report | Tasks run | Pass rate | ECL reached |
+| --- | --- | --- | --- | ---: | ---: | --- |
+| aider-mistral-devstral | `mistral/devstral-small-latest` | - | Skipped: the provider asked for a credit card at sign-up (2026-11-16), so it is not a no-cost tier for this benchmark | - | - | - |
+
+**Cerebras, free tier**
+
+| Agent | Model | Built for | Report | Tasks run | Pass rate | ECL reached |
+| --- | --- | --- | --- | ---: | ---: | --- |
+| aider-cerebras-gpt-oss-120b | `cerebras/gpt-oss-120b` | - | Skipped: the provider asked for a credit card at sign-up (2026-11-16), so it is not a no-cost tier for this benchmark | - | - | - |
+
+**Ollama on a GitHub-hosted runner (4 vCPU, 16 GB, CPU only)**
+
+| Agent | Model | Built for | Report | Tasks run | Pass rate | ECL reached |
+| --- | --- | --- | --- | ---: | ---: | --- |
+| aider-ollama-qwen2.5-coder-7b | `ollama_chat/qwen2.5-coder:7b` | coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-qwen2.5-coder-14b | `ollama_chat/qwen2.5-coder:14b` | coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-qwen3-8b | `ollama_chat/qwen3:8b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-qwen3-14b | `ollama_chat/qwen3:14b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-granite3.3-8b | `ollama_chat/granite3.3:8b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-gpt-oss-20b | `ollama_chat/gpt-oss:20b` | reasoning (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 17% | none |
+| aider-ollama-deepseek-coder-v2-16b | `ollama_chat/deepseek-coder-v2:16b` | coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-yi-coder-9b | `ollama_chat/yi-coder:9b` | coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-granite-code-8b | `ollama_chat/granite-code:8b` | coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-codegemma-7b | `ollama_chat/codegemma:7b` | coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-deepcoder-14b | `ollama_chat/deepcoder:14b` | coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-starcoder2-15b | `ollama_chat/starcoder2:15b` | coding (base model, not tuned for chat) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-qwen2.5-coder-1.5b | `ollama_chat/qwen2.5-coder:1.5b` | coding | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-llama3.1-8b | `ollama_chat/llama3.1:8b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-mistral-7b | `ollama_chat/mistral:7b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-mistral-nemo-12b | `ollama_chat/mistral-nemo:12b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-gemma3-12b | `ollama_chat/gemma3:12b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-phi4-14b | `ollama_chat/phi4:14b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-olmo2-13b | `ollama_chat/olmo2:13b` | general chat (fully open data) (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-falcon3-10b | `ollama_chat/falcon3:10b` | general chat (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-deepseek-r1-14b | `ollama_chat/deepseek-r1:14b` | reasoning (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-phi4-reasoning-14b | `ollama_chat/phi4-reasoning:14b` | reasoning (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-qwen3-4b | `ollama_chat/qwen3:4b` | tiny (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-qwen3-1.7b | `ollama_chat/qwen3:1.7b` | tiny (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-qwen3-0.6b | `ollama_chat/qwen3:0.6b` | tiny (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-phi4-mini-3.8b | `ollama_chat/phi4-mini:3.8b` | tiny (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-llama3.2-3b | `ollama_chat/llama3.2:3b` | tiny (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-gemma3-1b | `ollama_chat/gemma3:1b` | tiny (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-granite3.3-2b | `ollama_chat/granite3.3:2b` | tiny (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-smollm2-1.7b | `ollama_chat/smollm2:1.7b` | tiny (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-mathstral-7b | `ollama_chat/mathstral:7b` | domain: maths and science (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-deepscaler-1.5b | `ollama_chat/deepscaler:1.5b` | domain: maths reasoning (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-meditron-7b | `ollama_chat/meditron:7b` | domain: medicine (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+| aider-ollama-sqlcoder-7b | `ollama_chat/sqlcoder:7b` | domain: SQL (off-label) | [2026-11-16](benchmarks/results/2026-11-16/README.md) | 6 | 0% | none |
+
+**Ollama on a free notebook GPU (Kaggle or Colab)**
+
+| Agent | Model | Built for | Report | Tasks run | Pass rate | ECL reached |
+| --- | --- | --- | --- | ---: | ---: | --- |
+| aider-ollama-qwen3-coder-30b | `ollama_chat/qwen3-coder:30b` | coding | Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet) | - | - | - |
+| aider-ollama-devstral-24b | `ollama_chat/devstral:24b` | coding | Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet) | - | - | - |
+| aider-ollama-gemma3-27b | `ollama_chat/gemma3:27b` | general chat (off-label) | Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet) | - | - | - |
+| aider-ollama-mistral-small3.2-24b | `ollama_chat/mistral-small3.2:24b` | general chat (off-label) | Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet) | - | - | - |
+| aider-ollama-magistral-24b | `ollama_chat/magistral:24b` | reasoning (off-label) | Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet) | - | - | - |
+| aider-ollama-qwq-32b | `ollama_chat/qwq:32b` | reasoning (off-label) | Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet) | - | - | - |
+| aider-ollama-deepseek-r1-32b | `ollama_chat/deepseek-r1:32b` | reasoning (off-label) | Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet) | - | - | - |
+| aider-ollama-qwen3-30b | `ollama_chat/qwen3:30b` | general chat (MoE, 3B active) (off-label) | Needs a GPU: run benchmarks/notebooks/foames-bench-gpu.ipynb on Kaggle or Colab (not run yet) | - | - | - |
+
+<!-- bench-status:end -->
+
 ## Contributing
 
 Contributions need a signed Contributor License Agreement. See [CONTRIBUTING.md](CONTRIBUTING.md).
