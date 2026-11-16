@@ -1,0 +1,266 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-16 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "asset_name",
+  "title",
+  "system",
+  "zone",
+  "serves_zone",
+  "cb_head",
+  "status",
+  "out_of_service",
+  "disabled",
+  "active_alarms",
+  "sb_model",
+  "equipment_class",
+  "haystack_tags",
+  "cb_model",
+  "manufacturer",
+  "model_number",
+  "serial_number",
+  "sb_hazmat",
+  "hazard_assessment",
+  "cb_hazmat",
+  "stored_materials",
+  "sb_notes",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "asset_name",
+   "fieldtype": "Data",
+   "label": "Asset ID",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1,
+   "description": "A short unique id, for example CH-01 or RTU-3"
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "system",
+   "fieldtype": "Select",
+   "label": "System",
+   "options": "HVAC\nAir Handling Unit\nRooftop Unit\nChiller\nCooling Tower\nBoiler\nChilled Water\nHeating Hot Water\nSteam\nDomestic Water\nProcess Water\nWastewater\nCompressed Air\nElectricity\nNatural Gas\nLighting\nServer Room\nHazardous Material Storage\nFire and Life Safety\nOther",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "zone",
+   "fieldtype": "Link",
+   "label": "Located In",
+   "options": "Facility Zone",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "serves_zone",
+   "fieldtype": "Link",
+   "label": "Serves",
+   "options": "Facility Zone",
+   "description": "The zone this equipment conditions, supplies or meters, when it is not where it sits (a rooftop unit serving a production hall)"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Unknown\nNormal\nAlarm\nStale\nOut of Service",
+   "default": "Unknown",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "out_of_service",
+   "fieldtype": "Check",
+   "label": "Out of Service",
+   "description": "Its points are still recorded, but raise no alarms or suggestions"
+  },
+  {
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
+  },
+  {
+   "fieldname": "active_alarms",
+   "fieldtype": "Int",
+   "label": "Active Alarms",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "sb_model",
+   "fieldtype": "Section Break",
+   "label": "Semantic Model",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "equipment_class",
+   "fieldtype": "Data",
+   "label": "Brick Class",
+   "description": "The Brick equipment class, for example Chiller or Rooftop_Unit; filled from the system when empty"
+  },
+  {
+   "fieldname": "haystack_tags",
+   "fieldtype": "Small Text",
+   "label": "Haystack Tags",
+   "description": "Project Haystack markers, space separated; filled from the system when empty"
+  },
+  {
+   "fieldname": "cb_model",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "manufacturer",
+   "fieldtype": "Data",
+   "label": "Manufacturer"
+  },
+  {
+   "fieldname": "model_number",
+   "fieldtype": "Data",
+   "label": "Model"
+  },
+  {
+   "fieldname": "serial_number",
+   "fieldtype": "Data",
+   "label": "Serial Number"
+  },
+  {
+   "fieldname": "sb_hazmat",
+   "fieldtype": "Section Break",
+   "label": "Hazardous Material Storage",
+   "depends_on": "eval:doc.system=='Hazardous Material Storage'"
+  },
+  {
+   "fieldname": "hazard_assessment",
+   "fieldtype": "Link",
+   "label": "Hazard Assessment",
+   "options": "Hazard Assessment",
+   "description": "The assessment that covers what is stored here; its alarms point people at it"
+  },
+  {
+   "fieldname": "cb_hazmat",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "stored_materials",
+   "fieldtype": "Small Text",
+   "label": "Stored Materials",
+   "description": "What is stored here and its hazard classes, for whoever answers an alarm"
+  },
+  {
+   "fieldname": "sb_notes",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-16 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES BMS",
+ "name": "Facility Asset",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Safety",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Integration",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "field:asset_name",
+ "track_changes": 1,
+ "title_field": "title",
+ "show_title_field_in_link": 0,
+ "search_fields": "title,system,zone,status",
+ "description": "A piece of facility equipment or a utility system the BMS watches: a chiller, RTU, meter, lighting panel, server room or hazmat store"
+}

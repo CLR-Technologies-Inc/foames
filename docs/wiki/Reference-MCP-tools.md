@@ -35,6 +35,12 @@ FoaMES is an MCP server. Each tool is one whitelisted method run as the user who
 | `foames_list_erp_systems()` | Registered adapters, availability, default, reference types | logged in |
 | `foames_list_external_references(erp_system, reference_type, status, limit)` | External References with status | read on External Reference |
 | `foames_lookup_erp_record(reference_type, external_id, erp_system)` | One ERP record through its adapter; creates nothing | read on External Reference |
+| `foames_bms_list_assets(system, zone, status, limit)` | Facility assets (building systems) with status and active alarm count | read on Facility Asset |
+| `foames_bms_get_asset(asset)` | One facility asset with every point's present value and condition, and its open alarms | read on Facility Asset |
+| `foames_bms_list_alarms(status, priority, system, zone, facility_asset, limit)` | Building alarms, open ones by default | read on Building Alarm |
+| `foames_bms_point_history(point, since, until, limit)` | One building point's readings, default the last 24 hours | read on Building Point Reading |
+| `foames_bms_utility_consumption(from_date, to_date, period, utility, zone, facility_asset)` | Utility consumption per period and meter, per good unit where the zone serves a line | read on Building Point Reading |
+| `foames_bms_summary()` | Per building system: assets in alarm, stale or out of service, open alarms by priority | read on Facility Asset |
 
 ## Behaviour
 

@@ -22,6 +22,9 @@ Operators and Quality staff can change a Machine's Source ID, OEE parameters and
 | Post machine events by hand | Operator, Engineer, Maintenance |
 | Maintenance plans and work orders | Maintenance, Engineer (Supervisor creates and edits work orders) |
 | Write and revise SOPs | Engineer, Quality |
+| Keep the building register (facility zones, assets, points and their limits) | Engineer, Maintenance, Supervisor; Safety, Operator, Quality and Integration read it |
+| Acknowledge a building alarm | Maintenance, Supervisor, Safety, Operator, Engineer |
+| Post building point readings by hand | Engineer, Integration (and Operator through the readings webhook) |
 | Sign an SOP | Anyone holding a sign-off role named on it, except its author |
 | Read External References | System Manager by default |
 

@@ -137,7 +137,11 @@ doc_events |= {
 #
 # Other apps add tools to the MCP server with this hook: dotted paths of functions that return a list
 # of foames.foames_mcp.protocol.Tool. Their writes pass the gate like the core's.
-foames_mcp_tools = ["foames.foames_adapters.tulip.reads.mcp_tools"]
+foames_mcp_tools = [
+	"foames.foames_adapters.tulip.reads.mcp_tools",
+	# Building management: facility assets, building alarms, point history, utility consumption.
+	"foames.foames_bms.api.mcp_tools",
+]
 
 # Permissions
 # -----------
@@ -174,6 +178,8 @@ foames_floor_snapshot_extensions = [
 	"foames.foames_mes.material_flow.extend_snapshot",
 	# Each machine's current and next operations from the published Production Schedule.
 	"foames.foames_mes.doctype.production_schedule.production_schedule.extend_snapshot",
+	# Building systems: assets in alarm or stale per system, and the open building alarms.
+	"foames.foames_bms.floor.extend_snapshot",
 ]
 foames_suggestion_rules = [
 	"foames.foames_adapters.erpnext.floor.running_without_job_card",
@@ -239,6 +245,10 @@ foames_stock_readers = [
 # foames.foames_topology.ingest), checked the same way as one posted to the ingest API.
 #
 # foames_topology_collectors = ["myapp.topology.report"]
+#
+# The building management module reports its facility zones, assets and points this way.
+
+foames_topology_collectors = ["foames.foames_bms.topology.report"]
 
 # Commissioning
 # -------------
@@ -246,6 +256,9 @@ foames_stock_readers = [
 #
 # foames_commissioning_readiness_checks = ["myapp.qualification.blockers"]  # (package) -> list of blocker dicts
 # foames_commissioning_handed_over = ["myapp.qualification.on_handover"]  # (package) after handover
+
+# A handed-over package opens the IQ of each machine in it (see foames/foames_validation/commissioning.py).
+foames_commissioning_handed_over = ["foames.foames_validation.commissioning.on_handover"]
 
 # Scheduled Tasks
 # ---------------
@@ -266,6 +279,8 @@ scheduler_events = {
 			"foames.foames_mes.tasks.mark_stale_machines_unknown",
 			# Raises an Agent Suggestion for each Andon Call that misses its call type's targets.
 			"foames.foames_mes.doctype.andon_call.andon_call.escalate_andon_calls",
+			# Raises a communication-loss Building Alarm for each building point that stopped reporting.
+			"foames.foames_bms.tasks.check_stale_points",
 		],
 		# Rolls machine counts up to ERPNext Job Cards, to S/4HANA confirmations and to Insights Hub time
 		# series; each does nothing unless enabled in its adapter's settings.
@@ -290,6 +305,9 @@ scheduler_events = {
 		"foames.foames_mes.tasks.check_maintenance_plans",
 		# Expires permits to work, and raises suggestions for overdue safety actions, investigations and reviews.
 		"foames.foames_ehs.tasks.check_ehs",
+		# Raises suggestions for Critical and High building alarms nobody acknowledged, and for hazardous
+		# material storage with no active hazard assessment or no monitored point.
+		"foames.foames_bms.tasks.check_bms",
 	],
 	"daily": [
 		# Raises suggestions for risks above tolerance, overdue risk reviews and control verifications,

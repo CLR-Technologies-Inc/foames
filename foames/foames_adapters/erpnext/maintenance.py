@@ -59,7 +59,7 @@ def on_update(doc, method=None) -> str | None:
 		return None
 	asset = posted_asset(doc.name)
 	if asset is None:
-		if doc.status == "Cancelled" or not posting_enabled():
+		if doc.status == "Cancelled" or not doc.machine or not posting_enabled():
 			return None
 		asset = machine_assets([doc.machine]).get(doc.machine)
 		if not asset:

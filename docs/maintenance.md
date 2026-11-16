@@ -10,6 +10,8 @@ FoaMES keeps preventive maintenance plans per machine and reads their meters fro
 
 Shift calendars are not used yet: a Calendar plan counts calendar days, and Run Hours count real running time whatever the shift.
 
+A plan can instead be for a **Facility Asset**, a piece of building equipment such as a chiller, RTU or pump (exactly one of Machine and Facility Asset). Its Run Hours come from the asset's run-status point and its Count from one of its totalizing meters, by the same rules; its work orders record no machine downtime. See [building-management.md](building-management.md#preventive-maintenance).
+
 ## Setting up a plan
 
 Open **Maintenance Plan** (FoaMES Maintenance workspace, Preventive Maintenance card) and fill in:

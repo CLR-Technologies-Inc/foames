@@ -28,11 +28,15 @@ class MaintenanceWorkOrder(Document):
 
 	def validate(self):
 		plan = frappe.db.get_value(
-			"Maintenance Plan", self.maintenance_plan, ["machine", "title", "instructions"], as_dict=True
+			"Maintenance Plan",
+			self.maintenance_plan,
+			["machine", "facility_asset", "title", "instructions"],
+			as_dict=True,
 		)
 		if not plan:
 			frappe.throw(_("Maintenance Plan {0} does not exist").format(self.maintenance_plan))
 		self.machine = plan.machine
+		self.facility_asset = plan.facility_asset
 		self.title = self.title or plan.title
 		before = self.get_doc_before_save()
 		if before and before.status == "Completed" and self.status != "Completed":
@@ -74,7 +78,7 @@ class MaintenanceWorkOrder(Document):
 		machine is reused and given the reason if it has none. A work order completed without being
 		started first gets a closed record from its start to its completion, when that took time."""
 		reason = frappe.db.get_value("Maintenance Plan", self.maintenance_plan, "downtime_reason")
-		if not reason or self.downtime_record:
+		if not reason or self.downtime_record or not self.machine:
 			return
 		if closed and not (self.actual_minutes and self.actual_minutes > 0):
 			return

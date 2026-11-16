@@ -11,6 +11,7 @@
   "validation_stage",
   "machine",
   "process_name",
+  "commissioning_package",
   "cb_head",
   "status",
   "run_number",
@@ -32,7 +33,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-11-14 12:00:00.000000",
+ "modified": "2026-11-16 08:00:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES Validation",
  "owner": "Administrator",
@@ -97,6 +98,14 @@
    "fieldtype": "Data",
    "label": "Process",
    "read_only": 1
+  },
+  {
+   "fieldname": "commissioning_package",
+   "fieldtype": "Link",
+   "label": "Commissioning Package",
+   "options": "Commissioning Package",
+   "in_standard_filter": 1,
+   "description": "The handover this IQ follows; its dossier holds the tests, loop checks and punch items to reference"
   },
   {
    "fieldname": "cb_head",

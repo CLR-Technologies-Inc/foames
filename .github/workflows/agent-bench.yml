@@ -42,7 +42,7 @@ jobs:
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - id: plan
         env:
           AGENTS: ${{ inputs.agents || '' }}
@@ -111,8 +111,8 @@ jobs:
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     name: ${{ matrix.agent }} ${{ contains(matrix.task, ' ') && 'all tasks' || matrix.task }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - id: names
@@ -177,7 +177,7 @@ jobs:
           cat "$OUT/summary.md" >> "$GITHUB_STEP_SUMMARY" || true
           # The end of each agent transcript, in the log, for debugging a failed run.
           for f in "$OUT"/*/*/rep-*/agent.std*; do echo "::group::$f"; tail -c 6000 "$f"; echo "::endgroup::"; done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: run-${{ steps.names.outputs.slug }}
@@ -194,14 +194,14 @@ jobs:
       # Read, to download the run files of earlier workflow runs named on a "collect:" line.
       actions: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # The branch as it is now, so this report adds to results that other runs committed meanwhile.
           ref: ${{ github.ref_name }}
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: run-*
           path: runs
@@ -231,9 +231,7 @@ jobs:
           python benchmarks/scripts/publish_results.py --runs runs --out-root benchmarks/results $RAW \
             --workflow-run "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" | tee report.log
           cat "$(ls -td benchmarks/results/*/ | head -1)README.md" >> "$GITHUB_STEP_SUMMARY" || true
-          # The results table in the repository README, from every dated report.
-          python benchmarks/scripts/readme_status.py
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: bench-report
           path: benchmarks/results

@@ -21,6 +21,7 @@ Everything below is on the `main` branch and is described in this wiki.
 - **Andon calls** with response targets and escalation.
 - **Statistical process control** (I-MR and X-bar R charts with Nelson and Western Electric rules) on machine measurements.
 - **Preventive maintenance** plans by calendar, run hours or counts, with work orders and a due list.
+- **Building management**: utilities and building services (water, wastewater, electricity, chilled water, HVAC, RTUs, chillers, lighting, server rooms, hazmat storage) read over BACnet/IP or Modbus TCP, with alarm limits, communication-loss alarms, utility consumption per good unit and maintenance on building equipment. Read-only.
 - **Standard operating procedures** as controlled documents, with sign-off, effective dates and a training matrix.
 - **Process mining**: event logs, discovery, conformance, XES and OCEL 2.0 export.
 - **An MCP server**, so Claude, Cursor or any MCP client can read the floor and raise suggestions under a normal user's permissions.

@@ -648,6 +648,28 @@
 			]
 		},
 		{
+			"bom-ref": "service:building-point-readings-webhook",
+			"name": "FoaMES building point readings webhook",
+			"description": "Exposed by FoaMES. The BMS gateway (BACnet/IP and Modbus TCP, read-only) and other clients POST building point readings here. Signed exactly like the machine event webhook: a Guest request must carry X-FoaMES-Timestamp and an X-FoaMES-Signature HMAC-SHA256 with the Machine Data Settings webhook secret within the replay window; a logged-in session or API token of a user with the FoaMES Operator, FoaMES Engineer or System Manager role is accepted without the signature.",
+			"endpoints": [
+				"https://foames.example/api/method/foames.foames_bms.api.ingest_point_readings"
+			],
+			"authenticated": true,
+			"x-trust-boundary": true,
+			"data": [
+				{
+					"flow": "inbound",
+					"classification": "machine-operational"
+				}
+			],
+			"externalReferences": [
+				{
+					"type": "documentation",
+					"url": "https://github.com/CLR-Technologies-Inc/foames/blob/main/docs/building-management.md"
+				}
+			]
+		},
+		{
 			"bom-ref": "service:s4hana-idoc-receiver",
 			"name": "FoaMES S/4HANA IDoc receiver",
 			"description": "Exposed by FoaMES when the S/4HANA adapter is enabled. SAP sends IDoc XML here over HTTP; the caller must be a Frappe user allowed to create S4HANA Inbound IDoc records.",
