@@ -1,0 +1,176 @@
+{
+ "app": "foames",
+ "charts": [],
+ "content": "[{\"id\": \"riskHdr01A\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Risk</b></span>\", \"col\": 12}}, {\"id\": \"riskShort0\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Open Risks\", \"col\": 4}}, {\"id\": \"riskShort1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Above Tolerance\", \"col\": 4}}, {\"id\": \"riskShort2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Risk Register\", \"col\": 4}}, {\"id\": \"riskShort3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Risk Heat Map\", \"col\": 4}}, {\"id\": \"riskShort4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Risk Templates\", \"col\": 4}}, {\"id\": \"riskShort5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Risk Suggestions\", \"col\": 4}}, {\"id\": \"riskSpacer1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"riskHdr02A\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Register and Setup</b></span>\", \"col\": 12}}, {\"id\": \"riskCard00\", \"type\": \"card\", \"data\": {\"card_name\": \"Register\", \"col\": 4}}, {\"id\": \"riskCard01\", \"type\": \"card\", \"data\": {\"card_name\": \"Setup\", \"col\": 4}}]",
+ "creation": "2026-11-15 23:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "tool",
+ "idx": 0,
+ "indicator_color": "orange",
+ "is_hidden": 0,
+ "label": "FoaMES Risk",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Register",
+   "link_count": 3,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Enterprise Risk",
+   "link_count": 0,
+   "link_to": "Enterprise Risk",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Risk Register",
+   "link_count": 0,
+   "link_to": "Risk Register",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Risk Heat Map",
+   "link_count": 0,
+   "link_to": "Risk Heat Map",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Setup",
+   "link_count": 3,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Risk Category",
+   "link_count": 0,
+   "link_to": "Risk Category",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Risk Template",
+   "link_count": 0,
+   "link_to": "Risk Template",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Risk Settings",
+   "link_count": 0,
+   "link_to": "Risk Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-11-15 23:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Risk",
+ "name": "FoaMES Risk",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "",
+ "roles": [
+  {
+   "role": "FoaMES Supervisor"
+  },
+  {
+   "role": "FoaMES Engineer"
+  },
+  {
+   "role": "FoaMES Quality"
+  },
+  {
+   "role": "FoaMES Maintenance"
+  }
+ ],
+ "sequence_id": 26.0,
+ "shortcuts": [
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "label": "Open Risks",
+   "link_to": "Enterprise Risk",
+   "stats_filter": "{\"status\": [\"!=\", \"Closed\"]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Red",
+   "doc_view": "List",
+   "label": "Above Tolerance",
+   "link_to": "Enterprise Risk",
+   "stats_filter": "{\"status\": [\"!=\", \"Closed\"], \"within_tolerance\": 0, \"accepted_by\": [\"is\", \"not set\"]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Blue",
+   "doc_view": "",
+   "label": "Risk Register",
+   "link_to": "Risk Register",
+   "report_ref_doctype": "Enterprise Risk",
+   "type": "Report"
+  },
+  {
+   "color": "Blue",
+   "doc_view": "",
+   "label": "Risk Heat Map",
+   "link_to": "Risk Heat Map",
+   "report_ref_doctype": "Enterprise Risk",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Risk Templates",
+   "link_to": "Risk Template",
+   "stats_filter": "{\"disabled\": 0}",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Risk Suggestions",
+   "link_to": "Agent Suggestion",
+   "stats_filter": "{\"reference_doctype\": \"Enterprise Risk\", \"status\": \"Open\"}",
+   "type": "DocType"
+  }
+ ],
+ "title": "FoaMES Risk"
+}

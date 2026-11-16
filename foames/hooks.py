@@ -137,6 +137,8 @@ permission_query_conditions = {
 foames_floor_snapshot_extensions = [
 	"foames.foames_adapters.erpnext.floor.extend_snapshot",
 	"foames.foames_adapters.erpnext.rollup.mark_current_job_cards",
+	# The data layer on Floor View: bound signals and their freshness per machine.
+	"foames.foames_topology.floor.extend_snapshot",
 ]
 foames_suggestion_rules = [
 	"foames.foames_adapters.erpnext.floor.running_without_job_card",
@@ -162,6 +164,14 @@ foames_machine_state_changed = [
 #
 # foames_process_event_extractors = ["myapp.mining.job_events"]
 
+# Topology
+# --------
+# Other apps add assets, links and signal bindings to the topology graph. Each dotted path is
+# called with no arguments during the topology sync and returns a collector report (see
+# foames.foames_topology.ingest), checked the same way as one posted to the ingest API.
+#
+# foames_topology_collectors = ["myapp.topology.report"]
+
 # Scheduled Tasks
 # ---------------
 
@@ -184,6 +194,9 @@ scheduler_events = {
 		],
 		# Rolls machine counts up to ERPNext Job Cards, to S/4HANA confirmations and to Insights Hub time
 		# series; each does nothing unless enabled in its adapter's settings.
+		# Mirrors Machines, machine data sources, P&ID components, OEE and ERP references into the
+		# topology graph; does nothing when sync is off in Topology Settings.
+		"*/15 * * * *": ["foames.foames_topology.sync.scheduled_sync"],
 		"*/10 * * * *": [
 			"foames.foames_adapters.erpnext.rollup.roll_up_all",
 			"foames.foames_adapters.s4hana.rollup.roll_up_all",
@@ -199,6 +212,9 @@ scheduler_events = {
 		"foames.foames_mes.tasks.check_maintenance_plans",
 	],
 	"daily": [
+		# Raises suggestions for risks above tolerance, overdue risk reviews and control verifications,
+		# failed controls, breached key risk indicators and linked assessments that now rate higher.
+		"foames.foames_risk.tasks.check_risks",
 		"foames.foames_mes.tasks.compute_daily_oee",
 		# Looks up External References that are still Unverified or Missing in their ERP.
 		"foames.foames_kernel.tasks.refresh_external_references",
@@ -209,6 +225,22 @@ scheduler_events = {
 		"foames.foames_mes.doctype.standard_operating_procedure.standard_operating_procedure.check_sops",
 	],
 }
+
+# Enterprise risk management
+# --------------------------
+# A "Create > Enterprise Risk" button on the detailed assessments a risk can summarise. The forms
+# exist only when their modules are installed; on a site without them the entries are inert.
+doctype_js = {
+	"Hazard Assessment": "public/js/risk_source.js",
+	"PFMEA": "public/js/risk_source.js",
+}
+#
+# Other apps extend the risk register through these hooks; see foames/foames_risk/register.py.
+#
+# foames_risk_linkable_doctypes = ["My Audit Finding"]  # record types a risk may link to
+# foames_risk_source_readers = {"My Assessment": "myapp.risk.rating"}  # (doctype, name) -> rating or None
+# foames_risk_source_values = {"My Assessment": "myapp.risk.new_risk"}  # (doctype, name) -> risk fields
+# foames_risk_evidence_checks = ["myapp.risk.evidence_problem"]  # (doctype, name) -> problem or None
 
 # Testing
 # -------

@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """A machine assigned to an S/4HANA order operation: its counts and running time end up as partial
 confirmations in the S4HANA Outbox, and from there in S/4HANA (the scripted fake here)."""

@@ -1,0 +1,551 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-15 23:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "title",
+  "category",
+  "objective",
+  "fraud_impact",
+  "risk_owner",
+  "cb_head",
+  "status",
+  "identified_on",
+  "machine",
+  "location",
+  "template",
+  "sb_statement",
+  "risk_statement",
+  "context",
+  "sb_inherent",
+  "inherent_impact",
+  "inherent_likelihood",
+  "cb_inherent",
+  "inherent_score",
+  "inherent_rating",
+  "sb_response",
+  "response",
+  "transfer_to",
+  "cb_response",
+  "current_actions",
+  "sb_controls",
+  "controls",
+  "strongest_control",
+  "controls_in_place",
+  "sb_residual",
+  "residual_impact",
+  "residual_likelihood",
+  "cb_residual",
+  "residual_score",
+  "residual_rating",
+  "sb_tolerance",
+  "tolerance",
+  "within_tolerance",
+  "risk_appetite",
+  "cb_tolerance",
+  "acceptance_justification",
+  "accepted_by",
+  "accepted_on",
+  "accepted_score",
+  "sb_proposed",
+  "proposed_response",
+  "proposed_actions",
+  "target_date",
+  "cb_proposed",
+  "target_impact",
+  "target_likelihood",
+  "target_score",
+  "target_rating",
+  "sb_monitoring",
+  "indicators",
+  "last_reviewed_on",
+  "review_interval_days",
+  "next_review_on",
+  "reviews",
+  "sb_links",
+  "links",
+  "sb_closure",
+  "closure_note"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "RISK-.YYYY.-.#####",
+   "default": "RISK-.YYYY.-.#####",
+   "hidden": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Risk Name",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Link",
+   "label": "Category",
+   "options": "Risk Category",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "objective",
+   "fieldtype": "Select",
+   "label": "Objective",
+   "options": "Strategic\nOperations\nReporting\nCompliance",
+   "default": "Operations",
+   "reqd": 1,
+   "description": "The one objective the risk most threatens"
+  },
+  {
+   "fieldname": "fraud_impact",
+   "fieldtype": "Select",
+   "label": "Fraud Impact",
+   "options": "N/A\nFinancial Fraud\nNon-Financial Fraud",
+   "default": "N/A"
+  },
+  {
+   "fieldname": "risk_owner",
+   "fieldtype": "Link",
+   "label": "Risk Owner",
+   "options": "User",
+   "in_standard_filter": 1,
+   "description": "Accountable for the response and for keeping the risk current"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Identified\nAssessed\nTreating\nMonitoring\nClosed",
+   "default": "Identified",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "identified_on",
+   "fieldtype": "Date",
+   "label": "Identified On",
+   "default": "Today"
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location or Process Area"
+  },
+  {
+   "fieldname": "template",
+   "fieldtype": "Link",
+   "label": "From Template",
+   "options": "Risk Template",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_statement",
+   "fieldtype": "Section Break",
+   "label": "Risk Statement"
+  },
+  {
+   "fieldname": "risk_statement",
+   "fieldtype": "Small Text",
+   "label": "Risk Statement",
+   "reqd": 1,
+   "description": "A potential event, not an issue that has already happened: \"If <event>, then <all the impacts>\""
+  },
+  {
+   "fieldname": "context",
+   "fieldtype": "Small Text",
+   "label": "Causes and Context"
+  },
+  {
+   "fieldname": "sb_inherent",
+   "fieldtype": "Section Break",
+   "label": "Inherent Risk",
+   "description": "Before any action is taken. Impact: 1 Very Low to 5 Very High. Likelihood: 1 under 5%, 2 5-25%, 3 26-49%, 4 50-74%, 5 75% or more"
+  },
+  {
+   "fieldname": "inherent_impact",
+   "fieldtype": "Int",
+   "label": "Inherent Impact (1-5)",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "inherent_likelihood",
+   "fieldtype": "Int",
+   "label": "Inherent Likelihood (1-5)",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_inherent",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "inherent_score",
+   "fieldtype": "Int",
+   "label": "Inherent Score",
+   "read_only": 1
+  },
+  {
+   "fieldname": "inherent_rating",
+   "fieldtype": "Data",
+   "label": "Inherent Rating",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "sb_response",
+   "fieldtype": "Section Break",
+   "label": "Current Response"
+  },
+  {
+   "fieldname": "response",
+   "fieldtype": "Select",
+   "label": "Response",
+   "options": "\nAccept\nAvoid\nReduce\nTransfer\nShare",
+   "description": "Accept: no action. Avoid: stop the activity. Reduce: controls lower the likelihood or impact. Transfer or Share: another organization takes on all or part of it"
+  },
+  {
+   "fieldname": "transfer_to",
+   "fieldtype": "Data",
+   "label": "Transferred or Shared With",
+   "depends_on": "eval:[\"Transfer\",\"Share\"].includes(doc.response)"
+  },
+  {
+   "fieldname": "cb_response",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "current_actions",
+   "fieldtype": "Small Text",
+   "label": "Current Actions"
+  },
+  {
+   "fieldname": "sb_controls",
+   "fieldtype": "Section Break",
+   "label": "Controls",
+   "description": "Most effective first: elimination, substitution, engineering controls, administrative controls and work practices, then PPE"
+  },
+  {
+   "fieldname": "controls",
+   "fieldtype": "Table",
+   "label": "Controls",
+   "options": "Risk Control"
+  },
+  {
+   "fieldname": "strongest_control",
+   "fieldtype": "Data",
+   "label": "Strongest Control in Place",
+   "read_only": 1
+  },
+  {
+   "fieldname": "controls_in_place",
+   "fieldtype": "Int",
+   "label": "Controls in Place",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_residual",
+   "fieldtype": "Section Break",
+   "label": "Residual Risk",
+   "description": "After the current response. Never higher than the inherent rating; empty means no reduction"
+  },
+  {
+   "fieldname": "residual_impact",
+   "fieldtype": "Int",
+   "label": "Residual Impact (1-5)",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "residual_likelihood",
+   "fieldtype": "Int",
+   "label": "Residual Likelihood (1-5)",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "cb_residual",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "residual_score",
+   "fieldtype": "Int",
+   "label": "Residual Score",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "residual_rating",
+   "fieldtype": "Data",
+   "label": "Residual Rating",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "sb_tolerance",
+   "fieldtype": "Section Break",
+   "label": "Tolerance and Acceptance"
+  },
+  {
+   "fieldname": "tolerance",
+   "fieldtype": "Data",
+   "label": "Risk Tolerance",
+   "read_only": 1,
+   "description": "From the category, or the Risk Settings default"
+  },
+  {
+   "fieldname": "within_tolerance",
+   "fieldtype": "Check",
+   "label": "Within Tolerance",
+   "read_only": 1
+  },
+  {
+   "fieldname": "risk_appetite",
+   "fieldtype": "Small Text",
+   "label": "Risk Appetite",
+   "read_only": 1,
+   "description": "From Risk Settings"
+  },
+  {
+   "fieldname": "cb_tolerance",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "acceptance_justification",
+   "fieldtype": "Small Text",
+   "label": "Why the Residual Risk Is Accepted"
+  },
+  {
+   "fieldname": "accepted_by",
+   "fieldtype": "Link",
+   "label": "Accepted By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "accepted_on",
+   "fieldtype": "Date",
+   "label": "Accepted On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "accepted_score",
+   "fieldtype": "Int",
+   "label": "Accepted at Score",
+   "read_only": 1,
+   "description": "A change to the residual score clears the acceptance"
+  },
+  {
+   "fieldname": "sb_proposed",
+   "fieldtype": "Section Break",
+   "label": "Proposed Response",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "proposed_response",
+   "fieldtype": "Select",
+   "label": "Proposed Response",
+   "options": "\nAccept\nAvoid\nReduce\nTransfer\nShare"
+  },
+  {
+   "fieldname": "proposed_actions",
+   "fieldtype": "Small Text",
+   "label": "Proposed Additional Actions"
+  },
+  {
+   "fieldname": "target_date",
+   "fieldtype": "Date",
+   "label": "Target Date"
+  },
+  {
+   "fieldname": "cb_proposed",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "target_impact",
+   "fieldtype": "Int",
+   "label": "Target Impact (1-5)",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "target_likelihood",
+   "fieldtype": "Int",
+   "label": "Target Likelihood (1-5)",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "target_score",
+   "fieldtype": "Int",
+   "label": "Target Score",
+   "read_only": 1
+  },
+  {
+   "fieldname": "target_rating",
+   "fieldtype": "Data",
+   "label": "Target Rating",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_monitoring",
+   "fieldtype": "Section Break",
+   "label": "Monitoring"
+  },
+  {
+   "fieldname": "indicators",
+   "fieldtype": "Table",
+   "label": "Key Risk Indicators",
+   "options": "Risk Indicator"
+  },
+  {
+   "fieldname": "last_reviewed_on",
+   "fieldtype": "Date",
+   "label": "Last Reviewed On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "review_interval_days",
+   "fieldtype": "Int",
+   "label": "Review Every (days)",
+   "non_negative": 1,
+   "description": "Empty: from Risk Settings, by residual rating"
+  },
+  {
+   "fieldname": "next_review_on",
+   "fieldtype": "Date",
+   "label": "Next Review",
+   "read_only": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "reviews",
+   "fieldtype": "Table",
+   "label": "Review History",
+   "options": "Risk Review",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_links",
+   "fieldtype": "Section Break",
+   "label": "Linked Records",
+   "description": "Hazard assessments, PFMEAs, SOPs, work instructions, maintenance plans, incidents and other records this risk draws on. Nothing is copied: the detail stays on the linked record"
+  },
+  {
+   "fieldname": "links",
+   "fieldtype": "Table",
+   "label": "Links",
+   "options": "Risk Link"
+  },
+  {
+   "fieldname": "sb_closure",
+   "fieldtype": "Section Break",
+   "label": "Closure",
+   "depends_on": "eval:doc.status==\"Closed\""
+  },
+  {
+   "fieldname": "closure_note",
+   "fieldtype": "Small Text",
+   "label": "Why the Risk Is Closed",
+   "mandatory_depends_on": "eval:doc.status==\"Closed\""
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 23:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Risk",
+ "name": "Enterprise Risk",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "title",
+ "show_title_field_in_link": 1,
+ "search_fields": "category,risk_owner",
+ "description": "One risk in the enterprise risk register: statement, inherent and residual rating, response, controls, tolerance and monitoring"
+}

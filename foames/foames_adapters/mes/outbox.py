@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Outbox rules for writes to an MES: what an operation sends, how a write is kept from being
 performed twice, and when a failed write is retried.
