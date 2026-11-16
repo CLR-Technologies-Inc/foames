@@ -172,9 +172,16 @@ def agent_page(name, a, s, task_ecl, ecl, run_date, workflow_run):
 	finished = sorted(r.get("finished_at", "") for r in rows if r.get("finished_at"))
 	tok = [sum(r["usage"][k] for r in rows) for k in ("input_tokens", "cached_input_tokens", "output_tokens")]
 	note = lambda n: "; ".join(sorted(a["notes"][n]))  # noqa: E731
+	summary_row = (
+		f"| {s['runs']} | {_pct(s['success_rate'])} {_ci(s)} | {_num(s['quality'])} | {_num(s['correctness'])} | "
+		f"{_num(s['process'])} | {_num(s['composite'])} | {_num(s['mean_seconds'], '{:.0f} s')} | "
+		f"{tok[0]:,} / {tok[1]:,} / {tok[2]:,} | {_money(s['total_cost_usd'])} | "
+		f"{_money(_list_price(rows, cfg.get('_list_prices')))} | {('ECL ' + str(ecl)) if ecl else 'none'} |"
+	)
 	lines = [
 		f"# {name}: benchmark run of {run_date}",
 		"",
+		"<!-- Copyright (c) 2026 CLR Technologies Inc. and contributors -->",
 		"<!-- SPDX-License-Identifier: Apache-2.0 -->",
 		"",
 		f"- **Run dates (UTC):** started {starts[0] if starts else 'n/a'}, last run finished {finished[-1] if finished else 'n/a'}",
@@ -190,10 +197,7 @@ def agent_page(name, a, s, task_ecl, ecl, run_date, workflow_run):
 		"",
 		"| Runs | Success (95 % CI) | Quality | Correctness | Process | Composite | Mean time | Tokens in / cached / out | Cost | List-price equivalent | ECL reached |",
 		"| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
-		f"| {s['runs']} | {_pct(s['success_rate'])} {_ci(s)} | {_num(s['quality'])} | {_num(s['correctness'])} | "
-		f"{_num(s['process'])} | {_num(s['composite'])} | {_num(s['mean_seconds'], '{:.0f} s')} | "
-		f"{tok[0]:,} / {tok[1]:,} / {tok[2]:,} | {_money(s['total_cost_usd'])} | "
-		f"{_money(_list_price(rows, cfg.get('_list_prices')))} | {('ECL ' + str(ecl)) if ecl else 'none'} |",
+		summary_row,
 		"",
 		"| Task | ECL | Complexity | Finished (UTC) | Success | Quality | Correctness | Process | Time | Tokens in / out | Exit | Notes |",
 		"| --- | ---: | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |",
@@ -359,22 +363,46 @@ def main(argv=None):
 		f"{finishes[-1] if finishes else 'n/a'} (UTC), on FoaMES commit {', '.join(f'`{c}`' for c in commits) or 'n/a'}. "
 		f"Report built {published}." + (f" Workflow run: {opts.workflow_run}." if opts.workflow_run else "")
 	)
-	lines = [
-		f"# FoaMES agent benchmark results: run of {run_date}",
-		"",
-		"<!-- SPDX-License-Identifier: Apache-2.0 -->",
-		"",
-		dates_line,
-		"",
+	intro = (
 		"Every agent is aider driving one model on the benchmark's pure tasks, in the benchmark's sandbox. Local "
 		"models ran on Ollama; hosted models, where present, on their providers' free API tiers. Each model's "
 		"page gives its exact version (digest or API model id), where it ran and when. Ranking is by tasks cleared "
 		"at the reference bar, then quality (correctness and process, without cost), as in "
-		"[docs/methodology.md](../../docs/methodology.md). One repetition cannot separate close agents: read the intervals.",
-		"",
+		"[docs/methodology.md](../../docs/methodology.md). One repetition cannot separate close agents: read the intervals."
+	)
+	bar_note = (
 		f'**Reference bar: {bar_text}**, and every invariant kept. "Clears" counts the tasks where every '
 		"repetition reached it. Move the bar with the slider in [comparison.html](comparison.html) (open it in a "
-		"browser), or rebuild with `--reference`.",
+		"browser), or rebuild with `--reference`."
+	)
+	ecl_note = (
+		"- **ECL reached** is the highest Equipment Complexity Level at which the agent passed every task it ran at "
+		"that level and below, and whose minimum model tier its tier meets (data/recommendations.json). No task above "
+		"ECL 3 exists yet, so ECL 4 and 5 cannot be reached; at those levels the matrix calls for a human expert anyway."
+	)
+	cost_note = (
+		"- Cost is what the runs cost: $0 on free API tiers and for local models (electricity and runner time are not "
+		"counted). The list-price equivalent prices the same tokens at the provider's paid list price."
+	)
+	token_note = (
+		"- Aider prints token counts rounded to the nearest hundred above 1,000, so token totals are approximate. "
+		"Local models report no cost, so their token counts may also read zero."
+	)
+	cpu_note = (
+		"- Local models on GitHub-hosted runners ran on CPU (4 vCPU, 16 GB). Speed is not scored against them here "
+		"beyond the efficiency term in the composite; read quality."
+	)
+	lines = [
+		f"# FoaMES agent benchmark results: run of {run_date}",
+		"",
+		"<!-- Copyright (c) 2026 CLR Technologies Inc. and contributors -->",
+		"<!-- SPDX-License-Identifier: Apache-2.0 -->",
+		"",
+		dates_line,
+		"",
+		intro,
+		"",
+		bar_note,
 		"",
 		"| Agent | Model | Tier | Ran on | Runs | Clears bar | Success (95 % CI) | Quality | Composite | Mean time | Tokens in / out | Cost | List-price equivalent | ECL reached |",
 		"| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
@@ -424,20 +452,15 @@ def main(argv=None):
 		"",
 		"## Notes",
 		"",
-		"- **ECL reached** is the highest Equipment Complexity Level at which the agent passed every task it ran at "
-		"that level and below, and whose minimum model tier its tier meets (data/recommendations.json). No task above "
-		"ECL 3 exists yet, so ECL 4 and 5 cannot be reached; at those levels the matrix calls for a human expert anyway.",
-		"- Cost is what the runs cost: $0 on free API tiers and for local models (electricity and runner time are not "
-		"counted). The list-price equivalent prices the same tokens at the provider's paid list price.",
-		"- Aider prints token counts rounded to the nearest hundred above 1,000, so token totals are approximate. "
-		"Local models report no cost, so their token counts may also read zero.",
+		ecl_note,
+		cost_note,
+		token_note,
 		*[
 			f"- Not run: `{a['name']}`: {a['_skip_reason']}."
 			for a in json.loads((BENCH / "agents.json").read_text())["agents"]
 			if a.get("_skip_reason")
 		],
-		"- Local models on GitHub-hosted runners ran on CPU (4 vCPU, 16 GB). Speed is not scored against them here "
-		"beyond the efficiency term in the composite; read quality.",
+		cpu_note,
 		"",
 	]
 	(opts.out / "README.md").write_text("\n".join(lines), encoding="utf-8")
