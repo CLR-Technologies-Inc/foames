@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Every path from a raw gateway message to a Machine Event dict, plus the webhook signature and the
 counter arithmetic. No Frappe site needed."""

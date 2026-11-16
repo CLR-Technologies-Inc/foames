@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """The arithmetic of rolling machine data up to Insights Hub: what a window produced, and the time
 series record and events that report it. No Frappe dependency; `rollup.py` feeds it the counts and

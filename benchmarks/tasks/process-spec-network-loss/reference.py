@@ -1,3 +1,6 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Reference solution for process-spec-network-loss: a specification and acceptance tests."""
 
 from pathlib import Path

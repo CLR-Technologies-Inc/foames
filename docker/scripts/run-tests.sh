@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
 # Runs the FoaMES test suite inside the bench container, as the GitHub Actions workflow does.
 #
 #   run-tests.sh                                  # the whole app

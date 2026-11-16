@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """The outbox with the function-import operations (cancellation, reversal) and the whitelisted
 posting endpoints. Needs a Frappe site; S/4HANA is a scripted fake."""

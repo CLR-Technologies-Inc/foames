@@ -1,0 +1,87 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-15 23:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "indicator",
+  "unit",
+  "direction",
+  "threshold",
+  "cb_value",
+  "current_value",
+  "as_of",
+  "breached"
+ ],
+ "fields": [
+  {
+   "fieldname": "indicator",
+   "fieldtype": "Data",
+   "label": "Key Risk Indicator",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 3
+  },
+  {
+   "fieldname": "unit",
+   "fieldtype": "Data",
+   "label": "Unit"
+  },
+  {
+   "fieldname": "direction",
+   "fieldtype": "Select",
+   "label": "Breached When",
+   "options": "Above\nBelow",
+   "default": "Above",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "threshold",
+   "fieldtype": "Float",
+   "label": "Threshold",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "cb_value",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "current_value",
+   "fieldtype": "Float",
+   "label": "Current Value",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "as_of",
+   "fieldtype": "Date",
+   "label": "As Of",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "breached",
+   "fieldtype": "Check",
+   "label": "Breached",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 23:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Risk",
+ "name": "Risk Indicator",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1
+}

@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Standard operating procedures as controlled documents: the revision lifecycle, sign-off, periodic
 review and who still has to acknowledge the current revision. No Frappe dependency.
