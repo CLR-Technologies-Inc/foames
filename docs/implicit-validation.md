@@ -48,7 +48,7 @@ Every check has a unique `key`, a `kind`, `blocking` (default true) and `critica
 
 A run reads one of:
 
-- **Site data**: a `machine` and a `since`/`until` window. FoaMES reads that machine's Measurement events itself, with the caller's permissions. Units, instruments and uncertainty, which the events do not carry, come in `measurements` and are recorded as declared. Production runs must use site data.
+- **Site data**: a `machine` and a `since`/`until` window. FoaMES reads that machine's Measurement events itself, with the caller's permissions. Units, instruments and uncertainty, which the events do not carry, come in `measurements` and are recorded as declared. Production runs must use site data: a supplied dataset, or no data at all, is refused. A `since` or `until` with an offset is converted to site time before the read.
 - **A supplied dataset**: `{"id", "measurements": {name: {"unit", "instrument", "uncertainty", "points": [{"t", "v"}]}}}`, for sandbox work and frozen datasets. The run records the source as Supplied, and a gate can refuse it.
 
 Times are compared in UTC: a time with an offset is converted, a time without one is taken as UTC, and site data is converted from the system time zone. A site window with more than 20,000 readings is refused rather than judged on part of its data. Non-finite numbers (NaN, Infinity) are refused.

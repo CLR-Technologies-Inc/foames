@@ -105,6 +105,8 @@ class TestImplicitValidationRun(IntegrationTestCase):
 	def test_production_reads_site_data(self):
 		with self.assertRaises(frappe.ValidationError):
 			run("Production")
+		with self.assertRaises(frappe.ValidationError):  # no data at all is not site data either
+			api.run_implicit_validation(definition(capability()), "rev-1", "Production")
 		measure([round(v, 4) for v in stable(n=30)], name="bore", machine=MACHINE)
 		result = api.run_implicit_validation(
 			definition(

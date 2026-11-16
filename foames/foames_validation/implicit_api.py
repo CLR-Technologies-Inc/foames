@@ -64,12 +64,20 @@ def _utc(value):
 	return value.astimezone(timezone.utc)
 
 
+def _site_local(value):
+	"""A datetime as naive site time, which is how the database stores and compares timestamps."""
+	value = get_datetime(value)
+	if value is not None and value.tzinfo is not None:
+		value = value.astimezone(ZoneInfo(get_system_timezone())).replace(tzinfo=None)
+	return value
+
+
 def site_dataset(machine: str, definition: dict, since, until, measurements: dict | None = None) -> dict:
 	"""The Measurement events of `machine` in [since, until] for every measurement the definition
 	names, read with the caller's permissions. `measurements` adds what the events do not carry:
 	{name: {"unit", "instrument", "uncertainty"}}, recorded as declared."""
 	names = sorted({c.get("measurement") for c in definition.get("checks") or [] if c.get("measurement")})
-	since, until = get_datetime(since), get_datetime(until)
+	since, until = _site_local(since), _site_local(until)
 	if not since or not until or until <= since:
 		frappe.throw(_("Give the window of machine data to read: since before until"))
 	rows = (
@@ -151,6 +159,10 @@ def run_implicit_validation(
 		data, source = (
 			site_dataset(machine, checked, since, until, _json(measurements, "measurements")),
 			"Site",
+		)
+	elif environment in SITE_DATA_ONLY:
+		frappe.throw(
+			_("A {0} run reads its data from the site: give a machine, since and until").format(environment)
 		)
 	else:
 		data, source = None, ""
