@@ -1,0 +1,260 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "agent",
+  "method",
+  "unit",
+  "sampled_on",
+  "cb_head",
+  "exposure_group",
+  "machine",
+  "location",
+  "hazard_assessment",
+  "sb_samples",
+  "samples",
+  "shift_minutes",
+  "sb_limits",
+  "limit",
+  "action_level",
+  "limit_source",
+  "cb_limits",
+  "result",
+  "dose_percent",
+  "percent_of_limit",
+  "status",
+  "sb_notes",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "EXP-.YYYY.-",
+   "default": "EXP-.YYYY.-",
+   "hidden": 1
+  },
+  {
+   "fieldname": "agent",
+   "fieldtype": "Data",
+   "label": "Agent",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "What was measured: respirable silica, toluene, noise ..."
+  },
+  {
+   "fieldname": "method",
+   "fieldtype": "Select",
+   "label": "Method",
+   "options": "Concentration\nNoise",
+   "default": "Concentration",
+   "reqd": 1,
+   "description": "Concentration: 8-hour TWA of the samples. Noise: dose on the OSHA 5 dB exchange rate"
+  },
+  {
+   "fieldname": "unit",
+   "fieldtype": "Data",
+   "label": "Unit",
+   "description": "mg/m3, ppm, f/cc; dBA for noise",
+   "depends_on": "eval:doc.method!=\"Noise\""
+  },
+  {
+   "fieldname": "sampled_on",
+   "fieldtype": "Date",
+   "label": "Sampled On",
+   "reqd": 1,
+   "default": "Today",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "exposure_group",
+   "fieldtype": "Data",
+   "label": "Person or Exposure Group",
+   "in_list_view": 1,
+   "description": "The person sampled or the similar exposure group they represent"
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location"
+  },
+  {
+   "fieldname": "hazard_assessment",
+   "fieldtype": "Link",
+   "label": "Hazard Assessment",
+   "options": "Hazard Assessment"
+  },
+  {
+   "fieldname": "sb_samples",
+   "fieldtype": "Section Break",
+   "label": "Samples"
+  },
+  {
+   "fieldname": "samples",
+   "fieldtype": "Table",
+   "label": "Samples",
+   "options": "Exposure Sample",
+   "reqd": 1
+  },
+  {
+   "fieldname": "shift_minutes",
+   "fieldtype": "Float",
+   "label": "Shift Minutes",
+   "default": "480",
+   "depends_on": "eval:doc.method!=\"Noise\"",
+   "description": "The period the TWA is taken over; unsampled time counts as zero"
+  },
+  {
+   "fieldname": "sb_limits",
+   "fieldtype": "Section Break",
+   "label": "Limits"
+  },
+  {
+   "fieldname": "limit",
+   "fieldtype": "Float",
+   "label": "Exposure Limit",
+   "precision": "4",
+   "description": "The limit that applies (PEL, OEL, TLV); noise defaults to 90 dBA"
+  },
+  {
+   "fieldname": "action_level",
+   "fieldtype": "Float",
+   "label": "Action Level",
+   "precision": "4",
+   "description": "Noise defaults to 85 dBA"
+  },
+  {
+   "fieldname": "limit_source",
+   "fieldtype": "Data",
+   "label": "Limit Source",
+   "description": "Where the limit comes from, e.g. OSHA 1910.1053"
+  },
+  {
+   "fieldname": "cb_limits",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "result",
+   "fieldtype": "Float",
+   "label": "Result (TWA)",
+   "read_only": 1,
+   "precision": "4",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "dose_percent",
+   "fieldtype": "Percent",
+   "label": "Noise Dose",
+   "read_only": 1,
+   "depends_on": "eval:doc.method==\"Noise\""
+  },
+  {
+   "fieldname": "percent_of_limit",
+   "fieldtype": "Percent",
+   "label": "Percent of Limit",
+   "read_only": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Data",
+   "label": "Status",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "sb_notes",
+   "fieldtype": "Section Break",
+   "label": "Notes",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes",
+   "description": "Instrument, calibration, conditions during sampling"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-14 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES EHS",
+ "name": "Exposure Record",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Safety",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "autoname": "naming_series:",
+ "title_field": "agent",
+ "track_changes": 1,
+ "search_fields": "agent,exposure_group",
+ "description": "Industrial hygiene monitoring: a time-weighted average or a noise dose against its limit"
+}

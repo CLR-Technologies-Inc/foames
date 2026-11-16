@@ -4,5 +4,6 @@ FoaMES Adapters
 FoaMES Process Mining
 FoaMES Risk
 FoaMES Topology
+FoaMES EHS
 FoaMES Commissioning
 FoaMES Validation

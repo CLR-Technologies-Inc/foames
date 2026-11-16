@@ -15,6 +15,7 @@ FoaMES is an ERP-agnostic manufacturing execution system built as a single Frapp
 | FoaMES Adapters | `foames/foames_adapters` | The adapter contract and registry, one subpackage per vendor (each with its own `AGENTS.md`), the shared Integration workspace |
 | FoaMES Commissioning | `foames/foames_commissioning` | Commissioning Package, Commissioning Checklist Template, Commissioning Test, Loop Check, Punch Item, the Punch List and Commissioning Status reports, handover readiness |
 | FoaMES Process Mining | `foames/foames_process_mining` | Event Log Source, Process Event Log, the event extractors, the XES and OCEL exports, discovery and conformance analysis, and their API |
+| FoaMES EHS | `foames/foames_ehs` | Safety Incident (+ EHS Action), Safety Permit (+ Permit Isolation Point), Hazard Assessment (+ Hazard Control), Exposure Record (+ Exposure Sample), the lockout and hourly safety checks, the Safety Incident Rates report |
 | FoaMES Validation | `foames/foames_validation` | Validation Protocol and Acceptance Criterion, Validation Execution and Result, the qualification rules, the Qualification Status report, the daily requalification check |
 | MCP server | `foames/foames_mcp` | The MCP tool catalogue, the Streamable HTTP endpoint, the stdio bridge, read methods for agents |
 | FoaMES Risk | `foames/foames_risk` | Enterprise Risk (+ Risk Control, Risk Link, Risk Indicator, Risk Review), Risk Category, Risk Template (+ Risk Template Control), Risk Settings, the Risk Register and Risk Heat Map reports, the FoaMES Risk workspace; the rules are pure, in `risk.py` |
@@ -31,7 +32,7 @@ Keep these whatever you build. A pull request that breaks one will not be merged
 4. **Unknown time is loss.** The OEE ledger is built from state events with Downtime Records overlaid, and an Unknown state is never run time. A machine that stops reporting gets an Unknown state event from the scheduler's staleness check (source System), and the Sparkplug gateway writes one at once on NDEATH or DDEATH. Do not add code that infers output or run time from the absence of events.
 5. **Agents suggest; people act.** Anything an agent or a rule finds becomes an `Agent Suggestion` with evidence. FoaMES does not write tags, send commands to SCADA, change machine state on its own, or post to an ERP without an explicit, idempotent posting a person configured.
 6. **Postings to an ERP are idempotent and sequenced.** An idempotency key per business event, a marker written into the created document, a check before resending after an unclear answer, exponential backoff, strict order within a sequence group. The adapters' outboxes are the model; the details are in [foames/foames_adapters/AGENTS.md](foames/foames_adapters/AGENTS.md). Follow it for any new write path.
-7. **Pure logic stays pure.** `oee.py`, `counters.py`, `shifts.py`, `andon.py`, `suggestions.py`, `maintenance.py`, `cycle_time.py`, `foames_commissioning/commissioning.py`, `work_instructions.py`, `pfmea.py`, `scheduling.py`, `sop.py`, `signing.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, the process-mining core, `foames_validation/qualification.py` and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe, and so do the arithmetic, parsing and protocol modules of each adapter (each vendor's `AGENTS.md` lists its own). Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
+7. **Pure logic stays pure.** `oee.py`, `counters.py`, `shifts.py`, `andon.py`, `suggestions.py`, `maintenance.py`, `cycle_time.py`, `foames_commissioning/commissioning.py`, `work_instructions.py`, `pfmea.py`, `scheduling.py`, `sop.py`, `signing.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, `foames_ehs/ehs.py`, the process-mining core, `foames_validation/qualification.py` and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe, and so do the arithmetic, parsing and protocol modules of each adapter (each vendor's `AGENTS.md` lists its own). Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
 8. **Secrets live in Password fields** of a Settings DocType (`Machine Data Settings`, or the adapter's own Settings), read with `get_password`. Never in code, hooks or site config, never logged.
 9. **Both Frappe versions.** Use `foames.tests_compat.IntegrationTestCase` for site tests. Avoid APIs that exist in only one of v15 and v16.
 
@@ -94,6 +95,12 @@ foames/
     extractors.py             build_event_log, the built-in machine-state and downtime extractors, field maps
     api.py                    summary, events, discover, check_conformance, export
     doctype/                  Event Log Source, Process Event Log (+ Process Event Log Source)
+  foames_ehs/
+    ehs.py                    pure logic: recordability, incidence rates, risk matrix, exposure TWA and noise dose,
+                              permit rules, the safety findings
+    rules.py  tasks.py        running-under-lockout (state hook and snapshot rule), the hourly check_ehs
+    doctype/  report/  workspace/   Safety Incident, Safety Permit, Hazard Assessment, Exposure Record; Safety
+                              Incident Rates; the FoaMES Safety workspace
   foames_validation/
     qualification.py          pure logic: IQ/OQ/PQ/PPQ/CPV order, criterion evaluation (capability via spc.capability),
                               execution outcome, validity, qualification status, requalification findings
