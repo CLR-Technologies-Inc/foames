@@ -19,7 +19,7 @@ class LinesideBin(Document):
 			"quantity_per_unit",
 		):
 			if (self.get(field) or 0) < 0:
-				frappe.throw(_("{0} cannot be negative").format(self.meta.get_label(field)))
+				frappe.throw(_("{0} cannot be negative").format(_(self.meta.get_label(field))))
 		if self.max_qty and self.reorder_qty and self.max_qty < self.reorder_qty:
 			frappe.throw(_("The maximum must be at least the reorder point"))
 		if self.replenishment_method == "Kanban" and not self.container_qty:
