@@ -2,7 +2,7 @@
 
 > **CI-tested.** The commands on this page run, as written, in the [Docker smoke test](https://github.com/CLR-Technologies-Inc/foames/actions/workflows/docker-smoke.yml) on every change to them. Steps that need your own agent or API key are the exception.
 
-**You need:** the benchmark set up ([Tutorial 4](Tutorial-4-Your-first-agent-benchmark-run)), and an agent that can run **unattended** from a command line in a working directory: no questions, no permission prompts.
+**You need:** the benchmark set up ([Tutorial 4](Tutorial-4-Your-first-agent-benchmark-run)), and an agent that can run **unattended** from a command line in a working directory or sandbox: no questions, no permission prompts.
 
 The shipped `agents.json` has a Gemini CLI entry (`gemini-frontier`) but no Google Antigravity entry yet, and the sandbox image installs Gemini CLI, not `agy`. To benchmark the Antigravity CLI, add it here like any other agent: check its non-interactive mode and flags in [Google's docs](https://antigravity.google/docs/cli/gcli-migration/) first, and install it in the image.
 
