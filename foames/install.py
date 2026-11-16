@@ -11,6 +11,9 @@ ROLES = (
 	"FoaMES Quality",
 	"FoaMES Integration",
 	"FoaMES Safety",
+	# May weaken a Connector Write Policy (turn read-only off, change who signs off). Kept apart from
+	# the roles that request, sign and execute writes.
+	"FoaMES Policy Administrator",
 )
 
 

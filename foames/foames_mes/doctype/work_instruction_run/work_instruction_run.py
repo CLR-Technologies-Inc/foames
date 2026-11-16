@@ -367,14 +367,15 @@ def abort_run(name: str, reason: str) -> dict:
 	return run_payload(doc)
 
 
-def active_runs(now=None, machine: str | None = None) -> list[dict]:
+def active_runs(now=None, machine: str | None = None, for_user: bool = False) -> list[dict]:
 	"""In-progress and on-hold runs with minutes open and their progress, oldest first, for the floor
-	snapshot and the stalled-run rule."""
+	snapshot and the stalled-run rule. A system read sees every run; `for_user=True` keeps the runs
+	the session user may read, before any step detail is loaded."""
 	now = now or now_datetime()
 	filters = {"status": ("in", list(RUN_ACTIVE))}
 	if machine:
 		filters["machine"] = machine
-	runs = frappe.get_all(
+	runs = (frappe.get_list if for_user else frappe.get_all)(
 		"Work Instruction Run",
 		filters=filters,
 		fields=[
@@ -393,6 +394,7 @@ def active_runs(now=None, machine: str | None = None) -> list[dict]:
 			"hold_reason",
 		],
 		order_by="started_at asc",
+		limit_page_length=0,
 	)
 	if not runs:
 		return runs
@@ -427,5 +429,9 @@ def active_runs(now=None, machine: str | None = None) -> list[dict]:
 @frappe.whitelist()
 def list_active_runs(machine: str | None = None) -> list[dict]:
 	"""In-progress and on-hold runs, oldest first, with the step each one is on."""
+	from foames.foames_kernel.access import require_read
+
 	frappe.has_permission("Work Instruction Run", "read", throw=True)
-	return active_runs(machine=machine)
+	if machine:
+		require_read("Machine", machine)
+	return active_runs(machine=machine, for_user=True)

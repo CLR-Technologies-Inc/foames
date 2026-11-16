@@ -15,6 +15,7 @@ import frappe
 from frappe import _
 from frappe.utils.password import get_decrypted_password
 
+from foames.foames_kernel.access import readable, require_read
 from foames.foames_mes.doctype.machine.machine import get_machine_by_source
 from foames.foames_mes.gateway.mapping import EventError, normalise_event
 from foames.foames_mes.signing import SIGNATURE_HEADER, TIMESTAMP_HEADER, verify
@@ -122,11 +123,12 @@ def set_current_job(machine: str, reference: str | None = None, at=None) -> dict
 @frappe.whitelist()
 def get_floor_snapshot(days: int = 1) -> dict:
 	"""The whole floor as one dict: machines with their counts and latest OEE, downtime by machine,
-	missing ERP references and open suggestions. For the visual floor page and for external agents."""
+	missing ERP references and open suggestions. For the visual floor page and for external agents.
+	Holds only the machines and records the caller may read."""
 	from foames.foames_mes.floor import floor_snapshot
 
 	frappe.has_permission("Machine", "read", throw=True)
-	return floor_snapshot(int(days))
+	return floor_snapshot(int(days), for_user=True)
 
 
 @frappe.whitelist()
@@ -136,7 +138,9 @@ def run_suggestion_rules(days: int = 1) -> list[str]:
 	from foames.foames_mes.floor import collect_findings, floor_snapshot
 
 	frappe.has_permission("Agent Suggestion", "create", throw=True)
-	return raise_suggestions(collect_findings(floor_snapshot(int(days))))
+	# The rules see the whole floor, as the scheduler's do; the caller is told only about the
+	# suggestions they may read.
+	return readable("Agent Suggestion", raise_suggestions(collect_findings(floor_snapshot(int(days)))))
 
 
 @frappe.whitelist()
@@ -188,9 +192,14 @@ def get_material_status(machine: str | None = None) -> dict:
 	frappe.has_permission("Material Queue", "read", throw=True)
 	filters = {"disabled": 0}
 	if machine:
+		require_read("Machine", machine)
 		filters["machine"] = machine
-	bins = frappe.get_all("Lineside Bin", filters=filters, fields=list(BIN_FIELDS), order_by="name")
-	queues = frappe.get_all("Material Queue", filters=filters, fields=list(QUEUE_FIELDS), order_by="name")
+	bins = frappe.get_list(
+		"Lineside Bin", filters=filters, fields=list(BIN_FIELDS), order_by="name", limit_page_length=0
+	)
+	queues = frappe.get_list(
+		"Material Queue", filters=filters, fields=list(QUEUE_FIELDS), order_by="name", limit_page_length=0
+	)
 	result = {"bins": bins, "queues": queues}
 	if machine:
 		result["summary"] = machine_summary(machine, bins, queues)
@@ -204,7 +213,10 @@ def get_dispatch_list(queue: str) -> list[dict]:
 	from foames.foames_mes.material_flow import dispatch_list
 
 	frappe.has_permission("Material Queue Entry", "read", throw=True)
-	return dispatch_list(queue)
+	require_read("Material Queue", queue)
+	rows = dispatch_list(queue)
+	allowed = set(readable("Material Queue Entry", [r["name"] for r in rows]))
+	return [r for r in rows if r["name"] in allowed]
 
 
 @frappe.whitelist()
@@ -215,7 +227,20 @@ def get_material_readiness(machine: str, hours: float = 0) -> dict:
 
 	frappe.has_permission("Lineside Bin", "read", throw=True)
 	frappe.has_permission("Material Queue Entry", "read", throw=True)
-	return material_readiness(machine, float(hours or 0))
+	require_read("Machine", machine)
+	result = material_readiness(machine, float(hours or 0))
+	# The verdict is the machine's, over every bin: hiding a dry bin from the caller must not turn
+	# "short" into "ok". Only the rows are narrowed to what the caller may read.
+	ok = result["ok"]
+	bins = set(readable("Lineside Bin", [b["name"] for b in result["short"]]))
+	queues = set(readable("Material Queue", sorted({e["queue"] for e in result["ready"]})))
+	entries = set(
+		readable("Material Queue Entry", [e["name"] for e in result["ready"] if e["queue"] in queues])
+	)
+	result["short"] = [b for b in result["short"] if b["name"] in bins]
+	result["ready"] = [e for e in result["ready"] if e["queue"] in queues and e["name"] in entries]
+	result["ok"] = ok
+	return result
 
 
 @frappe.whitelist(methods=["POST"])

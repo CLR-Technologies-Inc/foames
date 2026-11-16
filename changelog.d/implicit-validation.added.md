@@ -1,0 +1,2 @@
+Implicit validation: requirement, metrology (units, calibration, traceability, sampling, uncertainty, bias, gauge R&R) and statistical (bounds, capability, control, drift) checks of a configuration revision, returning Pass, Fail, Indeterminate or Manual Review and failing closed.
+Each run is stored once as an Implicit Validation Run with SHA-256 input and result hashes, pinned to its configuration revision; gates check it by ID with `require_passed`, and the MCP server can read a run or dry-run a definition.

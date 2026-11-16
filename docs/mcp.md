@@ -74,6 +74,8 @@ Permissions are the DocType permissions of the user behind the key, checked by t
 | `foames_project_time` | read on Cycle Time Standard; with `use_observed`, also read on Machine Event |
 | `foames_compare_cycle_with_machine` | read on Cycle Time Standard and Machine Event |
 | `foames_get_qualification_status` | read on Validation Execution (Quality, Engineer, Supervisor, Maintenance, Operator) |
+| `foames_get_implicit_validation` | read on Implicit Validation Run (Engineer, Quality, Supervisor, Integration) |
+| `foames_dry_run_implicit_validation` | the Engineer, Quality, Supervisor or Integration role; with `machine`, read on that Machine and its Machine Events |
 | `foames_list_erp_systems` | any logged-in user |
 | `foames_list_external_references`, `foames_lookup_erp_record` | read on External Reference (System Manager by default) |
 | `foames_get_npi_status` | read on NPI Program (Engineer, Quality, Supervisor, Operator) |
@@ -116,6 +118,8 @@ Permissions are the DocType permissions of the user behind the key, checked by t
 | `foames_mining_conformance(model, ..., include_traces)` | Fitness, deviations, footprint comparison |
 | `foames_mining_export(..., fmt)` | XES or OCEL 2.0 text |
 | `foames_get_qualification_status(machine, process, protocol_type)` | Qualification status per machine or process and IQ/OQ/PQ/PPQ/CPV ([validation.md](validation.md)) |
+| `foames_get_implicit_validation(name, include_checks)` | One implicit validation run, its hashes and whether its evidence still verifies ([implicit-validation.md](implicit-validation.md)) |
+| `foames_dry_run_implicit_validation(definition, configuration_revision, environment, machine, since, until, dataset, configuration, measurements)` | Evaluate requirement, metrology and statistical checks without storing anything |
 | `foames_list_event_logs(status, limit)`, `foames_list_event_log_sources()` | Saved logs and configured sources |
 | `foames_project_time(standard, machine, quantity, changes, annual_quantity, use_observed, days)` | Elapsed, automatic and operator time for a quantity; with `changes`, a what-if scenario against the baseline ([cycle-time.md](cycle-time.md)) |
 | `foames_compare_cycle_with_machine(standard, machine, since, until, days)` | A standard's cycle next to the machine's observed running and idle time per cycle |

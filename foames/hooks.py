@@ -147,9 +147,15 @@ foames_mcp_tools = [
 # -----------
 # A Private recognition is seen only by the person recognized, the giver and supervisors.
 
-has_permission = {"Recognition": "foames.foames_mes.doctype.recognition.recognition.has_permission"}
+# Agent Suggestion names its machine through a Dynamic Link, which User Permissions do not reach;
+# these keep a reader restricted to some machines to the suggestions about them.
+has_permission = {
+	"Recognition": "foames.foames_mes.doctype.recognition.recognition.has_permission",
+	"Agent Suggestion": "foames.foames_kernel.access.machine_reference_has_permission",
+}
 permission_query_conditions = {
-	"Recognition": "foames.foames_mes.doctype.recognition.recognition.get_permission_query_conditions"
+	"Recognition": "foames.foames_mes.doctype.recognition.recognition.get_permission_query_conditions",
+	"Agent Suggestion": "foames.foames_kernel.access.machine_reference_query_conditions",
 }
 
 # Machine data and the floor
@@ -259,6 +265,13 @@ foames_topology_collectors = ["foames.foames_bms.topology.report"]
 
 # A handed-over package opens the IQ of each machine in it (see foames/foames_validation/commissioning.py).
 foames_commissioning_handed_over = ["foames.foames_validation.commissioning.on_handover"]
+
+# Implicit validation
+# -------------------
+# foames_implicit_validation_completed = ["myapp.promotion.on_validated"]  # (Implicit Validation Run) after insert
+#
+# A gate that needs a passing run calls
+# foames.foames_validation.implicit_api.require_passed(run, configuration_revision), never a flag.
 
 # Scheduled Tasks
 # ---------------

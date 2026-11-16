@@ -16,6 +16,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint
 
+from foames.foames_kernel.access import require_read
 from foames.foames_pid import isa51, linking, register
 from foames.foames_pid.doctype.pid_component.pid_component import (
 	SIGNAL_FIELDS,
@@ -38,7 +39,7 @@ def _load(value):
 @frappe.whitelist()
 def get_drawing_view(drawing: str, with_values: int | str = 1) -> dict:
 	"""The drawing as SVG with each tag's live state or value overlaid, and the overlay itself."""
-	frappe.has_permission("PID Drawing", "read", drawing, throw=True)
+	require_read("PID Drawing", drawing)
 	doc = frappe.get_doc("PID Drawing", drawing)
 	result = doc.render(with_values=bool(cint(with_values)))
 	result["status"] = doc.status
@@ -48,14 +49,14 @@ def get_drawing_view(drawing: str, with_values: int | str = 1) -> dict:
 @frappe.whitelist()
 def get_live_values(drawing: str) -> dict:
 	"""{tag: {state, value, unit, at, flag}} for the tags on a drawing, for refreshing the viewer."""
-	frappe.has_permission("PID Drawing", "read", drawing, throw=True)
+	require_read("PID Drawing", drawing)
 	return frappe.get_doc("PID Drawing", drawing).render(with_values=True)["overlay"]
 
 
 @frappe.whitelist()
 def get_drawing(drawing: str) -> dict:
 	"""A drawing's title block, its components and its connections, without the picture."""
-	frappe.has_permission("PID Drawing", "read", drawing, throw=True)
+	require_read("PID Drawing", drawing)
 	doc = frappe.get_doc("PID Drawing", drawing)
 	return {
 		"drawing": doc.name,
@@ -112,7 +113,7 @@ def get_component(tag: str) -> dict:
 	"""One component: its register entry, the ISA-5.1 reading of its tag, its live value, and what
 	it is connected to on the drawings."""
 	tag = isa51.normalise(tag)
-	frappe.has_permission("PID Component", "read", tag, throw=True)
+	require_read("PID Component", tag)
 	doc = frappe.get_doc("PID Component", tag)
 	data = {field: doc.get(field) for field in SIGNAL_FIELDS}
 	data.update(
@@ -168,7 +169,7 @@ def import_tag_register(csv_text: str, drawing: str | None = None) -> dict:
 	"""
 	frappe.has_permission("PID Component", "create", throw=True)
 	if drawing:
-		frappe.has_permission("PID Drawing", "read", drawing, throw=True)
+		require_read("PID Drawing", drawing)
 	try:
 		rows, warnings = register.read_register(csv_text)
 	except register.RegisterError as error:

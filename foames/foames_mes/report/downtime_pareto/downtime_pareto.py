@@ -85,8 +85,9 @@ def get_records(machine_names, start, end, include_open):
 	]
 	if not include_open:
 		conditions.append(["status", "=", "Closed"])
-	return frappe.get_all(
+	return frappe.get_list(  # the reader's role and user permissions apply
 		"Downtime Record",
+		limit_page_length=0,
 		filters=conditions,
 		or_filters=[["end_time", "is", "not set"], ["end_time", ">", start]],
 		fields=["name", "machine", "reason", "start_time", "end_time", "status"],

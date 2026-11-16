@@ -26,8 +26,9 @@ def execute(filters=None):
 	for name in ("category", "severity", "agent", "status"):
 		if filters.get(name):
 			conditions.append([name, "=", filters.get(name)])
-	suggestions = frappe.get_all(
+	suggestions = frappe.get_list(  # the reader's role and user permissions apply
 		"Agent Suggestion",
+		limit_page_length=0,
 		filters=conditions,
 		fields=["name", "category", "severity", "agent", "status", "creation", "resolved_on"],
 	)

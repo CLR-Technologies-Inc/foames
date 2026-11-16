@@ -76,8 +76,9 @@ def get_periods(machine_names, start, end, shift=None):
 	]
 	if shift:
 		filters.append(["shift", "=", shift])
-	return frappe.get_all(
+	return frappe.get_list(  # the reader's role and user permissions apply
 		"OEE Period",
+		limit_page_length=0,
 		filters=filters,
 		fields=[
 			"name",

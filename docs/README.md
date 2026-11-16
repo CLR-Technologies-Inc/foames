@@ -10,6 +10,7 @@ Start with [overview.md](overview.md) for what FoaMES records, then [installatio
 | [dev-bench.md](dev-bench.md) | The Docker dev bench: the whole test suite locally on Frappe v15 or v16, with an optional ERP app |
 | [adapters.md](adapters.md) | External References, running without an ERP, writing an adapter for another ERP (vendor-neutral) |
 | [machine-data.md](machine-data.md) | How machine events reach FoaMES: the signed webhook, MQTT, OPC UA and Sparkplug B, the event shape, counter rules |
+| [authorization.md](authorization.md) | Authorization and record scope: the access matrix, restricting a person or agent to an area, what each read surface returns, and who may weaken a connector write policy |
 | [read-only-mode.md](read-only-mode.md) | Read-only mode: connectors read first, every write waits for an operator's electronic sign-off or is refused, the hash-chained Write Audit Log against work orders and Job Cards, and the approval path for a regulated (21 CFR Part 11-style) plant |
 | [sbom.md](sbom.md) | The CycloneDX 1.7 SBOM: where to get it, what is in it (dependencies, the cryptography bill of materials, connected services), building and validating it |
 | [licensing.md](licensing.md) | The Apache-2.0 license, the source file header, and the license of each dependency and borrowed idea |
@@ -43,6 +44,7 @@ Start with [overview.md](overview.md) for what FoaMES records, then [installatio
 | [commissioning.md](commissioning.md) | Equipment commissioning: packages, FAT and SAT with signed steps, loop checks, the A/B/C punch list, handover readiness and acceptance, the daily suggestions, the Punch List and Commissioning Status reports |
 | [spc.md](spc.md) | Control charts and run rules on machine measurements, and the suggestions they raise |
 | [validation.md](validation.md) | Equipment qualification (IQ, OQ, PQ) and process validation (PPQ, CPV): protocols, acceptance criteria, capability from machine data, executions with evidence and deviations, approval, requalification |
+| [implicit-validation.md](implicit-validation.md) | Implicit validation: requirement, metrology and statistical checks of a configuration revision, Pass/Fail/Indeterminate/Manual Review, hashed reproducible evidence, and how gates check a run by ID |
 | [sops.md](sops.md) | Standard operating procedures as controlled documents: revisions, sign-off, effective dates, periodic review, operator acknowledgement and training, the SOP Training Matrix |
 | [life-sciences.md](life-sciences.md) | Biopharma and medical device manufacturing: NPI stage gates and the Phase Review Discipline (boards, phase reviews, launch readiness), the product requirements document and its trace matrix, MSAT tech transfer packages and comparability, PD simulation (DoE, response surfaces, what-if, design space, scale-up) |
 | [dashboards.md](dashboards.md) | The role workspaces, number cards, dashboard charts and the script reports: OEE by machine, line and shift, downtime Pareto, MTBF and MTTR, suggestion status, outbox health, process throughput, andon response, the maintenance due list |

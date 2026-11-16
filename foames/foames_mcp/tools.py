@@ -33,6 +33,7 @@ LIFESCI = "foames.foames_life_sciences.api"
 GATE = "foames.foames_kernel.write_gate"
 PID = "foames.foames_pid.api"
 VALIDATION = "foames.foames_validation.api"
+IMPLICIT = "foames.foames_validation.implicit_api"
 
 # Packages a tool's method may live in. The catalogue test holds every tool to this list, so a
 # tool cannot quietly reach a method outside the public API.
@@ -59,6 +60,9 @@ ALLOWED_METHOD_PREFIXES = (
 		)
 	),
 	VALIDATION + ".get_qualification_status",
+	# Implicit validation: read a run, or evaluate without storing. Recording a run stays on the API.
+	IMPLICIT + ".get_implicit_validation",
+	IMPLICIT + ".dry_run_implicit_validation",
 )
 
 INSTRUCTIONS = """FoaMES is a manufacturing execution system. These tools read the plant floor and \
@@ -696,6 +700,53 @@ TOOLS: list[Tool] = [
 				"process": _s("Only this process"),
 				"protocol_type": _s("Only this protocol type", enum=["IQ", "OQ", "PQ", "PPQ", "CPV"]),
 			}
+		),
+	),
+	Tool(
+		name="foames_get_implicit_validation",
+		title="Get an implicit validation run",
+		description="One implicit validation run by ID: Pass, Fail, Indeterminate or Manual Review, the configuration revision it is pinned to, the dataset and its source, the input and result hashes, whether the stored evidence still verifies, and each requirement, metrology and statistical check. A Pass is engineering evidence, not a qualification, a sign-off or permission to write. Needs read on Implicit Validation Run.",
+		method=f"{IMPLICIT}.get_implicit_validation",
+		input_schema=_schema(
+			{
+				"name": _s("The run ID (IVR-...)"),
+				"include_checks": _b("Include every check's result (default true)"),
+			},
+			required=["name"],
+		),
+	),
+	Tool(
+		name="foames_dry_run_implicit_validation",
+		title="Dry-run implicit validation",
+		description="Evaluate an implicit validation definition (schema foames.implicit-validation/1.0: requirement, metrology, statistical and manual checks) against a configuration and data, and return the evidence bundle without storing anything or changing the plant. Data is a machine's Measurement events in a since/until window, or a supplied dataset (not for Production). Missing or untrustworthy evidence is Indeterminate, never Pass. Needs the Engineer, Quality, Supervisor or Integration role.",
+		method=f"{IMPLICIT}.dry_run_implicit_validation",
+		input_schema=_schema(
+			{
+				"definition": {
+					"type": "object",
+					"description": "The definition: {schema, name, version, checks}",
+				},
+				"configuration_revision": _s("The configuration or feature-set revision under test"),
+				"environment": _s(
+					"Where it runs", enum=["Sandbox", "Integration", "Production Candidate", "Production"]
+				),
+				"machine": _s("Read this machine's Measurement events"),
+				"since": SINCE,
+				"until": _s("End of the window, inclusive"),
+				"dataset": {
+					"type": "object",
+					"description": "A supplied dataset: {id, measurements: {name: {unit, instrument, uncertainty, points: [{t, v}]}}}",
+				},
+				"configuration": {
+					"type": "object",
+					"description": "The configuration the requirement checks read",
+				},
+				"measurements": {
+					"type": "object",
+					"description": "Unit, instrument and uncertainty per measurement for site data, recorded as declared",
+				},
+			},
+			required=["definition", "configuration_revision", "environment"],
 		),
 	),
 ]
