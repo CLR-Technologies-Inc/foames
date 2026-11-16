@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Shift Pattern on a site: validation, one OEE period per shift from the daily task, non-working
 days, the current shift on the floor snapshot and the MTBF operating windows."""

@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """The outbox record's lifecycle: requeue and cancel rules, stale Sending rows, paging of due postings,
 giving up, sequence groups and the reconciliation report."""

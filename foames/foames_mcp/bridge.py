@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """FoaMES MCP over stdio: a bridge from an agent's stdio transport to a FoaMES site.
 

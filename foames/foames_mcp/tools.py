@@ -28,6 +28,7 @@ OEE = "foames.foames_mes.doctype.oee_period.oee_period"
 MINING = "foames.foames_process_mining.api"
 ADAPTERS = "foames.foames_adapters"
 READS = "foames.foames_mcp.reads"
+CYCLE = "foames.foames_mes.cycle_time_api"
 GATE = "foames.foames_kernel.write_gate"
 
 # Packages a tool's method may live in. The catalogue test holds every tool to this list, so a
@@ -38,6 +39,7 @@ ALLOWED_METHOD_PREFIXES = (
 	MINING,
 	ADAPTERS + ".get_available_erp_systems",
 	READS,
+	CYCLE,
 	GATE + ".get_write_mode",
 	GATE + ".list_pending_writes",
 	GATE + ".get_write_audit_trail",
@@ -349,6 +351,44 @@ TOOLS: list[Tool] = [
 		title="List event log sources",
 		description="The Event Log Sources configured on the site: which DocType each mines and how its case, activity, timestamps and resource are mapped. Needs read on Event Log Source.",
 		method=f"{READS}.list_event_log_sources",
+	),
+	# Cycle time ----------------------------------------------------------------------------
+	Tool(
+		name="foames_project_time",
+		title="Project automatic and manual time",
+		description="Elapsed, automatic (machine) and operator (manual) time for a quantity from a Cycle Time Standard, with batch time, parts per hour and cost per part. With `changes` it also projects a what-if scenario (for example an element moved from Manual to Automatic) and returns the baseline, the scenario and their difference; `annual_quantity` adds yearly savings. With `use_observed` the automatic time is first scaled to what the machine did. Needs read on Cycle Time Standard.",
+		method=f"{CYCLE}.project_time",
+		input_schema=_schema(
+			{
+				"standard": _s("Cycle Time Standard name; or give machine for its default standard"),
+				"machine": MACHINE,
+				"quantity": {"type": "number", "description": "Parts to make", "minimum": 0},
+				"changes": {
+					"type": "array",
+					"description": "Scenario changes. Each names an `element` and sets any of kind (Manual or Automatic), seconds, internal, every, per, or remove: true; an unknown element is added. A change without `element` may set parts_per_cycle, allowance_percent, labor_rate or machine_rate.",
+					"items": {"type": "object"},
+				},
+				"annual_quantity": {"type": "number", "description": "Yearly volume, for savings"},
+				"use_observed": _b("Scale automatic time to the machine's observed running time first"),
+				"days": _i("Days of machine history for use_observed (default 30)", minimum=1),
+			},
+			["quantity"],
+		),
+	),
+	Tool(
+		name="foames_compare_cycle_with_machine",
+		title="Compare a cycle standard with the machine",
+		description="A Cycle Time Standard's one-cycle automatic and total time next to what its machine did in the window (Running time per cycle; Running plus Idle per cycle), with variances in percent. Idle includes waiting for material, so it is an upper bound on manual time. Needs read on Cycle Time Standard and Machine Event.",
+		method=f"{CYCLE}.compare_with_observed",
+		input_schema=_schema(
+			{
+				"standard": _s("Cycle Time Standard name; or give machine for its default standard"),
+				"machine": MACHINE,
+				"since": SINCE,
+				"until": UNTIL,
+				"days": _i("Window length in days when since is not given (default 30)", minimum=1),
+			}
+		),
 	),
 	# ERP references ------------------------------------------------------------------------
 	Tool(

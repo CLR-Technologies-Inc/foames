@@ -11,10 +11,11 @@ FoaMES is an ERP-agnostic manufacturing execution system built as a single Frapp
 | Module | Package | Holds |
 | --- | --- | --- |
 | FoaMES Kernel | `foames/foames_kernel` | `External Reference`, `FoaMES Settings`, read-only mode: `Connector Write Policy`, `Pending Write`, `Write Audit Log`, the write gate (`write_gate.py`) and its pure rules (`write_policy.py`) |
-| FoaMES MES | `foames/foames_mes` | Machine, Machine Event, Downtime Reason and Record, Machine Data Settings, Shift Pattern, OEE Period, Agent Suggestion, Andon Call and Call Type, Maintenance Plan and Work Order, Standard Operating Procedure and SOP Acknowledgement, the Floor View page, the gateways, the API |
+| FoaMES MES | `foames/foames_mes` | Machine, Machine Event, Downtime Reason and Record, Machine Data Settings, Shift Pattern, OEE Period, Agent Suggestion, Andon Call and Call Type, Maintenance Plan and Work Order, Cycle Time Standard, Standard Operating Procedure and SOP Acknowledgement, the Floor View page, the gateways, the API |
 | FoaMES Adapters | `foames/foames_adapters` | The adapter contract and registry, one subpackage per vendor (each with its own `AGENTS.md`), the shared Integration workspace |
 | FoaMES Process Mining | `foames/foames_process_mining` | Event Log Source, Process Event Log, the event extractors, the XES and OCEL exports, discovery and conformance analysis, and their API |
 | MCP server | `foames/foames_mcp` | The MCP tool catalogue, the Streamable HTTP endpoint, the stdio bridge, read methods for agents |
+| FoaMES Risk | `foames/foames_risk` | Enterprise Risk (+ Risk Control, Risk Link, Risk Indicator, Risk Review), Risk Category, Risk Template (+ Risk Template Control), Risk Settings, the Risk Register and Risk Heat Map reports, the FoaMES Risk workspace; the rules are pure, in `risk.py` |
 
 Frappe v15 and v16 are both supported; Python 3.10 or later. License: Apache-2.0, copyright CLR Technologies Inc. Contributions need the CLA described in [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -28,7 +29,7 @@ Keep these whatever you build. A pull request that breaks one will not be merged
 4. **Unknown time is loss.** The OEE ledger is built from state events with Downtime Records overlaid, and an Unknown state is never run time. A machine that stops reporting gets an Unknown state event from the scheduler's staleness check (source System), and the Sparkplug gateway writes one at once on NDEATH or DDEATH. Do not add code that infers output or run time from the absence of events.
 5. **Agents suggest; people act.** Anything an agent or a rule finds becomes an `Agent Suggestion` with evidence. FoaMES does not write tags, send commands to SCADA, change machine state on its own, or post to an ERP without an explicit, idempotent posting a person configured. Every write to another system, and every write an agent or connector makes, passes the read-only gate (`foames_kernel/write_gate.py`, see [docs/read-only-mode.md](docs/read-only-mode.md)): add a new write path behind it, never around it.
 6. **Postings to an ERP are idempotent and sequenced.** An idempotency key per business event, a marker written into the created document, a check before resending after an unclear answer, exponential backoff, strict order within a sequence group. The adapters' outboxes are the model; the details are in [foames/foames_adapters/AGENTS.md](foames/foames_adapters/AGENTS.md). Follow it for any new write path.
-7. **Pure logic stays pure.** `foames_kernel/write_policy.py`, `oee.py`, `counters.py`, `shifts.py`, `andon.py`, `suggestions.py`, `maintenance.py`, `sop.py`, `signing.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, the process-mining core and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe, and so do the arithmetic, parsing and protocol modules of each adapter (each vendor's `AGENTS.md` lists its own). Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
+7. **Pure logic stays pure.** `foames_kernel/write_policy.py`, `oee.py`, `counters.py`, `shifts.py`, `andon.py`, `suggestions.py`, `maintenance.py`, `cycle_time.py`, `sop.py`, `signing.py`, `gateway/mapping.py`, `gateway/sparkplug.py`, the process-mining core and `foames_mcp/protocol.py`, `tools.py`, `bridge.py` import nothing from Frappe, and so do the arithmetic, parsing and protocol modules of each adapter (each vendor's `AGENTS.md` lists its own). Keep arithmetic, parsing and protocol code in such modules, and keep the Frappe DocType classes thin.
 8. **Secrets live in Password fields** of a Settings DocType (`Machine Data Settings`, or the adapter's own Settings), read with `get_password`. Never in code, hooks or site config, never logged.
 9. **Both Frappe versions.** Use `foames.tests_compat.IntegrationTestCase` for site tests. Avoid APIs that exist in only one of v15 and v16.
 
@@ -55,6 +56,7 @@ foames/
     api.py                    ingest_machine_events, get_floor_snapshot, run_suggestion_rules, post_suggestion
     floor.py                  floor_snapshot, collect_findings
     oee.py  counters.py  shifts.py  suggestions.py  signing.py  kpi.py  spc.py  maintenance.py   pure logic (kpi.py: report roll-ups, shifts.py: shift calendars, spc.py: control charts)
+    cycle_time.py             pure: automatic and manual time, projections, scenarios, calibration; cycle_time_api.py serves them
     sop.py                    pure: SOP revision lifecycle, sign-off, periodic review and training status
     cbom.py                   pure: the site CBOM with the deployed certificates; site_cbom.py reads the site and writes it
     spc_monitor.py            SPC over Measurement events: settings, findings, get_control_chart
@@ -63,7 +65,7 @@ foames/
     doctype/                  Machine, Machine Event, Downtime Reason, Downtime Record,
                               Machine Data Settings (+ Machine Node Map), Shift Pattern (+ shifts, non-working days),
                               OEE Period, Agent Suggestion, Andon Call, Andon Call Type,
-                              Maintenance Plan, Maintenance Work Order,
+                              Maintenance Plan, Maintenance Work Order, Cycle Time Standard (+ elements),
                               Standard Operating Procedure (+ applicability, approvals, training roles), SOP Acknowledgement
     page/floor_view/          the Floor View page
     report/                   OEE Trend, Downtime Pareto, MTBF and MTTR, Suggestion Status, Process Throughput, SPC Control Chart,
@@ -87,6 +89,12 @@ foames/
     protocol.py               MCP/JSON-RPC server core (pure), tools.py the catalogue (pure)
     api.py                    the Streamable HTTP endpoint; reads.py whitelisted read methods
     bridge.py                 stdio bridge for desktop agents, standard library only
+  foames_risk/
+    risk.py  templates.py     pure: scores, rating bands, tolerance, the hierarchy of controls, review and
+                              verification dates, the findings; the starting categories and templates
+    register.py  tasks.py     settings, linkable record types, source ratings, evidence checks, the daily check_risks
+    doctype/  report/  workspace/   Enterprise Risk and its tables, Risk Category, Risk Template, Risk Settings;
+                              Risk Register, Risk Heat Map; the FoaMES Risk workspace
 bridges/<name>/               standalone packages that run beside a source system and post to the webhook (not installed on the bench); each has its own tests
 docs/                         human-facing guides; docs/agents/ holds run-time agent playbooks
 cla/                          the Individual and Corporate CLAs
@@ -121,6 +129,8 @@ Code entry points you call rather than hook:
 | `foames.foames_process_mining.extractors.build_event_log(since, until, sources=None)` | An `EventLog` from the built-in extractors, the enabled Event Log Sources and the hook extractors |
 | `foames.foames_process_mining.discovery.discover_dfg(log)` and `conformance.check_conformance(log, model)` | Process-mining analysis without a site |
 
+The risk register has hooks of its own (`foames_risk_linkable_doctypes`, `foames_risk_source_readers`, `foames_risk_source_values`, `foames_risk_evidence_checks`), described in [docs/risk-management.md](docs/risk-management.md#extending-it).
+
 ## HTTP API surface
 
 Whitelisted methods, called as `/api/method/<dotted path>`. Authentication is Frappe's: session cookie, or `Authorization: token <api_key>:<api_secret>`. These are the core methods. Each vendor adapter's endpoints, with their permissions, are in its own `AGENTS.md`.
@@ -137,10 +147,16 @@ Whitelisted methods, called as `/api/method/<dotted path>`. Authentication is Fr
 | `foames.foames_mes.doctype.andon_call.andon_call.raise_andon` | POST | create on Andon Call | Raise a call for help at a machine (`machine`, `call_type`, `note`) |
 | `foames.foames_mes.doctype.andon_call.andon_call.acknowledge_andon` / `resolve_andon` | POST | write on Andon Call | Acknowledge, resolve or cancel a call |
 | `foames.foames_mes.doctype.andon_call.andon_call.list_open_andon_calls` | GET | read on Andon Call | Open and acknowledged calls with minutes open and targets |
+| `foames.foames_mes.cycle_time_api.project_time` | GET or POST | read on Cycle Time Standard (+ Machine Event with `use_observed`) | Elapsed, automatic and operator time for a quantity; with `changes`, a what-if scenario and its savings |
+| `foames.foames_mes.cycle_time_api.project_operations` | GET or POST | read on Cycle Time Standard | Projections for many `{key, standard or machine, quantity}` rows at once, for a scheduler |
+| `foames.foames_mes.cycle_time_api.compare_with_observed` / `get_observed_cycle` | GET | read on Cycle Time Standard and Machine Event | A standard against the machine's observed running and idle time per cycle |
 | `foames.foames_adapters.get_available_erp_systems` | GET | logged in | Registered adapters and their availability |
 | `foames.foames_process_mining.api.summary`, `events`, `discover`, `check_conformance`, `export` | GET or POST | read on Process Event Log | Process mining over a saved `event_log` or a log built from `since`, `until` and `sources`; `discover` takes `dot=1`, `check_conformance` takes `model`, `export` takes `fmt=xes` or `ocel` |
 | `foames.foames_mcp.reads.*` | GET | read on the DocType listed | Agent-friendly reads: machines, events, downtime, OEE periods, suggestions, ERP systems and references, event logs |
 | `foames.foames_mcp.api.mcp` | POST | logged in; each tool checks its own | The MCP endpoint (Streamable HTTP) |
+| `foames.foames_risk.doctype.enterprise_risk.enterprise_risk.create_from_template` / `create_from_source` | POST | create on Enterprise Risk | A new risk from a Risk Template (`template`, `title`, `machine`), or summarising a hazard assessment or PFMEA (`doctype`, `name`) linked as its Source |
+| `foames.foames_risk.doctype.enterprise_risk.enterprise_risk.record_review` | POST | write on Enterprise Risk | Record the periodic review (`name`, `notes`) |
+| `foames.foames_risk.doctype.enterprise_risk.enterprise_risk.accept_residual_risk` | POST | FoaMES Supervisor or System Manager | Management accepts the residual risk at its current score (`name`, `justification`) |
 
 Document methods callable with `frm.call` or `run_doc_method`: `External Reference.resolve`, `Event Log Source.preview`, `Process Event Log.extract`, `discover`, `check_against`, `export_file`.
 

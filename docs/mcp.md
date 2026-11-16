@@ -2,7 +2,7 @@
 
 FoaMES speaks the Model Context Protocol (MCP), so an agent in Claude Desktop, Claude Code, Cursor or any other MCP client can read the plant floor and raise suggestions through tools, with no custom integration. The server exposes the public FoaMES API and nothing more: every tool is one whitelisted method that is already callable at `/api/method/...`, run as the user whose API key the agent holds, with that user's permissions.
 
-The 24 tools cover machines and their state, machine events, downtime, OEE, the floor snapshot, Agent Suggestions, process mining (event logs, discovery, conformance, export) and ERP reference reads through whichever adapters are registered on the site. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act. In [read-only mode](read-only-mode.md) a writing tool other than the suggestion tools does not run: the call waits as a Pending Write for a person's electronic sign-off, and the agent is told its name. Three more tools read the mode, the pending writes and the write audit trail, and apps can add tools of their own (the Tulip adapter adds six read-only Tulip tools).
+The 29 tools cover machines and their state, machine events, downtime, OEE, automatic and manual time projections, the floor snapshot, Agent Suggestions, process mining (event logs, discovery, conformance, export) and ERP reference reads through whichever adapters are registered on the site. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act. In [read-only mode](read-only-mode.md) a writing tool other than the suggestion tools does not run: the call waits as a Pending Write for a person's electronic sign-off, and the agent is told its name. Three more tools read the mode, the pending writes and the write audit trail, and apps can add tools of their own (the Tulip adapter adds six read-only Tulip tools).
 
 ## Two ways to connect
 
@@ -70,6 +70,8 @@ Permissions are the DocType permissions of the user behind the key, checked by t
 | `foames_post_suggestion`, `foames_run_suggestion_rules` | create on Agent Suggestion (Operator, Engineer) |
 | `foames_set_current_job` | write on Machine (Operator, Engineer) |
 | `foames_mining_*`, `foames_list_event_logs`, `foames_list_event_log_sources` | read on Process Event Log / Event Log Source |
+| `foames_project_time` | read on Cycle Time Standard; with `use_observed`, also read on Machine Event |
+| `foames_compare_cycle_with_machine` | read on Cycle Time Standard and Machine Event |
 | `foames_list_erp_systems` | any logged-in user |
 | `foames_list_external_references`, `foames_lookup_erp_record` | read on External Reference (System Manager by default) |
 
@@ -99,6 +101,8 @@ Permissions are the DocType permissions of the user behind the key, checked by t
 | `foames_mining_conformance(model, ..., include_traces)` | Fitness, deviations, footprint comparison |
 | `foames_mining_export(..., fmt)` | XES or OCEL 2.0 text |
 | `foames_list_event_logs(status, limit)`, `foames_list_event_log_sources()` | Saved logs and configured sources |
+| `foames_project_time(standard, machine, quantity, changes, annual_quantity, use_observed, days)` | Elapsed, automatic and operator time for a quantity; with `changes`, a what-if scenario against the baseline ([cycle-time.md](cycle-time.md)) |
+| `foames_compare_cycle_with_machine(standard, machine, since, until, days)` | A standard's cycle next to the machine's observed running and idle time per cycle |
 | `foames_list_erp_systems()` | Registered adapters, availability, default system, reference types |
 | `foames_list_external_references(erp_system, reference_type, status, limit)` | External References with resolution status |
 | `foames_lookup_erp_record(reference_type, external_id, erp_system)` | One ERP record through its adapter; creates nothing |

@@ -1,0 +1,71 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-15 23:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "link_doctype",
+  "link_name",
+  "relation",
+  "source_rating",
+  "note"
+ ],
+ "fields": [
+  {
+   "fieldname": "link_doctype",
+   "fieldtype": "Link",
+   "label": "Record Type",
+   "options": "DocType",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "link_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Record",
+   "options": "link_doctype",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 3
+  },
+  {
+   "fieldname": "relation",
+   "fieldtype": "Select",
+   "label": "Relation",
+   "options": "Source\nRealized Event\nRelated",
+   "default": "Related",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2,
+   "description": "Source: the detailed assessment this risk summarises (its rating is watched). Realized Event: an incident in which the risk happened"
+  },
+  {
+   "fieldname": "source_rating",
+   "fieldtype": "Data",
+   "label": "Source Rating",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "note",
+   "fieldtype": "Data",
+   "label": "Note"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 23:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Risk",
+ "name": "Risk Link",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1
+}

@@ -1,4 +1,4 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
 # SPDX-License-Identifier: Apache-2.0
 
 """Tests for build_sbom.py. Standard library only: python -m unittest discover -s sbom"""
