@@ -53,6 +53,10 @@ Each benchmark task carries the ECL and machine class of the scenario it simulat
 
 FoaMES already ends every agent action in a suggestion that a person accepts (see [Agents suggest, people act](Explanation-Agents-suggest-people-act)). ECL decides *which* person, and how much the agent may narrow the choice first. At low ECL, an operator can judge a suggestion about a torque wrench. At ECL 4, only an expert in that equipment can tell a plausible suggestion from a correct one. At ECL 5, even one expert can't. The judgement is spread across a team, so the agent's output goes to the team, not to one reviewer. These are exactly the levels where models are weakest and mistakes cost the most.
 
+## The material side
+
+ECL rates the equipment. Its counterpart for what goes through the equipment is [Material processing complexity (MPC)](Explanation-Material-processing-complexity), which is upcoming. MPC uses the same oversight at the top: a single expert at level 4, and an expert team at level 5.
+
 ## What is planned
 
 Today ECL exists in the benchmark and its recommendations. An ECL field on the Machine record, with agent eligibility tied to it (an agent registered for a machine only if its tier meets the machine's ECL), is planned and listed under [Upcoming features](Upcoming-features).
