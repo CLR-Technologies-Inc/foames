@@ -187,6 +187,9 @@ def analyse(case: dict, rows: list[dict]) -> dict:
 		if a["mean_setup_minutes"] is None or not b["mean_setup_minutes"]
 		else 1.0 - a["mean_setup_minutes"] / b["mean_setup_minutes"],
 		"throughput_ratio": _ratio(a["good_per_planned_hour"], b["good_per_planned_hour"]),
+		"specific_energy_reduction": None
+		if a["specific_energy"] is None or not b["specific_energy"]
+		else 1.0 - a["specific_energy"] / b["specific_energy"],
 	}.get(claim["kind"])
 	ratio = _ratio(measured, claim["value"])
 	if ratio is None:

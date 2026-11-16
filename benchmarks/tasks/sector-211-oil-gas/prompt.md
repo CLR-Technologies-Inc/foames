@@ -1,0 +1,5 @@
+# Did plunger lift raise the lease's gas production as much as the partner reported?
+
+Lease A produces gas from 14 mature wells. As their pressure fell, liquids collected in the tubing, so the wells were either pumped with beam lift or blown down to the atmosphere to clear them, losing production and venting methane. The operator fitted plunger lifts, which use the well's own pressure to lift the liquid out in regular cycles.
+
+A US Environmental Protection Agency Natural Gas STAR lessons learned paper (<https://19january2017snapshot.epa.gov/sites/production/files/2016-06/documents/ll_plungerlift.pdf>, a US government work) reports a partner's 14 wells whose average production rose from 167 to 258 Mcf a day in the 30 days after installation. Lease A's FoaMES site records the wells' combined sales meter as the line's output and the lift electricity meter. The production engineer wants to know whether FoaMES shows a gain of that size. The wells run around the clock; time a well is shut in to unload is unplanned downtime, and there is no scrap counter, so the `scrap` counter stays at zero.

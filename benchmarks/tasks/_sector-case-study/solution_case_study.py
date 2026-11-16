@@ -148,11 +148,13 @@ def analyse(case, rows):
 		saving = (base["specific_energy"] - after["specific_energy"]) * after["good"] * per_year
 	claim = case["claim"]
 	setup_ratio = divide(after["mean_setup_minutes"], base["mean_setup_minutes"])
+	sec_ratio = divide(after["specific_energy"], base["specific_energy"])
 	measured = {
 		"annual_energy_saving": saving,
 		"oee_after": after["oee"],
 		"setup_reduction": None if setup_ratio is None else 1 - setup_ratio,
 		"throughput_ratio": divide(after["good_per_planned_hour"], base["good_per_planned_hour"]),
+		"specific_energy_reduction": None if sec_ratio is None else 1 - sec_ratio,
 	}.get(claim["kind"])
 	ratio = divide(measured, claim["value"])
 	verdict = "not measurable" if ratio is None else "supported" if 0.8 <= ratio <= 1.25 else "not supported"

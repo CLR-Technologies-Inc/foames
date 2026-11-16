@@ -391,19 +391,22 @@ def _generate(sector: dict, energy_per_unit_after: float) -> list:
 	return out
 
 
+ENERGY_KINDS = ("annual_energy_saving", "specific_energy_reduction")
+
+
 def events(sector: dict) -> list[dict]:
 	"""The Machine Event export, in arrival order. When the sector sets `target_ratio`, the after
-	week's energy per unit is solved so the measured annual saving is that share of the claim."""
+	week's energy per unit is solved so the measured energy result is that share of the claim."""
 	after = sector["after"]
 	target = sector.get("target_ratio")
-	if target is None or sector["claim"]["kind"] != "annual_energy_saving":
+	if target is None or sector["claim"]["kind"] not in ENERGY_KINDS:
 		return _generate(sector, after["energy_per_unit"])
 	from _mv_reference import analyse
 
 	case = case_json(sector)
 
 	def saving(epu):
-		return analyse(case, parse_rows(to_csv(_generate(sector, epu))))["annual_energy_saving"]
+		return analyse(case, parse_rows(to_csv(_generate(sector, epu))))["claim_check"]["measured"]
 
 	x0 = after["energy_per_unit"]
 	x1 = x0 * 0.5 if x0 else 0.01
