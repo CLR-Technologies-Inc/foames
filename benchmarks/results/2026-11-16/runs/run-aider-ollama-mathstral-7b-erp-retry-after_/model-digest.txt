@@ -1,0 +1,1 @@
+Ollama mathstral:7b digest 4ee7052be55a, pulled 2026-11-16

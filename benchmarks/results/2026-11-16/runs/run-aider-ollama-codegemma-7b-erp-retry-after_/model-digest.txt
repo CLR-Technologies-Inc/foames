@@ -1,0 +1,1 @@
+Ollama codegemma:7b digest 0c96700aaada, pulled 2026-11-16

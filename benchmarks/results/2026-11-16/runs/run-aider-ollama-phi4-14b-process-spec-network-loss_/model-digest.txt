@@ -1,0 +1,1 @@
+Ollama phi4:14b digest ac896e5b8b34, pulled 2026-11-16

@@ -1,0 +1,1 @@
+Ollama granite-code:8b digest 36c3c3b9683b, pulled 2026-11-16

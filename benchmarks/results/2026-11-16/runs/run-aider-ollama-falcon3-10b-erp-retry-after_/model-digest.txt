@@ -1,0 +1,1 @@
+Ollama falcon3:10b digest 1653ff122acd, pulled 2026-11-16

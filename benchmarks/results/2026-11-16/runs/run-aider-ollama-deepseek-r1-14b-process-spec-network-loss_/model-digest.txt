@@ -1,0 +1,1 @@
+Ollama deepseek-r1:14b digest c333b7232bdb, pulled 2026-11-16

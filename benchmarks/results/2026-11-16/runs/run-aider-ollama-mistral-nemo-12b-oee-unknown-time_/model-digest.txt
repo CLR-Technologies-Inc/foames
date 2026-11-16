@@ -1,0 +1,1 @@
+Ollama mistral-nemo:12b digest e7e06d107c6c, pulled 2026-11-16
