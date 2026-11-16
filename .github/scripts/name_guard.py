@@ -74,7 +74,8 @@ def parse_words(raw: str) -> list[Word]:
 def load_words() -> list[Word]:
 	raw = os.environ.get("NAME_GUARD_WORDS", "")
 	if not raw.strip() and os.path.exists(WORDS_FILE):
-		with open(WORDS_FILE, encoding="utf-8") as f:
+		# A fixed path inside the local .git directory, not request input.
+		with open(WORDS_FILE, encoding="utf-8") as f:  # nosemgrep
 			raw = f.read()
 	return parse_words(raw)
 
@@ -108,7 +109,8 @@ def scan_files(paths: list[str], words: list[Word]) -> list[str]:
 		if not os.path.isfile(path):
 			continue
 		try:
-			with open(path, encoding="utf-8") as f:
+			# Tracked files or paths pre-commit passes in, in a local or CI checkout; not request input.
+			with open(path, encoding="utf-8") as f:  # nosemgrep
 				text = f.read()
 		except (UnicodeDecodeError, OSError):
 			continue
@@ -152,10 +154,11 @@ def check_git_email(words: list[Word]) -> list[str]:
 		return []
 	email = subprocess.run(["git", "config", "user.email"], capture_output=True, text=True).stdout.strip()
 	if not email_allowed(email, allowed_emails()) or find_in_text(email, words):
-		return [
+		msg = (
 			"git user.email for this repository is not an approved address; set it with "
 			"`git config user.email <approved address>` (see CONTRIBUTING.md)"
-		]
+		)
+		return [msg]
 	return []
 
 
