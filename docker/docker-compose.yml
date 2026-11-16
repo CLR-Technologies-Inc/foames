@@ -15,7 +15,7 @@ name: ${COMPOSE_PROJECT_NAME:-foames-dev}
 
 services:
   mariadb:
-    image: ${MARIADB_IMAGE:-mariadb:11.8}
+    image: ${MARIADB_IMAGE:-mariadb:13.0}
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
