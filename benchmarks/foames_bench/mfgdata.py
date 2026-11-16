@@ -94,7 +94,7 @@ def fetch(ds: dict, dest: Path | None = None, getter=_get) -> Path:
 	if ds.get("status") != "enabled":
 		raise FetchRefused(f"{ds['id']} is {ds.get('status')}: {ds.get('note', 'not enabled')}")
 	src = ds["source"]
-	folder = Path(dest or cache_root() / ds["id"])
+	folder = Path(dest) if dest else _safe_member_path(cache_root(), ds["id"], f"dataset {ds['id']!r}")
 	folder.mkdir(parents=True, exist_ok=True)
 	provenance = {
 		"dataset": ds["id"],
@@ -804,9 +804,14 @@ def cmd_data(opts) -> int:
 	results = []
 	for ds in chosen:
 		if opts.synthetic:
-			folder = synthetic(ds["id"], Path(opts.synthetic_dir or cache_root() / "_synthetic") / ds["id"])
+			base = (
+				Path(opts.synthetic_dir)
+				if opts.synthetic_dir
+				else _safe_member_path(cache_root(), "_synthetic", "synthetic fixtures")
+			)
+			folder = synthetic(ds["id"], _safe_member_path(base, ds["id"], f"dataset {ds['id']!r}"))
 		else:
-			folder = cache_root() / ds["id"]
+			folder = _safe_member_path(cache_root(), ds["id"], f"dataset {ds['id']!r}")
 			if not (folder / "provenance.json").exists():
 				results.append(
 					Result(
@@ -847,4 +852,6 @@ def add_parser(sub) -> None:
 
 
 def clear_cache(dataset_id: str) -> None:
-	shutil.rmtree(cache_root() / dataset_id, ignore_errors=True)
+	shutil.rmtree(
+		_safe_member_path(cache_root(), dataset_id, f"dataset {dataset_id!r}"), ignore_errors=True
+	)
