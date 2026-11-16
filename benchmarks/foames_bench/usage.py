@@ -11,6 +11,7 @@ it is just left out of cost-per-success.
 """
 
 import json
+import re
 from dataclasses import asdict, dataclass
 
 
@@ -115,7 +116,40 @@ def parse_generic(text: str) -> Usage:
 	return usage
 
 
+_AIDER_TOKENS = re.compile(
+	r"Tokens:\s*([\d.,]+)([km]?) sent(?:,\s*([\d.,]+)([km]?) cache write)?(?:,\s*([\d.,]+)([km]?) cache hit)?,\s*([\d.,]+)([km]?) received",
+	re.IGNORECASE,
+)
+_AIDER_COST = re.compile(r"Cost:\s*\$([\d.]+) message,\s*\$([\d.]+) session", re.IGNORECASE)
+
+
+def _count(number: str | None, suffix: str | None) -> int:
+	if not number:
+		return 0
+	value = float(number.replace(",", ""))
+	return int(round(value * {"k": 1_000, "m": 1_000_000}.get((suffix or "").lower(), 1)))
+
+
+def parse_aider_text(text: str) -> Usage:
+	"""Aider's plain output: one "Tokens: 2.6k sent, 325 received. Cost: $0.0018 message, $0.0018
+	session." line per model call. Aider rounds to the nearest hundred above 1,000 tokens, so the
+	totals are approximate. The session cost is used only when aider knew the model's prices."""
+	usage = Usage()
+	calls = 0
+	for m in _AIDER_TOKENS.finditer(text):
+		calls += 1
+		usage.input_tokens += _count(m.group(1), m.group(2)) + _count(m.group(3), m.group(4))
+		usage.cached_input_tokens += _count(m.group(5), m.group(6))
+		usage.output_tokens += _count(m.group(7), m.group(8))
+	usage.turns = calls or None
+	costs = _AIDER_COST.findall(text)
+	if costs and float(costs[-1][1]) > 0:
+		usage.cost_usd, usage.cost_source = float(costs[-1][1]), "reported"
+	return usage
+
+
 PARSERS = {
+	"aider-text": parse_aider_text,
 	"claude-json": parse_claude_json,
 	"codex-jsonl": parse_codex_jsonl,
 	"gemini-json": parse_gemini_json,

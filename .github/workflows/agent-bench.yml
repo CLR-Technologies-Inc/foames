@@ -1,0 +1,150 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 CLR Technologies Inc.
+name: Agent benchmark
+
+# Runs the FoaMES agent benchmark (benchmarks/) with agents that need no paid key:
+#   - models on GitHub Models, called with this workflow's own GITHUB_TOKEN (permission models: read)
+#   - small open-weight models served by Ollama on the runner itself (CPU only)
+# Each agent runs in the benchmark's Docker sandbox. Every agent is one job, so each model's free-tier
+# rate limit is spent independently. The last job combines the runs into benchmarks/results/<date>/.
+# Nothing here runs on pull requests or pushes to main: start it from the Actions tab.
+
+on:
+  push:
+    branches: [claude/project-thread-97ppc8]
+    paths: [.github/workflows/agent-bench.yml]
+  workflow_dispatch:
+    inputs:
+      agents:
+        description: Comma-separated agent names from benchmarks/agents.json
+        default: aider-ghm-gpt-4.1,aider-ghm-gpt-4.1-mini,aider-ghm-gpt-4o-mini,aider-ollama-qwen2.5-coder-7b,aider-ollama-qwen2.5-coder-3b
+      reps:
+        description: Repetitions of each task
+        default: "1"
+      tasks:
+        description: Space-separated task ids (empty for every pure task)
+        default: ""
+      aider_version:
+        description: aider-chat version installed in the sandbox image
+        default: "0.86.1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agent-bench-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      agents: ${{ steps.plan.outputs.agents }}
+    permissions:
+      contents: read
+      models: read
+    steps:
+      - id: plan
+        env:
+          AGENTS: ${{ inputs.agents || 'aider-ghm-gpt-4.1,aider-ghm-gpt-4.1-mini,aider-ghm-gpt-4o-mini,aider-ollama-qwen2.5-coder-7b,aider-ollama-qwen2.5-coder-3b' }}
+        run: |
+          python3 -c "import json,os;print('agents='+json.dumps([a.strip() for a in os.environ['AGENTS'].split(',') if a.strip()]))" >> "$GITHUB_OUTPUT"
+      - name: GitHub Models catalog (what this token can reach)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -sS https://models.github.ai/catalog/models -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" -o catalog.json || true
+          python3 - <<'PY'
+          import json
+          try:
+              rows = json.load(open("catalog.json"))
+          except Exception as e:
+              print("catalog unavailable:", e); raise SystemExit(0)
+          for m in rows:
+              limits = m.get("limits") or {}
+              print(f"{m.get('id',''):<55} tier={m.get('rate_limit_tier',''):<8} in={limits.get('max_input_tokens')} out={limits.get('max_output_tokens')}")
+          PY
+
+  bench:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    permissions:
+      contents: read
+      models: read
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: ${{ fromJSON(needs.plan.outputs.agents) }}
+    name: ${{ matrix.agent }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Sandbox image with aider
+        run: |
+          docker build -t foames-bench-agent \
+            --build-arg NPM_AGENTS="" \
+            --build-arg PIP_AGENTS="aider-chat==${{ inputs.aider_version || '0.86.1' }}" \
+            benchmarks/sandbox
+          docker run --rm foames-bench-agent aider --version | tee aider-version.txt
+          docker image inspect foames-bench-agent --format '{{.Id}}' | tee image-id.txt
+      - name: Ollama and the model
+        if: startsWith(matrix.agent, 'aider-ollama-')
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:11434/api/version && break; sleep 2; done || (ollama serve > ollama.log 2>&1 &)
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:11434/api/version && break; sleep 2; done
+          MODEL=$(python3 -c "import json;a={x['name']:x for x in json.load(open('benchmarks/agents.json'))['agents']}['${{ matrix.agent }}'];print(a['model'].split('/',1)[1])")
+          ollama pull "$MODEL"
+          ollama show "$MODEL" | tee model-info.txt
+          ollama --version | tee ollama-version.txt
+      - name: Run the benchmark
+        working-directory: benchmarks
+        env:
+          # Only the GitHub Models agents use it; it can read models and this public repository only.
+          OPENAI_API_KEY: ${{ startsWith(matrix.agent, 'aider-ghm-') && secrets.GITHUB_TOKEN || '' }}
+          TASKS: ${{ github.event_name == 'push' && 'counter-reset' || inputs.tasks || '' }}
+        run: |
+          python -m foames_bench validate
+          python -m foames_bench run --agents "${{ matrix.agent }}" --reps "${{ inputs.reps || '1' }}" \
+            ${TASKS:+--tasks $TASKS} --sandbox docker --out "runs/${{ matrix.agent }}"
+          python -m foames_bench report "runs/${{ matrix.agent }}" || true
+          cp ../aider-version.txt ../image-id.txt "runs/${{ matrix.agent }}/"
+          cp ../model-info.txt ../ollama-version.txt "runs/${{ matrix.agent }}/" 2>/dev/null || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: run-${{ matrix.agent }}
+          path: benchmarks/runs/${{ matrix.agent }}
+          if-no-files-found: warn
+
+  report:
+    needs: bench
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: run-*
+          path: runs
+      - name: Calibration (reference and no-op agents)
+        working-directory: benchmarks
+        run: python -m foames_bench validate --out ../runs/calibration
+      - name: Combine the runs into a report
+        run: |
+          python benchmarks/scripts/publish_results.py --runs runs --out "benchmarks/results/$(date -u +%Y-%m-%d)" \
+            --workflow-run "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          cat benchmarks/results/*/README.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bench-report
+          path: benchmarks/results
