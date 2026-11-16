@@ -1,0 +1,163 @@
+{
+ "app": "foames",
+ "charts": [],
+ "content": "[{\"id\": \"matHdr001A\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Material Flow</b></span>\", \"col\": 12}}, {\"id\": \"matSc000AA\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Line Dry Forecast\", \"col\": 3}}, {\"id\": \"matSc001AA\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Material Queue Status\", \"col\": 3}}, {\"id\": \"matSc002AA\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Lineside Bin\", \"col\": 3}}, {\"id\": \"matSc003AA\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Material Handling Profile\", \"col\": 3}}, {\"id\": \"matSpc001A\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"matCd000AA\", \"type\": \"card\", \"data\": {\"card_name\": \"Lineside Stock\", \"col\": 4}}, {\"id\": \"matCd001AA\", \"type\": \"card\", \"data\": {\"card_name\": \"Material Queues\", \"col\": 4}}, {\"id\": \"matCd002AA\", \"type\": \"card\", \"data\": {\"card_name\": \"Material Processing Complexity\", \"col\": 4}}]",
+ "creation": "2026-11-16 00:30:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "stock",
+ "idx": 0,
+ "indicator_color": "blue",
+ "is_hidden": 0,
+ "label": "FoaMES Material",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Lineside Stock",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Lineside Bin",
+   "link_count": 0,
+   "link_to": "Lineside Bin",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Line Dry Forecast",
+   "link_count": 0,
+   "link_to": "Line Dry Forecast",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Material Queues",
+   "link_count": 3,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Material Queue",
+   "link_count": 0,
+   "link_to": "Material Queue",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Material Queue Entry",
+   "link_count": 0,
+   "link_to": "Material Queue Entry",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Material Queue Status",
+   "link_count": 0,
+   "link_to": "Material Queue Status",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Material Processing Complexity",
+   "link_count": 1,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Material Handling Profile",
+   "link_count": 0,
+   "link_to": "Material Handling Profile",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-11-16 00:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "FoaMES Material",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "",
+ "roles": [
+  {
+   "role": "FoaMES Supervisor"
+  },
+  {
+   "role": "FoaMES Engineer"
+  },
+  {
+   "role": "FoaMES Operator"
+  }
+ ],
+ "sequence_id": 23.0,
+ "shortcuts": [
+  {
+   "color": "Red",
+   "doc_view": "",
+   "label": "Line Dry Forecast",
+   "link_to": "Line Dry Forecast",
+   "report_ref_doctype": "Lineside Bin",
+   "type": "Report"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "",
+   "label": "Material Queue Status",
+   "link_to": "Material Queue Status",
+   "report_ref_doctype": "Material Queue Entry",
+   "type": "Report"
+  },
+  {
+   "color": "Blue",
+   "doc_view": "List",
+   "label": "Lineside Bin",
+   "link_to": "Lineside Bin",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Material Handling Profile",
+   "link_to": "Material Handling Profile",
+   "type": "DocType"
+  }
+ ],
+ "title": "FoaMES Material"
+}

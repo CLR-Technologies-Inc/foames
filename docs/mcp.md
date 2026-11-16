@@ -2,7 +2,7 @@
 
 FoaMES speaks the Model Context Protocol (MCP), so an agent in Claude Desktop, Claude Code, Cursor or any other MCP client can read the plant floor and raise suggestions through tools, with no custom integration. The server exposes the public FoaMES API and nothing more: every tool is one whitelisted method that is already callable at `/api/method/...`, run as the user whose API key the agent holds, with that user's permissions.
 
-The 40 tools cover machines and their state, machine events, downtime, OEE, automatic and manual time projections, the floor snapshot, Agent Suggestions, the P&ID tag register and drawings, process mining (event logs, discovery, conformance, export), qualification status, life-sciences programs (NPI status, requirement tracing, tech transfer packages, PD studies, scale-up) and ERP reference reads through whichever adapters are registered on the site. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act. In [read-only mode](read-only-mode.md) a writing tool other than the suggestion tools does not run: the call waits as a Pending Write for a person's electronic sign-off, and the agent is told its name. Three more tools read the mode, the pending writes and the write audit trail, and apps can add tools of their own (the Tulip adapter adds six read-only Tulip tools).
+The 43 tools cover machines and their state, machine events, downtime, OEE, automatic and manual time projections, the floor snapshot, lineside stock and material queues, Agent Suggestions, the P&ID tag register and drawings, process mining (event logs, discovery, conformance, export), qualification status, life-sciences programs (NPI status, requirement tracing, tech transfer packages, PD studies, scale-up) and ERP reference reads through whichever adapters are registered on the site. Three tools write: two create Agent Suggestions and one records which job a machine is working on. Nothing writes to an ERP: agents suggest, people act. In [read-only mode](read-only-mode.md) a writing tool other than the suggestion tools does not run: the call waits as a Pending Write for a person's electronic sign-off, and the agent is told its name. Three more tools read the mode, the pending writes and the write audit trail, and apps can add tools of their own (the Tulip adapter adds six read-only Tulip tools).
 
 ## Two ways to connect
 
@@ -95,6 +95,9 @@ Permissions are the DocType permissions of the user behind the key, checked by t
 | `foames_get_oee(machine, from_time, to_time, planned_minutes)` | OEE and the time ledger for any window, computed now |
 | `foames_list_oee_periods(machine, since, until, limit)` | Saved daily OEE Periods |
 | `foames_get_floor_snapshot(days)` | The whole floor as one object ([floor-view.md](floor-view.md#the-floor-snapshot)) |
+| `foames_get_material_status(machine)` | Lineside bins and material queues: stock on hand, use per hour, hours to dry, quantity to call for, MPC levels ([material-flow.md](material-flow.md)) |
+| `foames_get_dispatch_list(queue)` | Material that may start now in one queue, in its dispatch-rule order |
+| `foames_get_material_readiness(machine, hours)` | Bins that run dry inside the window and queue entries ready to start |
 | `foames_list_suggestions(status, category, severity, agent, limit)` | Agent Suggestions, open by default |
 | `foames_get_suggestion(name)` | One suggestion with text, evidence, resolution |
 | `foames_post_suggestion(title, category, suggestion, agent, severity, reference_doctype, reference_name, evidence, rule_key)` | Creates a suggestion; returns its name |

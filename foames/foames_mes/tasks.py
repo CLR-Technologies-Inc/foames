@@ -62,6 +62,13 @@ def check_maintenance_plans():
 	return check()
 
 
+def check_material_flow():
+	"""Scheduled every 10 minutes: lineside stock, the line-dry forecast and material queues."""
+	from foames.foames_mes.material_flow import check_material_flow as check
+
+	return check()
+
+
 def recognize_milestones():
 	"""Scheduled daily: recognize people for the milestones they reached."""
 	from foames.foames_mes.doctype.recognition.recognition import recognize_milestones as recognize
