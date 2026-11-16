@@ -15,7 +15,10 @@ These features are in open pull requests on the repository. They are **not on `m
 | Topology graph | A live graph of the plant's machines and the data paths that serve them | [#59](https://github.com/CLR-Technologies-Inc/foames/pull/59) |
 | Operator recognition | Kudos, credited ideas, milestones and team highlights | [#56](https://github.com/CLR-Technologies-Inc/foames/pull/56) |
 | Vendor discovery skills | Read-only agent skills for discovering a site's vendor installations securely | [#65](https://github.com/CLR-Technologies-Inc/foames/pull/65) |
-| Equipment Complexity Level on Machine | An ECL field on each Machine, and agents tied to a machine only if their model tier meets its ECL. Planned, not yet in a pull request. The benchmark side is in [Equipment complexity levels](Explanation-Equipment-complexity-levels) | Planned |
+| Lineside inventory | Point-of-use stock per machine or line, read from the ERP and estimated from machine counts between reads, with reorder point, min-max or kanban replenishment. Nothing is written to the ERP | [#72](https://github.com/CLR-Technologies-Inc/foames/pull/72) |
+| Material queues | The buffer in front of each machine, with FIFO, priority, earliest due or earliest expiry dispatch, minimum and maximum waits (Q-time, floor life, pot life), and starved or blocked machine detection | [#72](https://github.com/CLR-Technologies-Inc/foames/pull/72) |
+| Dry-line alerts | Warnings before a line is starved of material (Reorder, Running Dry, Will Run Dry, Dry), allowing for lead time and conditioning time | [#72](https://github.com/CLR-Technologies-Inc/foames/pull/72) |
+| Material processing complexity (MPC) | Materials rated 1 to 5 from standard handling factors. MPC 4 is Human Expert Recommended and MPC 5 is Expert Team Required. See [Material processing complexity](Explanation-Material-processing-complexity) | [#72](https://github.com/CLR-Technologies-Inc/foames/pull/72) |
 | SPDX licence headers | One Apache-2.0 SPDX header in every source file, checked in CI, and a licensing guide | [#62](https://github.com/CLR-Technologies-Inc/foames/pull/62) |
 
 To follow or comment on one, open its pull request. See [open pull requests](https://github.com/CLR-Technologies-Inc/foames/pulls) for the current list.

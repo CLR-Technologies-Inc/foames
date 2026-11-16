@@ -14,15 +14,20 @@ from foames_bench import grading, recommend, report, runner, sandbox, scoring, w
 from foames_bench import tasks as tasks_mod
 from foames_bench.paths import BENCH_ROOT, repo_root
 
+SUITE_HELP = (
+	"core (the tasks outside any family), sector-case-study (one task per industrial sector) or all; "
+	"ignored when --tasks names tasks"
+)
+
 
 def _print(*args, **kwargs):
 	print(*args, **kwargs)
 
 
 def cmd_list(opts):
-	for t in tasks_mod.all_tasks(opts.tier):
+	for t in tasks_mod.all_tasks(opts.tier, opts.suite):
 		ecl = f"ECL {t.ecl}" if t.ecl else "ECL -"
-		print(f"{t.id:<26} {t.tier:<7} {t.complexity:<7} TRL {','.join(t.trl_bands):<12} {ecl:<6} {t.title}")
+		print(f"{t.id:<32} {t.tier:<7} {t.complexity:<7} TRL {','.join(t.trl_bands):<12} {ecl:<6} {t.title}")
 
 
 def cmd_agents(opts):
@@ -46,7 +51,7 @@ def _out_dir(opts) -> Path:
 
 def cmd_run(opts):
 	repo = repo_root(opts.repo)
-	tasks = tasks_mod.select(opts.tasks, opts.tier)
+	tasks = tasks_mod.select(opts.tasks, opts.tier, opts.suite)
 	available = agents_mod.load(opts.agents_file)
 	names = opts.agents or ["reference"]
 	missing = [n for n in names if n not in available]
@@ -85,7 +90,7 @@ def cmd_report(opts):
 def cmd_validate(opts):
 	"""The reference solution must succeed and doing nothing must fail, on every selected task."""
 	repo = repo_root(opts.repo)
-	tasks = tasks_mod.select(opts.tasks, opts.tier or "pure")
+	tasks = tasks_mod.select(opts.tasks, opts.tier or "pure", opts.suite)
 	builtins = agents_mod.load(opts.agents_file)
 	out = _out_dir(opts)
 	rows = runner.run(tasks, [builtins["reference"], builtins["noop"]], repo, out, log=_print)
@@ -214,6 +219,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 	s = sub.add_parser("list", help="list the tasks")
 	s.add_argument("--tier", choices=["pure", "frappe", "all"], default="all")
+	s.add_argument("--suite", default="all", help=SUITE_HELP)
 	s.set_defaults(fn=cmd_list)
 
 	s = sub.add_parser("agents", help="list configured agents and whether their CLI is installed")
@@ -226,6 +232,12 @@ def build_parser() -> argparse.ArgumentParser:
 		s = sub.add_parser(name, help=help_)
 		s.add_argument("--tasks", nargs="*", help="task ids (default: all in the tier)")
 		s.add_argument("--tier", choices=["pure", "frappe", "all"], default=None)
+		s.add_argument(
+			"--suite",
+			default="core" if name == "run" else "all",
+			help=SUITE_HELP
+			+ (" (default: core, so a paid run never grows by itself)" if name == "run" else ""),
+		)
 		s.add_argument("--repo", help="FoaMES checkout (default: the parent of benchmarks/, or $FOAMES_REPO)")
 		s.add_argument("--out", help="run directory (default: benchmarks/runs/<UTC time>)")
 		if name == "run":

@@ -1,0 +1,403 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-14 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 0,
+ "engine": "InnoDB",
+ "field_order": [
+  "op_no",
+  "process_step",
+  "machine",
+  "work_element",
+  "cb_structure",
+  "function_requirement",
+  "special_characteristic",
+  "specification",
+  "sb_failure",
+  "failure_effect",
+  "severity",
+  "cb_failure_1",
+  "failure_mode",
+  "cb_failure_2",
+  "failure_cause",
+  "sb_risk",
+  "prevention_controls",
+  "occurrence",
+  "cb_risk_1",
+  "detection_controls",
+  "detection",
+  "cb_risk_2",
+  "action_priority",
+  "rpn",
+  "sb_control",
+  "measurement_name",
+  "sample_size_frequency",
+  "cb_control",
+  "reaction_plan",
+  "sb_observed",
+  "scrap_counter",
+  "downtime_reason",
+  "cb_observed_1",
+  "observed_units",
+  "observed_incidents",
+  "observed_per_thousand",
+  "cb_observed_2",
+  "observed_occurrence",
+  "spc_signals",
+  "observed_on",
+  "sb_action",
+  "prevention_action",
+  "detection_action",
+  "responsible",
+  "cb_action_1",
+  "target_date",
+  "action_status",
+  "completion_date",
+  "action_taken",
+  "cb_action_2",
+  "new_severity",
+  "new_occurrence",
+  "new_detection",
+  "new_action_priority",
+  "new_rpn"
+ ],
+ "fields": [
+  {
+   "fieldname": "op_no",
+   "fieldtype": "Data",
+   "label": "Op",
+   "in_list_view": 1,
+   "columns": 1,
+   "description": "Operation number, for example 20"
+  },
+  {
+   "fieldname": "process_step",
+   "fieldtype": "Data",
+   "label": "Process Step",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "label": "Machine",
+   "options": "Machine",
+   "description": "The machine whose records are observed for this row. Leave empty for a manual step"
+  },
+  {
+   "fieldname": "work_element",
+   "fieldtype": "Select",
+   "label": "Work Element",
+   "options": "\nMan\nMachine\nMaterial\nMethod\nMeasurement\nEnvironment",
+   "description": "The 4M (plus environment) category of the cause"
+  },
+  {
+   "fieldname": "cb_structure",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "function_requirement",
+   "fieldtype": "Small Text",
+   "label": "Process Function and Requirement",
+   "description": "What the step must achieve, with the product or process characteristic"
+  },
+  {
+   "fieldname": "special_characteristic",
+   "fieldtype": "Select",
+   "label": "Special Characteristic",
+   "options": "\nCC\nSC",
+   "description": "CC critical (safety or regulation), SC significant (fit, function, customer)"
+  },
+  {
+   "fieldname": "specification",
+   "fieldtype": "Data",
+   "label": "Specification / Tolerance"
+  },
+  {
+   "fieldname": "sb_failure",
+   "fieldtype": "Section Break",
+   "label": "Failure Chain"
+  },
+  {
+   "fieldname": "failure_effect",
+   "fieldtype": "Small Text",
+   "label": "Failure Effect",
+   "description": "At the plant, at the next customer and at the end user"
+  },
+  {
+   "fieldname": "severity",
+   "fieldtype": "Int",
+   "label": "Severity (S)",
+   "in_list_view": 1,
+   "columns": 1,
+   "description": "1 to 10"
+  },
+  {
+   "fieldname": "cb_failure_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "failure_mode",
+   "fieldtype": "Small Text",
+   "label": "Failure Mode",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "cb_failure_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "failure_cause",
+   "fieldtype": "Small Text",
+   "label": "Failure Cause"
+  },
+  {
+   "fieldname": "sb_risk",
+   "fieldtype": "Section Break",
+   "label": "Current Controls and Risk"
+  },
+  {
+   "fieldname": "prevention_controls",
+   "fieldtype": "Small Text",
+   "label": "Current Prevention Controls"
+  },
+  {
+   "fieldname": "occurrence",
+   "fieldtype": "Int",
+   "label": "Occurrence (O)",
+   "in_list_view": 1,
+   "columns": 1,
+   "description": "1 to 10, of the cause given the prevention controls"
+  },
+  {
+   "fieldname": "cb_risk_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "detection_controls",
+   "fieldtype": "Small Text",
+   "label": "Current Detection Controls"
+  },
+  {
+   "fieldname": "detection",
+   "fieldtype": "Int",
+   "label": "Detection (D)",
+   "in_list_view": 1,
+   "columns": 1,
+   "description": "1 to 10; 10 means not detected"
+  },
+  {
+   "fieldname": "cb_risk_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "action_priority",
+   "fieldtype": "Select",
+   "label": "Action Priority",
+   "options": "\nH\nM\nL",
+   "read_only": 1,
+   "in_list_view": 1,
+   "columns": 1,
+   "description": "AIAG-VDA action priority from S, O and D"
+  },
+  {
+   "fieldname": "rpn",
+   "fieldtype": "Int",
+   "label": "RPN",
+   "read_only": 1,
+   "description": "Legacy S x O x D"
+  },
+  {
+   "fieldname": "sb_control",
+   "fieldtype": "Section Break",
+   "label": "Control Plan"
+  },
+  {
+   "fieldname": "measurement_name",
+   "fieldtype": "Data",
+   "label": "SPC Measurement",
+   "description": "A Measurement name the machine reports (for example bore_diameter). Its SPC signals are counted against this row"
+  },
+  {
+   "fieldname": "sample_size_frequency",
+   "fieldtype": "Data",
+   "label": "Sample Size / Frequency"
+  },
+  {
+   "fieldname": "cb_control",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reaction_plan",
+   "fieldtype": "Small Text",
+   "label": "Reaction Plan"
+  },
+  {
+   "fieldname": "sb_observed",
+   "fieldtype": "Section Break",
+   "label": "Observed on the Floor",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "scrap_counter",
+   "fieldtype": "Data",
+   "label": "Scrap Counter",
+   "description": "A counter that counts only this failure (for example reject_unseated). Its counts are incidents"
+  },
+  {
+   "fieldname": "downtime_reason",
+   "fieldtype": "Link",
+   "label": "Downtime Reason",
+   "options": "Downtime Reason",
+   "description": "Each Downtime Record with this reason on the machine is one incident"
+  },
+  {
+   "fieldname": "cb_observed_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "observed_units",
+   "fieldtype": "Float",
+   "label": "Units Produced",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "observed_incidents",
+   "fieldtype": "Float",
+   "label": "Incidents",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "observed_per_thousand",
+   "fieldtype": "Float",
+   "label": "Incidents per Thousand",
+   "read_only": 1,
+   "precision": "4",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "cb_observed_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "observed_occurrence",
+   "fieldtype": "Int",
+   "label": "Observed Occurrence",
+   "read_only": 1,
+   "description": "The occurrence rating the observed rate supports. A prompt for the team, never applied automatically",
+   "no_copy": 1
+  },
+  {
+   "fieldname": "spc_signals",
+   "fieldtype": "Int",
+   "label": "SPC Signals",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "observed_on",
+   "fieldtype": "Datetime",
+   "label": "Observed On",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "sb_action",
+   "fieldtype": "Section Break",
+   "label": "Optimization"
+  },
+  {
+   "fieldname": "prevention_action",
+   "fieldtype": "Small Text",
+   "label": "Prevention Action"
+  },
+  {
+   "fieldname": "detection_action",
+   "fieldtype": "Small Text",
+   "label": "Detection Action"
+  },
+  {
+   "fieldname": "responsible",
+   "fieldtype": "Link",
+   "label": "Responsible",
+   "options": "User"
+  },
+  {
+   "fieldname": "cb_action_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "target_date",
+   "fieldtype": "Date",
+   "label": "Target Date"
+  },
+  {
+   "fieldname": "action_status",
+   "fieldtype": "Select",
+   "label": "Action Status",
+   "options": "\nOpen\nDecision Pending\nImplementation Pending\nCompleted\nNot Implemented"
+  },
+  {
+   "fieldname": "completion_date",
+   "fieldtype": "Date",
+   "label": "Completion Date"
+  },
+  {
+   "fieldname": "action_taken",
+   "fieldtype": "Small Text",
+   "label": "Action Taken / Evidence",
+   "description": "What was done, with the evidence; or why the action was not implemented"
+  },
+  {
+   "fieldname": "cb_action_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "new_severity",
+   "fieldtype": "Int",
+   "label": "Revised Severity"
+  },
+  {
+   "fieldname": "new_occurrence",
+   "fieldtype": "Int",
+   "label": "Revised Occurrence"
+  },
+  {
+   "fieldname": "new_detection",
+   "fieldtype": "Int",
+   "label": "Revised Detection"
+  },
+  {
+   "fieldname": "new_action_priority",
+   "fieldtype": "Select",
+   "label": "Revised Action Priority",
+   "options": "\nH\nM\nL",
+   "read_only": 1
+  },
+  {
+   "fieldname": "new_rpn",
+   "fieldtype": "Int",
+   "label": "Revised RPN",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-11-14 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES MES",
+ "name": "PFMEA Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}

@@ -67,6 +67,18 @@ class TestUsageParsers(unittest.TestCase):
 		u = usage.parse("gemini-json", out)
 		self.assertEqual((u.input_tokens, u.output_tokens, u.cached_input_tokens), (10, 6, 3))
 
+	def test_aider_lines_are_summed(self):
+		out = (
+			"Tokens: 2.6k sent, 325 received. Cost: $0.00 message, $0.00 session.\n"
+			"Tokens: 9,100 sent, 1.2k cache hit, 1.1k received.\n"
+		)
+		u = usage.parse("aider-text", out)
+		self.assertEqual(
+			(u.input_tokens, u.output_tokens, u.cached_input_tokens, u.turns), (11700, 1425, 1200, 2)
+		)
+		# A zero session cost means aider did not know the price, not that the run was free.
+		self.assertIsNone(u.cost_usd)
+
 	def test_garbage_is_unknown(self):
 		u = usage.parse("claude-json", "not json at all")
 		self.assertIsNone(u.cost_usd)
@@ -367,3 +379,54 @@ class TestSandbox(unittest.TestCase):
 
 if __name__ == "__main__":
 	unittest.main()
+
+
+class TestTaskFamilies(unittest.TestCase):
+	"""Tasks that share a family folder (tasks/_<family>/), such as the sector case studies."""
+
+	def sectors(self):
+		return [t for t in tasks.all_tasks() if t.family == "sector-case-study"]
+
+	def test_a_family_task_gets_the_family_prompt_and_rubric(self):
+		task = tasks.select(["sector-311-food"])[0]
+		self.assertIn("compressed air", task.prompt)
+		self.assertIn("## What to deliver", task.prompt)
+		self.assertIn("## How to work", task.prompt)
+		self.assertEqual(task.rubric_path, task.family_path / "rubric.json")
+		self.assertIsNotNone(task.module("reference"))
+
+	def test_hidden_tests_see_shared_and_own_files(self):
+		task = tasks.select(["sector-311-food"])[0]
+		with tempfile.TemporaryDirectory() as tmp:
+			hidden = task.hidden_dir(Path(tmp))
+			for name in ("sector.json", "test_functional.py", "test_invariants.py", "_fixture.py"):
+				self.assertTrue((hidden / name).exists(), name)
+		self.assertEqual(tasks.select(["counter-reset"])[0].hidden_dir(Path("/nonexistent")).name, "hidden")
+
+	def test_a_run_selects_the_core_tasks_unless_asked(self):
+		core = tasks.select(None, suite="core")
+		self.assertTrue(core)
+		self.assertTrue(all(t.family is None for t in core))
+		self.assertEqual(len(tasks.select(None, suite="sector-case-study")), len(self.sectors()))
+		self.assertIn("sector-case-study", tasks.suites())
+
+	def test_every_sector_cites_a_us_government_source_and_anonymises_the_plant(self):
+		self.assertGreaterEqual(len(self.sectors()), 20)
+		seen = set()
+		for task in self.sectors():
+			sector = json.loads((task.path / "hidden" / "sector.json").read_text(encoding="utf-8"))
+			source = sector["source"]
+			with self.subTest(task=task.id):
+				self.assertEqual(sector["case_id"], task.id)
+				self.assertTrue(source["url"].startswith("https://"))
+				self.assertTrue(source["us_government_work"])
+				self.assertIn(source["url"], task.prompt)
+				self.assertIsInstance(sector["claim"]["value"], (int, float))
+				# The plant is Plant A: the source's company appears only inside its URL.
+				story = (
+					(task.path / "prompt.md").read_text(encoding="utf-8").replace(source["url"], "").lower()
+				)
+				for name in source.get("named_organisations", []):
+					self.assertNotIn(name.lower(), story)
+			seen.add(task.id)
+		self.assertEqual(len(seen), len(self.sectors()))

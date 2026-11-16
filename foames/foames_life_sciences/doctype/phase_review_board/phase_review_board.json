@@ -1,0 +1,118 @@
+{
+ "actions": [],
+ "creation": "2026-11-15 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "board_name",
+  "quorum",
+  "chair",
+  "description",
+  "sb_members",
+  "members"
+ ],
+ "fields": [
+  {
+   "fieldname": "board_name",
+   "fieldtype": "Data",
+   "label": "Board Name",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "quorum",
+   "fieldtype": "Int",
+   "label": "Quorum (Voting Members)",
+   "default": "3",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "chair",
+   "fieldtype": "Link",
+   "label": "Chair",
+   "options": "User",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description",
+   "description": "The products or portfolio the board governs, and its charter"
+  },
+  {
+   "fieldname": "sb_members",
+   "fieldtype": "Section Break",
+   "label": "Members"
+  },
+  {
+   "fieldname": "members",
+   "fieldtype": "Table",
+   "label": "Members",
+   "options": "Phase Review Board Member",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Life Sciences",
+ "name": "Phase Review Board",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "track_changes": 1,
+ "title_field": "board_name",
+ "show_title_field_in_link": 1,
+ "search_fields": "chair",
+ "description": "A phase review board: the cross-functional group with decision authority over NPI gates"
+}

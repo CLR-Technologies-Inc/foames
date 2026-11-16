@@ -1,0 +1,10 @@
+{
+ "Version": "1.76.0",
+ "MagicDNSSuffix": "example-tailnet.ts.net",
+ "CurrentTailnet": {"Name": "example.org", "MagicDNSSuffix": "example-tailnet.ts.net"},
+ "Self": {"ID": "n1", "HostName": "gateway-1", "DNSName": "gateway-1.example-tailnet.ts.net.", "OS": "linux", "TailscaleIPs": ["100.64.0.1"], "Online": true},
+ "Peer": {
+  "nodekey:a": {"ID": "n2", "HostName": "gpu-box", "DNSName": "gpu-box.example-tailnet.ts.net.", "OS": "linux", "TailscaleIPs": ["100.64.0.2"], "Online": true, "Tags": ["tag:agents"]},
+  "nodekey:b": {"ID": "n3", "HostName": "Line 2 HMI", "DNSName": "line-2-hmi.example-tailnet.ts.net.", "OS": "windows", "TailscaleIPs": ["100.64.0.3"], "Online": false, "LastSeen": "2026-11-15T08:30:00Z"}
+ }
+}

@@ -1,0 +1,145 @@
+{
+ "actions": [],
+ "creation": "2026-11-15 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "req_id",
+  "level",
+  "parent_req",
+  "requirement",
+  "critical",
+  "rationale",
+  "cb_verify",
+  "acceptance_criteria",
+  "verification_method",
+  "risk_reference",
+  "sb_trace",
+  "design_output",
+  "verification_reference",
+  "cb_trace",
+  "verification_status",
+  "validation_reference"
+ ],
+ "fields": [
+  {
+   "fieldname": "req_id",
+   "fieldtype": "Data",
+   "label": "ID",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "level",
+   "fieldtype": "Select",
+   "label": "Level",
+   "options": "User Need\nDesign Input\nQTPP Element\nCQA\nRegulatory\nBusiness",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "parent_req",
+   "fieldtype": "Data",
+   "label": "Refines",
+   "in_list_view": 1,
+   "columns": 1,
+   "description": "ID of the user need or QTPP element this refines"
+  },
+  {
+   "fieldname": "requirement",
+   "fieldtype": "Small Text",
+   "label": "Requirement",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 3
+  },
+  {
+   "fieldname": "critical",
+   "fieldtype": "Check",
+   "label": "Critical",
+   "in_list_view": 1,
+   "columns": 1,
+   "description": "Safety- or efficacy-critical; a CQA or an essential design input"
+  },
+  {
+   "fieldname": "rationale",
+   "fieldtype": "Small Text",
+   "label": "Rationale"
+  },
+  {
+   "fieldname": "cb_verify",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "acceptance_criteria",
+   "fieldtype": "Small Text",
+   "label": "Acceptance Criteria"
+  },
+  {
+   "fieldname": "verification_method",
+   "fieldtype": "Select",
+   "label": "Verification Method",
+   "options": "\nTest\nInspection\nAnalysis\nDemonstration\nClinical\nUsability"
+  },
+  {
+   "fieldname": "risk_reference",
+   "fieldtype": "Data",
+   "label": "Risk Reference",
+   "description": "The hazard, FMEA line or risk control this requirement carries"
+  },
+  {
+   "fieldname": "sb_trace",
+   "fieldtype": "Section Break",
+   "label": "Trace"
+  },
+  {
+   "fieldname": "design_output",
+   "fieldtype": "Data",
+   "label": "Design Output",
+   "allow_on_submit": 1,
+   "description": "Drawing, specification, software item or process step that meets it"
+  },
+  {
+   "fieldname": "verification_reference",
+   "fieldtype": "Data",
+   "label": "Verification Reference",
+   "allow_on_submit": 1
+  },
+  {
+   "fieldname": "cb_trace",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "verification_status",
+   "fieldtype": "Select",
+   "label": "Verification Status",
+   "options": "Not Started\nPlanned\nPassed\nFailed",
+   "default": "Not Started",
+   "allow_on_submit": 1,
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "validation_reference",
+   "fieldtype": "Data",
+   "label": "Validation Reference",
+   "allow_on_submit": 1,
+   "description": "For a user need: the design validation that shows the product meets it"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Life Sciences",
+ "name": "Product Requirement",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1,
+ "permissions": []
+}

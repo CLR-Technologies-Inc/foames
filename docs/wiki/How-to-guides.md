@@ -37,6 +37,8 @@ How-to guides are recipes for people who already run FoaMES and need to get one 
 | [Seed a dev site for agent tests](How-to-Seed-a-dev-site-for-agent-tests) | Fill a dev site with a shift of invented machine data for agents to analyse |
 | [Run the agent benchmark](How-to-Run-the-agent-benchmark) | Compare coding agents on the six FoaMES tasks, read the results and pick a model |
 | [Add your own agent to the benchmark](How-to-Add-your-own-agent-to-the-benchmark) | Benchmark a harness, model or script that is not configured yet |
+| [Rate equipment and run the equipment agent](How-to-Rate-equipment-and-run-the-equipment-agent) | Give machines an Equipment Complexity Level and let an agent advise only where its model tier is good enough |
+| [Run the materials agent](How-to-Run-the-materials-agent) | Have an agent warn before lines run dry and point at material near its Q-time, floor life or expiry |
 
 ## Taking part
 

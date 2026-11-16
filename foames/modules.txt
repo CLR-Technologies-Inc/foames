@@ -3,3 +3,9 @@ FoaMES MES
 FoaMES Adapters
 FoaMES Process Mining
 FoaMES Risk
+FoaMES Topology
+FoaMES Life Sciences
+FoaMES PID
+FoaMES EHS
+FoaMES Commissioning
+FoaMES Validation

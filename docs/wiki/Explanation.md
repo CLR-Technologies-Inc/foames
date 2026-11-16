@@ -8,4 +8,5 @@ Explanation pages discuss *why* FoaMES is built the way it is. Read them away fr
 | [The outbox and safe writes](Explanation-The-outbox-and-safe-writes) | How FoaMES writes to other systems without ever doing the same thing twice |
 | [How the benchmark scores agents](Explanation-How-the-benchmark-scores-agents) | Why an agent that breaks an invariant fails, and why cheap and wrong never outranks correct |
 | [Equipment complexity levels (ECL)](Explanation-Equipment-complexity-levels) | Why a manufacturer rates equipment, not just technology readiness, and where a human expert must stay in charge |
+| [Material processing complexity (MPC)](Explanation-Material-processing-complexity) *(upcoming)* | How hard a material is to handle, rated from existing standards, and when an expert or an expert team must review it |
 | [Why Apache-2.0](Explanation-Why-Apache-2.0) | Why this licence, what the CLA is for, and how it sits next to Frappe and ERPNext |

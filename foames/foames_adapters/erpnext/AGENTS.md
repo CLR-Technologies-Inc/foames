@@ -14,7 +14,7 @@ A same-site adapter, registered under the key `ERPNext` (`ERPNextAdapter` in `__
 
 ## Package map
 
-Modules that import nothing from Frappe, tested without a site: `postings.py` (the outbox rules: operations, idempotency marker, error classification, retry) and `production.py` (the roll-up arithmetic).
+Modules that import nothing from Frappe, tested without a site: `postings.py` (the outbox rules: operations, idempotency marker, error classification, retry), `production.py` (the roll-up arithmetic) and `schedule_demand.py` (open Job Cards as Production Schedule rows).
 
 Frappe side:
 
@@ -30,6 +30,7 @@ Frappe side:
 | `downtime.py` | Posts closed Downtime Records as Downtime Entries |
 | `quality.py` | Quality Inspections from what the floor measured, including the inspection queued when a machine's job ends (`inspect_job_card`) |
 | `follow.py` | Machines follow the Job Cards people start, complete, cancel or delete in ERPNext |
+| `schedule.py` | The open Job Cards on mapped Workstations as Production Schedule rows (`foames_schedule_demand_sources`); read only |
 | `api.py` | Whitelisted endpoints |
 | `fixtures.py` | Test fixtures for a site that has ERPNext (a company, a raw material with stock, a finished good with a one-operation BOM, a workstation, a Quality Inspection Template) |
 
@@ -55,7 +56,7 @@ Add the operation to `postings.py` first, with its payload rules and a pure test
 
 ## Tests
 
-- Pure: `test_postings.py` and `test_production.py` need no site.
+- Pure: `test_postings.py`, `test_production.py` and `test_schedule_demand.py` need no site.
 - Outbox queue behaviour runs on any Frappe site (`doctype/erpnext_outbox/test_erpnext_outbox.py`).
 - End-to-end: `test_erpnext_integration.py` needs ERPNext on the site and skips otherwise. CI runs it in the "Frappe v16 + ERPNext" job; locally the Docker dev bench runs it with `ERPNEXT_BRANCH` set (see [docs/dev-bench.md](../../../docs/dev-bench.md)). The outbox commits after each posting, so these tests leave their Work Orders and Stock Entries in the `FoaMES Test Co` company.
 

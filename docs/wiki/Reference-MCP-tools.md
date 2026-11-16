@@ -9,9 +9,11 @@ FoaMES is an MCP server. Each tool is one whitelisted method run as the user who
 
 | Tool | Returns | Needs |
 | --- | --- | --- |
-| `foames_list_machines(status, machine_type, include_disabled, limit)` | Machines with state, last seen, last count, cycle time, shift | read on Machine |
+| `foames_list_machines(status, machine_type, include_disabled, limit, ecl)` | Machines with state, last seen, last count, cycle time, shift, ECL | read on Machine |
 | `foames_get_machine(machine)` | One machine, 24-hour counts, open downtime, latest OEE Period, last 20 state changes | read on Machine |
-| `foames_get_floor_snapshot(days)` | The whole floor as one object | read on Machine |
+| `foames_get_floor_snapshot(days)` | The whole floor as one object; each machine carries its `ecl` | read on Machine |
+| `foames_get_equipment_profile(machine, tier)` | A machine's ECL, minimum model tier (`oss`, `baseline`, `frontier`, or none at ECL 5), agent role, oversight (`none`, `single`, `team`), line ECL and unrated line members; with `tier`, an `eligibility` verdict and reason | read on Machine |
+| `foames_list_equipment_complexity(line, include_disabled)` | Every machine's ECL, minimum tier and oversight, `by_level` counts, `unrated` machines, `lines` with each line's ECL | read on Machine |
 | `foames_list_machine_events(machine, event_type, since, until, limit)` | Raw events with counter deltas | read on Machine Event |
 | `foames_list_downtime(machine, status, reason, since, until, limit)` | Downtime Records | read on Downtime Record |
 | `foames_downtime_by_reason(machine, since, until)` | Minutes per reason, plus unclassified | read on Downtime Record |

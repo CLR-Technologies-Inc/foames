@@ -6,7 +6,15 @@
  "engine": "InnoDB",
  "field_order": [
   "default_erp_system",
-  "skip_resolution_on_save"
+  "skip_resolution_on_save",
+  "read_only_section",
+  "read_only_mode",
+  "read_only_action",
+  "new_connectors_read_only",
+  "column_break_sign_off",
+  "sign_off_role",
+  "require_second_person",
+  "gate_agent_suggestions"
  ],
  "fields": [
   {
@@ -21,12 +29,66 @@
    "fieldtype": "Check",
    "label": "Skip Resolving References on Save",
    "description": "By default each External Reference is looked up in its ERP when it is saved, if that ERP is available on this site. Check this to resolve only on demand."
+  },
+  {
+   "fieldname": "read_only_section",
+   "fieldtype": "Section Break",
+   "label": "Read-only Mode",
+   "description": "Connectors read first. While read-only mode is on, every write to an ERP, another MES, SCADA or a historian, and every write an agent makes through the MCP server, passes one gate: it waits as a Pending Write for an authorised operator's electronic signature, or is refused, and each step is logged against its work order, Job Card or process run in the Write Audit Log. See docs/read-only-mode.md."
+  },
+  {
+   "default": "1",
+   "fieldname": "read_only_mode",
+   "fieldtype": "Check",
+   "label": "Site-wide Read-only Mode",
+   "description": "Every connector is read-only, whatever its own Connector Write Policy says. On by default for a new site."
+  },
+  {
+   "default": "Queue for sign-off",
+   "fieldname": "read_only_action",
+   "fieldtype": "Select",
+   "label": "When Read-only",
+   "options": "Queue for sign-off\nBlock",
+   "description": "What happens to a write from a read-only connector, unless its policy says otherwise."
+  },
+  {
+   "default": "1",
+   "fieldname": "new_connectors_read_only",
+   "fieldtype": "Check",
+   "label": "New Connectors Start Read-only",
+   "description": "A connector the gate sees for the first time gets a Connector Write Policy that is read-only."
+  },
+  {
+   "fieldname": "column_break_sign_off",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "FoaMES Supervisor",
+   "fieldname": "sign_off_role",
+   "fieldtype": "Link",
+   "label": "Sign-off Role",
+   "options": "Role",
+   "description": "Role a person needs to sign a Pending Write. A connector's policy can name another."
+  },
+  {
+   "default": "1",
+   "fieldname": "require_second_person",
+   "fieldtype": "Check",
+   "label": "Signer Must Differ from Requester",
+   "description": "The person (or API user) who asked for a write cannot sign it off."
+  },
+  {
+   "default": "0",
+   "fieldname": "gate_agent_suggestions",
+   "fieldtype": "Check",
+   "label": "Hold Agent Suggestions Too",
+   "description": "By default the MCP tools that only raise Agent Suggestions (which people then act on) run in read-only mode. Check to hold them for sign-off as well."
   }
  ],
  "index_web_pages_for_search": 0,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-29 21:30:00.000000",
+ "modified": "2026-11-15 22:30:00.000000",
  "modified_by": "Administrator",
  "module": "FoaMES Kernel",
  "name": "FoaMES Settings",

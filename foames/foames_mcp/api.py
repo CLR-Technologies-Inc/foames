@@ -44,9 +44,22 @@ def mcp():
 	return Response(response, status=200, mimetype="application/json", headers=headers)
 
 
+def catalogue() -> list[Tool]:
+	"""The core tools and those other apps add with the `foames_mcp_tools` hook. A registered tool may
+	not take a core tool's name."""
+	tools = list(TOOLS)
+	names = {tool.name for tool in tools}
+	for path in frappe.get_hooks("foames_mcp_tools") or []:
+		for tool in frappe.get_attr(path)():
+			if tool.name not in names:
+				tools.append(tool)
+				names.add(tool.name)
+	return tools
+
+
 def get_server() -> Server:
 	return Server(
-		TOOLS,
+		catalogue(),
 		call=execute_tool,
 		name="foames",
 		version=foames.__version__,
@@ -57,12 +70,22 @@ def get_server() -> Server:
 
 def execute_tool(tool: Tool, arguments: dict):
 	"""Run the tool's whitelisted method as the current user; undo its writes if it fails."""
+	from foames.foames_kernel.write_gate import ReadOnlyModeError, gate_tool_call
+
 	method = frappe.get_attr(tool.method)
 	frappe.is_whitelisted(method)
 	frappe.db.savepoint("foames_mcp_tool")
 	try:
+		# Read-only mode: a write is held for an operator's sign-off (the agent gets the Pending Write)
+		# or refused, instead of being made.
+		held = gate_tool_call(tool, arguments)
+		if held is not None:
+			return held
 		# The arguments were validated against the tool's schema, whose keys are the method's parameters.
 		return method(**arguments)
+	except ReadOnlyModeError as e:
+		# The refusal was logged; keep the audit entry.
+		raise ToolError(_message(e)) from e
 	except REPORTABLE as e:
 		frappe.db.rollback(save_point="foames_mcp_tool")
 		raise ToolError(_message(e)) from e
@@ -91,4 +114,4 @@ def handle(message: dict) -> dict | None:
 
 
 def tool_list() -> list[dict]:
-	return [tool.to_mcp() for tool in TOOLS]
+	return [tool.to_mcp() for tool in catalogue()]

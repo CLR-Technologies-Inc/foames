@@ -1,0 +1,246 @@
+{
+ "actions": [],
+ "creation": "2026-11-15 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "title",
+  "product_name",
+  "product_type",
+  "regulatory_pathway",
+  "cb_head",
+  "program_lead",
+  "current_stage",
+  "status",
+  "product_requirements",
+  "tech_transfer_package",
+  "phase_review_board",
+  "sb_description",
+  "description",
+  "sb_gates",
+  "gates",
+  "sb_criteria",
+  "criteria",
+  "sb_deliverables",
+  "deliverables"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "NPI-.YYYY.-",
+   "default": "NPI-.YYYY.-",
+   "hidden": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "product_name",
+   "fieldtype": "Data",
+   "label": "Product",
+   "reqd": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "product_type",
+   "fieldtype": "Select",
+   "label": "Product Type",
+   "options": "Medical Device\nIn Vitro Diagnostic\nCombination Product\nDrug Substance\nDrug Product\nBiologic\nCell and Gene Therapy\nOther",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "Sets the deliverable template: design controls for devices and diagnostics, QbD and tech transfer for drugs and biologics, both for a combination product"
+  },
+  {
+   "fieldname": "regulatory_pathway",
+   "fieldtype": "Data",
+   "label": "Regulatory Pathway",
+   "description": "For example 510(k), De Novo, PMA, CE (MDR), NDA, BLA, ANDA; for information"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "program_lead",
+   "fieldtype": "Link",
+   "label": "Program Lead",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "current_stage",
+   "fieldtype": "Select",
+   "label": "Current Stage",
+   "options": "Concept\nFeasibility\nDevelopment\nVerification & Validation\nTransfer\nLaunch",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "default": "Concept"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Active\nOn Hold\nLaunched\nCancelled",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "default": "Active"
+  },
+  {
+   "fieldname": "product_requirements",
+   "fieldtype": "Link",
+   "label": "Product Requirements",
+   "options": "Product Requirements Document"
+  },
+  {
+   "fieldname": "tech_transfer_package",
+   "fieldtype": "Link",
+   "label": "Tech Transfer Package",
+   "options": "Tech Transfer Package"
+  },
+  {
+   "fieldname": "phase_review_board",
+   "fieldtype": "Link",
+   "label": "Phase Review Board",
+   "options": "Phase Review Board",
+   "description": "When set, gate decisions are made only by a Phase Review of this board, closed by its Chair"
+  },
+  {
+   "fieldname": "sb_description",
+   "fieldtype": "Section Break",
+   "label": "Description",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "label": "Description"
+  },
+  {
+   "fieldname": "sb_gates",
+   "fieldtype": "Section Break",
+   "label": "Gates"
+  },
+  {
+   "fieldname": "gates",
+   "fieldtype": "Table",
+   "label": "Gates",
+   "options": "NPI Gate",
+   "description": "One gate per stage. Gate decisions are recorded with the Record Gate Decision action, by a reviewer other than the program lead."
+  },
+  {
+   "fieldname": "sb_criteria",
+   "fieldtype": "Section Break",
+   "label": "Phase Review Criteria"
+  },
+  {
+   "fieldname": "criteria",
+   "fieldtype": "Table",
+   "label": "Criteria",
+   "options": "NPI Phase Criterion",
+   "description": "Entry and exit criteria of each phase review, filled from the template. Go and Conditional Go need the stage's required exit criteria met; a phase review needs its entry criteria met."
+  },
+  {
+   "fieldname": "sb_deliverables",
+   "fieldtype": "Section Break",
+   "label": "Deliverables"
+  },
+  {
+   "fieldname": "deliverables",
+   "fieldtype": "Table",
+   "label": "Deliverables",
+   "options": "NPI Deliverable",
+   "description": "Filled from the template for the product type when the program is created; add, remove or mark items Not Applicable to fit the site's procedure."
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Life Sciences",
+ "name": "NPI Program",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "title",
+ "show_title_field_in_link": 1,
+ "search_fields": "product_name,current_stage,status",
+ "description": "A new product introduction run through stage gates, from concept to commercial manufacturing"
+}

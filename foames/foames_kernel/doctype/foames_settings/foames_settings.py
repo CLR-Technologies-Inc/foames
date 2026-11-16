@@ -12,3 +12,8 @@ class FoaMESSettings(Document):
 	def validate(self):
 		if self.default_erp_system and self.default_erp_system not in get_adapters():
 			frappe.throw(_("{0} is not a registered ERP system").format(frappe.bold(self.default_erp_system)))
+
+	def on_update(self):
+		from foames.foames_kernel.write_gate import log_settings_change
+
+		log_settings_change(self)

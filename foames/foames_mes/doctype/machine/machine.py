@@ -37,6 +37,7 @@ class Machine(Document):
 			self.title = self.code
 		if not self.source_id:
 			self.source_id = self.code
+		self.validate_ecl()
 		for field, expected in REFERENCE_TYPES.items():
 			if self.get(field):
 				actual = frappe.db.get_value("External Reference", self.get(field), "reference_type")
@@ -52,6 +53,22 @@ class Machine(Document):
 			)
 		elif not self.current_job_reference:
 			self.current_job_since = None
+
+	def validate_ecl(self):
+		from foames.foames_mes.ecl import parse_ecl, valid_class_id
+
+		try:
+			parse_ecl(self.ecl)
+		except ValueError:
+			frappe.throw(_("Equipment Complexity Level must be 1 to 5, or empty"))
+		if self.ecl_class:
+			self.ecl_class = self.ecl_class.strip().lower()
+			if not valid_class_id(self.ecl_class):
+				frappe.throw(
+					_(
+						"ECL Equipment Class must be a class id from the ECL list, such as cnc-machining-centre"
+					)
+				)
 
 	def on_update(self):
 		if self.job_changed():

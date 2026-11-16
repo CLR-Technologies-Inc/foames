@@ -22,6 +22,7 @@ Events arrive through a signed webhook, an MQTT gateway, a Sparkplug B gateway o
 | Floor View (page) | MES | Live tiles per machine with state, counts and OEE, plus open suggestions. |
 | Agent Suggestion | MES | A finding raised by the built-in rules or by an external agent, with evidence, for a person to accept or dismiss. |
 | Andon Call, Andon Call Type | MES | A call for help at a machine (maintenance, material, quality, supervisor, safety), with response and resolution times. A call that misses its type's targets becomes an Agent Suggestion. |
+| Work Instruction, Work Instruction Run | MES | Step-by-step operator instructions with images, attachments and video links, revision-controlled (Draft, Released, Obsolete). A run executes a released revision at a machine: steps in order, checks and readings against limits, two-person sign-offs, holds on failed critical checks. Failed steps and stalled runs become Agent Suggestions; readings can feed SPC. |
 | SPC Control Chart (report) | MES | I-MR or X-bar R chart of a machine measurement with Nelson or Western Electric run rules; signals on recent readings become Quality suggestions. |
 
 The OEE arithmetic and the suggestion rules have no Frappe dependency (`foames/foames_mes/oee.py`, `suggestions.py`, `spc.py`). The counter-delta, owed-count and coverage ideas follow public MES practice, including the FactorySemantics MES design notes. See [docs/agents/floor-agent.md](agents/floor-agent.md) for the agent API and the hooks that add snapshot sections and rules.
@@ -35,6 +36,16 @@ The OEE arithmetic and the suggestion rules have no Frappe dependency (`foames/f
 
 Machine states and downtime are built-in sources. The analyses (directly-follows graph, variants, throughput, waiting times, rework, conformance replay and footprint comparison) have no Frappe dependency (`foames/foames_process_mining/discovery.py`, `conformance.py`). See [docs/process-mining.md](process-mining.md).
 
+## Validation and qualification
+
+| Record | Module | Role |
+| --- | --- | --- |
+| Validation Protocol | Validation | An approved IQ, OQ, PQ, PPQ or CPV protocol for a machine or a process, with acceptance criteria: pass/fail checks, numeric ranges, capability (Cpk or Ppk) and statistical control on machine measurements. |
+| Validation Execution | Validation | One run of a protocol: results, evidence, deviations and dispositions, approved by someone other than the executor; sets the outcome and the date the qualification lapses. |
+| Qualification Status (report) | Validation | Every machine and process with its status (Qualified, Due Soon, Expired, Runs Pending, Not Qualified); a daily check raises suggestions for those due or expired. |
+
+The rules have no Frappe dependency (`foames/foames_validation/qualification.py`, and `capability` in `spc.py`). See [docs/validation.md](validation.md).
+
 ## Agents and MCP
 
-FoaMES is an MCP server. `POST /api/method/foames.foames_mcp.api.mcp` speaks the Model Context Protocol over Streamable HTTP with a Frappe API key, and `python -m foames.foames_mcp` is a standard-library stdio bridge to it for Claude Desktop, Claude Code, Cursor and other clients. The 26 tools read machines and state, downtime, OEE, time projections, the floor snapshot, suggestions, process mining and ERP references through the adapters, each with the permissions of the key's user; the only writes create Agent Suggestions or record a machine's current job. See [docs/mcp.md](mcp.md).
+FoaMES is an MCP server. `POST /api/method/foames.foames_mcp.api.mcp` speaks the Model Context Protocol over Streamable HTTP with a Frappe API key, and `python -m foames.foames_mcp` is a standard-library stdio bridge to it for Claude Desktop, Claude Code, Cursor and other clients. The 45 tools read machines, their state and Equipment Complexity Level, downtime, OEE, time projections, the floor snapshot, lineside stock and material queues, suggestions, process mining, qualification status and ERP references through the adapters, each with the permissions of the key's user; the only writes create Agent Suggestions or record a machine's current job. See [docs/mcp.md](mcp.md).

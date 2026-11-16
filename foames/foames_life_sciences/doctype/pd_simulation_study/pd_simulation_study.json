@@ -1,0 +1,346 @@
+{
+ "actions": [],
+ "creation": "2026-11-15 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "title",
+  "process_name",
+  "scale",
+  "tech_transfer_package",
+  "cb_head",
+  "npi_program",
+  "status",
+  "purpose",
+  "sb_factors",
+  "factors",
+  "responses",
+  "sb_design",
+  "design_type",
+  "levels",
+  "fraction",
+  "cb_design",
+  "center_points",
+  "replicates",
+  "randomise",
+  "seed",
+  "design_summary",
+  "design_factors",
+  "sb_runs",
+  "runs",
+  "sb_model",
+  "model_type",
+  "model_summary",
+  "model_results",
+  "sb_what_if",
+  "iterations",
+  "include_model_error",
+  "cb_what_if",
+  "probability_all_in_limits",
+  "sb_what_if_results",
+  "what_if_summary",
+  "what_if_results"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "PDS-.YYYY.-",
+   "default": "PDS-.YYYY.-",
+   "hidden": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "process_name",
+   "fieldtype": "Data",
+   "label": "Process",
+   "in_standard_filter": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "scale",
+   "fieldtype": "Data",
+   "label": "Scale",
+   "description": "For example 2 L bench, 50 L pilot, or the scale-down model the study ran on"
+  },
+  {
+   "fieldname": "tech_transfer_package",
+   "fieldtype": "Link",
+   "label": "Tech Transfer Package",
+   "options": "Tech Transfer Package"
+  },
+  {
+   "fieldname": "cb_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "npi_program",
+   "fieldtype": "Link",
+   "label": "NPI Program",
+   "options": "NPI Program"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Planning\nRuns Pending\nModelled",
+   "default": "Planning",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "purpose",
+   "fieldtype": "Small Text",
+   "label": "Purpose",
+   "description": "The question the study answers, for example ranges for the CPPs of the production bioreactor"
+  },
+  {
+   "fieldname": "sb_factors",
+   "fieldtype": "Section Break",
+   "label": "Factors and Responses"
+  },
+  {
+   "fieldname": "factors",
+   "fieldtype": "Table",
+   "label": "Factors",
+   "options": "PD Factor",
+   "description": "Up to six factors, mapped to x1 to x6 of the runs in row order"
+  },
+  {
+   "fieldname": "responses",
+   "fieldtype": "Table",
+   "label": "Responses",
+   "options": "PD Response",
+   "description": "Up to four responses, mapped to y1 to y4 of the runs in row order"
+  },
+  {
+   "fieldname": "sb_design",
+   "fieldtype": "Section Break",
+   "label": "Design"
+  },
+  {
+   "fieldname": "design_type",
+   "fieldtype": "Select",
+   "label": "Design",
+   "options": "Full Factorial\nFractional Factorial\nCentral Composite (Face-Centred)\nCentral Composite (Rotatable)",
+   "default": "Central Composite (Face-Centred)"
+  },
+  {
+   "fieldname": "levels",
+   "fieldtype": "Int",
+   "label": "Levels",
+   "default": "2",
+   "description": "Full factorial only"
+  },
+  {
+   "fieldname": "fraction",
+   "fieldtype": "Int",
+   "label": "Fraction (p)",
+   "default": "1",
+   "description": "Fractional factorial only: 2^(k-p) runs"
+  },
+  {
+   "fieldname": "cb_design",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "center_points",
+   "fieldtype": "Int",
+   "label": "Centre Points",
+   "default": "3"
+  },
+  {
+   "fieldname": "replicates",
+   "fieldtype": "Int",
+   "label": "Replicates",
+   "default": "1"
+  },
+  {
+   "fieldname": "randomise",
+   "fieldtype": "Check",
+   "label": "Randomise Run Order",
+   "default": "1"
+  },
+  {
+   "fieldname": "seed",
+   "fieldtype": "Int",
+   "label": "Random Seed",
+   "default": "1",
+   "description": "The same seed gives the same run order and the same what-if draws"
+  },
+  {
+   "fieldname": "design_summary",
+   "fieldtype": "Small Text",
+   "label": "Design Summary",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "design_factors",
+   "fieldtype": "Small Text",
+   "label": "Design Factors",
+   "hidden": 1,
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "sb_runs",
+   "fieldtype": "Section Break",
+   "label": "Runs"
+  },
+  {
+   "fieldname": "runs",
+   "fieldtype": "Table",
+   "label": "Runs",
+   "options": "PD Run",
+   "description": "Generate the design, run the experiments, then enter each response in y1 to y4. Edit x1 to x6 when a run's actual settings differed from the plan."
+  },
+  {
+   "fieldname": "sb_model",
+   "fieldtype": "Section Break",
+   "label": "Model"
+  },
+  {
+   "fieldname": "model_type",
+   "fieldtype": "Select",
+   "label": "Model",
+   "options": "Linear\nLinear + Interactions\nQuadratic",
+   "default": "Quadratic"
+  },
+  {
+   "fieldname": "model_summary",
+   "fieldtype": "Small Text",
+   "label": "Model Summary",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "model_results",
+   "fieldtype": "Code",
+   "label": "Model Results",
+   "options": "JSON",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "sb_what_if",
+   "fieldtype": "Section Break",
+   "label": "What-If"
+  },
+  {
+   "fieldname": "iterations",
+   "fieldtype": "Int",
+   "label": "Iterations",
+   "default": "5000"
+  },
+  {
+   "fieldname": "include_model_error",
+   "fieldtype": "Check",
+   "label": "Add Model Error",
+   "default": "1",
+   "description": "Add the fit's residual error to each prediction"
+  },
+  {
+   "fieldname": "cb_what_if",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "probability_all_in_limits",
+   "fieldtype": "Percent",
+   "label": "All Responses in Limits",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "sb_what_if_results",
+   "fieldtype": "Section Break",
+   "label": "What-If Results",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "what_if_summary",
+   "fieldtype": "Small Text",
+   "label": "What If Summary",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "what_if_results",
+   "fieldtype": "Code",
+   "label": "What-If Results",
+   "options": "JSON",
+   "read_only": 1,
+   "no_copy": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Life Sciences",
+ "name": "PD Simulation Study",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "title",
+ "show_title_field_in_link": 1,
+ "search_fields": "process_name,status",
+ "description": "A process development study: a designed experiment, response-surface models, Monte Carlo what-if and a design-space map"
+}

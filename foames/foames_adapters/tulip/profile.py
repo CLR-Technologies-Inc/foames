@@ -16,7 +16,7 @@ PROFILE = Profile(
 	auth_methods=(AUTH_BASIC,),
 	api_key_header="",
 	token_url_hint="",
-	site_label="",
+	site_label="Workspace ID (empty when the instance has no workspaces or the service account belongs to one)",
 	headers={},
 	entities={},
 	notes=(
@@ -29,6 +29,10 @@ PROFILE = Profile(
 		"table that holds it, with the Query lookup and the table's own field ids as key and label; this "
 		"profile ships no paths. Machine attributes can be reported to Tulip through the REST Request "
 		"operation; a table record created through the API carries its own id, so a record write can be made "
-		"a Client Reference posting on a field the table has for it."
+		"a Client Reference posting on a field the table has for it. FoaMES reads Tulip tables, records, machines "
+		"and stations through the Tulip read tools (foames.foames_adapters.tulip.reads, also on the MCP server); "
+		"the connector starts read-only, so every write to Tulip waits for an operator's sign-off until the "
+		"plant approves it. Give the service account read scopes (tables:read, machines:read, stations:read) "
+		"until then."
 	),
 )

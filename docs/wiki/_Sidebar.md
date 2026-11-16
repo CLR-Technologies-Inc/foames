@@ -25,6 +25,8 @@
 - [[Seed a dev site for agent tests|How-to-Seed-a-dev-site-for-agent-tests]]
 - [[Run the agent benchmark|How-to-Run-the-agent-benchmark]]
 - [[Add your own agent to the benchmark|How-to-Add-your-own-agent-to-the-benchmark]]
+- [[Rate equipment and run the equipment agent|How-to-Rate-equipment-and-run-the-equipment-agent]]
+- [[Run the materials agent|How-to-Run-the-materials-agent]]
 - [[Contribute|How-to-Contribute]]
 
 **[[Reference|Reference]]** (look up)
@@ -49,6 +51,7 @@
 - [[The outbox and safe writes|Explanation-The-outbox-and-safe-writes]]
 - [[How the benchmark scores agents|Explanation-How-the-benchmark-scores-agents]]
 - [[Equipment complexity levels|Explanation-Equipment-complexity-levels]]
+- [[Material processing complexity (upcoming)|Explanation-Material-processing-complexity]]
 - [[Why Apache-2.0|Explanation-Why-Apache-2.0]]
 
 **[[Upcoming features|Upcoming-features]]**

@@ -1,0 +1,74 @@
+{
+ "actions": [],
+ "creation": "2026-11-15 22:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "user",
+  "board_role",
+  "function",
+  "present",
+  "vote",
+  "comment"
+ ],
+ "fields": [
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User",
+   "reqd": 1,
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "board_role",
+   "fieldtype": "Select",
+   "label": "Board Role",
+   "options": "Chair\nMember\nAdvisor\nSecretary\nGuest",
+   "default": "Guest",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "function",
+   "fieldtype": "Data",
+   "label": "Function",
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "present",
+   "fieldtype": "Check",
+   "label": "Present",
+   "in_list_view": 1,
+   "columns": 1
+  },
+  {
+   "fieldname": "vote",
+   "fieldtype": "Select",
+   "label": "Vote",
+   "options": "\nGo\nConditional Go\nRecycle\nHold\nKill\nAbstain",
+   "in_list_view": 1,
+   "columns": 2
+  },
+  {
+   "fieldname": "comment",
+   "fieldtype": "Small Text",
+   "label": "Comment"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 22:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Life Sciences",
+ "name": "Phase Review Attendee",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1,
+ "editable_grid": 1,
+ "permissions": []
+}

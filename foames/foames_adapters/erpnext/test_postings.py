@@ -386,7 +386,10 @@ class TestHooksMatchTheAdapter(unittest.TestCase):
 		spec.loader.exec_module(hooks)
 		self.assertEqual(
 			set(hooks.doc_events),
-			set(REFERENCE_TYPES_BY_DOCTYPE) | {"Downtime Record", "Maintenance Work Order"},
+			set(REFERENCE_TYPES_BY_DOCTYPE)
+			| {"Downtime Record", "Maintenance Work Order"}
+			# The adapter outboxes read-only mode holds.
+			| set(hooks.foames_write_gated_outboxes),
 		)
 		for doctype in REFERENCE_TYPES_BY_DOCTYPE:
 			self.assertEqual(dict(hooks.doc_events[doctype]), DOC_EVENTS[doctype])
