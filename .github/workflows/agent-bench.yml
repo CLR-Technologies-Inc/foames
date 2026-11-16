@@ -116,9 +116,15 @@ jobs:
         with:
           python-version: "3.12"
       - id: names
+        env:
+          AGENT: ${{ matrix.agent }}
+          TASK: ${{ matrix.task }}
+          RUN_ID: ${{ github.run_id }}
         run: |
           # The workflow run id keeps a rerun of the same agent and tasks from overwriting earlier run files.
-          echo "slug=$(echo '${{ matrix.agent }}-${{ contains(matrix.task, ' ') && 'all' || matrix.task }}-${{ github.run_id }}' | tr -c 'A-Za-z0-9._-' '_')" >> "$GITHUB_OUTPUT"
+          # Values come in through env, not inline expressions, so they cannot inject shell.
+          case "$TASK" in *" "*) t=all ;; *) t="$TASK" ;; esac
+          echo "slug=$(printf '%s' "$AGENT-$t-$RUN_ID" | tr -c 'A-Za-z0-9._-' '_')" >> "$GITHUB_OUTPUT"
       - name: Sandbox image with aider
         run: |
           docker build -t foames-bench-agent \
