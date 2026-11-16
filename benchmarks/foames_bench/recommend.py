@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Which model tier to start with for a project's TRL and process complexity, optionally raised by
 the Equipment Complexity Level (ECL) of the machine involved, and, given benchmark results, which of
