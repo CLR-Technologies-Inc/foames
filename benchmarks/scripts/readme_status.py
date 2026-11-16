@@ -80,7 +80,7 @@ def table(agents: list, results: dict, status: dict) -> list[str]:
 					f"{round(100 * s['success_rate'])}% | {('ECL ' + str(ecl)) if ecl else 'none'} |"
 				)
 			else:
-				why = a.get("_skip_reason") and f"Skipped: {a['_skip_reason']}" or status.get(name)
+				why = (a.get("_skip_reason") and f"Skipped: {a['_skip_reason']}") or status.get(name)
 				why = why or next(
 					(v for k, v in status.items() if k.endswith("*") and name.startswith(k[:-1])), ""
 				)
