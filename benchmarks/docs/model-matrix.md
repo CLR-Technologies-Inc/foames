@@ -52,3 +52,7 @@ Model names are given by family on purpose. Versions change every few months, so
 ## Replacing the prior with evidence
 
 `foames-bench recommend --results` takes a run directory, keeps the runs of the cell's qualifying tasks, and ranks your agents. An agent qualifies when it ran every qualifying task, its mean quality reaches the cell's minimum, and every repetition succeeded. Qualified agents are listed cheapest per success first. Use at least two repetitions to qualify an agent, and five or more if the result goes into a thesis ([methodology](methodology.md#statistics-for-theses)).
+
+## Equipment Complexity Level (ECL)
+
+TRL suits research; manufacturers also need to know how complex the equipment is. Each task carries an `ecl` (1 to 5, or null when no equipment is involved) and a `machine_class`, and `recommend --ecl N` applies the level as a floor: the primary tier is raised to the ECL's minimum tier, alternatives below it are dropped, agents below it do not qualify, and ECL 4 and 5 are marked "Human Expert Recommended". At ECL 5 (for example a lithography scanner) no current tier is adequate. ECL 1 (for example a torque wrench) is usually served by a small open-weight model. The levels map onto USP <1058> instrument groups, IEC 61508-2 Type A/B elements, GAMP 5 software categories and the Sheridan-Verplanck levels of automation; `foames-bench matrix` prints the table, and the wiki's "Equipment complexity levels" page explains it. The current tasks are at ECL 2 and 3, so ECL 4 and 5 rest on the prior only.

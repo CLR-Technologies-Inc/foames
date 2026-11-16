@@ -22,6 +22,8 @@ The same model can score differently through two CLIs. The benchmark records bot
 
 ## Evidence over opinion
 
+For manufacturers, the [Equipment Complexity Level](Explanation-Equipment-complexity-levels) of the machine involved sets a floor under the matrix. It can raise the starting tier, and at ECL 4 and 5 it marks the result **Human Expert Recommended**. At ECL 5 no agent qualifies, whatever it scores.
+
 The TRL × complexity matrix is a dated starting point, not a measurement. Its purpose is to be replaced: `recommend --results` ranks your own agents on the tasks that qualify them for your project's cell. Two repetitions show whether a setup works; five or more, with intervals and a paired test across tasks, support a published claim.
 
 Details: [benchmarks/docs/methodology.md](https://github.com/CLR-Technologies-Inc/foames/blob/main/benchmarks/docs/methodology.md). Commands and fields: [Benchmark configuration](Reference-Benchmark-configuration).

@@ -21,7 +21,8 @@ def _print(*args, **kwargs):
 
 def cmd_list(opts):
 	for t in tasks_mod.all_tasks(opts.tier):
-		print(f"{t.id:<26} {t.tier:<7} {t.complexity:<7} TRL {','.join(t.trl_bands):<12} {t.title}")
+		ecl = f"ECL {t.ecl}" if t.ecl else "ECL -"
+		print(f"{t.id:<26} {t.tier:<7} {t.complexity:<7} TRL {','.join(t.trl_bands):<12} {ecl:<6} {t.title}")
 
 
 def cmd_agents(opts):
@@ -131,10 +132,18 @@ def cmd_grade(opts):
 
 
 def cmd_recommend(opts):
-	rec = recommend.cell(opts.trl, opts.complexity)
+	rec = recommend.with_ecl(recommend.cell(opts.trl, opts.complexity), opts.ecl)
 	tiers = recommend.load()["tiers"]
-	print(f"TRL {opts.trl} (band {rec['band']}), {rec['complexity']} complexity, prior as of {rec['as_of']}")
-	print(f"  Start with: {tiers[rec['primary']]['label']}")
+	ecl = f", ECL {rec['ecl']} ({rec['ecl_name']})" if "ecl" in rec else ""
+	print(
+		f"TRL {opts.trl} (band {rec['band']}), {rec['complexity']} complexity{ecl}, prior as of {rec['as_of']}"
+	)
+	if rec.get("human_expert_recommended"):
+		print(f"  ** {recommend.HUMAN_EXPERT} **")
+	if rec["primary"] is None:
+		print("  Start with: no model tier is adequate at this ECL; agents may list options for an expert")
+	else:
+		print(f"  Start with: {tiers[rec['primary']]['label']}")
 	if rec["alternative"]:
 		print(f"  Alternative: {tiers[rec['alternative']]['label']}")
 	print(f"  Human review: {rec['human_review']}")
@@ -142,9 +151,10 @@ def cmd_recommend(opts):
 	print(
 		f"  Qualify a model with: {', '.join(rec['qualify_with'])} (min quality {rec['min_quality']}, every repetition must succeed)"
 	)
-	print("  Example models in that tier:")
-	for ex in tiers[rec["primary"]]["examples"]:
-		print("   - " + ", ".join(f"{v}" for v in ex.values()))
+	if rec["primary"] is not None:
+		print("  Example models in that tier:")
+		for ex in tiers[rec["primary"]]["examples"]:
+			print("   - " + ", ".join(f"{v}" for v in ex.values()))
 	if opts.results:
 		ranked = recommend.qualify(report.load(Path(opts.results)), rec)
 		print("\nFrom your results:")
@@ -155,7 +165,11 @@ def cmd_recommend(opts):
 			note = (
 				"QUALIFIES"
 				if a["qualifies"]
-				else ("missing " + ", ".join(a["missing_tasks"]) if a["missing_tasks"] else "below bar")
+				else (
+					"missing " + ", ".join(a["missing_tasks"])
+					if a["missing_tasks"]
+					else ("tier below the ECL minimum" if a["below_ecl_tier"] else "below bar")
+				)
 			)
 			print(
 				f"  {a['agent']:<22} {a['tier'] or '-':<9} quality {a['quality']:.2f}  cost/success {cps:<8} {note}"
@@ -245,11 +259,17 @@ def build_parser() -> argparse.ArgumentParser:
 	s = sub.add_parser("recommend", help="model tier for a TRL and process complexity")
 	s.add_argument("--trl", type=int, required=True)
 	s.add_argument("--complexity", choices=recommend.COMPLEXITIES, required=True)
+	s.add_argument(
+		"--ecl",
+		type=int,
+		choices=recommend.ECLS,
+		help="Equipment Complexity Level of the machine involved (1-5)",
+	)
 	s.add_argument("--results", help="a run directory: rank your agents for this cell")
 	s.add_argument("--json", action="store_true")
 	s.set_defaults(fn=cmd_recommend)
 
-	s = sub.add_parser("matrix", help="print the TRL x complexity matrix")
+	s = sub.add_parser("matrix", help="print the TRL x complexity matrix and the ECL table")
 	s.set_defaults(fn=cmd_matrix)
 
 	s = sub.add_parser("estimate", help="pilot budget arithmetic")

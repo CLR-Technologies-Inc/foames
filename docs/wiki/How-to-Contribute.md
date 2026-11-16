@@ -2,6 +2,8 @@
 
 ## 1. Set up
 
+> **CI-tested.** The Docker dev bench steps (`cp .env.example .env`, `./bench.sh up`, `./bench.sh test`, `./bench.sh bench migrate`) run in the [Docker smoke test](https://github.com/CLR-Technologies-Inc/foames/actions/workflows/docker-smoke.yml) on every change to the dev bench.
+
 Follow [Tutorial 1](Tutorial-1-Install-FoaMES), then:
 
 ```bash

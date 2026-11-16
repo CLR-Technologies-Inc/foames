@@ -93,6 +93,13 @@ def _money(v):
 	return "n/a" if v is None else f"${v:.2f}"
 
 
+def _task_ecls() -> dict:
+	"""Task id to Equipment Complexity Level, for the per-task table."""
+	from foames_bench import tasks
+
+	return {t.id: t.ecl for t in tasks.all_tasks()}
+
+
 def markdown(summary: dict) -> str:
 	lines = [
 		"| Agent | Model | Tier | Sandbox | Runs | Success | First try | Quality | Composite | Mean time | Cost | Cost per success |",
@@ -105,16 +112,20 @@ def markdown(summary: dict) -> str:
 			f"{s['first_attempt_success']:.0%} | {s['quality']:.2f} | {s['composite']:.2f} | {s['mean_seconds']:.0f} s | "
 			f"{_money(s['total_cost_usd'])} | {_money(s['cost_per_success_usd'])} |"
 		)
+	ecls = _task_ecls()
 	lines += [
 		"",
-		"| Agent | Task | Runs | Success | Quality | Correctness | Process | Mean time | Cost |",
-		"| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+		"| Agent | Task | ECL | Runs | Success | Quality | Correctness | Process | Mean time | Cost |",
+		"| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
 	]
 	for s in summary["by_agent_task"]:
+		ecl = ecls.get(s["task"])
 		lines.append(
-			f"| {s['agent']} | {s['task']} | {s['runs']} | {s['success_rate']:.0%} | {s['quality']:.2f} | "
+			f"| {s['agent']} | {s['task']} | {ecl or '-'} | {s['runs']} | {s['success_rate']:.0%} | {s['quality']:.2f} | "
 			f"{s['correctness']:.2f} | {s['process']:.2f} | {s['mean_seconds']:.0f} s | {_money(s['total_cost_usd'])} |"
 		)
+	if any((ecls.get(s["task"]) or 0) >= 4 for s in summary["by_agent_task"]):
+		lines += ["", "Tasks at ECL 4 or 5: Human Expert Recommended, whatever the score."]
 	if any("none" in s["sandbox"].split(", ") for s in summary["by_agent"].values()):
 		lines += ["", "Runs with sandbox `none` could read the hidden tests. Do not publish them as results."]
 	return "\n".join(lines) + "\n"

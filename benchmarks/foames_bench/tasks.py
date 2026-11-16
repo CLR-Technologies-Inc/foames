@@ -24,6 +24,8 @@ class Task:
 	dimension: str
 	path: Path
 	hidden: dict[str, list[str]]
+	ecl: int | None = None  # Equipment Complexity Level 1-5, None when no equipment is involved
+	machine_class: str = ""
 	regression: list[str] = field(default_factory=list)
 	allowed_paths: list[str] = field(default_factory=list)
 	deliverables: list[str] = field(default_factory=list)

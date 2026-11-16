@@ -48,6 +48,7 @@
 - [[Agents suggest, people act|Explanation-Agents-suggest-people-act]]
 - [[The outbox and safe writes|Explanation-The-outbox-and-safe-writes]]
 - [[How the benchmark scores agents|Explanation-How-the-benchmark-scores-agents]]
+- [[Equipment complexity levels|Explanation-Equipment-complexity-levels]]
 - [[Why Apache-2.0|Explanation-Why-Apache-2.0]]
 
 **[[Upcoming features|Upcoming-features]]**

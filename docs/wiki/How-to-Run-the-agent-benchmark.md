@@ -1,5 +1,7 @@
 **Goal:** compare several coding agents on all six FoaMES tasks, with repetitions, inside a sandbox, under a spending cap, and turn the results into a model choice for your project.
 
+> **CI-tested.** The commands on this page run, as written, in the [Docker smoke test](https://github.com/CLR-Technologies-Inc/foames/actions/workflows/docker-smoke.yml) on every change to them. Steps that need your own agent or API key are the exception.
+
 **You need:** the setup from [Tutorial 4](Tutorial-4-Your-first-agent-benchmark-run): `foames-bench` installed, `validate` passing, the Docker image built, and your agents listed as available by `foames-bench agents`.
 
 ## 1. Choose the scenarios
@@ -61,9 +63,10 @@ The first table ranks agents by **quality** and shows success rate with its 95 %
 ```bash
 foames-bench matrix
 foames-bench recommend --trl 5 --complexity medium --results runs/<run id>
+foames-bench recommend --trl 5 --complexity medium --ecl 3 --results runs/<run id>
 ```
 
-`matrix` prints the starting recommendation for each technology readiness level band and process complexity. It is a dated prior, not a measurement. `recommend --results` keeps your runs of that cell's qualifying tasks and lists the agents that ran all of them, met the minimum quality and succeeded on every repetition, cheapest per success first.
+`matrix` prints the starting recommendation for each technology readiness level band and process complexity. It is a dated prior, not a measurement. `recommend --results` keeps your runs of that cell's qualifying tasks and lists the agents that ran all of them, met the minimum quality and succeeded on every repetition, cheapest per success first. Add `--ecl N` when the work is tied to a machine: the [Equipment Complexity Level](Explanation-Equipment-complexity-levels) raises the tier to its minimum, drops agents below that tier, and at ECL 4 and 5 marks the result **Human Expert Recommended**.
 
 ## 6. Report it
 

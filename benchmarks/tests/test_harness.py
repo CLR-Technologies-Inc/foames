@@ -139,6 +139,45 @@ class TestRecommend(unittest.TestCase):
 		self.assertEqual([a["agent"] for a in ranked], ["cheap", "dear", "bad"])
 		self.assertFalse(ranked[-1]["qualifies"])
 
+	def test_every_ecl_is_described_and_every_task_has_one(self):
+		data = recommend.load()
+		for n in recommend.ECLS:
+			level = data["ecl"]["levels"][str(n)]
+			self.assertIn(level["min_tier"], (*data["tiers"], None))
+			if level["min_tier"] is None:
+				self.assertTrue(level["human_expert_recommended"], n)
+		for t in tasks.all_tasks():
+			self.assertTrue(t.machine_class, t.id)
+			self.assertIn(t.ecl, (*recommend.ECLS, None), t.id)
+
+	def test_ecl_raises_the_tier_and_flags_the_expert(self):
+		low = recommend.cell(2, "low")
+		self.assertEqual(low["primary"], "oss")
+		self.assertEqual(recommend.with_ecl(low, 1)["primary"], "oss")
+		self.assertEqual(recommend.with_ecl(low, 3)["primary"], "baseline")
+		four = recommend.with_ecl(low, 4)
+		self.assertEqual((four["primary"], four["alternative"]), ("frontier", None))
+		self.assertTrue(four["human_expert_recommended"])
+		self.assertTrue(four["human_review"].startswith(recommend.HUMAN_EXPERT))
+		five = recommend.with_ecl(low, 5)
+		self.assertIsNone(five["primary"])
+		self.assertTrue(five["human_expert_recommended"])
+
+	def test_no_agent_qualifies_above_its_ecl(self):
+		row = {
+			"agent": "local",
+			"model": "",
+			"agent_tier": "oss",
+			"task": "counter-reset",
+			"usage": {"cost_usd": 0.0},
+			"scores": {"quality": 1.0, "success": True},
+		}
+		cell = recommend.cell(2, "low")
+		self.assertTrue(recommend.qualify([row], recommend.with_ecl(cell, 2))[0]["qualifies"])
+		self.assertFalse(recommend.qualify([row], recommend.with_ecl(cell, 3))[0]["qualifies"])
+		frontier = dict(row, agent_tier="frontier")
+		self.assertFalse(recommend.qualify([frontier], recommend.with_ecl(cell, 5))[0]["qualifies"])
+
 
 class TestEndToEnd(unittest.TestCase):
 	def test_a_command_agent_that_fixes_the_bug(self):

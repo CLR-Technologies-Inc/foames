@@ -1,5 +1,7 @@
 In this tutorial you will go from nothing to a scored test of your own coding agent on FoaMES. You will check that the benchmark's grader works, run one task with an agent of your choice inside a sandbox, and read its score. Any CLI or harness works: Claude Code, Codex CLI, Gemini CLI, OpenCode, Aider, Google Antigravity (added as your own agent), or a script of your own.
 
+> **CI-tested.** The commands on this page run, as written, in the [Docker smoke test](https://github.com/CLR-Technologies-Inc/foames/actions/workflows/docker-smoke.yml) on every change to them. Steps that need your own agent or API key are the exception.
+
 **You need:** Git, Python 3.10 or later, and Docker (recommended) on Linux, macOS or Windows. Your agent's CLI and an API key for it, or a local model. **You do not need a Frappe site**: the six benchmark tasks run with plain Python.
 
 > Agents in the benchmark run with their permission prompts switched off so they can work unattended. The sandbox is what keeps them inside their workspace. Use a machine whose files you do not mind an agent seeing, and do not skip the sandbox step for a real result.

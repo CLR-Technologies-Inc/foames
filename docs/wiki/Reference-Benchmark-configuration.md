@@ -1,4 +1,4 @@
-The agent benchmark lives in [`benchmarks/`](https://github.com/CLR-Technologies-Inc/foames/blob/main/benchmarks/README.md). It is outside the app: nothing in it is imported by `foames` and nothing in it runs in CI. Python 3.10 or later, standard library only.
+The agent benchmark lives in [`benchmarks/`](https://github.com/CLR-Technologies-Inc/foames/blob/main/benchmarks/README.md). It is outside the app: nothing in it is imported by `foames`. Its commands are **CI-tested** in the [Docker smoke test](https://github.com/CLR-Technologies-Inc/foames/actions/workflows/docker-smoke.yml). Python 3.10 or later, standard library only.
 
 ## Commands
 
@@ -13,8 +13,8 @@ Run as `foames-bench <command>` after `pip install -e .` in `benchmarks/`, or `p
 | `report` | `run_dir` | Writes `summary.md`, `summary.json`, `summary.csv` and prints the tables |
 | `prepare` | `--task`, `--dest`, `--repo` | Makes one workspace (and `<dest parent>/<task>.prompt.md`) for a hand run |
 | `grade` | `--task`, `--workspace`, `--repo`, `--seconds`, `--cost-usd`, `--full` | Grades a prepared workspace and prints the scores as JSON |
-| `recommend` | `--trl N`, `--complexity low\|medium\|high`, `--results run_dir`, `--json` | The model tier for a cell, and with results, your qualifying agents ranked |
-| `matrix` | | Prints the TRL × complexity matrix |
+| `recommend` | `--trl N`, `--complexity low\|medium\|high`, `--ecl 1-5`, `--results run_dir`, `--json` | The model tier for a cell, raised to the ECL minimum when `--ecl` is given, and with results, your qualifying agents ranked |
+| `matrix` | | Prints the TRL × complexity matrix, then the ECL table |
 | `estimate` | `--agents` (4), `--tasks` (6), `--reps` (2), `--per-run` (1.0) | Pilot budget arithmetic |
 
 `--repo` (or `FOAMES_REPO`) points at the FoaMES checkout to benchmark; the default is the parent of `benchmarks/`.
@@ -63,6 +63,8 @@ Shipped entries: `reference`, `noop`, `claude-code-frontier`, `claude-code-basel
 | `tier` | `pure` (Python only) or `frappe` (needs the dev bench) |
 | `complexity` | `low`, `medium` or `high` |
 | `trl_bands` | The TRL bands the task informs |
+| `ecl` | The [Equipment Complexity Level](Explanation-Equipment-complexity-levels) (1 to 5) of the equipment in the scenario, or `null` when no equipment is involved |
+| `machine_class` | The kind of equipment the scenario simulates, in words |
 | `dimension` | What it measures |
 | `hidden` | `{"functional": [...], "invariant": [...]}` test files in `hidden/` |
 | `regression` | Repository tests run from the pristine checkout against the agent's code |
