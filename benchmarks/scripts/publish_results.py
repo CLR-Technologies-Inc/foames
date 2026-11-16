@@ -292,8 +292,8 @@ def main(argv=None):
 		+ ".",
 		"",
 		"Every agent ran the six pure tasks in the benchmark's Docker sandbox on a GitHub-hosted runner "
-		"(4 vCPU, 16 GB, no GPU). Hosted models were called on GitHub Models' free tier; local models were "
-		"served by Ollama on the runner's CPU. Ranking is by quality (correctness and process, without cost), as in "
+		"(4 vCPU, 16 GB, no GPU). Local models were served by Ollama on the runner's CPU; hosted models, "
+		"where present, were called on their providers' free API tiers. Ranking is by quality (correctness and process, without cost), as in "
 		"[docs/methodology.md](../../docs/methodology.md). One repetition cannot separate close agents; read the "
 		"intervals.",
 		"",
@@ -342,13 +342,10 @@ def main(argv=None):
 		"## Notes",
 		"",
 		f"- {ECL_NOTE}",
-		"- Cost is what the runs cost: $0 on GitHub Models' free tier and for local models (electricity and runner "
+		"- Cost is what the runs cost: $0 on free API tiers and for local models (electricity and runner "
 		"time are not counted). The list-price equivalent prices the same tokens at the provider's paid list price "
 		"(agents.json `_list_prices`).",
 		"- Aider prints token counts rounded to the nearest hundred above 1,000, so token totals are approximate.",
-		"- GitHub Models' free tier caps each request at about 8,000 input tokens. Aider's repository map was "
-		"kept at 512 tokens for those agents, and a model that asks to read a large file such as AGENTS.md can hit "
-		"the cap. That is a limit of the free tier, not of the model.",
 		"- Local models ran on CPU only. The recommended open-weight models in the matrix (Qwen3-Coder 30B, "
 		"gpt-oss 20b and up) need more memory or a GPU than a hosted runner has; the small coder models here are a "
 		"floor for the open-weight tier, not its ceiling.",

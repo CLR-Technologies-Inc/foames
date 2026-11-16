@@ -11,10 +11,9 @@ Every agent here is [aider](https://aider.chat) in the benchmark's Docker sandbo
 
 | Agents | Where the model runs | Key |
 | --- | --- | --- |
-| `aider-ghm-*` | GitHub Models, free tier | The workflow's own `GITHUB_TOKEN` with `models: read`. Nothing to set up. |
 | `aider-ollama-*` | Ollama on the runner (4 vCPU, 16 GB, no GPU) | None. Small coder models only; a 30B model does not fit. |
 
-GitHub Models' free tier caps each request at about 8,000 input tokens and a few dozen to a few hundred requests a day per model. A full run is 6 tasks and a handful of requests each, so one repetition a day per model fits.
+GitHub Models was tried first, because a workflow's own token can call it with no sign-up. On 2026-11-16 every request to `models.github.ai` from a hosted runner, including the catalog and made-up paths, answered `200 OK` with a plain-text body of `OK` and no completion, and the older `models.inference.ai.azure.com` host no longer resolves. It is left out until it answers again.
 
 ## Free API tiers you can add
 

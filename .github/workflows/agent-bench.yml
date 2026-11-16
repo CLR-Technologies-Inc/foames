@@ -3,8 +3,8 @@
 name: Agent benchmark
 
 # Runs the FoaMES agent benchmark (benchmarks/) with agents that need no paid key:
-#   - models on GitHub Models, called with this workflow's own GITHUB_TOKEN (permission models: read)
-#   - small open-weight models served by Ollama on the runner itself (CPU only)
+#   - small open-weight models served by Ollama on the runner itself (CPU only), with no key at all
+#   - hosted models on free API tiers, for each provider whose key is set as an Actions secret
 # Each agent runs in the benchmark's Docker sandbox. Every agent is one job, so each model's free-tier
 # rate limit is spent independently. The last job combines the runs into benchmarks/results/<date>/.
 # Nothing here runs on pull requests or pushes to main: start it from the Actions tab.
@@ -12,12 +12,12 @@ name: Agent benchmark
 on:
   push:
     branches: [claude/project-thread-97ppc8]
-    paths: [.github/workflows/agent-bench.yml]
+    paths: [benchmarks/results/run-request.txt]
   workflow_dispatch:
     inputs:
       agents:
         description: Comma-separated agent names from benchmarks/agents.json
-        default: aider-ghm-gpt-4.1,aider-ghm-gpt-4.1-mini,aider-ghm-gpt-4o-mini,aider-ollama-qwen2.5-coder-7b,aider-ollama-qwen2.5-coder-3b,aider-gemini-2.5-flash,aider-groq-gpt-oss-120b,aider-openrouter-qwen3-coder-free,aider-mistral-devstral,aider-cerebras-gpt-oss-120b
+        default: aider-ollama-qwen2.5-coder-7b,aider-ollama-qwen2.5-coder-3b,aider-gemini-2.5-flash,aider-groq-gpt-oss-120b,aider-openrouter-qwen3-coder-free,aider-mistral-devstral,aider-cerebras-gpt-oss-120b
       reps:
         description: Repetitions of each task
         default: "1"
@@ -38,12 +38,11 @@ jobs:
       agents: ${{ steps.plan.outputs.agents }}
     permissions:
       contents: read
-      models: read
     steps:
       - uses: actions/checkout@v4
       - id: plan
         env:
-          AGENTS: ${{ inputs.agents || 'aider-ghm-gpt-4.1,aider-ghm-gpt-4.1-mini,aider-ghm-gpt-4o-mini,aider-ollama-qwen2.5-coder-7b,aider-ollama-qwen2.5-coder-3b,aider-gemini-2.5-flash,aider-groq-gpt-oss-120b,aider-openrouter-qwen3-coder-free,aider-mistral-devstral,aider-cerebras-gpt-oss-120b' }}
+          AGENTS: ${{ inputs.agents || 'aider-ollama-qwen2.5-coder-7b,aider-ollama-qwen2.5-coder-3b,aider-gemini-2.5-flash,aider-groq-gpt-oss-120b,aider-openrouter-qwen3-coder-free,aider-mistral-devstral,aider-cerebras-gpt-oss-120b' }}
           # Only whether each is set is read here; the values never leave the bench job's sandbox.
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
@@ -68,32 +67,6 @@ jobs:
                   f.write(f"- skipped {name}: " + ("not in agents.json" if name not in cfg else f"no {secret} secret") + "\n")
           print("run", run, "skipped", skipped)
           PY
-      - name: GitHub Models catalog (what this token can reach)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          curl -sS -w '\nHTTP %{http_code}\n' https://models.github.ai/catalog/models \
-            -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" -o catalog.json || true
-          head -c 300 catalog.json; echo
-          # What answers at the GitHub Models hosts (headers and the start of the body only).
-          for url in https://models.github.ai/inference/chat/completions https://models.github.ai/this-path-does-not-exist; do
-            echo "== POST $url"
-            curl -sS -m 60 -i "$url" -H "Authorization: Bearer $GH_TOKEN" -H "Content-Type: application/json" \
-              -d '{"model":"openai/gpt-4.1-mini","messages":[{"role":"user","content":"Say ok"}],"max_tokens":5}' \
-              | grep -viE '^(set-cookie|authorization)' | head -c 1200; echo
-          done
-          getent hosts models.github.ai || true
-          python3 - <<'PY'
-          import json
-          try:
-              rows = json.load(open("catalog.json"))
-          except Exception as e:
-              print("catalog unavailable:", e); raise SystemExit(0)
-          for m in rows:
-              limits = m.get("limits") or {}
-              print(f"{m.get('id',''):<55} tier={m.get('rate_limit_tier',''):<8} in={limits.get('max_input_tokens')} out={limits.get('max_output_tokens')}")
-          PY
 
   bench:
     needs: plan
@@ -101,7 +74,6 @@ jobs:
     timeout-minutes: 330
     permissions:
       contents: read
-      models: read
     strategy:
       fail-fast: false
       matrix:
@@ -133,8 +105,6 @@ jobs:
       - name: Run the benchmark
         working-directory: benchmarks
         env:
-          # Only the GitHub Models agents use it; it can read models and this public repository only.
-          OPENAI_API_KEY: ${{ startsWith(matrix.agent, 'aider-ghm-') && secrets.GITHUB_TOKEN || '' }}
           # Free-tier provider keys, from Actions secrets. Each agent's sandbox passes in only its own.
           GEMINI_API_KEY: ${{ startsWith(matrix.agent, 'aider-gemini-') && secrets.GEMINI_API_KEY || '' }}
           GROQ_API_KEY: ${{ startsWith(matrix.agent, 'aider-groq-') && secrets.GROQ_API_KEY || '' }}
