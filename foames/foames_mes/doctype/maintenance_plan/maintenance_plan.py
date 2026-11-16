@@ -1,11 +1,13 @@
 # Copyright (c) 2026 CLR Technologies Inc. and contributors
 # SPDX-License-Identifier: Apache-2.0
 
-"""A preventive maintenance task for one machine, due by calendar, run hours or counts.
+"""A preventive maintenance task for one machine or facility asset, due by calendar, run hours or counts.
 
 The meter is read from data FoaMES already keeps: Running time from the OEE state ledger (Downtime
 Records overlaid, Unknown never counted) and production from the stored counter deltas. Nothing is
-inferred from missing events, so a machine that stops reporting stops wearing on paper too.
+inferred from missing events, so a machine that stops reporting stops wearing on paper too. A plan on
+a Facility Asset (building equipment) reads its run-status point and totalizing meter instead
+(foames.foames_bms.meters), by the same rules.
 """
 
 import frappe
@@ -22,6 +24,8 @@ OPEN_WORK_ORDER_STATUSES = ("Open", "In Progress")
 
 class MaintenancePlan(Document):
 	def validate(self):
+		if bool(self.machine) == bool(self.facility_asset):
+			frappe.throw(_("A maintenance plan is for one machine or one facility asset"))
 		if not self.interval or self.interval <= 0:
 			frappe.throw(_("The interval must be positive"))
 		if self.warn_percent is None or self.warn_percent == "":
@@ -33,8 +37,11 @@ class MaintenancePlan(Document):
 		if self.trigger_type != "Count":
 			self.counter_name = None
 		elif self.counter_name:
-			# Machine Events store counter names in lower case.
-			self.counter_name = self.counter_name.strip().lower()
+			# Machine Events store counter names in lower case; on a facility asset it names a
+			# Building Point, kept as written.
+			self.counter_name = self.counter_name.strip()
+			if not self.facility_asset:
+				self.counter_name = self.counter_name.lower()
 		now = now_datetime()
 		if not self.last_done_on:
 			self.last_done_on = now
@@ -46,7 +53,10 @@ class MaintenancePlan(Document):
 		"""The plan's meter at `now`: used, percent, remaining, status, due_on and the open work order."""
 		now = get_datetime(now) if now else now_datetime()
 		since = get_datetime(self.last_done_on) if self.last_done_on else now
-		used = meter_reading(self.trigger_type, self.machine, since, now, self.counter_name)
+		if self.facility_asset:
+			used = asset_meter_reading(self.trigger_type, self.facility_asset, since, now, self.counter_name)
+		else:
+			used = meter_reading(self.trigger_type, self.machine, since, now, self.counter_name)
 		result = assess(used, self.interval, self.warn_percent, self.grace_percent)
 		result.update(
 			{
@@ -83,6 +93,19 @@ def meter_reading(trigger: str, machine: str, since, until, counter_name: str | 
 		return run_hours(machine, since, until)
 	if trigger == "Count":
 		return production(machine, since, until, counter_name)
+	frappe.throw(_("Unknown trigger {0}").format(trigger))
+
+
+def asset_meter_reading(trigger: str, asset: str, since, until, counter_name: str | None = None) -> float:
+	"""The meter of a plan on a Facility Asset, from its building points."""
+	from foames.foames_bms import meters
+
+	if trigger == "Calendar":
+		return calendar_days(since, until)
+	if trigger == "Run Hours":
+		return meters.run_hours(asset, since, until)
+	if trigger == "Count":
+		return meters.count(asset, since, until, counter_name)
 	frappe.throw(_("Unknown trigger {0}").format(trigger))
 
 
@@ -187,7 +210,7 @@ def check_maintenance_plans(now=None) -> list[str]:
 			{
 				"name": name,
 				"title": plan.title,
-				"machine": plan.machine,
+				"machine": plan.machine or plan.facility_asset,
 				"trigger": plan.trigger_type,
 				"interval": plan.interval,
 				"used": meter["used"],

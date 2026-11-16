@@ -9,6 +9,7 @@
   "maintenance_plan",
   "title",
   "machine",
+  "facility_asset",
   "cb_head",
   "status",
   "assigned_to",
@@ -61,6 +62,14 @@
    "read_only": 1,
    "fetch_from": "maintenance_plan.machine",
    "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "facility_asset",
+   "fieldtype": "Link",
+   "label": "Facility Asset",
+   "options": "Facility Asset",
+   "read_only": 1,
    "in_standard_filter": 1
   },
   {

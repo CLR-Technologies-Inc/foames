@@ -32,6 +32,7 @@ How the framework works: [Connect an MES or Tulip](How-to-Connect-an-MES-or-Tuli
 | Ignition (Inductive Automation) | Sparkplug B, OPC UA or a gateway script | [Connect Ignition](How-to-Connect-Ignition) |
 | AVEVA PI, InfluxDB, Ignition Tag Historian, TimescaleDB and SQL historians | Read-only bridge outside the app | [Read a process historian](How-to-Read-a-process-historian) |
 | Bluesky and Tiled (NSLS-II) | Bridge outside the app, Measurement events | [docs/vendors/bluesky](https://github.com/CLR-Technologies-Inc/foames/blob/main/docs/vendors/bluesky/README.md) |
+| Building automation (BMS / BAS) controllers and meters | BACnet/IP or Modbus TCP, read-only gateway outside the app, building point readings | [Monitor building systems](How-to-Monitor-building-systems) |
 | Any PLC, gateway or IoT bridge | Webhook, MQTT, Sparkplug B or OPC UA | [Send machine data](How-to-Send-machine-data) |
 
 ## Kernel reference types

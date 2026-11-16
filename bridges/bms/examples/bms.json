@@ -1,0 +1,14 @@
+{
+  "devices": {
+    "ahu-controller": {"protocol": "bacnet", "host": "10.0.5.20"},
+    "chiller-plant": {"protocol": "bacnet", "host": "10.0.5.30", "dnet": 2001, "dadr": "0a"},
+    "main-meter": {"protocol": "modbus", "host": "10.0.6.10", "unit": 1}
+  },
+  "points": [
+    {"point": "AHU-1.SAT", "device": "ahu-controller", "object": "analog-input", "instance": 3, "status_flags": true},
+    {"point": "AHU-1.FAN-STATUS", "device": "ahu-controller", "object": "binary-input", "instance": 1},
+    {"point": "CH-1.CHWS-TEMP", "device": "chiller-plant", "object": "analog-input", "instance": 10},
+    {"point": "MAIN.KWH", "device": "main-meter", "reference": 40001, "data_type": "float32"},
+    {"point": "MAIN.KW", "device": "main-meter", "table": "holding", "address": 2, "data_type": "float32", "scale": 0.001}
+  ]
+}

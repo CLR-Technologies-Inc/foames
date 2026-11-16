@@ -8,6 +8,7 @@ How-to guides are recipes for people who already run FoaMES and need to get one 
 | [Run the gateways in production](How-to-Run-the-gateways-in-production) | Keep the MQTT, Sparkplug B and OPC UA gateways running under supervisor or systemd |
 | [Connect Ignition](How-to-Connect-Ignition) | Bring an Ignition SCADA gateway's tags into FoaMES |
 | [Read a process historian](How-to-Read-a-process-historian) | Read tag history from AVEVA PI, InfluxDB, Ignition Tag Historian or a SQL historian, read-only |
+| [Monitor building systems](How-to-Monitor-building-systems) | Watch water, electricity, chilled water, HVAC, RTUs, chillers, lighting, server rooms and hazmat storage over BACnet/IP or Modbus TCP, with alarms and utility use per line |
 
 ## Connecting business systems
 

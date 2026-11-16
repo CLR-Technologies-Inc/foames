@@ -119,6 +119,8 @@ SUGGESTION_CATEGORIES = [
 	"Machine Data",
 	"ERP",
 	"Material",
+	"Safety",
+	"Facility",
 	"Other",
 ]
 SEVERITIES = ["Info", "Warning", "Critical"]

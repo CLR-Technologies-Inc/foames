@@ -21,6 +21,9 @@ Whitelisted methods are called as `/api/method/<dotted path>`. Authentication is
 | `foames.foames_mes.site_cbom.get_site_cbom` | GET | System Manager | The site's CycloneDX CBOM with deployed OPC UA certificates |
 | `foames.foames_adapters.get_available_erp_systems` | GET | logged in | Registered adapters and whether each is reachable |
 | `foames.foames_process_mining.api.summary`, `events`, `discover`, `check_conformance`, `export` | GET or POST | read on Process Event Log | Process mining over `event_log` or `since`, `until`, `sources` |
+| `foames.foames_bms.api.ingest_point_readings` | POST | HMAC signature, or Operator, Engineer or System Manager | Record building point readings (`{"readings": [{"point", "value", "timestamp", "quality", "id"}]}`) |
+| `foames.foames_bms.api.list_facility_assets`, `get_facility_asset`, `list_building_alarms`, `get_point_history`, `get_utility_consumption`, `get_facility_summary` | GET | read on the DocType concerned | Building management reads |
+| `foames.foames_bms.doctype.building_alarm.building_alarm.acknowledge` | POST | write on Building Alarm | Acknowledge a building alarm (`alarm`, `note`) |
 | `foames.foames_mcp.reads.*` | GET | read on the DocType concerned | Agent-friendly reads used by the MCP tools |
 | `foames.foames_mcp.api.mcp` | POST | logged in; each tool checks its own | The MCP endpoint ([MCP tools](Reference-MCP-tools)) |
 
