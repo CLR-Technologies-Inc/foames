@@ -1,9 +1,10 @@
 # Copyright (c) 2026 CLR Technologies Inc. and contributors
 # SPDX-License-Identifier: Apache-2.0
 
-# Keeps secrets, guarded names and unapproved author emails out of the public repository.
-# The name list is private: it comes from the NAME_GUARD_WORDS repository secret (see
-# .github/scripts/name_guard.py for the format). Without it, the name scan only warns.
+# Catches unintended disclosure with specific checks: secrets (gitleaks), guarded words, private
+# author identities, and other people's email addresses in new content. Contributors' own identity,
+# authorship trailers, attribution files and references already in the repository pass.
+# The private list comes from the NAME_GUARD_WORDS repository secret; see .github/scripts/name_guard.py.
 
 name: Disclosure
 
@@ -25,7 +26,7 @@ env:
 
 jobs:
   name-guard:
-    name: Name and email guard
+    name: Name and personal-details guard
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -52,18 +53,14 @@ jobs:
           else
             echo "range=$AFTER~1..$AFTER" >> "$GITHUB_OUTPUT"
           fi
-      - name: Scan files, commit messages, PR text and author emails
+      - name: Check words, private identities and other people's emails
         env:
           NAME_GUARD_WORDS: ${{ secrets.NAME_GUARD_WORDS }}
           PR_TEXT: |
             ${{ github.event.pull_request.title }}
             ${{ github.event.pull_request.body }}
           RANGE: ${{ steps.range.outputs.range }}
-        run: |
-          COMMIT_TEXT="$(git log --format='%B' "$RANGE")"
-          export COMMIT_TEXT
-          python .github/scripts/name_guard.py \
-            --text-env PR_TEXT --text-env COMMIT_TEXT --check-authors "$RANGE"
+        run: python .github/scripts/name_guard.py --range "$RANGE" --text-env PR_TEXT
 
   gitleaks:
     name: Secret scan (gitleaks)

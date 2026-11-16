@@ -37,9 +37,10 @@ See [Installation](README.md#installation) and [Contributing](README.md#contribu
 
 FoaMES is public, so every commit, pull request title and description is public too.
 
-- Commit with an approved author address: your GitHub noreply address (`<id>+<login>@users.noreply.github.com`) or a project address. Set it for this checkout with `git config user.email <address>`. CI checks every commit's author and committer address.
+- Your own name, email and GitHub account on the commits you author are your signature and are public by design. If you would rather not publish your email, use your GitHub noreply address (`<id>+<login>@users.noreply.github.com`) with `git config user.email <address>`.
+- Do not add other people's personal details. An email address in new content passes when it belongs to an author of the change (including `Co-authored-by` and `Signed-off-by` trailers), is already in the repository, is a placeholder on a documentation domain such as `example.com`, or sits in an attribution or reference file (NOTICE, AUTHORS, CITATION, `.bib`). Credit and cite people there. Anything else is flagged, with the file and line but not the address.
 - Never commit secrets, site configuration (`site_config.json`), `.env` files, keys or certificates. `.gitignore` covers the usual names, GitHub push protection blocks known secret formats, and gitleaks runs locally and in CI.
 - Tenants, providers and estates are referred to generically, never by a company's name. CI checks files, commit messages and pull request text against a private word list.
-- Run `pre-commit install` once. It installs the license, name, author-email and gitleaks checks for both commits and commit messages.
+- Run `pre-commit install` once. It installs the license, name, personal-details and gitleaks checks for both commits and commit messages.
 
 Report a security problem privately, as described in [SECURITY.md](SECURITY.md).

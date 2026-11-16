@@ -76,17 +76,17 @@ repos:
         pass_filenames: false
         always_run: true
 
-      # Guarded names and the author email. The word list is private: put it in
-      # .git/name-guard-words (never committed) or NAME_GUARD_WORDS. See the script's docstring.
+      # Guarded words, a private author identity, and other people's email addresses in what you
+      # add. The private list goes in .git/name-guard-words (never committed) or NAME_GUARD_WORDS.
       - id: name-guard
-        name: "Check for guarded names and the git author email"
-        entry: python .github/scripts/name_guard.py --check-git-email
+        name: "Check staged changes for guarded names and personal details"
+        entry: python .github/scripts/name_guard.py --staged
         language: system
         stages: [pre-commit]
 
       - id: name-guard-commit-msg
-        name: "Check the commit message for guarded names"
-        entry: python .github/scripts/name_guard.py
+        name: "Check the commit message for guarded names and personal details"
+        entry: python .github/scripts/name_guard.py --message
         language: system
         stages: [commit-msg]
 
