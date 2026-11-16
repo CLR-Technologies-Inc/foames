@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Andon Call on a site: the status flow and its timestamps, escalation into Agent Suggestions,
 the floor snapshot and the Andon Response report."""

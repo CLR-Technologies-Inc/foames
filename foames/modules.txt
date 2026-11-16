@@ -2,4 +2,6 @@ FoaMES Kernel
 FoaMES MES
 FoaMES Adapters
 FoaMES Process Mining
+FoaMES Risk
+FoaMES Topology
 FoaMES Life Sciences
