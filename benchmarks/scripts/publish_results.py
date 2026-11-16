@@ -1,38 +1,74 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright 2026 CLR Technologies Inc.
 
-"""Combine benchmark run directories into one published report.
+"""Combine benchmark run directories into one dated, published report.
 
   python benchmarks/scripts/publish_results.py --runs runs/ --out benchmarks/results/2026-11-16
 
-`--runs` holds one run directory per agent (each with manifest.json and results.jsonl, as
-`foames-bench run --out` writes them). The output folder gets README.md (the overview), one
-<agent>.md per agent, results.jsonl (every run, unchanged) and summary.json. Prompts, patches and
-transcripts stay in the workflow artifacts; they are not copied into the repository.
+`--runs` is searched for run directories (each with manifest.json and results.jsonl, as
+`foames-bench run --out` writes them), at any depth, so one directory per job or per agent both
+work. Rows of the same agent from several directories are merged. The output folder gets:
 
-Cost is what the run cost: $0 on free tiers and local models. For free hosted models, the
-"list-price equivalent" prices the same tokens at the provider's paid list price from the agent's
-`_list_prices` in agents.json, so free and paid runs can be compared.
+  README.md        the overview: dates, versions, ranking, reference bar, ECL reached, TRL cells
+  <agent>.md       one page per agent, every run with its date
+  comparison.html  the same results with a reference-bar slider that re-ranks live
+  results.jsonl    every run, unchanged
+  summary.json     the numbers behind the pages
+
+Prompts, patches and transcripts stay in the workflow artifacts; they are not copied here.
+
+Cost is what the run cost: $0 on free tiers and local models. The "list-price equivalent" prices
+the same tokens at the provider's paid list price (`_list_prices` in agents.json), so free and
+paid runs can be compared.
+
+Each run directory may carry plain-text notes the workflow writes next to it: aider-version.txt,
+image-id.txt, ollama-version.txt, model-digest.txt (the model's digest and pull date) and
+environment.txt (where it ran). They are shown on the agent's page.
 """
 
 import argparse
 import json
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 BENCH = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BENCH))
 
 from foames_bench import recommend, report  # noqa: E402
+from foames_bench import tasks as tasks_mod  # noqa: E402
 
-ECL_NOTE = (
-	"No ECL (engineering confidence level) tier is on main yet; this column fills in once the ECL "
-	"tasks land."
-)
+METRICS = ("quality", "correctness", "process", "composite")
+CALIBRATION = ("reference", "noop")
+TIER_ORDER = {"oss": 0, "baseline": 1, "frontier": 2}
+NOTES = ("aider-version", "image-id", "ollama-version", "model-digest", "environment")
 
 
-def _read(path: Path, default=""):
-	return path.read_text(encoding="utf-8").strip() if path.exists() else default
+def _read(path: Path) -> str:
+	return path.read_text(encoding="utf-8").strip() if path.exists() else ""
+
+
+def _pct(v):
+	return "n/a" if v is None else f"{v:.0%}"
+
+
+def _num(v, fmt="{:.2f}"):
+	return "n/a" if v is None else fmt.format(v)
+
+
+def _money(v):
+	if v is None:
+		return "n/a"
+	return f"${v:.4f}" if 0 < v < 0.01 else f"${v:.2f}"
+
+
+def _ci(s):
+	ci = s.get("success_ci95")
+	return f"({ci[0]:.0%} to {ci[1]:.0%})" if ci else ""
+
+
+def _date(iso: str) -> str:
+	return iso[:10] if iso else "n/a"
 
 
 def _list_price(rows, prices):
@@ -49,119 +85,33 @@ def _list_price(rows, prices):
 	return round(total, 4)
 
 
-def _pct(v):
-	return "n/a" if v is None else f"{v:.0%}"
-
-
-def _num(v, fmt="{:.2f}"):
-	return "n/a" if v is None else fmt.format(v)
-
-
-def _money(v):
-	return "n/a" if v is None else f"${v:.4f}" if v < 0.01 and v > 0 else f"${v:.2f}"
-
-
-def _cells(rows):
-	# The built-in reference and no-op agents calibrate the grader; they are not candidates.
-	rows = [r for r in rows if r["agent"] not in ("reference", "noop")]
-	out = []
-	for band in recommend.TRL_BANDS:
-		for c in recommend.COMPLEXITIES:
-			rec = {**recommend.load()["cells"][band][c]}
-			for a in recommend.qualify(rows, rec):
-				out.append({"band": band, "complexity": c, **a})
-	return out
-
-
-def collect(runs: Path):
-	agents_cfg = {a["name"]: a for a in json.loads((BENCH / "agents.json").read_text())["agents"]}
-	blocks = []
-	for d in sorted(p for p in runs.iterdir() if p.is_dir()):
-		src = d / "results.jsonl"
-		if not src.exists():
-			# download-artifact puts each artifact in its own folder; a run may be one level down.
-			found = list(d.glob("*/results.jsonl"))
-			if not found:
-				blocks.append({"dir": d.name, "rows": [], "manifest": {}, "missing": True})
-				continue
-			src = found[0]
+def collect(runs: Path) -> dict:
+	"""Every agent's rows, merged across run directories, with the notes and manifests seen."""
+	cfg = {a["name"]: a for a in json.loads((BENCH / "agents.json").read_text())["agents"]}
+	agents = {}
+	for src in sorted(runs.rglob("results.jsonl")):
 		rd = src.parent
-		manifest = json.loads(_read(rd / "manifest.json", "{}") or "{}")
-		by_agent = {}
+		try:
+			manifest = json.loads(_read(rd / "manifest.json") or "{}")
+		except ValueError:
+			manifest = {}
+		notes = {n: _read(rd / f"{n}.txt") for n in NOTES}
 		for r in report.load(src):
-			by_agent.setdefault(r["agent"], []).append(r)
-		for name, rows in by_agent.items():
-			blocks.append(
-				{
-					"dir": d.name,
-					"run_dir": rd,
-					"rows": rows,
-					"manifest": manifest,
-					"aider": _read(rd / "aider-version.txt") if rows[0].get("harness") == "aider" else "",
-					"image": _read(rd / "image-id.txt") if rows[0].get("sandbox") == "docker" else "",
-					"ollama": _read(rd / "ollama-version.txt"),
-					"cfg": agents_cfg.get(name, {"name": name}),
-				}
+			a = agents.setdefault(
+				r["agent"],
+				{"rows": [], "manifests": [], "notes": {n: set() for n in NOTES}, "cfg": cfg.get(r["agent"], {"name": r["agent"]})},
 			)
-	return blocks
-
-
-def agent_page(b, s, tasks_summary, workflow_run):
-	cfg, rows, m = b["cfg"], b["rows"], b["manifest"]
-	tok_in = sum(r["usage"]["input_tokens"] for r in rows)
-	tok_cached = sum(r["usage"]["cached_input_tokens"] for r in rows)
-	tok_out = sum(r["usage"]["output_tokens"] for r in rows)
-	lp = _list_price(rows, cfg.get("_list_prices"))
-	lines = [
-		f"# {cfg.get('name', b['dir'])}",
-		"",
-		"<!-- SPDX-License-Identifier: Apache-2.0 -->",
-		"",
-		f"- Model: `{cfg.get('model', '')}` ({cfg.get('tier', '')} tier), harness: {cfg.get('harness', '')} {b['aider']}",
-		f"- {cfg.get('notes', '')}",
-		f"- FoaMES commit: `{m.get('foames_commit', 'unknown')}`, bench {m.get('bench_version', '')}, started {m.get('started_at', '')}",
-		f"- Sandbox: {s['sandbox']}, image `{b['image'][:19]}`" + (f", Ollama {b['ollama']}" if b["ollama"] else ""),
-		f"- Workflow run: {workflow_run}" if workflow_run else "",
-		"",
-		"| Runs | Success (95 % CI) | Quality | Correctness | Process | Composite | Mean time | Tokens in / cached / out | Cost | List-price equivalent | ECL tier |",
-		"| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
-		f"| {s['runs']} | {_pct(s['success_rate'])} {_ci(s)} | {_num(s['quality'])} | {_num(s['correctness'])} | {_num(s['process'])} | "
-		f"{_num(s['composite'])} | {_num(s['mean_seconds'], '{:.0f} s')} | {tok_in:,} / {tok_cached:,} / {tok_out:,} | "
-		f"{_money(s['total_cost_usd'])} | {_money(lp)} | n/a |",
-		"",
-		"| Task | Complexity | Success | Quality | Correctness | Process | Time | Tokens in / out | Exit | Notes |",
-		"| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |",
-	]
-	for r in rows:
-		sc, g = r["scores"], r["graded"]
-		notes = []
-		if r["timed_out"]:
-			notes.append("timed out")
-		if g.get("purity_violations"):
-			notes.append("purity violation")
-		if sc.get("tampered"):
-			notes.append("tampered")
-		reg = (g.get("regression") or {}).get("pass_rate")
-		if reg is not None and reg < 1:
-			notes.append(f"regression tests {reg:.0%}")
-		lines.append(
-			f"| {r['task']} (rep {r['rep']}) | {r['complexity']} | {'PASS' if sc['success'] else 'fail'} | {sc['quality']:.2f} | "
-			f"{sc['correctness']:.2f} | {sc['process']:.2f} | {r['seconds']:.0f} s | "
-			f"{r['usage']['input_tokens']:,} / {r['usage']['output_tokens']:,} | {r['exit_code']} | {', '.join(notes)} |"
-		)
-	return "\n".join(l for l in lines if l is not None) + "\n"
-
-
-def _ci(s):
-	ci = s.get("success_ci95")
-	return f"({ci[0]:.0%} to {ci[1]:.0%})" if ci else ""
-
-
-METRICS = ("quality", "correctness", "process", "composite")
+			a["rows"].append(r)
+			if manifest and manifest not in a["manifests"]:
+				a["manifests"].append(manifest)
+			for n, v in notes.items():
+				if v:
+					a["notes"][n].add(v)
+	return agents
 
 
 def reference_scores(rows):
-	"""The reference solution's mean scores per task: the top of the comparison scale."""
+	"""The reference solution's mean scores per task: 100 % on the comparison scale."""
 	out = {}
 	for t in sorted({r["task"] for r in rows if r["agent"] == "reference"}):
 		rs = [r for r in rows if r["agent"] == "reference" and r["task"] == t]
@@ -169,31 +119,101 @@ def reference_scores(rows):
 	return out
 
 
-def clears(runs, task, reference, bar, mode, metric="quality"):
-	"""Whether every run of an agent on a task reaches the bar and keeps every invariant."""
+def clears(runs, task, reference, bar, mode, metric="quality") -> bool:
+	"""Every run of an agent on a task reaches the bar and keeps every invariant."""
 	need = bar * reference.get(task, {}).get(metric, 1.0) if mode == "relative" else bar
 	return bool(runs) and all(r["scores"][metric] >= need - 1e-9 and r["scores"]["invariants_kept"] for r in runs)
 
 
-def write_html(out: Path, entries, reference, tasks, bar, mode, meta, footer):
-	data = {
-		"meta": meta,
-		"footer": footer,
-		"default_bar": bar,
-		"default_mode": mode,
-		"tasks": tasks,
-		"reference": reference,
-		"agents": entries,
-	}
-	template = (Path(__file__).parent / "comparison_template.html").read_text(encoding="utf-8")
-	blob = json.dumps(data).replace("</", "<\\/")
-	(out / "comparison.html").write_text(template.replace("__DATA__", blob), encoding="utf-8")
+def ecl_reached(by_task: dict, task_ecl: dict, tier: str, passed) -> int | None:
+	"""The highest Equipment Complexity Level n such that the agent passed every task it ran at
+	ECL n or below (at least one at n), and its tier reaches the minimum tier for ECL n."""
+	levels = recommend.load()["ecl"]["levels"]
+	best = None
+	for n in sorted({e for e in task_ecl.values() if e}):
+		ran = [t for t, e in task_ecl.items() if e and e <= n and by_task.get(t)]
+		at_n = [t for t in ran if task_ecl[t] == n]
+		if not at_n or not all(passed(t) for t in ran):
+			break
+		min_tier = levels[str(n)]["min_tier"]
+		if min_tier is None or TIER_ORDER.get(tier, -1) < TIER_ORDER[min_tier]:
+			break
+		best = n
+	return best
+
+
+def _cells(rows):
+	rows = [r for r in rows if r["agent"] not in CALIBRATION]
+	out = []
+	for band in recommend.TRL_BANDS:
+		for c in recommend.COMPLEXITIES:
+			for a in recommend.qualify(rows, {**recommend.load()["cells"][band][c]}):
+				out.append({"band": band, "complexity": c, **a})
+	return out
+
+
+def agent_page(name, a, s, task_ecl, ecl, run_date, workflow_run):
+	cfg, rows = a["cfg"], a["rows"]
+	model, tier, harness = rows[0].get("model") or cfg.get("model", ""), rows[0].get("agent_tier") or cfg.get("tier", ""), rows[0].get("harness") or cfg.get("harness", "")
+	commits = sorted({m.get("foames_commit", "") for m in a["manifests"]} - {""})
+	starts = sorted(m.get("started_at", "") for m in a["manifests"] if m.get("started_at"))
+	finished = sorted(r.get("finished_at", "") for r in rows if r.get("finished_at"))
+	tok = [sum(r["usage"][k] for r in rows) for k in ("input_tokens", "cached_input_tokens", "output_tokens")]
+	note = lambda n: "; ".join(sorted(a["notes"][n]))  # noqa: E731
+	lines = [
+		f"# {name}: benchmark run of {run_date}",
+		"",
+		"<!-- SPDX-License-Identifier: Apache-2.0 -->",
+		"",
+		f"- **Run dates (UTC):** started {starts[0] if starts else 'n/a'}, last run finished {finished[-1] if finished else 'n/a'}",
+		f"- **Model:** `{model or '-'}` ({tier or 'calibration'} tier)"
+		+ (f", {note('model-digest')}" if note("model-digest") else ""),
+		f"- **Harness:** {harness or 'built in'} {note('aider-version')}".rstrip(),
+		f"- **Where it ran:** {note('environment') or 'GitHub-hosted runner'}; sandbox {s['sandbox']}"
+		+ (f", image `{note('image-id')[:19]}`" if note("image-id") else "")
+		+ (f", Ollama {note('ollama-version')}" if note("ollama-version") else ""),
+		f"- **FoaMES commit:** {', '.join(f'`{c[:12]}`' for c in commits) or 'n/a'}",
+		f"- {cfg.get('notes', '')}" if cfg.get("notes") else None,
+		f"- Workflow run: {workflow_run}" if workflow_run else None,
+		"",
+		"| Runs | Success (95 % CI) | Quality | Correctness | Process | Composite | Mean time | Tokens in / cached / out | Cost | List-price equivalent | ECL reached |",
+		"| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+		f"| {s['runs']} | {_pct(s['success_rate'])} {_ci(s)} | {_num(s['quality'])} | {_num(s['correctness'])} | "
+		f"{_num(s['process'])} | {_num(s['composite'])} | {_num(s['mean_seconds'], '{:.0f} s')} | "
+		f"{tok[0]:,} / {tok[1]:,} / {tok[2]:,} | {_money(s['total_cost_usd'])} | "
+		f"{_money(_list_price(rows, cfg.get('_list_prices')))} | {('ECL ' + str(ecl)) if ecl else 'none'} |",
+		"",
+		"| Task | ECL | Complexity | Finished (UTC) | Success | Quality | Correctness | Process | Time | Tokens in / out | Exit | Notes |",
+		"| --- | ---: | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |",
+	]
+	for r in sorted(rows, key=lambda r: (r["task"], r["rep"])):
+		sc, g = r["scores"], r["graded"]
+		flags = []
+		if r.get("timed_out"):
+			flags.append("timed out")
+		if g.get("purity_violations"):
+			flags.append("purity violation")
+		if sc.get("tampered"):
+			flags.append("tampered")
+		if not sc.get("invariants_kept", True):
+			flags.append("broke an invariant")
+		reg = (g.get("regression") or {}).get("pass_rate")
+		if reg is not None and reg < 1:
+			flags.append(f"regression tests {reg:.0%}")
+		lines.append(
+			f"| {r['task']} (rep {r['rep']}) | {task_ecl.get(r['task']) or '-'} | {r['complexity']} | {r.get('finished_at', '')[:16]} | "
+			f"{'PASS' if sc['success'] else 'fail'} | {sc['quality']:.2f} | {sc['correctness']:.2f} | {sc['process']:.2f} | "
+			f"{r['seconds']:.0f} s | {r['usage']['input_tokens']:,} / {r['usage']['output_tokens']:,} | {r['exit_code']} | {', '.join(flags)} |"
+		)
+	return "\n".join(l for l in lines if l is not None) + "\n"
 
 
 def main(argv=None):
 	ap = argparse.ArgumentParser()
 	ap.add_argument("--runs", required=True, type=Path)
-	ap.add_argument("--out", required=True, type=Path)
+	where = ap.add_mutually_exclusive_group(required=True)
+	where.add_argument("--out", type=Path, help="the report folder")
+	where.add_argument("--out-root", type=Path, help="a results folder: the report goes in <out-root>/<run date>/")
 	ap.add_argument("--workflow-run", default="")
 	ap.add_argument(
 		"--reference",
@@ -204,126 +224,138 @@ def main(argv=None):
 	)
 	ap.add_argument("--reference-mode", choices=["relative", "absolute"], default="relative")
 	opts = ap.parse_args(argv)
-	blocks = collect(opts.runs)
+
+	agents = collect(opts.runs)
+	all_rows = [r for a in agents.values() for r in a["rows"]]
+	if not all_rows:
+		raise SystemExit(f"no results.jsonl under {opts.runs}")
+	summary = report.summarise(all_rows)
+	reference = reference_scores(all_rows)
+	task_ids = sorted({r["task"] for r in all_rows})
+	task_ecl = {t.id: t.ecl for t in tasks_mod.all_tasks()}
+	starts = sorted(m.get("started_at", "") for a in agents.values() for m in a["manifests"] if m.get("started_at"))
+	finishes = sorted(r.get("finished_at", "") for r in all_rows if r.get("finished_at"))
+	run_date = _date(starts[0] if starts else "")
+	if opts.out is None:
+		opts.out = opts.out_root / run_date
 	opts.out.mkdir(parents=True, exist_ok=True)
-	all_rows = [r for b in blocks for r in b["rows"]]
-	summary = report.summarise(all_rows) if all_rows else {"by_agent": {}, "by_agent_task": []}
+	published = datetime.now(timezone.utc).isoformat(timespec="seconds")
+
 	overview = []
-	for b in blocks:
-		if not b["rows"]:
-			overview.append({"agent": b["dir"].removeprefix("run-"), "missing": True})
-			continue
-		name = b["rows"][0]["agent"]
+	for name, a in agents.items():
 		s = summary["by_agent"][name]
-		page = agent_page(b, s, None, opts.workflow_run)
-		(opts.out / f"{name}.md").write_text(page, encoding="utf-8")
+		by_task = {}
+		for r in a["rows"]:
+			by_task.setdefault(r["task"], []).append(r)
+		passed = lambda t, bt=by_task: all(r["scores"]["success"] for r in bt.get(t, []))  # noqa: E731
+		ecl = None if name in CALIBRATION else ecl_reached(by_task, task_ecl, a["rows"][0].get("agent_tier") or "", passed)
+		(opts.out / f"{name}.md").write_text(
+			agent_page(name, a, s, task_ecl, ecl, run_date, opts.workflow_run), encoding="utf-8"
+		)
 		overview.append(
 			{
 				"agent": name,
 				"s": s,
-				"cfg": b["cfg"],
-				"tokens": (
-					sum(r["usage"]["input_tokens"] for r in b["rows"]),
-					sum(r["usage"]["output_tokens"] for r in b["rows"]),
+				"cfg": a["cfg"],
+				"by_task": by_task,
+				"ecl": ecl,
+				"tokens": (sum(r["usage"]["input_tokens"] for r in a["rows"]), sum(r["usage"]["output_tokens"] for r in a["rows"])),
+				"list_price": _list_price(a["rows"], a["cfg"].get("_list_prices")),
+				"cleared": sum(
+					clears(by_task.get(t, []), t, reference, opts.reference, opts.reference_mode) for t in task_ids
 				),
-				"list_price": _list_price(b["rows"], b["cfg"].get("_list_prices")),
-				"started": b["manifest"].get("started_at", ""),
-				"commit": b["manifest"].get("foames_commit", ""),
-				"aider": b["aider"],
+				"digest": "; ".join(sorted(a["notes"]["model-digest"])),
+				"env": "; ".join(sorted(a["notes"]["environment"])),
 			}
 		)
+	ranked = sorted(
+		(o for o in overview if o["agent"] not in CALIBRATION),
+		key=lambda o: (-o["cleared"], -(o["s"]["quality"] or 0)),
+	)
+	calibration = [o for o in overview if o["agent"] in CALIBRATION]
+
 	with (opts.out / "results.jsonl").open("w", encoding="utf-8") as f:
 		for r in all_rows:
 			f.write(json.dumps(r) + "\n")
-	cells = _cells(all_rows) if all_rows else []
+	cells = _cells(all_rows)
 	(opts.out / "summary.json").write_text(
-		json.dumps({"summary": summary, "qualification": cells}, indent=1), encoding="utf-8"
+		json.dumps(
+			{
+				"run_date": run_date,
+				"started_at": starts[0] if starts else None,
+				"finished_at": finishes[-1] if finishes else None,
+				"published_at": published,
+				"reference_bar": {"value": opts.reference, "mode": opts.reference_mode},
+				"reference_scores": reference,
+				"ecl_reached": {o["agent"]: o["ecl"] for o in ranked},
+				"summary": summary,
+				"qualification": cells,
+			},
+			indent=1,
+		),
+		encoding="utf-8",
 	)
-	ranked = sorted(
-		(o for o in overview if not o.get("missing") and o["agent"] not in ("reference", "noop")),
-		key=lambda o: -(o["s"]["quality"] or 0),
-	)
-	calibration = [o for o in overview if not o.get("missing") and o["agent"] in ("reference", "noop")]
-	reference = reference_scores(all_rows)
-	task_ids = sorted({r["task"] for r in all_rows})
-	by_agent_task = {}
-	for r in all_rows:
-		by_agent_task.setdefault((r["agent"], r["task"]), []).append(r)
-	for o in ranked + calibration:
-		o["cleared"] = sum(
-			clears(by_agent_task.get((o["agent"], t), []), t, reference, opts.reference, opts.reference_mode)
-			for t in task_ids
-		)
+
+	commits = sorted({m.get("foames_commit", "")[:10] for a in agents.values() for m in a["manifests"]} - {""})
 	bar_text = (
 		f"{opts.reference:.0%} of the reference solution's quality on each task"
 		if opts.reference_mode == "relative"
 		else f"quality of at least {opts.reference:.2f}"
 	)
-	entries = [
-		{
-			"agent": o["agent"],
-			"model": o["s"]["model"] or "",
-			"tier": o["s"]["tier"] or "calibration",
-			"tokens_in": o["tokens"][0],
-			"tokens_out": o["tokens"][1],
-			"cost": _money(o["s"]["total_cost_usd"]),
-			"list_price": _money(o["list_price"]),
-			"ecl": None,
-			"tasks": {
-				t: [
-					{**{m: r["scores"][m] for m in METRICS}, "invariants_ok": r["scores"]["invariants_kept"]}
-					for r in by_agent_task.get((o["agent"], t), [])
-				]
-				for t in task_ids
-			},
-		}
-		for o in ranked + [c for c in calibration if c["agent"] == "noop"]
-	]
-	everyone = ranked + calibration
-	commits = sorted({o["commit"] for o in everyone if o["commit"]})
+	dates_line = (
+		f"**Run of {run_date}.** Runs started {starts[0] if starts else 'n/a'} and the last finished "
+		f"{finishes[-1] if finishes else 'n/a'} (UTC), on FoaMES commit {', '.join(f'`{c}`' for c in commits) or 'n/a'}. "
+		f"Report built {published}."
+		+ (f" Workflow run: {opts.workflow_run}." if opts.workflow_run else "")
+	)
 	lines = [
-		"# FoaMES agent benchmark results",
+		f"# FoaMES agent benchmark results: run of {run_date}",
 		"",
 		"<!-- SPDX-License-Identifier: Apache-2.0 -->",
 		"",
-		f"Runs started {min((o['started'] for o in everyone if o['started']), default='n/a')} (UTC) on FoaMES commit(s) "
-		+ ", ".join(f"`{c[:10]}`" for c in commits)
-		+ (f". Workflow run: {opts.workflow_run}" if opts.workflow_run else "")
-		+ ".",
+		dates_line,
 		"",
-		"Every agent ran the six pure tasks in the benchmark's Docker sandbox on a GitHub-hosted runner "
-		"(4 vCPU, 16 GB, no GPU). Local models were served by Ollama on the runner's CPU; hosted models, "
-		"where present, were called on their providers' free API tiers. Ranking is by quality (correctness and process, without cost), as in "
-		"[docs/methodology.md](../../docs/methodology.md). One repetition cannot separate close agents; read the "
-		"intervals.",
+		"Every agent is aider driving one model on the benchmark's pure tasks, in the benchmark's sandbox. Local "
+		"models ran on Ollama; hosted models, where present, on their providers' free API tiers. Each model's "
+		"page gives its exact version (digest or API model id), where it ran and when. Ranking is by tasks cleared "
+		"at the reference bar, then quality (correctness and process, without cost), as in "
+		"[docs/methodology.md](../../docs/methodology.md). One repetition cannot separate close agents: read the intervals.",
 		"",
 		f"**Reference bar: {bar_text}**, and every invariant kept. \"Clears\" counts the tasks where every "
-		"repetition reached it. Move the bar with the slider in [comparison.html](comparison.html) (open the "
-		"file in a browser), or rebuild with `--reference`.",
+		"repetition reached it. Move the bar with the slider in [comparison.html](comparison.html) (open it in a "
+		"browser), or rebuild with `--reference`.",
 		"",
-		"| Agent | Model | Tier | Runs | Clears bar | Success (95 % CI) | Quality | Composite | Mean time | Tokens in / out | Cost | List-price equivalent | ECL tier |",
-		"| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+		"| Agent | Model | Tier | Ran on | Runs | Clears bar | Success (95 % CI) | Quality | Composite | Mean time | Tokens in / out | Cost | List-price equivalent | ECL reached |",
+		"| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
 	]
 	for o in ranked + calibration:
 		s = o["s"]
 		lines.append(
-			f"| [{o['agent']}]({o['agent']}.md) | `{s['model'] or '-'}` | {s['tier'] or 'calibration'} | {s['runs']} | {o['cleared']} / {len(task_ids)} | {_pct(s['success_rate'])} {_ci(s)} | "
-			f"{_num(s['quality'])} | {_num(s['composite'])} | {_num(s['mean_seconds'], '{:.0f} s')} | "
-			f"{o['tokens'][0]:,} / {o['tokens'][1]:,} | {_money(s['total_cost_usd'])} | {_money(o['list_price'])} | n/a |"
+			f"| [{o['agent']}]({o['agent']}.md) | `{s['model'] or '-'}` | {s['tier'] or 'calibration'} | {o['env'] or 'runner'} | "
+			f"{s['runs']} | {o['cleared']} / {len(task_ids)} | {_pct(s['success_rate'])} {_ci(s)} | {_num(s['quality'])} | "
+			f"{_num(s['composite'])} | {_num(s['mean_seconds'], '{:.0f} s')} | {o['tokens'][0]:,} / {o['tokens'][1]:,} | "
+			f"{_money(s['total_cost_usd'])} | {_money(o['list_price'])} | "
+			f"{'n/a' if o['agent'] in CALIBRATION else ('ECL ' + str(o['ecl']) if o['ecl'] else 'none')} |"
 		)
-	for o in overview:
-		if o.get("missing"):
-			lines.append(f"| {o['agent']} | | | 0 | | no results (the job failed before grading) | | | | | | | |")
-	tasks = sorted({r["task"] for r in all_rows})
-	if tasks:
-		lines += ["", "## Quality by task", "", "| Agent | " + " | ".join(tasks) + " |", "| --- |" + " ---: |" * len(tasks)]
-		by = {(x["agent"], x["task"]): x for x in summary["by_agent_task"]}
-		for o in ranked + calibration:
-			cells_row = []
-			for t in tasks:
-				x = by.get((o["agent"], t))
-				cells_row.append("" if not x else f"{x['quality']:.2f} {'PASS' if x['success_rate'] == 1 else ('fail' if not x['success_rate'] else _pct(x['success_rate']))}")
-			lines.append(f"| {o['agent']} | " + " | ".join(cells_row) + " |")
+	lines += [
+		"",
+		"## Quality by task",
+		"",
+		"| Agent | " + " | ".join(f"{t} (ECL {task_ecl.get(t) or '-'})" for t in task_ids) + " |",
+		"| --- |" + " ---: |" * len(task_ids),
+	]
+	for o in ranked + calibration:
+		row = []
+		for t in task_ids:
+			rs = o["by_task"].get(t, [])
+			if not rs:
+				row.append("")
+				continue
+			q = sum(r["scores"]["quality"] for r in rs) / len(rs)
+			ok = all(r["scores"]["success"] for r in rs)
+			row.append(f"{q:.2f} {'PASS' if ok else 'fail'}")
+		lines.append(f"| {o['agent']} | " + " | ".join(row) + " |")
+
 	qualified = [c for c in cells if c["qualifies"]]
 	lines += ["", "## Which TRL x complexity cells each agent qualifies for", ""]
 	if qualified:
@@ -334,38 +366,66 @@ def main(argv=None):
 				lines.append(f"| {band} | {c} | {', '.join(names) if names else 'none yet'} |")
 	else:
 		lines.append(
-			"No agent qualified for any cell: a cell needs every repetition of its qualifying tasks to succeed "
+			"No agent qualified for any cell yet: a cell needs every repetition of its qualifying tasks to succeed "
 			"with mean quality at or above the cell's minimum (data/recommendations.json)."
 		)
 	lines += [
 		"",
 		"## Notes",
 		"",
-		f"- {ECL_NOTE}",
-		"- Cost is what the runs cost: $0 on free API tiers and for local models (electricity and runner "
-		"time are not counted). The list-price equivalent prices the same tokens at the provider's paid list price "
-		"(agents.json `_list_prices`).",
-		"- Aider prints token counts rounded to the nearest hundred above 1,000, so token totals are approximate.",
-		"- Local models ran on CPU only. The recommended open-weight models in the matrix (Qwen3-Coder 30B, "
-		"gpt-oss 20b and up) need more memory or a GPU than a hosted runner has; the small coder models here are a "
-		"floor for the open-weight tier, not its ceiling.",
-		f"- Versions: {', '.join(sorted({o['aider'] for o in ranked if o['aider']})) or 'see the per-agent pages'}.",
+		"- **ECL reached** is the highest Equipment Complexity Level at which the agent passed every task it ran at "
+		"that level and below, and whose minimum model tier its tier meets (data/recommendations.json). No task above "
+		"ECL 3 exists yet, so ECL 4 and 5 cannot be reached; at those levels the matrix calls for a human expert anyway.",
+		"- Cost is what the runs cost: $0 on free API tiers and for local models (electricity and runner time are not "
+		"counted). The list-price equivalent prices the same tokens at the provider's paid list price.",
+		"- Aider prints token counts rounded to the nearest hundred above 1,000, so token totals are approximate. "
+		"Local models report no cost, so their token counts may also read zero.",
+		"- Local models on GitHub-hosted runners ran on CPU (4 vCPU, 16 GB). Speed is not scored against them here "
+		"beyond the efficiency term in the composite; read quality.",
 		"",
 	]
 	(opts.out / "README.md").write_text("\n".join(lines), encoding="utf-8")
-	write_html(
-		opts.out,
-		entries,
-		reference,
-		task_ids,
-		opts.reference,
-		opts.reference_mode,
-		lines[4].replace("`", ""),
-		"Bar applies per task: in relative mode the reference solution's own score on that task is 100 %. "
-		"Ranked by tasks cleared, then mean score. Data: results.jsonl in this folder. "
-		"See benchmarks/docs/methodology.md for the scoring.",
-	)
-	print(f"wrote {opts.out} ({len(all_rows)} runs, {len(ranked)} agents)")
+
+	entries = [
+		{
+			"agent": o["agent"],
+			"model": o["s"]["model"] or "",
+			"tier": o["s"]["tier"] or "calibration",
+			"env": o["env"] or "runner",
+			"digest": o["digest"],
+			"tokens_in": o["tokens"][0],
+			"tokens_out": o["tokens"][1],
+			"cost": _money(o["s"]["total_cost_usd"]),
+			"list_price": _money(o["list_price"]),
+			"tasks": {
+				t: [
+					{**{m: r["scores"][m] for m in METRICS}, "invariants_ok": r["scores"]["invariants_kept"], "success": r["scores"]["success"]}
+					for r in o["by_task"].get(t, [])
+				]
+				for t in task_ids
+			},
+		}
+		for o in ranked + [c for c in calibration if c["agent"] == "noop"]
+	]
+	levels = recommend.load()["ecl"]["levels"]
+	data = {
+		"title": f"FoaMES agent benchmark: run of {run_date}",
+		"meta": dates_line.replace("**", "").replace("`", ""),
+		"footer": "Bar applies per task: in relative mode the reference solution's own score on that task is 100 %. "
+		"Ranked by tasks cleared, then mean score. ECL reached follows the bar you set. Data: results.jsonl in this folder; "
+		"scoring: benchmarks/docs/methodology.md.",
+		"default_bar": opts.reference,
+		"default_mode": opts.reference_mode,
+		"tasks": task_ids,
+		"task_ecl": task_ecl,
+		"ecl_min_tier": {k: v["min_tier"] for k, v in levels.items()},
+		"reference": reference,
+		"agents": entries,
+	}
+	template = (Path(__file__).parent / "comparison_template.html").read_text(encoding="utf-8")
+	blob = json.dumps(data).replace("</", "<\\/")
+	(opts.out / "comparison.html").write_text(template.replace("__DATA__", blob), encoding="utf-8")
+	print(f"wrote {opts.out} ({len(all_rows)} runs, {len(ranked)} agents, run of {run_date})")
 
 
 if __name__ == "__main__":

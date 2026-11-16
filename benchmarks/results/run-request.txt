@@ -1,0 +1,3 @@
+# SPDX-License-Identifier: Apache-2.0
+# Changing this file on a working branch starts the Agent benchmark workflow there.
+2026-11-16T01:05Z first full run: six local Ollama models, all pure tasks, one repetition
