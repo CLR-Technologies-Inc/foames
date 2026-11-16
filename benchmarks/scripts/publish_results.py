@@ -36,8 +36,8 @@ from pathlib import Path
 BENCH = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BENCH))
 
-from foames_bench import recommend, report  # noqa: E402
-from foames_bench import tasks as tasks_mod  # noqa: E402
+from foames_bench import recommend, report
+from foames_bench import tasks as tasks_mod
 
 METRICS = ("quality", "correctness", "process", "composite")
 CALIBRATION = ("reference", "noop")
@@ -100,7 +100,12 @@ def collect(runs: Path) -> dict:
 		for r in report.load(src):
 			a = agents.setdefault(
 				r["agent"],
-				{"rows": [], "manifests": [], "notes": {n: set() for n in NOTES}, "cfg": cfg.get(r["agent"], {"name": r["agent"]})},
+				{
+					"rows": [],
+					"manifests": [],
+					"notes": {n: set() for n in NOTES},
+					"cfg": cfg.get(r["agent"], {"name": r["agent"]}),
+				},
 			)
 			a["rows"].append(r)
 			if manifest and manifest not in a["manifests"]:
@@ -123,7 +128,9 @@ def reference_scores(rows):
 def clears(runs, task, reference, bar, mode, metric="quality") -> bool:
 	"""Every run of an agent on a task reaches the bar and keeps every invariant."""
 	need = bar * reference.get(task, {}).get(metric, 1.0) if mode == "relative" else bar
-	return bool(runs) and all(r["scores"][metric] >= need - 1e-9 and r["scores"]["invariants_kept"] for r in runs)
+	return bool(runs) and all(
+		r["scores"][metric] >= need - 1e-9 and r["scores"]["invariants_kept"] for r in runs
+	)
 
 
 def ecl_reached(by_task: dict, task_ecl: dict, tier: str, passed) -> int | None:
@@ -155,7 +162,11 @@ def _cells(rows):
 
 def agent_page(name, a, s, task_ecl, ecl, run_date, workflow_run):
 	cfg, rows = a["cfg"], a["rows"]
-	model, tier, harness = rows[0].get("model") or cfg.get("model", ""), rows[0].get("agent_tier") or cfg.get("tier", ""), rows[0].get("harness") or cfg.get("harness", "")
+	model, tier, harness = (
+		rows[0].get("model") or cfg.get("model", ""),
+		rows[0].get("agent_tier") or cfg.get("tier", ""),
+		rows[0].get("harness") or cfg.get("harness", ""),
+	)
 	commits = sorted({m.get("foames_commit", "") for m in a["manifests"]} - {""})
 	starts = sorted(m.get("started_at", "") for m in a["manifests"] if m.get("started_at"))
 	finished = sorted(r.get("finished_at", "") for r in rows if r.get("finished_at"))
@@ -214,7 +225,9 @@ def main(argv=None):
 	ap.add_argument("--runs", required=True, type=Path)
 	where = ap.add_mutually_exclusive_group(required=True)
 	where.add_argument("--out", type=Path, help="the report folder")
-	where.add_argument("--out-root", type=Path, help="a results folder: the report goes in <out-root>/<run date>/")
+	where.add_argument(
+		"--out-root", type=Path, help="a results folder: the report goes in <out-root>/<run date>/"
+	)
 	ap.add_argument("--workflow-run", default="")
 	ap.add_argument(
 		"--reference",
@@ -236,7 +249,9 @@ def main(argv=None):
 	all_rows = [r for a in agents.values() for r in a["rows"]]
 	if not all_rows:
 		raise SystemExit(f"no results.jsonl under {opts.runs}")
-	starts = sorted(m.get("started_at", "") for a in agents.values() for m in a["manifests"] if m.get("started_at"))
+	starts = sorted(
+		m.get("started_at", "") for a in agents.values() for m in a["manifests"] if m.get("started_at")
+	)
 	run_date = _date(starts[0] if starts else "")
 	if opts.out is None:
 		opts.out = opts.out_root / run_date
@@ -258,7 +273,9 @@ def main(argv=None):
 		return
 	agents = collect(kept)
 	all_rows = [r for a in agents.values() for r in a["rows"]]
-	starts = sorted(m.get("started_at", "") for a in agents.values() for m in a["manifests"] if m.get("started_at"))
+	starts = sorted(
+		m.get("started_at", "") for a in agents.values() for m in a["manifests"] if m.get("started_at")
+	)
 	summary = report.summarise(all_rows)
 	reference = reference_scores(all_rows)
 	task_ids = sorted({r["task"] for r in all_rows})
@@ -273,7 +290,11 @@ def main(argv=None):
 		for r in a["rows"]:
 			by_task.setdefault(r["task"], []).append(r)
 		passed = lambda t, bt=by_task: all(r["scores"]["success"] for r in bt.get(t, []))  # noqa: E731
-		ecl = None if name in CALIBRATION else ecl_reached(by_task, task_ecl, a["rows"][0].get("agent_tier") or "", passed)
+		ecl = (
+			None
+			if name in CALIBRATION
+			else ecl_reached(by_task, task_ecl, a["rows"][0].get("agent_tier") or "", passed)
+		)
 		(opts.out / f"{name}.md").write_text(
 			agent_page(name, a, s, task_ecl, ecl, run_date, opts.workflow_run), encoding="utf-8"
 		)
@@ -284,10 +305,14 @@ def main(argv=None):
 				"cfg": a["cfg"],
 				"by_task": by_task,
 				"ecl": ecl,
-				"tokens": (sum(r["usage"]["input_tokens"] for r in a["rows"]), sum(r["usage"]["output_tokens"] for r in a["rows"])),
+				"tokens": (
+					sum(r["usage"]["input_tokens"] for r in a["rows"]),
+					sum(r["usage"]["output_tokens"] for r in a["rows"]),
+				),
 				"list_price": _list_price(a["rows"], a["cfg"].get("_list_prices")),
 				"cleared": sum(
-					clears(by_task.get(t, []), t, reference, opts.reference, opts.reference_mode) for t in task_ids
+					clears(by_task.get(t, []), t, reference, opts.reference, opts.reference_mode)
+					for t in task_ids
 				),
 				"digest": "; ".join(sorted(a["notes"]["model-digest"])),
 				"env": "; ".join(sorted(a["notes"]["environment"])),
@@ -321,7 +346,9 @@ def main(argv=None):
 		encoding="utf-8",
 	)
 
-	commits = sorted({m.get("foames_commit", "")[:10] for a in agents.values() for m in a["manifests"]} - {""})
+	commits = sorted(
+		{m.get("foames_commit", "")[:10] for a in agents.values() for m in a["manifests"]} - {""}
+	)
 	bar_text = (
 		f"{opts.reference:.0%} of the reference solution's quality on each task"
 		if opts.reference_mode == "relative"
@@ -330,8 +357,7 @@ def main(argv=None):
 	dates_line = (
 		f"**Run of {run_date}.** Runs started {starts[0] if starts else 'n/a'} and the last finished "
 		f"{finishes[-1] if finishes else 'n/a'} (UTC), on FoaMES commit {', '.join(f'`{c}`' for c in commits) or 'n/a'}. "
-		f"Report built {published}."
-		+ (f" Workflow run: {opts.workflow_run}." if opts.workflow_run else "")
+		f"Report built {published}." + (f" Workflow run: {opts.workflow_run}." if opts.workflow_run else "")
 	)
 	lines = [
 		f"# FoaMES agent benchmark results: run of {run_date}",
@@ -346,7 +372,7 @@ def main(argv=None):
 		"at the reference bar, then quality (correctness and process, without cost), as in "
 		"[docs/methodology.md](../../docs/methodology.md). One repetition cannot separate close agents: read the intervals.",
 		"",
-		f"**Reference bar: {bar_text}**, and every invariant kept. \"Clears\" counts the tasks where every "
+		f'**Reference bar: {bar_text}**, and every invariant kept. "Clears" counts the tasks where every '
 		"repetition reached it. Move the bar with the slider in [comparison.html](comparison.html) (open it in a "
 		"browser), or rebuild with `--reference`.",
 		"",
@@ -429,7 +455,11 @@ def main(argv=None):
 			"list_price": _money(o["list_price"]),
 			"tasks": {
 				t: [
-					{**{m: r["scores"][m] for m in METRICS}, "invariants_ok": r["scores"]["invariants_kept"], "success": r["scores"]["success"]}
+					{
+						**{m: r["scores"][m] for m in METRICS},
+						"invariants_ok": r["scores"]["invariants_kept"],
+						"success": r["scores"]["success"],
+					}
 					for r in o["by_task"].get(t, [])
 				]
 				for t in task_ids

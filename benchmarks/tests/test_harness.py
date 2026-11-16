@@ -73,7 +73,9 @@ class TestUsageParsers(unittest.TestCase):
 			"Tokens: 9,100 sent, 1.2k cache hit, 1.1k received.\n"
 		)
 		u = usage.parse("aider-text", out)
-		self.assertEqual((u.input_tokens, u.output_tokens, u.cached_input_tokens, u.turns), (11700, 1425, 1200, 2))
+		self.assertEqual(
+			(u.input_tokens, u.output_tokens, u.cached_input_tokens, u.turns), (11700, 1425, 1200, 2)
+		)
 		# A zero session cost means aider did not know the price, not that the run was free.
 		self.assertIsNone(u.cost_usd)
 

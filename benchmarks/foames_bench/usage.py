@@ -127,7 +127,7 @@ def _count(number: str | None, suffix: str | None) -> int:
 	if not number:
 		return 0
 	value = float(number.replace(",", ""))
-	return int(round(value * {"k": 1_000, "m": 1_000_000}.get((suffix or "").lower(), 1)))
+	return round(value * {"k": 1_000, "m": 1_000_000}.get((suffix or "").lower(), 1))
 
 
 def parse_aider_text(text: str) -> Usage:

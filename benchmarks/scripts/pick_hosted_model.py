@@ -22,7 +22,6 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-
 # Some API fronts refuse urllib's default User-Agent, so send a plain client name (no contact details).
 UA = "foames-bench/1.0"
 LISTED: dict[str, str] = {}
@@ -31,7 +30,9 @@ LISTED: dict[str, str] = {}
 def _get(url: str, headers: dict | None = None, data: dict | None = None, timeout: int = 180):
 	"""(status, headers, json). A timeout or network error gives status 0 and the error as "error"."""
 	body = json.dumps(data).encode() if data is not None else None
-	req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json", "User-Agent": UA, **(headers or {})})
+	req = urllib.request.Request(
+		url, data=body, headers={"Content-Type": "application/json", "User-Agent": UA, **(headers or {})}
+	)
 	try:
 		with urllib.request.urlopen(req, timeout=timeout) as r:
 			return r.status, dict(r.headers), json.loads(r.read() or b"{}")
@@ -53,9 +54,16 @@ def _err(d: dict) -> str:
 def gemini_models(key: str) -> list[str]:
 	ids, token = [], ""
 	while True:
-		status, _, d = _get(f"https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000&pageToken={token}", {"x-goog-api-key": key})
+		status, _, d = _get(
+			f"https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000&pageToken={token}",
+			{"x-goog-api-key": key},
+		)
 		LISTED["gemini"] = f"model list HTTP {status} {_err(d)}".strip()
-		ids += [m["name"].split("/", 1)[1] for m in d.get("models", []) if "generateContent" in m.get("supportedGenerationMethods", [])]
+		ids += [
+			m["name"].split("/", 1)[1]
+			for m in d.get("models", [])
+			if "generateContent" in m.get("supportedGenerationMethods", [])
+		]
 		token = d.get("nextPageToken", "")
 		if not token:
 			return ["gemini/" + i for i in ids]
@@ -81,7 +89,11 @@ def groq_works(key: str, model: str, min_tpm: int) -> tuple[bool, str, int]:
 	status, headers, d = _get(
 		"https://api.groq.com/openai/v1/chat/completions",
 		{"Authorization": f"Bearer {key}"},
-		{"model": model.split("/", 1)[1], "messages": [{"role": "user", "content": "Say OK."}], "max_tokens": 8},
+		{
+			"model": model.split("/", 1)[1],
+			"messages": [{"role": "user", "content": "Say OK."}],
+			"max_tokens": 8,
+		},
 	)
 	h = {k.lower(): v for k, v in headers.items()}
 	tpm = int(h.get("x-ratelimit-limit-tokens", "0") or 0)
@@ -108,7 +120,10 @@ def pick(agent: dict, notes: Path) -> str:
 					return _done(c["model"], listed, tried, notes)
 			else:
 				tried.append(f"{c['model']}: not listed")
-		flash = sorted((m for m in listed if "flash" in m and "lite" not in m and "image" not in m and "tts" not in m), reverse=True)
+		flash = sorted(
+			(m for m in listed if "flash" in m and "lite" not in m and "image" not in m and "tts" not in m),
+			reverse=True,
+		)
 		for m in flash[:3]:
 			ok, why = gemini_works(key, m)
 			tried.append(f"{m}: {why}")
@@ -153,7 +168,9 @@ def pick(agent: dict, notes: Path) -> str:
 		raise SystemExit(f"no model picker for provider {provider}")
 	tried += LISTED.values()
 	_done("", listed, tried, notes)
-	raise SystemExit(f"{agent['name']}: no candidate model is usable on this key today; see {notes}/model-digest.txt")
+	raise SystemExit(
+		f"{agent['name']}: no candidate model is usable on this key today; see {notes}/model-digest.txt"
+	)
 
 
 def _done(model: str, listed: list[str], tried: list[str], notes: Path) -> str:
@@ -161,8 +178,14 @@ def _done(model: str, listed: list[str], tried: list[str], notes: Path) -> str:
 	day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 	if not model:
 		print("Models the provider listed:", ", ".join(listed) or "none")
-	head = f"API model id {model}, called {day} (picked from the agent's candidates; the provider may update a model behind an unversioned id)" if model else f"No usable model on {day}"
-	(notes / "model-digest.txt").write_text(head + "\n" + "".join(f"- {t}\n" for t in tried), encoding="utf-8")
+	head = (
+		f"API model id {model}, called {day} (picked from the agent's candidates; the provider may update a model behind an unversioned id)"
+		if model
+		else f"No usable model on {day}"
+	)
+	(notes / "model-digest.txt").write_text(
+		head + "\n" + "".join(f"- {t}\n" for t in tried), encoding="utf-8"
+	)
 	(notes / "provider-models.txt").write_text("\n".join(listed) + "\n", encoding="utf-8")
 	print(head)
 	print("\n".join(tried))
