@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """Every vendor profile and its adapter class, against the scripted fake: the profiles are consistent
 with the kernel, each adapter follows the contract, and the lookups a profile ships send the documented

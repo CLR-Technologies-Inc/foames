@@ -1,0 +1,163 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-15 23:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "sb_appetite",
+  "risk_appetite",
+  "default_tolerance",
+  "sb_bands",
+  "very_low_max",
+  "low_max",
+  "cb_bands",
+  "moderate_max",
+  "high_max",
+  "sb_review",
+  "review_days",
+  "high_risk_review_days",
+  "cb_review",
+  "verification_days"
+ ],
+ "fields": [
+  {
+   "fieldname": "sb_appetite",
+   "fieldtype": "Section Break",
+   "label": "Risk Appetite"
+  },
+  {
+   "fieldname": "risk_appetite",
+   "fieldtype": "Small Text",
+   "label": "Risk Appetite Statement",
+   "description": "How much risk the organization is willing to accept in pursuit of its objectives. Shown on every risk for context"
+  },
+  {
+   "fieldname": "default_tolerance",
+   "fieldtype": "Select",
+   "label": "Default Tolerance",
+   "options": "Very Low\nLow\nModerate\nHigh\nVery High",
+   "default": "Moderate",
+   "reqd": 1,
+   "description": "The highest residual rating accepted without management's acceptance, for a category with no tolerance of its own"
+  },
+  {
+   "fieldname": "sb_bands",
+   "fieldtype": "Section Break",
+   "label": "Rating Bands",
+   "description": "A score is impact times likelihood, 1 to 25. A score up to each limit gets that rating; above High's limit is Very High"
+  },
+  {
+   "fieldname": "very_low_max",
+   "fieldtype": "Int",
+   "label": "Very Low up to",
+   "default": "3",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "low_max",
+   "fieldtype": "Int",
+   "label": "Low up to",
+   "default": "6",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "cb_bands",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "moderate_max",
+   "fieldtype": "Int",
+   "label": "Moderate up to",
+   "default": "12",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "high_max",
+   "fieldtype": "Int",
+   "label": "High up to",
+   "default": "16",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "sb_review",
+   "fieldtype": "Section Break",
+   "label": "Review and Verification"
+  },
+  {
+   "fieldname": "review_days",
+   "fieldtype": "Int",
+   "label": "Review Every (days)",
+   "default": "365",
+   "non_negative": 1,
+   "description": "For risks rated Moderate or lower, unless the risk sets its own"
+  },
+  {
+   "fieldname": "high_risk_review_days",
+   "fieldtype": "Int",
+   "label": "High Risk Review Every (days)",
+   "default": "90",
+   "non_negative": 1,
+   "description": "For risks with a High or Very High residual rating"
+  },
+  {
+   "fieldname": "cb_review",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "verification_days",
+   "fieldtype": "Int",
+   "label": "Verify Controls Every (days)",
+   "default": "180",
+   "non_negative": 1,
+   "description": "For controls in place that set no interval of their own"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-15 23:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Risk",
+ "name": "Risk Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "print": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1
+  },
+  {
+   "role": "FoaMES Maintenance",
+   "read": 1
+  },
+  {
+   "role": "FoaMES Operator",
+   "read": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "issingle": 1,
+ "track_changes": 1,
+ "description": "Risk appetite, rating bands and review intervals for the risk register"
+}

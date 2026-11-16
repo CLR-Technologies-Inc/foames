@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """The MCP endpoint inside the site: Streamable HTTP at
 `POST /api/method/foames.foames_mcp.api.mcp`.

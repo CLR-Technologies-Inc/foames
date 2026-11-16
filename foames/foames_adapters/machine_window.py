@@ -1,5 +1,5 @@
-# Copyright (c) 2026, CLR Technologies Inc. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
 
 """What a machine did in a window, read from its Machine Events: the counter totals, the state it
 carried in and the state changes inside. Shared by the adapters that roll machine data up to an
