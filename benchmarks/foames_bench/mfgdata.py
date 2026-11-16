@@ -28,7 +28,9 @@ import json
 import math
 import os
 import random
+import re
 import shutil
+import stat
 import statistics
 import sys
 import urllib.request
@@ -148,16 +150,36 @@ def fetch(ds: dict, dest: Path | None = None, getter=_get) -> Path:
 	return folder
 
 
+def _safe_member_path(folder: Path, name: str, what: str) -> Path:
+	"""Join a remote-controlled archive member name under ``folder``. Zip names use "/" but a
+	crafted archive may carry "\\", drive letters or ".."; rebuild the path from clean parts so
+	nothing can land outside ``folder``."""
+	parts = [p for p in re.split(r"[\\/]+", name) if p not in ("", ".")]
+	if not parts or any(p == ".." or ":" in p for p in parts):
+		raise FetchRefused(f"{what}: unsafe member path {name!r}")
+	root = folder.resolve()
+	dest = root.joinpath(*parts).resolve()
+	if not dest.is_relative_to(root):
+		raise FetchRefused(f"{what}: member path {name!r} escapes the folder")
+	return dest
+
+
 def _store(folder: Path, name: str, data: bytes) -> None:
-	target = folder / Path(name).name
+	folder = folder.resolve()
+	target = _safe_member_path(folder, Path(name).name, name)
 	target.write_bytes(data)
-	if target.suffix == ".zip":
-		with zipfile.ZipFile(io.BytesIO(data)) as zf:
-			for member in zf.infolist():
-				path = (folder / member.filename).resolve()
-				if not str(path).startswith(str(folder.resolve())):
-					raise FetchRefused(f"{name}: zip member {member.filename!r} escapes the folder")
-			zf.extractall(folder)
+	if target.suffix.lower() != ".zip":
+		return
+	with zipfile.ZipFile(io.BytesIO(data)) as zf:
+		for member in zf.infolist():
+			dest = _safe_member_path(folder, member.filename, f"{name}!{member.filename}")
+			if member.is_dir():
+				dest.mkdir(parents=True, exist_ok=True)
+				continue
+			if stat.S_ISLNK(member.external_attr >> 16):
+				raise FetchRefused(f"{name}: zip member {member.filename!r} is a link")
+			dest.parent.mkdir(parents=True, exist_ok=True)
+			dest.write_bytes(zf.read(member))
 
 
 # ----------------------------------------------------------------------------- helpers
