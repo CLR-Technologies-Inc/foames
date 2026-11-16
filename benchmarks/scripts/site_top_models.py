@@ -54,8 +54,8 @@ def page(rows: list) -> str:
 		"## Top performing models*",
 		"",
 		"How well each model did as a coding agent on FoaMES manufacturing tasks: repairing production counting, "
-		"building OEE and SPC, honouring ERP throttling, mining a process, specifying recovery after a network "
-		"outage, and checking energy-saving claims from 29 industrial sector case studies.",
+		+ "building OEE and SPC, honouring ERP throttling, mining a process, specifying recovery after a network "
+		+ "outage, and checking energy-saving claims from 29 industrial sector case studies.",
 		"",
 		"| Rank | Model | How it ran | Built for | Tasks run | Pass rate (95% range) | ECL reached | Cost |",
 		"| ---: | --- | --- | --- | ---: | --- | --- | ---: |",
