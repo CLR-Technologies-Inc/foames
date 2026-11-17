@@ -87,7 +87,7 @@ def robots_allows(url: str, cache: dict) -> bool | None:
 		rp = urllib.robotparser.RobotFileParser()
 		try:
 			req = urllib.request.Request(origin + "/robots.txt", headers={"User-Agent": USER_AGENT})
-			with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:  # NOSONAR -- url is a validated http(s) page URL from repo config
+			with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:  # NOSONAR
 				rp.parse(resp.read().decode("utf-8", errors="replace").splitlines())
 			cache[origin] = rp
 		except urllib.error.HTTPError as exc:
@@ -106,7 +106,7 @@ def robots_allows(url: str, cache: dict) -> bool | None:
 def fetch(url: str) -> tuple[int, str, bytes, str]:
 	req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept-Language": "en"})
 	try:
-		with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:  # NOSONAR -- url is a validated http(s) page URL from repo config
+		with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:  # NOSONAR
 			return resp.status, resp.headers.get("Content-Type", ""), resp.read(), resp.geturl()
 	except urllib.error.HTTPError as exc:
 		return exc.code, exc.headers.get("Content-Type", "") if exc.headers else "", b"", url
@@ -114,7 +114,10 @@ def fetch(url: str) -> tuple[int, str, bytes, str]:
 
 def fetchable(url: str) -> bool:
 	"""Only absolute http(s) URLs with a host are fetched; anything else in pages.json is a config error."""
-	parts = urllib.parse.urlsplit(url)
+	try:
+		parts = urllib.parse.urlsplit(url)
+	except ValueError:
+		return False
 	return parts.scheme in ("http", "https") and bool(parts.netloc)
 
 

@@ -32,12 +32,13 @@ LISTED: dict[str, str] = {}
 
 def _get(url: str, headers: dict | None = None, data: dict | None = None, timeout: int = 180):
 	"""(status, headers, json). A timeout or network error gives status 0 and the error as "error"."""
-	body = json.dumps(data).encode() if data is not None else None  # NOSONAR -- callers pass fixed https URLs with quoted parameters
+	# _get is only called with fixed https URLs; remote values are quoted by the callers.
+	body = json.dumps(data).encode() if data is not None else None  # NOSONAR
 	req = urllib.request.Request(
 		url, data=body, headers={"Content-Type": "application/json", "User-Agent": UA, **(headers or {})}
 	)
 	try:
-		with urllib.request.urlopen(req, timeout=timeout) as r:
+		with urllib.request.urlopen(req, timeout=timeout) as r:  # NOSONAR
 			return r.status, dict(r.headers), json.loads(r.read() or b"{}")
 	except urllib.error.HTTPError as e:
 		try:
@@ -258,9 +259,7 @@ def main(argv=None):
 	if not agent.get("_model_candidates"):
 		return
 	agent["model"] = pick(agent, opts.notes)
-	opts.agents.write_text(  # NOSONAR -- --agents is the operator's path
-		json.dumps(doc, indent=1, ensure_ascii=False) + "\n", encoding="utf-8"
-	)
+	opts.agents.write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")  # NOSONAR
 
 
 if __name__ == "__main__":

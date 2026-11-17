@@ -26,7 +26,6 @@ Rules, which follow the FoaMES invariants:
 from __future__ import annotations
 
 import hashlib
-import math
 import re
 from dataclasses import dataclass, field
 from datetime import timedelta
@@ -190,7 +189,7 @@ class SampleMapper:
 			provenance["units"] = sample.units
 		if mapping.interval is not None:
 			provenance["interval_s"] = mapping.interval.total_seconds()
-		if not math.isclose(mapping.scale, 1.0) or not math.isclose(mapping.offset, 0.0):
+		if mapping.scale != 1.0 or mapping.offset != 0.0:  # NOSONAR -- exact: non-unit scale keeps raw_value
 			provenance["raw_value"] = sample.value
 		for key, val in (sample.extra or {}).items():
 			if val is not None:

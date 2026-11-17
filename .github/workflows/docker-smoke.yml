@@ -85,7 +85,7 @@ jobs:
 
       - name: pip install -e .
         working-directory: benchmarks
-        run: pip install --only-binary :all: -e .
+        run: "pip install --only-binary :all: -e ."
 
       - name: foames-bench list
         working-directory: benchmarks

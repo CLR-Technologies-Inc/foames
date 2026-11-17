@@ -244,7 +244,10 @@ function raise_andon_dialog(view) {
 
 function recognition_card(r) {
 	const esc = frappe.utils.escape_html;
-	const who = [r.recipient, r.machine].filter(Boolean).map((w) => esc(w)).join(" · ");
+	const who = [r.recipient, r.machine]
+		.filter(Boolean)
+		.map((w) => esc(w))
+		.join(" · ");
 	const head = who ? ` · ${who}` : "";
 	const from = r.from ? __("from {0}", [esc(r.from)]) + " · " : "";
 	const when = r.recognized_at ? frappe.datetime.prettyDate(r.recognized_at) : "";

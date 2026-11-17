@@ -44,9 +44,7 @@ def score(task, graded: dict, seconds: float, cost_usd: float | None) -> dict:
 	executed = [t for t in agent_tests.get("tests", []) if t["outcome"] != "skip"]
 	wrote_tests = (
 		1.0
-		if agent_tests["new_test_functions"] > 0
-		and executed
-		and (agent_tests["pass_rate"] or 0.0) >= 1.0
+		if agent_tests["new_test_functions"] > 0 and executed and (agent_tests["pass_rate"] or 0.0) >= 1.0
 		else 0.0
 	)
 	in_scope = (

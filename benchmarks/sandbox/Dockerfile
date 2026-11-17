@@ -18,7 +18,7 @@ ARG PIP_AGENTS=""
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends git ca-certificates curl nodejs npm \
 	&& rm -rf /var/lib/apt/lists/*
-RUN if [ -n "$NPM_AGENTS" ]; then npm install -g --ignore-scripts $NPM_AGENTS && npm cache clean --force; fi
+RUN if [ -n "$NPM_AGENTS" ]; then npm install -g --ignore-scripts $NPM_AGENTS && npm rebuild -g $NPM_AGENTS && npm cache clean --force; fi
 RUN if [ -n "$PIP_AGENTS" ]; then pip install --only-binary :all: --no-cache-dir $PIP_AGENTS; fi
 
 # The harness runs the container as your user with HOME=/tmp, so agents can write their config.

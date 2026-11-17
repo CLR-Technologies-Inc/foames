@@ -81,7 +81,7 @@ TRAILER = re.compile(
 	r"^(co-authored-by|signed-off-by|reviewed-by|acked-by|tested-by|reported-by|suggested-by|helped-by):",
 	re.IGNORECASE,
 )
-EMAIL = re.compile(r"(?<![\w.+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?![\w-])")  # NOSONAR -- input is commit messages, not adversarial
+EMAIL = re.compile(r"(?<![\w.+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?![\w-])")  # NOSONAR
 EMAIL_ERE = r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"  # for git grep, which has no lookbehind
 REV = re.compile(r"[A-Za-z0-9][A-Za-z0-9._/^~@-]*")  # a revision git may be asked about, never an option
 LIST_FILE = os.path.join(".git", "name-guard-words")
