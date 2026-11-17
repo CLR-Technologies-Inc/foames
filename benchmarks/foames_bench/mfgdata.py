@@ -852,6 +852,11 @@ def add_parser(sub) -> None:
 
 
 def clear_cache(dataset_id: str) -> None:
-	shutil.rmtree(
-		_safe_member_path(cache_root(), dataset_id, f"dataset {dataset_id!r}"), ignore_errors=True
-	)
+	root = cache_root()
+	target = _safe_member_path(root, dataset_id, f"dataset {dataset_id!r}")
+	# Inspect the entry before resolution hides whether it is a symlink.
+	parts = [p for p in re.split(r"[\\/]+", dataset_id) if p not in ("", ".")]
+	entry = root.joinpath(*parts)
+	if entry.is_symlink() or target == root.resolve():
+		raise FetchRefused(f"dataset {dataset_id!r}: refusing to delete a symlink or the cache root")
+	shutil.rmtree(target, ignore_errors=True)

@@ -168,5 +168,48 @@ class TestFetch(unittest.TestCase):
 			mfgdata.fetch(ds, Path(self.tmp.name), getter=lambda u: _zip({"a": "b"}))
 
 
+class TestClearCache(unittest.TestCase):
+	def setUp(self):
+		self.tmp = tempfile.TemporaryDirectory()
+		self.addCleanup(self.tmp.cleanup)
+		self.root = Path(self.tmp.name) / "cache"
+		self.root.mkdir()
+		patcher = mock.patch.object(mfgdata, "cache_root", return_value=self.root)
+		patcher.start()
+		self.addCleanup(patcher.stop)
+
+	def test_deletes_only_selected_dataset_and_ignores_missing(self):
+		for name in ("selected", "other"):
+			folder = self.root / name
+			folder.mkdir()
+			(folder / "data").write_text("keep")
+		mfgdata.clear_cache("selected")
+		mfgdata.clear_cache("selected")
+		self.assertFalse((self.root / "selected").exists())
+		self.assertEqual((self.root / "other" / "data").read_text(), "keep")
+
+	def test_refuses_symlinks_without_deleting_targets(self):
+		other = self.root / "other"
+		other.mkdir()
+		outside = Path(self.tmp.name) / "outside"
+		outside.mkdir()
+		for target in (other, self.root, outside, self.root / "missing"):
+			with self.subTest(target=target):
+				entry = self.root / "selected"
+				entry.symlink_to(target, target_is_directory=True)
+				with self.assertRaises(mfgdata.FetchRefused):
+					mfgdata.clear_cache("selected")
+				self.assertTrue(entry.is_symlink())
+				self.assertTrue(other.is_dir())
+				self.assertTrue(outside.is_dir())
+				entry.unlink()
+
+	def test_refuses_unsafe_paths(self):
+		for name in ("", ".", "..", "../outside", "nested/../../outside"):
+			with self.subTest(name=name), self.assertRaises(mfgdata.FetchRefused):
+				mfgdata.clear_cache(name)
+		self.assertTrue(self.root.is_dir())
+
+
 if __name__ == "__main__":
 	unittest.main()
