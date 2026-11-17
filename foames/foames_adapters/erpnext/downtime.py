@@ -65,7 +65,7 @@ def payload_for(doc, workstation: str) -> dict:
 		"from_time": str(doc.start_time),
 		"to_time": str(doc.end_time),
 		"stop_reason": stop_reason_for(title or doc.reason, category),
-		"remarks": ": ".join(parts[:2]) + (f". {parts[2]}" if len(parts) > 2 else ""),
+		"remarks": ": ".join(parts[:2]) + "".join(f". {part}" for part in parts[2:]),
 		"downtime_record": doc.name,
 	}
 	if settings.downtime_operator:

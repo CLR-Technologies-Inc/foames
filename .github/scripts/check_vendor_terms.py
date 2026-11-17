@@ -87,7 +87,7 @@ def robots_allows(url: str, cache: dict) -> bool | None:
 		rp = urllib.robotparser.RobotFileParser()
 		try:
 			req = urllib.request.Request(origin + "/robots.txt", headers={"User-Agent": USER_AGENT})
-			with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
+			with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:  # NOSONAR -- url is a validated http(s) page URL from repo config
 				rp.parse(resp.read().decode("utf-8", errors="replace").splitlines())
 			cache[origin] = rp
 		except urllib.error.HTTPError as exc:
@@ -106,10 +106,16 @@ def robots_allows(url: str, cache: dict) -> bool | None:
 def fetch(url: str) -> tuple[int, str, bytes, str]:
 	req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept-Language": "en"})
 	try:
-		with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
+		with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:  # NOSONAR -- url is a validated http(s) page URL from repo config
 			return resp.status, resp.headers.get("Content-Type", ""), resp.read(), resp.geturl()
 	except urllib.error.HTTPError as exc:
 		return exc.code, exc.headers.get("Content-Type", "") if exc.headers else "", b"", url
+
+
+def fetchable(url: str) -> bool:
+	"""Only absolute http(s) URLs with a host are fetched; anything else in pages.json is a config error."""
+	parts = urllib.parse.urlsplit(url)
+	return parts.scheme in ("http", "https") and bool(parts.netloc)
 
 
 def check(pages: list[dict], state: dict) -> tuple[list[dict], dict]:
@@ -121,6 +127,10 @@ def check(pages: list[dict], state: dict) -> tuple[list[dict], dict]:
 			row["status"] = "manual"
 			row["reason"] = page.get("reason", "")
 			row["last_reviewed"] = state.get(pid, {}).get("reviewed")
+			results.append(row)
+			continue
+		if not fetchable(url):
+			row["status"] = "bad-url"
 			results.append(row)
 			continue
 
@@ -179,7 +189,8 @@ def report(results: list[dict], include_manual: bool) -> str:
 	need = [
 		r
 		for r in results
-		if r["status"] in {"changed", "broken-link", "unreachable", "robots-disallowed", "no-baseline"}
+		if r["status"]
+		in {"changed", "broken-link", "unreachable", "robots-disallowed", "no-baseline", "bad-url"}
 	]
 	manual = [r for r in results if r["status"] == "manual"]
 	lines = [f"Vendor terms check run on {today}.", ""]
@@ -203,6 +214,7 @@ def report(results: list[dict], include_manual: bool) -> str:
 				"broken-link": f"HTTP {r.get('http')}; update the link in the doc",
 				"unreachable": f"could not connect ({r.get('error', '')})",
 				"robots-disallowed": "robots.txt now disallows automated readers; switch this page to manual",
+				"bad-url": "not an absolute http(s) URL; fix the entry in pages.json",
 			}[r["status"]]
 			if r.get("redirected_to"):
 				detail += f"; redirects to {r['redirected_to']}"
@@ -249,15 +261,17 @@ def main() -> int:
 	state = json.loads(STATE.read_text()) if STATE.exists() else {}
 
 	results, new_state = check(pages, state)
-	args.report.write_text(report(results, args.include_manual))
-	args.new_state.write_text(json.dumps(new_state, indent=2, sort_keys=True) + "\n")
+	args.report.write_text(report(results, args.include_manual))  # NOSONAR -- operator's --report path
+	args.new_state.write_text(  # NOSONAR -- operator's --new-state path
+		json.dumps(new_state, indent=2, sort_keys=True) + "\n"
+	)
 
 	counts: dict[str, int] = {}
 	for r in results:
 		counts[r["status"]] = counts.get(r["status"], 0) + 1
 	attention = sum(
 		counts.get(k, 0)
-		for k in ("changed", "broken-link", "unreachable", "robots-disallowed", "no-baseline")
+		for k in ("changed", "broken-link", "unreachable", "robots-disallowed", "no-baseline", "bad-url")
 	)
 	print(json.dumps({"counts": counts, "needs_attention": attention}))
 	return 0

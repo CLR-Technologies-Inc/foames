@@ -18,10 +18,10 @@ from datetime import datetime, timezone
 from foames.foames_process_mining.eventlog import COMPLETE, Event, EventLog, parse_timestamp
 
 EXTENSIONS = (
-	("Concept", "concept", "http://www.xes-standard.org/concept.xesext"),
-	("Time", "time", "http://www.xes-standard.org/time.xesext"),
-	("Lifecycle", "lifecycle", "http://www.xes-standard.org/lifecycle.xesext"),
-	("Organizational", "org", "http://www.xes-standard.org/org.xesext"),
+	("Concept", "concept", "http://www.xes-standard.org/concept.xesext"),  # NOSONAR
+	("Time", "time", "http://www.xes-standard.org/time.xesext"),  # NOSONAR
+	("Lifecycle", "lifecycle", "http://www.xes-standard.org/lifecycle.xesext"),  # NOSONAR
+	("Organizational", "org", "http://www.xes-standard.org/org.xesext"),  # NOSONAR
 )
 
 
@@ -31,7 +31,7 @@ def to_xes(log: EventLog) -> str:
 		{
 			"xes.version": "1849-2016",
 			"xes.features": "nested-attributes",
-			"xmlns": "http://www.xes-standard.org/",
+			"xmlns": "http://www.xes-standard.org/",  # NOSONAR
 		},
 	)
 	for name, prefix, uri in EXTENSIONS:

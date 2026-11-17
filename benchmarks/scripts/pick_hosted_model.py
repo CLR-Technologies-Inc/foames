@@ -20,6 +20,7 @@ import json
 import os
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
@@ -31,7 +32,7 @@ LISTED: dict[str, str] = {}
 
 def _get(url: str, headers: dict | None = None, data: dict | None = None, timeout: int = 180):
 	"""(status, headers, json). A timeout or network error gives status 0 and the error as "error"."""
-	body = json.dumps(data).encode() if data is not None else None
+	body = json.dumps(data).encode() if data is not None else None  # NOSONAR -- callers pass fixed https URLs with quoted parameters
 	req = urllib.request.Request(
 		url, data=body, headers={"Content-Type": "application/json", "User-Agent": UA, **(headers or {})}
 	)
@@ -57,7 +58,8 @@ def gemini_models(key: str) -> list[str]:
 	ids, token = [], ""
 	while True:
 		status, _, d = _get(
-			f"https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000&pageToken={token}",
+			"https://generativelanguage.googleapis.com/v1beta/models"
+			f"?pageSize=1000&pageToken={urllib.parse.quote(token, safe='')}",
 			{"x-goog-api-key": key},
 		)
 		LISTED["gemini"] = f"model list HTTP {status} {_err(d)}".strip()
@@ -73,7 +75,8 @@ def gemini_models(key: str) -> list[str]:
 
 def gemini_works(key: str, model: str) -> tuple[bool, str]:
 	status, _, d = _get(
-		f"https://generativelanguage.googleapis.com/v1beta/models/{model.split('/', 1)[1]}:generateContent",
+		"https://generativelanguage.googleapis.com/v1beta/models/"
+		f"{urllib.parse.quote(model.split('/', 1)[1], safe='')}:generateContent",
 		{"x-goog-api-key": key},
 		{"contents": [{"parts": [{"text": "Say OK."}]}], "generationConfig": {"maxOutputTokens": 8}},
 	)
@@ -112,15 +115,19 @@ def nvidia_models(key: str) -> list[str]:
 	return sorted("nvidia_nim/" + m["id"] for m in d.get("data", []))
 
 
+RETRYABLE = ("429", "500", "502", "503", "504")
+
+
 def nvidia_works(key: str, model: str) -> tuple[bool, str]:
 	# Shared NIM endpoints answer 429 or 5xx while busy (for example "content safety screening is
 	# temporarily unavailable"); try again a few times before giving up on the model.
-	for wait in (30, 60, 120, 0):
-		ok, why = _nvidia_call(key, model)
-		if ok or not any(why.startswith(f"HTTP {c}") for c in ("429", "500", "502", "503", "504")):
-			return ok, why
+	result = _nvidia_call(key, model)
+	for wait in (30, 60, 120):
+		if result[0] or not result[1].startswith(tuple(f"HTTP {c}" for c in RETRYABLE)):
+			break
 		time.sleep(wait)
-	return ok, why
+		result = _nvidia_call(key, model)
+	return result
 
 
 def _nvidia_call(key: str, model: str) -> tuple[bool, str]:
@@ -222,7 +229,7 @@ def pick(agent: dict, notes: Path) -> str:
 
 
 def _done(model: str, listed: list[str], tried: list[str], notes: Path) -> str:
-	notes.mkdir(parents=True, exist_ok=True)
+	notes.mkdir(parents=True, exist_ok=True)  # NOSONAR -- notes is the operator's --notes directory
 	day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 	if not model:
 		print("Models the provider listed:", ", ".join(listed) or "none")
@@ -246,12 +253,14 @@ def main(argv=None):
 	ap.add_argument("--agents", type=Path, default=Path(__file__).resolve().parent.parent / "agents.json")
 	ap.add_argument("--notes", type=Path, default=Path("notes"))
 	opts = ap.parse_args(argv)
-	doc = json.loads(opts.agents.read_text(encoding="utf-8"))
+	doc = json.loads(opts.agents.read_text(encoding="utf-8"))  # NOSONAR -- --agents is the operator's path
 	agent = next(a for a in doc["agents"] if a["name"] == opts.agent)
 	if not agent.get("_model_candidates"):
 		return
 	agent["model"] = pick(agent, opts.notes)
-	opts.agents.write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+	opts.agents.write_text(  # NOSONAR -- --agents is the operator's path
+		json.dumps(doc, indent=1, ensure_ascii=False) + "\n", encoding="utf-8"
+	)
 
 
 if __name__ == "__main__":

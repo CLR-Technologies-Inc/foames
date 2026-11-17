@@ -138,7 +138,7 @@ jobs:
       - name: Ollama and the model
         if: startsWith(matrix.agent, 'aider-ollama-')
         run: |
-          curl -fsSL https://ollama.com/install.sh | sh
+          curl -fsSL --proto '=https' --proto-redir '=https' -o /tmp/ollama-install.sh https://ollama.com/install.sh && sh /tmp/ollama-install.sh
           for i in $(seq 1 30); do curl -sf http://127.0.0.1:11434/api/version && break; sleep 2; done || (ollama serve > ollama.log 2>&1 &)
           for i in $(seq 1 30); do curl -sf http://127.0.0.1:11434/api/version && break; sleep 2; done
           MODEL=$(python3 -c "import json;a={x['name']:x for x in json.load(open('benchmarks/agents.json'))['agents']}['${{ matrix.agent }}'];print(a['model'].split('/',1)[1])")

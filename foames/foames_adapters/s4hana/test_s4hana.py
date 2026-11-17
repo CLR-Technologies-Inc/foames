@@ -176,7 +176,8 @@ class TestOutbox(unittest.TestCase):
 		)
 
 	def test_marker_is_stable_and_fits_material_document_text(self):
-		self.assertEqual(outbox.marker("k"), outbox.marker("k"))
+		marker = outbox.marker("k")
+		self.assertEqual(outbox.marker("k"), marker)
 		self.assertNotEqual(outbox.marker("k"), outbox.marker("k2"))
 		self.assertLessEqual(len(outbox.marker("k")), 25)
 		self.assertEqual(self.payload()["ConfirmationText"], outbox.marker("seg-1:mix:done"))

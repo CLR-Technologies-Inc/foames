@@ -95,7 +95,7 @@ def t_ppf(p: float, df: float) -> float:
 	"""The t value with P(T <= t) = p."""
 	if not 0.0 < p < 1.0:
 		raise ValueError("p must be between 0 and 1")
-	if p == 0.5:
+	if math.isclose(p, 0.5):
 		return 0.0
 	low, high = -1.0, 1.0
 	while t_cdf(low, df) > p:

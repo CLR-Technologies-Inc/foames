@@ -22,7 +22,7 @@ export MSYS_NO_PATHCONV=1
 
 # One set of containers and volumes per checkout, so two clones or worktrees never share a bench.
 # .env or the environment can still pin a name.
-if [ -z "${COMPOSE_PROJECT_NAME:-}" ] && ! grep -qE '^COMPOSE_PROJECT_NAME=.+' .env 2>/dev/null; then
+if [[ -z "${COMPOSE_PROJECT_NAME:-}" ]] && ! grep -qE '^COMPOSE_PROJECT_NAME=.+' .env 2>/dev/null; then
 	checkout="$(cd .. && pwd -P)"
 	suffix="$(printf '%s' "$checkout" | cksum | cut -d' ' -f1)"
 	export COMPOSE_PROJECT_NAME="foames-dev-$(basename "$checkout" | tr -c 'a-z0-9\n' '-' | tr 'A-Z' 'a-z')-$suffix"

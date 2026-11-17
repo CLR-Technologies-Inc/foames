@@ -23,7 +23,7 @@ import uuid
 from collections.abc import Iterable
 
 SPEC_VERSION = "1.7"
-SCHEMA_URL = "http://cyclonedx.org/schema/bom-1.7.schema.json"
+SCHEMA_URL = "http://cyclonedx.org/schema/bom-1.7.schema.json"  # NOSONAR
 ROOT_REF = "foames-site"
 
 CLIENT_CERTIFICATE_REF = "crypto:certificate:opcua-client"

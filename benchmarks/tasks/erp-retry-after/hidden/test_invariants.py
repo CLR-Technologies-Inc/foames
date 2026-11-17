@@ -91,7 +91,8 @@ class TestNoDuplicatePostings(unittest.TestCase):
 		)
 
 	def test_marker_is_stable(self):
-		self.assertEqual(outbox.marker("conf-1"), outbox.marker("conf-1"))
+		marker = outbox.marker("conf-1")
+		self.assertEqual(outbox.marker("conf-1"), marker)
 		self.assertEqual(len(outbox.marker("conf-1")), 23)
 
 	def test_give_up_unchanged(self):

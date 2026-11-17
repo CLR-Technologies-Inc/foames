@@ -39,10 +39,10 @@ COPY --from=node /usr/local/bin/node /usr/local/bin/node
 COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
 RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
     && ln -s /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx \
-    && npm install -g yarn@1 \
+    && npm install -g --ignore-scripts yarn@1.22.22 \
     && node --version && npm --version && yarn --version
 
-RUN pip install --upgrade pip frappe-bench
+RUN pip install --only-binary :all: --upgrade "pip==25.3" "frappe-bench==5.31.1"
 
 # bench prefers not to run as root. The bench lives in a volume mounted at /home/frappe/benches.
 RUN useradd --create-home --shell /bin/bash --uid 1000 frappe \

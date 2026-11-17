@@ -14,7 +14,7 @@ _spec.loader.exec_module(_setup)
 def _replace(path: Path, old: str, new: str):
 	text = path.read_text(encoding="utf-8")
 	assert old in text, f"{path.name}: {old[:60]!r} not found"
-	path.write_text(text.replace(old, new, 1), encoding="utf-8")
+	path.write_text(text.replace(old, new, 1), encoding="utf-8")  # NOSONAR -- benchmark-internal path
 
 
 PARSER = '''

@@ -18,7 +18,7 @@ BENCH_DIR="${BENCH_DIR:-$HOME/benches/frappe-bench}"
 export CI="${CI:-Yes}"
 export TYPE="${TYPE:-server}"
 
-if [ ! -f "$BENCH_DIR/sites/$SITE_NAME/site_config.json" ]; then
+if [[ ! -f "$BENCH_DIR/sites/$SITE_NAME/site_config.json" ]]; then
 	echo "Site $SITE_NAME is missing. Run setup-bench.sh first (./bench.sh up on the host)." >&2
 	exit 1
 fi

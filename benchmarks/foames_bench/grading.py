@@ -147,13 +147,18 @@ def rubric_score(workspace: Path, rubric: dict) -> dict:
 	if not file.exists():
 		return {"score": 0.0, "missing_file": rubric["file"], "sections": {}, "concepts": {}, "red_flags": []}
 	text = file.read_text(encoding="utf-8", errors="replace")
-	headings = [h.strip().lower() for h in re.findall(r"^#{1,4}\s+(.+)$", text, flags=re.MULTILINE)]
+	headings = [
+		h.strip().lower()
+		for h in re.findall(r"^#{1,4}\s+(.+)$", text, flags=re.MULTILINE)  # NOSONAR
+	]
 	sections = {s: any(s.lower() in h for h in headings) for s in rubric.get("sections", [])}
 	concepts = {}
 	for concept in rubric.get("concepts", []):
 		concepts[concept["id"]] = any(re.search(p, text, flags=re.IGNORECASE) for p in concept["any"])
 	flags = [
-		f["id"] for f in rubric.get("red_flags", []) if re.search(f["pattern"], text, flags=re.IGNORECASE)
+		f["id"]
+		for f in rubric.get("red_flags", [])
+		if re.search(f["pattern"], text, flags=re.IGNORECASE)  # NOSONAR -- rubric patterns are repo-trusted
 	]
 	weights = {c["id"]: c.get("weight", 1.0) for c in rubric.get("concepts", [])}
 	section_part = sum(sections.values()) / len(sections) if sections else 1.0
