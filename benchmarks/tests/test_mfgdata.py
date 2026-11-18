@@ -6,6 +6,9 @@
 import hashlib
 import io
 import json
+import os
+import stat
+import subprocess
 import tempfile
 import unittest
 import zipfile
@@ -168,6 +171,90 @@ class TestFetch(unittest.TestCase):
 			mfgdata.fetch(ds, Path(self.tmp.name), getter=lambda u: _zip({"a": "b"}))
 
 
+class TestArchiveWrites(unittest.TestCase):
+	def setUp(self):
+		self.tmp = tempfile.TemporaryDirectory()
+		self.addCleanup(self.tmp.cleanup)
+		self.folder = Path(self.tmp.name) / "cache"
+		self.folder.mkdir()
+		(self.folder / "data.zip").write_bytes(b"previous archive")
+		(self.folder / "existing.csv").write_bytes(b"previous data")
+		(self.folder / "provenance.json").write_bytes(b"previous provenance")
+
+	def snapshot(self):
+		return {
+			str(path.relative_to(self.folder)): path.read_bytes() if path.is_file() else None
+			for path in self.folder.rglob("*")
+		}
+
+	def assert_refused_without_changes(self, data):
+		before = self.snapshot()
+		with self.assertRaises(mfgdata.FetchRefused):
+			mfgdata._store(self.folder, "data.zip", data)
+		self.assertEqual(self.snapshot(), before)
+
+	def test_late_unsafe_members_preserve_existing_cache_and_publish_no_early_members(self):
+		for name in ("../outside.csv", "nested/../../outside.csv", "..\\outside.csv", "nested/C:payload"):
+			with self.subTest(name=name):
+				self.assert_refused_without_changes(
+					_zip({"existing.csv": "replacement", "new/data.csv": "new data", name: "invalid"})
+				)
+
+	def test_late_archive_links_including_directory_entries_preserve_existing_cache(self):
+		for name in ("link", "link/"):
+			member = zipfile.ZipInfo(name)
+			member.create_system = 3
+			member.external_attr = (stat.S_IFLNK | 0o777) << 16
+			with self.subTest(name=name):
+				self.assert_refused_without_changes(
+					_zip({"existing.csv": "replacement", "new.csv": "new data", member: "../outside"})
+				)
+
+	def test_late_corrupt_member_preserves_existing_cache(self):
+		data = _zip({"existing.csv": "replacement", "new.csv": "late corrupt payload"})
+		data = data.replace(b"late corrupt payload", b"late invalid payload", 1)
+		self.assert_refused_without_changes(data)
+
+	def test_corrupt_directory_entry_preserves_existing_cache(self):
+		data = _zip({"existing.csv": "replacement", "nested/": "late corrupt payload"})
+		data = data.replace(b"late corrupt payload", b"late invalid payload", 1)
+		self.assert_refused_without_changes(data)
+
+	def test_truncated_archive_preserves_existing_cache(self):
+		self.assert_refused_without_changes(_zip({"existing.csv": "replacement"})[:-15])
+
+	def test_late_destination_conflict_preserves_existing_cache(self):
+		self.assert_refused_without_changes(
+			_zip({"new.csv": "new data", "existing.csv/nested.csv": "invalid"})
+		)
+
+	def test_conflicting_archive_members_preserve_existing_cache(self):
+		for members in (
+			{"new.csv": "new data", "new.csv/nested.csv": "invalid"},
+			{"new.csv/nested.csv": "new data", "new.csv": "invalid"},
+		):
+			with self.subTest(members=members):
+				self.assert_refused_without_changes(_zip(members))
+
+	def test_failed_fetch_preserves_provenance_and_cached_archive(self):
+		ds = mfgdata.dataset(mfgdata.load_manifest(), "secom")
+		name = ds["source"]["url"].rsplit("/", 1)[-1]
+		(self.folder / name).write_bytes(b"previous source archive")
+		before = self.snapshot()
+		with self.assertRaises(mfgdata.FetchRefused):
+			mfgdata.fetch(
+				ds, self.folder, getter=lambda url: _zip({"existing.csv": "replacement", "../bad": "x"})
+			)
+		self.assertEqual(self.snapshot(), before)
+
+	def test_valid_nested_archive_replaces_data_after_validation(self):
+		data = _zip({"existing.csv": "replacement", "nested/": "", "nested/new.csv": "new data"})
+		mfgdata._store(self.folder, "data.ZIP", data)
+		self.assertEqual((self.folder / "existing.csv").read_text(), "replacement")
+		self.assertEqual((self.folder / "nested" / "new.csv").read_text(), "new data")
+		self.assertEqual((self.folder / "data.ZIP").read_bytes(), data)
+
+
 class TestClearCache(unittest.TestCase):
 	def setUp(self):
 		self.tmp = tempfile.TemporaryDirectory()
@@ -196,13 +283,63 @@ class TestClearCache(unittest.TestCase):
 		for target in (other, self.root, outside, self.root / "missing"):
 			with self.subTest(target=target):
 				entry = self.root / "selected"
-				entry.symlink_to(target, target_is_directory=True)
+				try:
+					entry.symlink_to(target, target_is_directory=True)
+				except OSError as error:
+					self.skipTest(f"symlink creation is unavailable: {error}")
 				with self.assertRaises(mfgdata.FetchRefused):
 					mfgdata.clear_cache("selected")
 				self.assertTrue(entry.is_symlink())
 				self.assertTrue(other.is_dir())
 				self.assertTrue(outside.is_dir())
 				entry.unlink()
+
+	def test_deletes_ordinary_nested_dataset_and_ignores_missing(self):
+		selected = self.root / "group" / "selected"
+		selected.mkdir(parents=True)
+		(selected / "data").write_text("remove")
+		other = selected.parent / "other"
+		other.mkdir()
+		(other / "data").write_text("keep")
+		mfgdata.clear_cache("group/selected")
+		mfgdata.clear_cache("group/selected")
+		mfgdata.clear_cache("missing/selected")
+		self.assertFalse(selected.exists())
+		self.assertEqual((other / "data").read_text(), "keep")
+
+	def test_refuses_intermediate_symlinks_into_another_dataset(self):
+		other = self.root / "other"
+		protected = other / "nested" / "selected"
+		protected.mkdir(parents=True)
+		(protected / "data").write_text("keep")
+		entry = self.root / "alias"
+		try:
+			entry.symlink_to(other, target_is_directory=True)
+		except OSError as error:
+			self.skipTest(f"symlink creation is unavailable: {error}")
+		for name in ("alias/nested/selected", "alias/nested/missing"):
+			with self.subTest(name=name), self.assertRaises(mfgdata.FetchRefused):
+				mfgdata.clear_cache(name)
+		self.assertTrue(entry.is_symlink())
+		self.assertEqual((protected / "data").read_text(), "keep")
+
+	@unittest.skipUnless(os.name == "nt", "Windows junction regression")
+	def test_refuses_junctions_at_every_dataset_path_component(self):
+		other = self.root / "other"
+		protected = other / "nested" / "selected"
+		protected.mkdir(parents=True)
+		(protected / "data").write_text("keep")
+		entry = self.root / "alias"
+		result = subprocess.run(
+			["cmd", "/c", "mklink", "/J", str(entry), str(other)], capture_output=True, text=True
+		)
+		if result.returncode:
+			self.skipTest(f"junction creation is unavailable: {result.stderr}")
+		for name in ("alias", "alias/nested/selected", "alias/nested/missing"):
+			with self.subTest(name=name), self.assertRaises(mfgdata.FetchRefused):
+				mfgdata.clear_cache(name)
+		self.assertTrue(entry.is_dir())
+		self.assertEqual((protected / "data").read_text(), "keep")
 
 	def test_refuses_unsafe_paths(self):
 		for name in ("", ".", "..", "../outside", "nested/../../outside"):

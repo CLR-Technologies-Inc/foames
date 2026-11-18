@@ -33,8 +33,10 @@ import shutil
 import stat
 import statistics
 import sys
+import tempfile
 import urllib.request
 import zipfile
+import zlib
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from itertools import pairwise
@@ -167,19 +169,60 @@ def _safe_member_path(folder: Path, name: str, what: str) -> Path:
 def _store(folder: Path, name: str, data: bytes) -> None:
 	folder = folder.resolve()
 	target = _safe_member_path(folder, Path(name).name, name)
-	target.write_bytes(data)
 	if target.suffix.lower() != ".zip":
+		target.write_bytes(data)
 		return
-	with zipfile.ZipFile(io.BytesIO(data)) as zf:
-		for member in zf.infolist():
-			dest = _safe_member_path(folder, member.filename, f"{name}!{member.filename}")
-			if member.is_dir():
-				dest.mkdir(parents=True, exist_ok=True)
-				continue
-			if stat.S_ISLNK(member.external_attr >> 16):
-				raise FetchRefused(f"{name}: zip member {member.filename!r} is a link")
-			dest.parent.mkdir(parents=True, exist_ok=True)
-			dest.write_bytes(zf.read(member))
+	try:
+		with zipfile.ZipFile(io.BytesIO(data)) as zf:
+			members = []
+			files = {target}
+			directories = set()
+			# Validate the entire namespace before creating directories or replacing cached files.
+			for member in zf.infolist():
+				dest = _safe_member_path(folder, member.filename, f"{name}!{member.filename}")
+				if stat.S_ISLNK(member.external_attr >> 16):
+					raise FetchRefused(f"{name}: zip member {member.filename!r} is a link")
+				if dest in (folder, target):
+					raise FetchRefused(
+						f"{name}: zip member {member.filename!r} conflicts with the cache or archive"
+					)
+				if member.is_dir():
+					directories.add(dest)
+				else:
+					files.add(dest)
+				for parent in dest.parents:
+					if parent == folder:
+						break
+					directories.add(parent)
+				members.append((member, dest))
+			if files & directories:
+				raise FetchRefused(f"{name}: zip members have conflicting file and directory paths")
+			for path in directories:
+				if path.exists() and not path.is_dir():
+					raise FetchRefused(f"{name}: directory path {path.relative_to(folder)} is already a file")
+			for path in files:
+				if path.exists() and not path.is_file():
+					raise FetchRefused(f"{name}: file path {path.relative_to(folder)} is already a directory")
+			# Decode every member to temporary files first: a late CRC/decompression failure must
+			# leave the old archive, extracted files and their provenance together and unchanged.
+			with tempfile.TemporaryDirectory(prefix=".fetch-", dir=folder) as temporary:
+				staging = Path(temporary)
+				staged = []
+				for index, (member, dest) in enumerate(members):
+					path = staging / str(index)
+					with zf.open(member) as source, path.open("wb") as output:
+						shutil.copyfileobj(source, output)
+					if not member.is_dir():
+						staged.append((path, dest))
+				archive = staging / "archive"
+				archive.write_bytes(data)
+				for path in sorted(directories, key=lambda p: len(p.parts)):
+					path.mkdir(parents=True, exist_ok=True)
+				for path, dest in staged:
+					path.replace(dest)
+				archive.replace(target)
+	except (zipfile.BadZipFile, EOFError, RuntimeError, NotImplementedError, zlib.error) as error:
+		raise FetchRefused(f"{name}: invalid or unsupported zip archive: {error}") from error
 
 
 # ----------------------------------------------------------------------------- helpers
@@ -854,9 +897,21 @@ def add_parser(sub) -> None:
 def clear_cache(dataset_id: str) -> None:
 	root = cache_root()
 	target = _safe_member_path(root, dataset_id, f"dataset {dataset_id!r}")
-	# Inspect the entry before resolution hides whether it is a symlink.
+	# Inspect every lexical component: resolution can hide an intermediate link into another
+	# dataset inside this cache. Windows junctions are reparse points, not Python symlinks.
 	parts = [p for p in re.split(r"[\\/]+", dataset_id) if p not in ("", ".")]
-	entry = root.joinpath(*parts)
-	if entry.is_symlink() or target == root.resolve():
-		raise FetchRefused(f"dataset {dataset_id!r}: refusing to delete a symlink or the cache root")
+	entry = root
+	for part in parts:
+		entry = entry / part
+		try:
+			info = entry.lstat()
+		except (FileNotFoundError, NotADirectoryError):
+			break
+		if (
+			stat.S_ISLNK(info.st_mode)
+			or getattr(info, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT
+		):
+			raise FetchRefused(f"dataset {dataset_id!r}: refusing to delete through a symlink or junction")
+	if target == root.resolve():
+		raise FetchRefused(f"dataset {dataset_id!r}: refusing to delete the cache root")
 	shutil.rmtree(target, ignore_errors=True)
