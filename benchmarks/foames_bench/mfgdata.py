@@ -25,14 +25,19 @@ import fnmatch
 import hashlib
 import io
 import json
+import lzma
 import math
 import os
 import random
+import re
 import shutil
+import stat
 import statistics
 import sys
+import tempfile
 import urllib.request
 import zipfile
+import zlib
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from itertools import pairwise
@@ -91,9 +96,19 @@ def fetch(ds: dict, dest: Path | None = None, getter=_get) -> Path:
 	enabled, whose source states a license outside the manifest's list, or whose checksum differs."""
 	if ds.get("status") != "enabled":
 		raise FetchRefused(f"{ds['id']} is {ds.get('status')}: {ds.get('note', 'not enabled')}")
-	src = ds["source"]
-	folder = Path(dest or cache_root() / ds["id"])
+	folder = Path(dest) if dest else _safe_member_path(cache_root(), ds["id"], f"dataset {ds['id']!r}")
 	folder.mkdir(parents=True, exist_ok=True)
+	# Stage the whole dataset, not each archive in isolation: a later Zenodo file can fail its
+	# checksum or decoding after an earlier one has been fully validated. Provenance is staged too.
+	with tempfile.TemporaryDirectory(prefix=".fetch-dataset-", dir=folder) as temporary:
+		staging = Path(temporary)
+		_fetch_into(ds, staging, getter)
+		_publish_dataset(staging, folder)
+	return folder
+
+
+def _fetch_into(ds: dict, folder: Path, getter) -> None:
+	src = ds["source"]
 	provenance = {
 		"dataset": ds["id"],
 		"title": ds["title"],
@@ -145,19 +160,123 @@ def fetch(ds: dict, dest: Path | None = None, getter=_get) -> Path:
 	else:
 		raise FetchRefused(f"{ds['id']}: source type {src['type']!r} is not fetched automatically")
 	(folder / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
-	return folder
+
+
+def _publish_dataset(staging: Path, folder: Path) -> None:
+	"""Publish only after all downloads, checksum/ZIP validation and provenance serialization.
+
+	Preflight the complete destination namespace before replacing files. Individual replacements are
+	atomic; this is not a crash-atomic filesystem transaction or a concurrent-writer protocol.
+	"""
+	files, directories = [], set()
+	for path in _published_paths(staging, "*"):
+		relative = path.relative_to(staging)
+		dest = _safe_member_path(folder, relative.as_posix(), "dataset publication")
+		entry = folder
+		for part in relative.parts:
+			entry = entry / part
+			try:
+				info = entry.lstat()
+			except (FileNotFoundError, NotADirectoryError):
+				break
+			if stat.S_ISLNK(info.st_mode) or getattr(info, "st_file_attributes", 0) & getattr(
+				stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0
+			):
+				raise FetchRefused(f"dataset publication: refusing symlink or junction {relative}")
+		if path.is_dir():
+			if dest.exists() and not dest.is_dir():
+				raise FetchRefused(f"dataset publication: directory {relative} is already a file")
+			directories.add(dest)
+		else:
+			if dest.exists() and not dest.is_file():
+				raise FetchRefused(f"dataset publication: file {relative} is already a directory")
+			files.append((path, dest))
+	for path in sorted(directories, key=lambda p: len(p.parts)):
+		path.mkdir(parents=True, exist_ok=True)
+	# Publish provenance last so successfully staged payloads precede their new record.
+	for path, dest in sorted(files, key=lambda item: item[1].name == "provenance.json"):
+		path.replace(dest)
+
+
+def _safe_member_path(folder: Path, name: str, what: str) -> Path:
+	"""Join a remote-controlled archive member name under ``folder``. Zip names use "/" but a
+	crafted archive may carry "\\", drive letters or ".."; rebuild the path from clean parts so
+	nothing can land outside ``folder``."""
+	parts = [p for p in re.split(r"[\\/]+", name) if p not in ("", ".")]
+	if not parts or any(p == ".." or ":" in p for p in parts):
+		raise FetchRefused(f"{what}: unsafe member path {name!r}")
+	root = folder.resolve()
+	dest = root.joinpath(*parts).resolve()
+	if not dest.is_relative_to(root):
+		raise FetchRefused(f"{what}: member path {name!r} escapes the folder")
+	return dest
 
 
 def _store(folder: Path, name: str, data: bytes) -> None:
-	target = folder / Path(name).name
-	target.write_bytes(data)
-	if target.suffix == ".zip":
+	folder = folder.resolve()
+	target = _safe_member_path(folder, Path(name).name, name)
+	if target.suffix.lower() != ".zip":
+		target.write_bytes(data)
+		return
+	try:
 		with zipfile.ZipFile(io.BytesIO(data)) as zf:
+			members = []
+			files = {target}
+			directories = set()
+			# Validate the entire namespace before creating directories or replacing cached files.
 			for member in zf.infolist():
-				path = (folder / member.filename).resolve()
-				if not str(path).startswith(str(folder.resolve())):
-					raise FetchRefused(f"{name}: zip member {member.filename!r} escapes the folder")
-			zf.extractall(folder)
+				dest = _safe_member_path(folder, member.filename, f"{name}!{member.filename}")
+				if stat.S_ISLNK(member.external_attr >> 16):
+					raise FetchRefused(f"{name}: zip member {member.filename!r} is a link")
+				if dest in (folder, target):
+					raise FetchRefused(
+						f"{name}: zip member {member.filename!r} conflicts with the cache or archive"
+					)
+				if member.is_dir():
+					directories.add(dest)
+				else:
+					files.add(dest)
+				for parent in dest.parents:
+					if parent == folder:
+						break
+					directories.add(parent)
+				members.append((member, dest))
+			if files & directories:
+				raise FetchRefused(f"{name}: zip members have conflicting file and directory paths")
+			for path in directories:
+				if path.exists() and not path.is_dir():
+					raise FetchRefused(f"{name}: directory path {path.relative_to(folder)} is already a file")
+			for path in files:
+				if path.exists() and not path.is_file():
+					raise FetchRefused(f"{name}: file path {path.relative_to(folder)} is already a directory")
+			# Decode every member to temporary files first: a late CRC/decompression failure must
+			# leave the old archive, extracted files and their provenance together and unchanged.
+			with tempfile.TemporaryDirectory(prefix=".fetch-", dir=folder) as temporary:
+				staging = Path(temporary)
+				staged = []
+				for index, (member, dest) in enumerate(members):
+					path = staging / str(index)
+					with zf.open(member) as source, path.open("wb") as output:
+						shutil.copyfileobj(source, output)
+					if not member.is_dir():
+						staged.append((path, dest))
+				archive = staging / "archive"
+				archive.write_bytes(data)
+				for path in sorted(directories, key=lambda p: len(p.parts)):
+					path.mkdir(parents=True, exist_ok=True)
+				for path, dest in staged:
+					path.replace(dest)
+				archive.replace(target)
+	except (
+		zipfile.BadZipFile,
+		EOFError,
+		RuntimeError,
+		NotImplementedError,
+		zlib.error,
+		UnicodeDecodeError,
+		lzma.LZMAError,
+	) as error:
+		raise FetchRefused(f"{name}: invalid or unsupported zip archive: {error}") from error
 
 
 # ----------------------------------------------------------------------------- helpers
@@ -214,8 +333,21 @@ def _ts(value: str, fmt: str | None = None) -> datetime:
 	raise ValueError(f"unrecognised timestamp {value!r}")
 
 
+def _published_paths(folder: Path, pattern: str):
+	"""Ignore internal staging directories left behind by an interrupted fetch or extraction.
+
+	Inspect relative directory components so the staging root itself remains publishable, and an
+	ordinary file whose name starts with ``.fetch-`` remains usable.
+	"""
+	for path in folder.rglob(pattern):
+		relative = path.relative_to(folder)
+		directories = relative.parts if path.is_dir() else relative.parent.parts
+		if not any(part.startswith(".fetch-") for part in directories):
+			yield path
+
+
 def _csvs(folder: Path) -> list[Path]:
-	return sorted(p for p in folder.rglob("*.csv") if p.is_file())
+	return sorted(p for p in _published_paths(folder, "*.csv") if p.is_file())
 
 
 def _read_csv(path: Path) -> tuple[list[str], list[dict]]:
@@ -551,8 +683,8 @@ def check_bottling(downtime, counts, ds: dict, seed: int = 7) -> tuple[list[Chec
 
 def load_secom(folder: Path, ds: dict, max_rows: int | None):
 	cols = ds["columns"]
-	data = next(folder.rglob(cols["data_file"]), None)
-	labels = next(folder.rglob(cols["labels_file"]), None)
+	data = next((p for p in _published_paths(folder, cols["data_file"]) if p.is_file()), None)
+	labels = next((p for p in _published_paths(folder, cols["labels_file"]) if p.is_file()), None)
 	if not data or not labels:
 		raise SchemaMismatch(f"{folder}: missing {cols['data_file']} or {cols['labels_file']}")
 	X = [[float(v) for v in line.split()] for line in data.read_text().splitlines() if line.strip()]
@@ -782,9 +914,14 @@ def cmd_data(opts) -> int:
 	results = []
 	for ds in chosen:
 		if opts.synthetic:
-			folder = synthetic(ds["id"], Path(opts.synthetic_dir or cache_root() / "_synthetic") / ds["id"])
+			base = (
+				Path(opts.synthetic_dir)
+				if opts.synthetic_dir
+				else _safe_member_path(cache_root(), "_synthetic", "synthetic fixtures")
+			)
+			folder = synthetic(ds["id"], _safe_member_path(base, ds["id"], f"dataset {ds['id']!r}"))
 		else:
-			folder = cache_root() / ds["id"]
+			folder = _safe_member_path(cache_root(), ds["id"], f"dataset {ds['id']!r}")
 			if not (folder / "provenance.json").exists():
 				results.append(
 					Result(
@@ -825,4 +962,23 @@ def add_parser(sub) -> None:
 
 
 def clear_cache(dataset_id: str) -> None:
-	shutil.rmtree(cache_root() / dataset_id, ignore_errors=True)
+	root = cache_root()
+	target = _safe_member_path(root, dataset_id, f"dataset {dataset_id!r}")
+	# Inspect every lexical component: resolution can hide an intermediate link into another
+	# dataset inside this cache. Windows junctions are reparse points, not Python symlinks.
+	parts = [p for p in re.split(r"[\\/]+", dataset_id) if p not in ("", ".")]
+	entry = root
+	for part in parts:
+		entry = entry / part
+		try:
+			info = entry.lstat()
+		except (FileNotFoundError, NotADirectoryError):
+			break
+		if (
+			stat.S_ISLNK(info.st_mode)
+			or getattr(info, "st_file_attributes", 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT
+		):
+			raise FetchRefused(f"dataset {dataset_id!r}: refusing to delete through a symlink or junction")
+	if target == root.resolve():
+		raise FetchRefused(f"dataset {dataset_id!r}: refusing to delete the cache root")
+	shutil.rmtree(target, ignore_errors=True)
