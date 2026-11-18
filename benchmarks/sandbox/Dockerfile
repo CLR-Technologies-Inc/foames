@@ -7,20 +7,23 @@
 #   docker build -t foames-bench-agent benchmarks/sandbox
 #   docker build -t foames-bench-agent --build-arg NPM_AGENTS="@openai/codex" benchmarks/sandbox
 #
-# The agent CLIs are installed at build time. Pin their versions with NPM_AGENTS and PIP_AGENTS
+# The agent CLIs are installed at build time. Pin npm versions with NPM_AGENTS
 # (for example "@anthropic-ai/claude-code@2.1.0") when you need a run to be repeatable, and
 # record the image digest with your results.
 FROM python:3.12-slim
 
 ARG NPM_AGENTS="@anthropic-ai/claude-code @openai/codex @google/gemini-cli opencode-ai"
 ARG PIP_AGENTS=""
+ARG PIP_AGENT_REQUIREMENTS="requirements-agents.txt"
 
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends git ca-certificates curl nodejs npm \
 	&& rm -rf /var/lib/apt/lists/*
 COPY install-npm-agents.sh /tmp/install-npm-agents.sh
 RUN set -f; sh /tmp/install-npm-agents.sh $NPM_AGENTS
-RUN if [ -n "$PIP_AGENTS" ]; then pip install --only-binary :all: --no-cache-dir $PIP_AGENTS; fi
+COPY ${PIP_AGENT_REQUIREMENTS} /tmp/requirements-agents.txt
+RUN if [ -n "$PIP_AGENTS" ]; then echo "PIP_AGENTS is retired; use a fully pinned, hashed PIP_AGENT_REQUIREMENTS lockfile" >&2; exit 1; fi \
+	&& pip install --only-binary :all: --require-hashes --no-cache-dir -r /tmp/requirements-agents.txt
 
 # The harness runs the container as your user with HOME=/tmp, so agents can write their config.
 RUN git config --system user.name "foames-bench agent" \

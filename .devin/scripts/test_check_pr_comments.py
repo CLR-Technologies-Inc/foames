@@ -33,6 +33,7 @@ if name == "perl":
 data = json.loads((root / "data.json").read_text())
 if args[:2] == ["pr", "view"]:
     key = "status:" + args[2]
+    time.sleep(data.get("status_delay", 0))
     result = {"statusCheckRollup": data.get("status", {}).get(args[2], [])}
 else:
     assert args[:3] == ["api", "--paginate", "--slurp"], args
@@ -78,7 +79,8 @@ class CommentHookTests(unittest.TestCase):
 		}
 		self.seen = self.root / "cache/devin-pr-watch/acme-project.seen"
 		self.seen.parent.mkdir(parents=True)
-		self.seen.write_text("")
+		self.baseline = "seed|1\n"
+		self.seen.write_text(self.baseline)
 		self.issue = "repos/acme/project/issues/1/comments"
 		self.review = "repos/acme/project/pulls/1/comments"
 		self.reviews = "repos/acme/project/pulls/1/reviews"
@@ -96,6 +98,9 @@ class CommentHookTests(unittest.TestCase):
 		context = json.loads(result.stdout)["hookSpecificOutput"]["additionalContext"]
 		return context, json.loads(context.split("\n\n", 1)[1])
 
+	def comment_keys(self):
+		return {line for line in self.seen.read_text().splitlines() if line[0].isdigit()}
+
 	def test_only_repository_contributors_are_included_in_every_activity_kind(self):
 		for endpoint, association in zip(
 			(self.issue, self.review, self.reviews), ("OWNER", "MEMBER", "COLLABORATOR"), strict=True
@@ -107,7 +112,7 @@ class CommentHookTests(unittest.TestCase):
 		_, items = self.output_activity(self.run_hook())
 		self.assertEqual({item["kind"] for item in items}, {"issue", "review", "reviews"})
 		self.assertEqual(len(items), 3)
-		self.assertEqual(len(self.seen.read_text().splitlines()), 3)
+		self.assertEqual(len(self.comment_keys()), 3)
 
 	def test_hostile_text_remains_labelled_json_data(self):
 		marker = self.root / "executed"
@@ -121,20 +126,20 @@ class CommentHookTests(unittest.TestCase):
 
 	def test_successful_delivery_marks_seen_and_next_run_is_silent(self):
 		self.assertTrue(self.run_hook().stdout)
-		self.assertEqual(self.seen.read_text(), "1|issue|10\n")
+		self.assertEqual(self.comment_keys(), {"1|issue|10"})
 		self.assertEqual(self.run_hook().stdout, b"")
 
 	def test_fetch_failure_after_collecting_comments_keeps_them_pending(self):
 		self.data["fail"] = self.reviews
 		self.assertEqual(self.run_hook().stdout, b"")
-		self.assertEqual(self.seen.read_text(), "")
+		self.assertEqual(self.seen.read_text(), self.baseline)
 		del self.data["fail"]
 		self.assertTrue(self.run_hook().stdout)
 
 	def test_serialization_failure_keeps_comments_pending(self):
 		self.env["FAIL_SERIALIZE"] = "1"
 		self.assertEqual(self.run_hook().stdout, b"")
-		self.assertEqual(self.seen.read_text(), "")
+		self.assertEqual(self.seen.read_text(), self.baseline)
 		del self.env["FAIL_SERIALIZE"]
 		self.assertTrue(self.run_hook().stdout)
 
@@ -142,7 +147,7 @@ class CommentHookTests(unittest.TestCase):
 		self.save()
 		with open("/dev/full", "wb") as sink:
 			subprocess.run(["bash", str(HOOK)], env=self.env, stdout=sink, stderr=subprocess.PIPE, check=True)
-		self.assertEqual(self.seen.read_text(), "")
+		self.assertEqual(self.seen.read_text(), self.baseline)
 		self.assertTrue(self.run_hook().stdout)
 
 	def test_termination_before_delivery_keeps_comments_pending(self):
@@ -164,7 +169,7 @@ class CommentHookTests(unittest.TestCase):
 			os.killpg(process.pid, signal.SIGTERM)
 			stdout, _ = process.communicate(timeout=5)
 		self.assertEqual(stdout, b"")
-		self.assertEqual(self.seen.read_text(), "")
+		self.assertEqual(self.seen.read_text(), self.baseline)
 		del self.data["block"]
 		self.assertTrue(self.run_hook().stdout)
 
@@ -175,7 +180,7 @@ class CommentHookTests(unittest.TestCase):
 		self.assertFalse(self.seen.exists())
 		del self.data["fail"]
 		self.assertEqual(self.run_hook().stdout, b"")
-		self.assertEqual(self.seen.read_text(), "1|issue|10\n")
+		self.assertEqual(self.comment_keys(), {"1|issue|10"})
 		self.data["activity"][self.issue][0].append(activity(11))
 		_, items = self.output_activity(self.run_hook())
 		self.assertEqual(len(items), 1)
@@ -183,13 +188,51 @@ class CommentHookTests(unittest.TestCase):
 	def test_all_open_pr_pages_and_one_status_snapshot_per_pr(self):
 		self.data["prs"] = [[{"number": n} for n in range(1, 51)], [{"number": 51}]]
 		self.data["status"] = {str(n): [{"conclusion": "SUCCESS"}] for n in range(1, 51)}
+		self.data["status_delay"] = 0.02
 		self.data["activity"] = {"repos/acme/project/issues/51/comments": [[activity(510)]]}
+		self.seen.write_text("".join(f"seed|{number}\n" for number in range(1, 52)))
+		for _ in range(50):
+			self.assertEqual(self.run_hook().stdout, b"")
 		_, items = self.output_activity(self.run_hook())
 		self.assertEqual(items[0]["pr"], 51)
 		calls = [json.loads(line) for line in (self.root / "calls.jsonl").read_text().splitlines()]
 		statuses = [call[3] for call in calls if call[:3] == ["gh", "pr", "view"]]
 		self.assertEqual(len(statuses), 51)
 		self.assertEqual(len(set(statuses)), 51)
+
+	def test_failed_current_pr_is_retried_before_cursor_advances(self):
+		self.data["prs"] = [[{"number": 1}, {"number": 2}]]
+		self.data["fail"] = self.reviews
+		self.seen.write_text("seed|1\nseed|2\n")
+		self.assertEqual(self.run_hook().stdout, b"")
+		self.assertNotIn("cursor|", self.seen.read_text())
+		del self.data["fail"]
+		_, items = self.output_activity(self.run_hook())
+		self.assertEqual(items[0]["pr"], 1)
+		self.assertIn("cursor|1", self.seen.read_text())
+		self.assertEqual(self.run_hook().stdout, b"")
+		self.assertIn("cursor|2", self.seen.read_text())
+
+	def test_initial_baseline_is_seeded_per_pr_across_batches(self):
+		self.seen.unlink()
+		self.data["prs"] = [[{"number": 1}, {"number": 2}]]
+		self.data["activity"]["repos/acme/project/issues/2/comments"] = [[activity(20)]]
+		self.assertEqual(self.run_hook().stdout, b"")
+		self.assertIn("seed|1", self.seen.read_text())
+		self.assertNotIn("seed|2", self.seen.read_text())
+		self.data["activity"][self.issue][0].append(activity(11))
+		self.assertEqual(self.run_hook().stdout, b"")
+		self.assertIn("seed|2", self.seen.read_text())
+		_, items = self.output_activity(self.run_hook())
+		self.assertEqual(len(items), 1)
+		self.assertEqual(items[0]["pr"], 1)
+		self.assertEqual(self.comment_keys(), {"1|issue|10", "1|issue|11", "2|issue|20"})
+
+	def test_empty_review_body_keeps_review_state(self):
+		self.data["activity"] = {self.reviews: [[{**activity(33, body=""), "state": "APPROVED"}]]}
+		_, items = self.output_activity(self.run_hook())
+		self.assertEqual(items[0]["state"], "APPROVED")
+		self.assertEqual(items[0]["excerpt"], "APPROVED")
 
 
 if __name__ == "__main__":
