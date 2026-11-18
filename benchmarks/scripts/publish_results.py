@@ -117,7 +117,8 @@ def collect(runs: Path) -> dict:
 					"cfg": cfg.get(r["agent"], {"name": r["agent"]}),
 				},
 			)
-			if a["cfg"].get("fixed_cost_usd") == 0.0 and (r["usage"].get("cost_usd") or 0) > 0:
+			fixed_cost = a["cfg"].get("fixed_cost_usd")
+			if fixed_cost is not None and not fixed_cost and (r["usage"].get("cost_usd") or 0) > 0:
 				# A free tier costs nothing; the price aider printed is what the same tokens cost at list price.
 				r["usage"]["list_estimate_usd"] = r["usage"]["cost_usd"]
 				r["usage"]["cost_usd"], r["usage"]["cost_source"] = 0.0, "free tier"

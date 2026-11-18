@@ -28,7 +28,7 @@ function preview(frm) {
 		const rows = (data.events || [])
 			.map((e) => {
 				const cells = [e.case_id, e.activity, e.lifecycle, e.timestamp, e.resource];
-				return `<tr>${cells.map(cell).join("")}</tr>`;
+				return `<tr>${cells.map((c) => cell(c)).join("")}</tr>`;
 			})
 			.join("");
 		const head = header(["Case", "Activity", "Lifecycle", "Time", "Resource"]);

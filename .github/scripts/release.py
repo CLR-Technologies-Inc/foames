@@ -138,7 +138,9 @@ def collect(root: Path, version: str, date: str) -> str:
 		raise ValueError(f"{CHANGELOG} lacks the marker line {MARKER}")
 	if f"## [{version}]" in text:
 		raise ValueError(f"{CHANGELOG} already has a {version} section")
-	path.write_text(text.replace(MARKER, f"{MARKER}\n\n{section}".rstrip() + "\n", 1), encoding="utf-8")
+	path.write_text(  # NOSONAR -- CHANGELOG under the operator's checkout root
+		text.replace(MARKER, f"{MARKER}\n\n{section}".rstrip() + "\n", 1), encoding="utf-8"
+	)
 	for _fid, _cat, p in found:
 		p.unlink()
 	return section

@@ -73,8 +73,8 @@ jobs:
         run: |
           base="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}"
           tarball="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
-          curl -sSfL -o "$tarball" "$base/$tarball"
-          curl -sSfL -o checksums.txt "$base/gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          curl -sSfL --proto '=https' --proto-redir '=https' -o "$tarball" "$base/$tarball"
+          curl -sSfL --proto '=https' --proto-redir '=https' -o checksums.txt "$base/gitleaks_${GITLEAKS_VERSION}_checksums.txt"
           grep " $tarball\$" checksums.txt | sha256sum -c -
           tar -xzf "$tarball" gitleaks
       - name: Scan the new commits

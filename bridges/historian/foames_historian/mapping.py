@@ -189,7 +189,7 @@ class SampleMapper:
 			provenance["units"] = sample.units
 		if mapping.interval is not None:
 			provenance["interval_s"] = mapping.interval.total_seconds()
-		if mapping.scale != 1.0 or mapping.offset != 0.0:
+		if mapping.scale != 1.0 or mapping.offset != 0.0:  # NOSONAR -- exact: non-unit scale keeps raw_value
 			provenance["raw_value"] = sample.value
 		for key, val in (sample.extra or {}).items():
 			if val is not None:

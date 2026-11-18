@@ -81,8 +81,9 @@ TRAILER = re.compile(
 	r"^(co-authored-by|signed-off-by|reviewed-by|acked-by|tested-by|reported-by|suggested-by|helped-by):",
 	re.IGNORECASE,
 )
-EMAIL = re.compile(r"(?<![\w.+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}(?![\w-])")
+EMAIL = re.compile(r"(?<![\w.+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?![\w-])")  # NOSONAR
 EMAIL_ERE = r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"  # for git grep, which has no lookbehind
+REV = re.compile(r"[A-Za-z0-9][A-Za-z0-9._/^~@-]*")  # a revision git may be asked about, never an option
 LIST_FILE = os.path.join(".git", "name-guard-words")
 
 
@@ -169,7 +170,7 @@ def scan_files_for_words(paths: list[str], words: list[Word]) -> list[str]:
 			continue
 		try:
 			# Tracked files or paths pre-commit passes in, in a local or CI checkout; not request input.
-			with open(path, encoding="utf-8") as f:  # nosemgrep
+			with open(path, encoding="utf-8") as f:  # nosemgrep  # NOSONAR
 				text = f.read()
 		except (UnicodeDecodeError, OSError):
 			continue
@@ -306,6 +307,9 @@ def local_email() -> str:
 def run_range(rev_range: str, guard: GuardList, text_vars: list[str]) -> list[str]:
 	base, _, head = rev_range.partition("..")
 	head = head or "HEAD"
+	for rev in (base, head):
+		if not REV.fullmatch(rev):
+			raise SystemExit(f"name guard: {rev!r} is not a revision range endpoint")
 	merge_base = git("merge-base", base, head).strip() or base
 	problems = []
 
@@ -353,7 +357,7 @@ def run_staged(paths: list[str], guard: GuardList) -> list[str]:
 
 def run_message(path: str, guard: GuardList) -> list[str]:
 	# The commit message file git passes to the commit-msg hook.
-	with open(path, encoding="utf-8") as f:  # nosemgrep
+	with open(path, encoding="utf-8") as f:  # nosemgrep  # NOSONAR -- the commit-msg file git passes
 		message = "\n".join(line for line in f.read().splitlines() if not line.startswith("#"))
 	policy = EmailPolicy(
 		{local_email().lower()} | public_emails() | trailer_emails(message), emails_at("HEAD")

@@ -56,3 +56,6 @@ secrets/
 # Discovery reports hold a plant's own configuration; they stay on the operator's machine.
 # See docs/agents/discovery/README.md.
 .foames-discovery/
+
+# Local MCP server config can hold tokens; never commit it.
+.devin/mcp_config.local.json

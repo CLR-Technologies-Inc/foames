@@ -42,7 +42,7 @@ from foames_historian.sources.base import Source
 from foames_historian.sources.sql import _DBSource
 
 _PARTITION = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
-_TAG = re.compile(r"^\s*(?:\[([^\]]*)\])?\s*(.+?)\s*$")
+_TAG = re.compile(r"^(?:\[([^\]]*)\])?\s*(\S.*)$")
 DATATYPE_COLUMNS = {0: 1, 1: 2, 2: 3, 3: 4}  # sqlth_te.datatype -> index in the data row
 # FoaMES aggregate -> Ignition aggregation mode for queryTagHistory (first and last are bucketed by the bridge)
 IGNITION_MODES = {
@@ -57,7 +57,7 @@ WEBDEV_AGGREGATES = ("mean", "min", "max", "count", "sum")
 
 def split_tag(tag: str):
 	"""(provider or None, tag path in lower case) from `[provider]path` or `path`."""
-	match = _TAG.match(tag or "")
+	match = _TAG.match((tag or "").strip())
 	if not match or not match.group(2):
 		raise HistorianError(f"not an Ignition tag path: {tag!r}")
 	provider = (match.group(1) or "").strip().lower() or None

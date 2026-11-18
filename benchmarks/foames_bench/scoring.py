@@ -43,7 +43,9 @@ def score(task, graded: dict, seconds: float, cost_usd: float | None) -> dict:
 	# skipped-only or undiscovered tests earn nothing.
 	executed = [t for t in agent_tests.get("tests", []) if t["outcome"] != "skip"]
 	wrote_tests = (
-		1.0 if agent_tests["new_test_functions"] > 0 and executed and agent_tests["pass_rate"] == 1.0 else 0.0
+		1.0
+		if agent_tests["new_test_functions"] > 0 and executed and (agent_tests["pass_rate"] or 0.0) >= 1.0
+		else 0.0
 	)
 	in_scope = (
 		0.0
@@ -68,7 +70,7 @@ def score(task, graded: dict, seconds: float, cost_usd: float | None) -> dict:
 
 	# A run succeeds when it is correct enough and keeps every manufacturing invariant: AGENTS.md
 	# says a change that breaks one is not merged, so neither is it counted as a success here.
-	invariants_kept = invariant is None or invariant == 1.0
+	invariants_kept = invariant is None or invariant >= 1.0
 	success = correctness >= task.correctness_gate and invariants_kept and not graded["purity_violations"]
 
 	# Efficiency, gated on success.

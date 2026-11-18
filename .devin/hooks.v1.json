@@ -1,0 +1,13 @@
+{
+  "SessionStart": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash .devin/scripts/check-pr-comments.sh",
+          "timeout": 60
+        }
+      ]
+    }
+  ]
+}

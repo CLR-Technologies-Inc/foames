@@ -179,10 +179,11 @@ def main(argv=None):
 	parser.add_argument("--out", default=str(ROOT / "case_study.json"))
 	opts = parser.parse_args(argv)
 	data = Path(opts.data)
-	case = json.loads((data / "case.json").read_text(encoding="utf-8"))
-	text = (data / "events.csv").read_text(encoding="utf-8")
+	# --data and --out are the operator's own paths; nothing remote reaches them.
+	case = json.loads((data / "case.json").read_text(encoding="utf-8"))  # NOSONAR
+	text = (data / "events.csv").read_text(encoding="utf-8")  # NOSONAR
 	rows = sorted(csv.DictReader(io.StringIO(text, newline="")), key=lambda r: int(r["seq"]))
-	Path(opts.out).write_text(json.dumps(analyse(case, rows), indent=1) + "\n", encoding="utf-8")
+	Path(opts.out).write_text(json.dumps(analyse(case, rows), indent=1) + "\n", encoding="utf-8")  # NOSONAR
 
 
 if __name__ == "__main__":

@@ -59,7 +59,8 @@ class TestBuildSbom(unittest.TestCase):
 		self.assertEqual(bom["metadata"]["distributionConstraints"], {"tlp": "CLEAR"})
 
 	def test_serial_number_is_stable_per_commit_and_frappe_line(self):
-		self.assertEqual(build()["serialNumber"], build()["serialNumber"])
+		serial = build()["serialNumber"]
+		self.assertEqual(build()["serialNumber"], serial)
 		other = build_sbom.build_bom(
 			ENV_BOM,
 			build_sbom.load_json(build_sbom.HERE / "curated.json"),

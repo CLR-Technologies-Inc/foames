@@ -43,7 +43,11 @@ The Docker image has Claude Code, Codex CLI, Gemini CLI and OpenCode. For anythi
 ```bash
 # NPM_AGENTS replaces the default list, so keep the ones you still want
 docker build -t foames-bench-agent --build-arg NPM_AGENTS="@anthropic-ai/claude-code @openai/codex @google/gemini-cli opencode-ai my-agent-cli@1.2.3" sandbox
-docker build -t foames-bench-agent --build-arg PIP_AGENTS="aider-chat my-agent" sandbox
+# Generate and review a lock for your Python/platform, with every transitive dependency
+# pinned using == and wheel SHA-256 hashes (for example with pip-compile --generate-hashes).
+# Place that lock in the Docker build context, then select it:
+cp /path/to/reviewed-requirements.lock sandbox/requirements-my-agent.txt
+docker build -t foames-bench-agent --build-arg PIP_AGENT_REQUIREMENTS="requirements-my-agent.txt" sandbox
 ```
 
 Or give your entry its own image with `"sandbox": {"image": "my-image"}`. Variables beyond the default keys go in `sandbox.env`; a login folder goes in `sandbox.mounts` as `"~/.config/my-agent:/tmp/.config/my-agent:rw"`. A model served by Ollama on the host is at `http://host.docker.internal:11434` on macOS and Windows; on Linux use `"network": "host"`.

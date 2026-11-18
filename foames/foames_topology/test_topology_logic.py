@@ -315,7 +315,8 @@ class TestLayout(unittest.TestCase):
 		assets, links, bindings = plant()
 		assets[0]["parent_asset"] = "machine:R-101"  # line inside its own machine: a loop
 		g = topo.build_graph(assets, links, bindings, now=NOW)
-		self.assertEqual(topo.layout(g), topo.layout(g))
+		first = topo.layout(g)
+		self.assertEqual(topo.layout(g), first)
 
 
 class TestExports(unittest.TestCase):

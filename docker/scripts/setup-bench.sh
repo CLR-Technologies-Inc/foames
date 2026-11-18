@@ -38,13 +38,13 @@ wait_for_db() {
 INIT_MARKER=".foames-bench-initialised"
 
 init_bench() {
-	if [ -f "$BENCH_DIR/$INIT_MARKER" ]; then
+	if [[ -f "$BENCH_DIR/$INIT_MARKER" ]]; then
 		log "Bench exists at $BENCH_DIR (Frappe $(cd "$BENCH_DIR/apps/frappe" && git rev-parse --abbrev-ref HEAD))"
 		return 0
 	fi
-	if [ -d "$BENCH_DIR" ]; then
-		if [ -f "$BENCH_DIR/sites/common_site_config.json" ] && [ -x "$BENCH_DIR/env/bin/python" ] \
-			&& [ -d "$BENCH_DIR/apps/frappe/frappe" ]; then
+	if [[ -d "$BENCH_DIR" ]]; then
+		if [[ -f "$BENCH_DIR/sites/common_site_config.json" ]] && [[ -x "$BENCH_DIR/env/bin/python" ]] \
+			&& [[ -d "$BENCH_DIR/apps/frappe/frappe" ]]; then
 			# A bench made before the marker existed: complete (config, virtualenv and Frappe are all
 			# there), so adopt it rather than lose its site keys and files.
 			log "Adopting the existing bench at $BENCH_DIR"
@@ -80,9 +80,9 @@ configure_bench() {
 }
 
 get_erpnext() {
-	[ -n "$ERPNEXT_BRANCH" ] || return 0
+	[[ -n "$ERPNEXT_BRANCH" ]] || return 0
 	cd "$BENCH_DIR"
-	if [ -d apps/erpnext ]; then
+	if [[ -d apps/erpnext ]]; then
 		log "ERPNext is already in the bench"
 		return 0
 	fi
@@ -97,7 +97,7 @@ get_foames() {
 	# bench get-app fails on git rev-parse.
 	git config --global --get-all safe.directory 2>/dev/null | grep -qxF "$FOAMES_SRC" \
 		|| git config --global --add safe.directory "$FOAMES_SRC"
-	if [ -e apps/foames ]; then
+	if [[ -e apps/foames ]]; then
 		log "foames is already in the bench ($(readlink -f apps/foames))"
 	elif bench get-app --soft-link --skip-assets foames "$FOAMES_SRC"; then
 		log "Soft-linked $FOAMES_SRC as apps/foames"
@@ -109,7 +109,7 @@ get_foames() {
 	fi
 	if ! grep -qx foames sites/apps.txt 2>/dev/null; then
 		# apps.txt may lack a final newline; add one so foames gets its own line.
-		[ -s sites/apps.txt ] && [ -n "$(tail -c1 sites/apps.txt)" ] && echo >> sites/apps.txt
+		[[ -s sites/apps.txt ]] && [[ -n "$(tail -c1 sites/apps.txt)" ]] && echo >> sites/apps.txt
 		echo foames >> sites/apps.txt
 	fi
 	log "Installing requirements"
@@ -120,7 +120,7 @@ get_foames() {
 
 create_site() {
 	cd "$BENCH_DIR"
-	if [ -f "sites/$SITE_NAME/site_config.json" ]; then
+	if [[ -f "sites/$SITE_NAME/site_config.json" ]]; then
 		log "Site $SITE_NAME exists"
 		return 0
 	fi
@@ -144,7 +144,7 @@ install_apps() {
 	cd "$BENCH_DIR"
 	local installed
 	installed="$(bench --site "$SITE_NAME" list-apps 2>/dev/null || true)"
-	if [ -n "$ERPNEXT_BRANCH" ] && ! grep -qw erpnext <<<"$installed"; then
+	if [[ -n "$ERPNEXT_BRANCH" ]] && ! grep -qw erpnext <<<"$installed"; then
 		log "Installing ERPNext on $SITE_NAME"
 		bench --site "$SITE_NAME" install-app erpnext
 	fi

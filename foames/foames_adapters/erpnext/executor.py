@@ -153,7 +153,9 @@ def name_finished_good(doc, batch_no: str | None, serial_nos: list[str] | None):
 	are created by ERPNext when the entry is submitted."""
 	row = finished_item_row(doc)
 	if row is None:
-		frappe.throw(_("The Manufacture entry for {0} has no finished item row").format(doc.work_order))
+		raise frappe.ValidationError(
+			_("The Manufacture entry for {0} has no finished item row").format(doc.work_order)
+		)
 	if batch_no:
 		if not frappe.db.exists("Batch", batch_no):
 			frappe.get_doc({"doctype": "Batch", "batch_id": batch_no, "item": row.item_code}).insert()

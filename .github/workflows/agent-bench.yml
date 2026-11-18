@@ -31,7 +31,7 @@ on:
         default: ""
       aider_version:
         description: aider-chat version installed in the sandbox image
-        default: "0.86.1"
+        default: "0.86.2"
 
 permissions:
   contents: read
@@ -126,10 +126,21 @@ jobs:
           case "$TASK" in *" "*) t=all ;; *) t="$TASK" ;; esac
           echo "slug=$(printf '%s' "$AGENT-$t-$RUN_ID" | tr -c 'A-Za-z0-9._-' '_')" >> "$GITHUB_OUTPUT"
       - name: Sandbox image with aider
+        env:
+          AIDER_VERSION: ${{ inputs.aider_version || '0.86.2' }}
         run: |
+          python -m pip install --only-binary :all: --require-hashes -r .github/requirements/benchmark-lock-tools.txt
+          python - <<'PY'
+          import os, pathlib, re
+          version = os.environ['AIDER_VERSION']
+          if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', version):
+              raise SystemExit('aider_version must be an exact stable version')
+          pathlib.Path('benchmarks/sandbox/requirements-aider.in').write_text(f'aider-chat=={version}\n')
+          PY
+          pip-compile --generate-hashes --pip-args='--only-binary=:all:' --output-file benchmarks/sandbox/requirements-aider.txt benchmarks/sandbox/requirements-aider.in
           docker build -t foames-bench-agent \
             --build-arg NPM_AGENTS="" \
-            --build-arg PIP_AGENTS="aider-chat==${{ inputs.aider_version || '0.86.1' }}" \
+            --build-arg PIP_AGENT_REQUIREMENTS="requirements-aider.txt" \
             benchmarks/sandbox
           mkdir -p notes
           docker run --rm foames-bench-agent aider --version | tee notes/aider-version.txt
@@ -137,9 +148,19 @@ jobs:
           echo "GitHub-hosted runner ($(nproc) vCPU, $(free -g | awk '/Mem:/{print $2}') GB, CPU only)" > notes/environment.txt
       - name: Ollama and the model
         if: startsWith(matrix.agent, 'aider-ollama-')
+        env:
+          OLLAMA_VERSION: "v0.40.16"
+          OLLAMA_SHA256: "87bfafb2acbc89b2e6a1be0a9043de6aa75fb450696f86bc426e65fc448f788d"
         run: |
-          curl -fsSL https://ollama.com/install.sh | sh
-          for i in $(seq 1 30); do curl -sf http://127.0.0.1:11434/api/version && break; sleep 2; done || (ollama serve > ollama.log 2>&1 &)
+          curl -fsSL --proto '=https' --proto-redir '=https' -o /tmp/ollama.tar.zst "https://github.com/ollama/ollama/releases/download/$OLLAMA_VERSION/ollama-linux-amd64.tar.zst"
+          printf '%s  %s\n' "$OLLAMA_SHA256" /tmp/ollama.tar.zst | sha256sum --check --strict
+          mkdir -p /tmp/foames-ollama
+          tar --zstd -xf /tmp/ollama.tar.zst -C /tmp/foames-ollama
+          export PATH="/tmp/foames-ollama/bin:$PATH"
+          echo /tmp/foames-ollama/bin >> "$GITHUB_PATH"
+          ollama serve > ollama.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:11434/api/version && break; sleep 2; done
+          curl -fsS http://127.0.0.1:11434/api/version
           for i in $(seq 1 30); do curl -sf http://127.0.0.1:11434/api/version && break; sleep 2; done
           MODEL=$(python3 -c "import json;a={x['name']:x for x in json.load(open('benchmarks/agents.json'))['agents']}['${{ matrix.agent }}'];print(a['model'].split('/',1)[1])")
           # An Ollama tag can be renamed or withdrawn; say so plainly instead of failing later in aider.

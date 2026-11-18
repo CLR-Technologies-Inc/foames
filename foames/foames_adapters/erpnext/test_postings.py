@@ -56,7 +56,8 @@ class TestOperations(unittest.TestCase):
 			self.assertIn(reason, postings.STOP_REASONS)
 
 	def test_downtime_marker_is_stable_and_distinct_from_the_posting_marker(self):
-		self.assertEqual(postings.downtime_marker("DT-2026-00001"), postings.downtime_marker("DT-2026-00001"))
+		marker = postings.downtime_marker("DT-2026-00001")
+		self.assertEqual(postings.downtime_marker("DT-2026-00001"), marker)
 		self.assertNotEqual(postings.downtime_marker("DT-2026-00001"), postings.marker("DT-2026-00001"))
 		self.assertNotEqual(
 			postings.downtime_marker("DT-2026-00001"), postings.downtime_marker("DT-2026-00002")

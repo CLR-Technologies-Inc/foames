@@ -1,0 +1,5 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+# Intentionally empty. For Python agent CLIs, supply a lockfile in the build
+# context with every direct/transitive dependency pinned using == and --hash.
+# Select it with --build-arg PIP_AGENT_REQUIREMENTS=<relative-lockfile-path>.
