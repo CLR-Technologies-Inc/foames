@@ -6,7 +6,6 @@
 import hashlib
 import io
 import json
-import os
 import lzma
 import os
 import stat
