@@ -170,8 +170,8 @@ jobs:
       - name: docker build with hashed Python agent lock (How-to-Add-your-own-agent)
         working-directory: benchmarks
         run: |
-          python -m pip install 'pip-tools==7.5.2'
-          printf '%s\n' 'aider-chat==0.86.1' > sandbox/requirements-aider.in
-          pip-compile --generate-hashes --output-file sandbox/requirements-aider.txt sandbox/requirements-aider.in
+          python -m pip install --only-binary :all: --require-hashes -r ../.github/requirements/benchmark-lock-tools.txt
+          printf '%s\n' 'aider-chat==0.86.2' > sandbox/requirements-aider.in
+          pip-compile --generate-hashes --pip-args='--only-binary=:all:' --output-file sandbox/requirements-aider.txt sandbox/requirements-aider.in
           docker build -t foames-bench-agent-pip --build-arg PIP_AGENT_REQUIREMENTS="requirements-aider.txt" sandbox
           docker run --rm --entrypoint sh foames-bench-agent-pip -c "command -v aider"
