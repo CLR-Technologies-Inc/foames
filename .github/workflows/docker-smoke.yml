@@ -167,8 +167,11 @@ jobs:
           foames-bench recommend --trl 5 --complexity low --ecl 5 | grep -q "Expert Team Required"
           foames-bench estimate --agents 3 --tasks 6 --reps 2 --per-run 1.00
 
-      - name: docker build with PIP_AGENTS (How-to-Add-your-own-agent)
+      - name: docker build with hashed Python agent lock (How-to-Add-your-own-agent)
         working-directory: benchmarks
         run: |
-          docker build -t foames-bench-agent-pip --build-arg PIP_AGENTS="aider-chat" sandbox
+          python -m pip install 'pip-tools==7.5.2'
+          printf '%s\n' 'aider-chat==0.86.1' > sandbox/requirements-aider.in
+          pip-compile --generate-hashes --output-file sandbox/requirements-aider.txt sandbox/requirements-aider.in
+          docker build -t foames-bench-agent-pip --build-arg PIP_AGENT_REQUIREMENTS="requirements-aider.txt" sandbox
           docker run --rm --entrypoint sh foames-bench-agent-pip -c "command -v aider"

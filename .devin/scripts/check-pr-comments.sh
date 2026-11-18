@@ -9,7 +9,10 @@ set -uo pipefail
 
 GH="gh"
 command -v gh >/dev/null 2>&1 || GH="/c/Program Files/GitHub CLI/gh.exe"
-command -v timeout >/dev/null 2>&1 || exit 0
+TIMEOUT="$(command -v timeout || command -v gtimeout)" || {
+	printf '%s\n' 'check-pr-comments: GNU timeout/gtimeout not found; PR watching disabled' >&2
+	exit 0
+}
 ACTIVE_GH=""
 
 cancel_gh() {
@@ -25,7 +28,7 @@ cancel_gh() {
 gh_call() {
 	# One PR requires at most five calls (listing, status, three activity kinds),
 	# leaving room inside the SessionStart hook timeout for parsing and delivery.
-	timeout --signal=TERM --kill-after=1s 10s "$GH" "$@" &
+	"$TIMEOUT" --signal=TERM --kill-after=1s 10s "$GH" "$@" &
 	ACTIVE_GH=$!
 	wait "$ACTIVE_GH"
 	local status=$?
@@ -40,6 +43,7 @@ STATE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/devin-pr-watch"
 mkdir -p "$STATE_DIR" || exit 0
 SAFE="$(printf '%s' "$REPO_SLUG" | tr '/' '-')"
 STATE_FILE="$STATE_DIR/$SAFE.seen"
+CURSOR_FILE="$STATE_FILE.cursor"
 WORK_DIR="$(mktemp -d "$STATE_DIR/.check-XXXXXXXX")" || exit 0
 trap 'cancel_gh; rm -rf -- "$WORK_DIR"' EXIT
 trap 'exit 0' HUP INT TERM
@@ -48,7 +52,7 @@ trap 'exit 0' HUP INT TERM
 gh_call api --paginate --slurp "repos/$REPO_SLUG/pulls?state=open&per_page=100" \
 	> "$WORK_DIR/prs.json" 2>/dev/null || exit 0
 prs="$(perl -MJSON::PP -e '
-	my ($listing, $state) = @ARGV;
+	my ($listing, $state, $schedule) = @ARGV;
 	open my $input, "<", $listing or die $!;
 	my $pages = do { local $/; decode_json(<$input>) };
 	close $input or die $!;
@@ -66,12 +70,23 @@ prs="$(perl -MJSON::PP -e '
 		while (<$seen>) { $cursor = $1 if /^cursor\|(\d+)$/; }
 		close $seen or die $!;
 	}
+	if (-f $schedule) {
+		open my $progress, "<", $schedule or die $!;
+		my $value = <$progress>;
+		die "Invalid scheduling cursor" unless defined($value) && $value =~ /^(\d+)\s*$/;
+		$cursor = 0 + $1;
+		close $progress or die $!;
+	}
 	@numbers = sort {$a <=> $b} @numbers;
 	my ($next) = grep { $_ > $cursor } @numbers;
 	$next //= $numbers[0];
 	print "$next\n" if defined($next);
-' "$WORK_DIR/prs.json" "$STATE_FILE" 2>/dev/null)" || exit 0
+' "$WORK_DIR/prs.json" "$STATE_FILE" "$CURSOR_FILE" 2>/dev/null)" || exit 0
 [ -n "$prs" ] || exit 0
+# Scheduling progress is independent of delivery state: a persistently failing PR
+# keeps all its activity unseen, but cannot starve later PRs. It returns next cycle.
+printf '%s\n' "$prs" > "$WORK_DIR/cursor" || exit 0
+mv -f -- "$WORK_DIR/cursor" "$CURSOR_FILE" || exit 0
 : > "$WORK_DIR/manifest" || exit 0
 
 while read -r pr; do
@@ -161,7 +176,7 @@ perl -MJSON::PP -e '
 	close $output or die $!;
 	delete $seen{$_} for grep { /^cursor\|/ } keys %seen;
 	$seen{"cursor|$current_pr"} = 1;
-	$seen{"seed|$current_pr"} = 1;
+	$seen{"seed|$current_pr"} = 1 if -s "$dir/manifest";
 	open my $next, ">", "$dir/seen" or die $!;
 	print {$next} "$_\n" for sort keys %seen;
 	close $next or die $!;

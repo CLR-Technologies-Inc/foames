@@ -28,7 +28,7 @@ Run as `foames-bench <command>` after `pip install -e .` in `benchmarks/`, or `p
 | `auto` (default) | Docker if available, else unshare, else the run stops. Never falls back to none | |
 | `none` | Everything. Recorded and flagged as not publishable | |
 
-Passed into the container when set: `ANTHROPIC_API_KEY`, `ANTHROPIC_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `GEMINI_API_KEY`, `GOOGLE_API_KEY`, `OPENROUTER_API_KEY`, `OLLAMA_HOST`, `HTTPS_PROXY`, `HTTP_PROXY`, `NO_PROXY`, plus any an agent lists. Image build arguments: `NPM_AGENTS` (default `@anthropic-ai/claude-code @openai/codex @google/gemini-cli opencode-ai`; replaces the list) and `PIP_AGENTS` (default empty).
+Passed into the container when set: `ANTHROPIC_API_KEY`, `ANTHROPIC_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `GEMINI_API_KEY`, `GOOGLE_API_KEY`, `OPENROUTER_API_KEY`, `OLLAMA_HOST`, `HTTPS_PROXY`, `HTTP_PROXY`, `NO_PROXY`, plus any an agent lists. Image build arguments: `NPM_AGENTS` (default `@anthropic-ai/claude-code @openai/codex @google/gemini-cli opencode-ai`; replaces the list) and `PIP_AGENT_REQUIREMENTS` (default `requirements-agents.txt`, empty). Python locks must pin every dependency and include wheel SHA-256 hashes; the image enforces `--require-hashes` and `--only-binary=:all:`. The legacy `PIP_AGENTS` argument is refused.
 
 The runner also hashes the task folder, the harness and the pristine regression tests before and after each run, and fails a run that changed them.
 

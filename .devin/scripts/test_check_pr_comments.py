@@ -58,7 +58,13 @@ def activity(identifier, association="OWNER", body="Please check this behavior")
 	}
 
 
-@unittest.skipUnless(os.name != "nt" and shutil.which("bash") and shutil.which("perl"), "needs bash and perl")
+@unittest.skipUnless(
+	os.name != "nt"
+	and shutil.which("bash")
+	and shutil.which("perl")
+	and (shutil.which("timeout") or shutil.which("gtimeout")),
+	"needs bash, perl and GNU timeout/gtimeout",
+)
 class CommentHookTests(unittest.TestCase):
 	def setUp(self):
 		self.temp = tempfile.TemporaryDirectory()
@@ -200,18 +206,42 @@ class CommentHookTests(unittest.TestCase):
 		self.assertEqual(len(statuses), 51)
 		self.assertEqual(len(set(statuses)), 51)
 
-	def test_failed_current_pr_is_retried_before_cursor_advances(self):
+	def test_persistently_failing_pr_does_not_starve_later_pr(self):
 		self.data["prs"] = [[{"number": 1}, {"number": 2}]]
 		self.data["fail"] = self.reviews
+		self.data["activity"]["repos/acme/project/issues/2/comments"] = [[activity(20)]]
 		self.seen.write_text("seed|1\nseed|2\n")
 		self.assertEqual(self.run_hook().stdout, b"")
-		self.assertNotIn("cursor|", self.seen.read_text())
+		_, items = self.output_activity(self.run_hook())
+		self.assertEqual(items[0]["pr"], 2)
+		self.assertEqual(self.run_hook().stdout, b"")
+		self.assertEqual(self.run_hook().stdout, b"")
+		self.assertEqual(self.comment_keys(), {"2|issue|20"})
 		del self.data["fail"]
 		_, items = self.output_activity(self.run_hook())
 		self.assertEqual(items[0]["pr"], 1)
-		self.assertIn("cursor|1", self.seen.read_text())
+
+	def test_initially_green_pr_is_seeded_when_activity_is_first_read(self):
+		self.seen.unlink()
+		self.data["status"] = {"1": [{"conclusion": "SUCCESS"}]}
 		self.assertEqual(self.run_hook().stdout, b"")
-		self.assertIn("cursor|2", self.seen.read_text())
+		self.assertNotIn("seed|1", self.seen.read_text())
+		self.data["status"] = {"1": [{"conclusion": "FAILURE"}]}
+		self.assertEqual(self.run_hook().stdout, b"")
+		self.assertIn("seed|1", self.seen.read_text())
+		self.data["activity"][self.issue][0].append(activity(11))
+		_, items = self.output_activity(self.run_hook())
+		self.assertEqual([item["excerpt"] for item in items], [activity(11)["body"]])
+		self.assertEqual(self.comment_keys(), {"1|issue|10", "1|issue|11"})
+
+	def test_gtimeout_fallback_keeps_the_hook_working(self):
+		bin_dir = self.root / "bin"
+		for command in ("bash", "python3", "sed", "tr", "mkdir", "mktemp", "rm", "cat", "mv"):
+			(bin_dir / command).symlink_to(shutil.which(command))
+		(bin_dir / "gtimeout").symlink_to(shutil.which("timeout") or shutil.which("gtimeout"))
+		self.env["PATH"] = str(bin_dir)
+		_, items = self.output_activity(self.run_hook())
+		self.assertEqual(len(items), 1)
 
 	def test_initial_baseline_is_seeded_per_pr_across_batches(self):
 		self.seen.unlink()
