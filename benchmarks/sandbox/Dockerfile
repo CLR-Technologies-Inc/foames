@@ -10,7 +10,7 @@
 # The agent CLIs are installed at build time. Pin npm versions with NPM_AGENTS
 # (for example "@anthropic-ai/claude-code@2.1.0") when you need a run to be repeatable, and
 # record the image digest with your results.
-FROM python:3.12-slim
+FROM python:3.15-slim
 
 ARG NPM_AGENTS="@anthropic-ai/claude-code @openai/codex @google/gemini-cli opencode-ai"
 ARG PIP_AGENTS=""
