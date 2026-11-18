@@ -6,6 +6,7 @@
 import hashlib
 import io
 import json
+import os
 import lzma
 import os
 import stat
@@ -146,6 +147,21 @@ class TestFetch(unittest.TestCase):
 		ds = mfgdata.dataset(self.m, "cnc-changeover")
 		with self.assertRaises(mfgdata.FetchRefused):
 			mfgdata.fetch(ds, Path(self.tmp.name), getter=self.zenodo("cc-by-nc-4.0"))
+
+	@unittest.skipIf(os.name == "nt", "POSIX parent directory permissions")
+	def test_writable_cache_does_not_require_writable_parent(self):
+		parent = Path(self.tmp.name) / "readonly-parent"
+		folder = parent / "writable-cache"
+		folder.mkdir(parents=True)
+		parent.chmod(0o555)
+		try:
+			ds = mfgdata.dataset(self.m, "cnc-changeover")
+			mfgdata.fetch(ds, folder, getter=self.zenodo())
+			self.assertTrue((folder / "a.csv").is_file())
+			self.assertTrue((folder / "provenance.json").is_file())
+			self.assertFalse(list(folder.glob(".fetch-dataset-*")))
+		finally:
+			parent.chmod(0o755)
 
 	def test_checksum_mismatch_is_refused(self):
 		ds = mfgdata.dataset(self.m, "cnc-changeover")

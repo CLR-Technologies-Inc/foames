@@ -100,7 +100,7 @@ def fetch(ds: dict, dest: Path | None = None, getter=_get) -> Path:
 	folder.mkdir(parents=True, exist_ok=True)
 	# Stage the whole dataset, not each archive in isolation: a later Zenodo file can fail its
 	# checksum or decoding after an earlier one has been fully validated. Provenance is staged too.
-	with tempfile.TemporaryDirectory(prefix=".fetch-dataset-", dir=folder.parent) as temporary:
+	with tempfile.TemporaryDirectory(prefix=".fetch-dataset-", dir=folder) as temporary:
 		staging = Path(temporary)
 		_fetch_into(ds, staging, getter)
 		_publish_dataset(staging, folder)
