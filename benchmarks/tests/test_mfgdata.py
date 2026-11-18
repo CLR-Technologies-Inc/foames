@@ -111,6 +111,67 @@ class TestSyntheticRuns(unittest.TestCase):
 		self.assertFalse(res.passed)
 
 
+class TestCacheDiscovery(unittest.TestCase):
+	def setUp(self):
+		self.tmp = tempfile.TemporaryDirectory()
+		self.addCleanup(self.tmp.cleanup)
+		self.root = Path(self.tmp.name)
+		self.folder = self.root / "cnc-changeover"
+		self.folder.mkdir()
+
+	def write(self, relative, text):
+		path = self.folder / relative
+		path.parent.mkdir(parents=True, exist_ok=True)
+		path.write_text(text)
+		return path
+
+	def test_csv_discovery_and_selection_ignore_abandoned_staging_at_any_depth(self):
+		stale = self.write(".fetch-dataset-interrupted/cnc.csv", "stale")
+		self.write("nested/.fetch-archive-interrupted/cnc.csv", "stale")
+		published = self.write("published/cnc.csv", "published")
+		ordinary = self.write(".fetch-results.csv", "ordinary file")
+		self.assertEqual(mfgdata._csvs(self.folder), sorted([ordinary, published]))
+		self.assertEqual(mfgdata._find_file(self.folder, ["cnc"]), published)
+		self.assertEqual(stale.read_text(), "stale")
+
+	def test_secom_data_and_labels_ignore_abandoned_staging(self):
+		self.write(".fetch-dataset-interrupted/secom.data", "incomplete")
+		self.write(".fetch-dataset-interrupted/secom_labels.data", "incomplete")
+		self.write("published/secom.data", "1 2\n")
+		self.write("published/secom_labels.data", '-1 "19/07/2008 11:55:00"\n')
+		ds = mfgdata.dataset(mfgdata.load_manifest(), "secom")
+		rows = mfgdata.load_secom(self.folder, ds, None)
+		self.assertEqual(len(rows), 1)
+		self.assertEqual(rows[0][2], [1.0, 2.0])
+
+	def test_publication_excludes_nested_staging_payload_and_provenance(self):
+		self.write(".fetch-dataset-interrupted/partial.csv", "partial")
+		self.write("nested/.fetch-archive-interrupted/provenance.json", "partial provenance")
+		self.write("published.csv", "complete")
+		self.write("provenance.json", "complete provenance")
+		destination = self.root / "published"
+		destination.mkdir()
+		mfgdata._publish_dataset(self.folder, destination)
+		self.assertEqual((destination / "published.csv").read_text(), "complete")
+		self.assertEqual((destination / "provenance.json").read_text(), "complete provenance")
+		self.assertFalse((destination / ".fetch-dataset-interrupted").exists())
+		self.assertFalse((destination / "nested" / ".fetch-archive-interrupted").exists())
+
+	def test_staged_provenance_does_not_mark_an_unpublished_dataset_as_fetched(self):
+		self.write(".fetch-dataset-interrupted/provenance.json", "partial provenance")
+		opts = mock.Mock(
+			data_command="validate", datasets=["cnc-changeover"], stage="smoke", synthetic=False, out=None
+		)
+		with (
+			mock.patch.object(mfgdata, "cache_root", return_value=self.root),
+			mock.patch.object(mfgdata, "validate") as validate,
+			mock.patch("sys.stdout", new_callable=io.StringIO) as output,
+		):
+			self.assertEqual(mfgdata.cmd_data(opts), 1)
+		validate.assert_not_called()
+		self.assertIn("not fetched", output.getvalue())
+
+
 class TestFetch(unittest.TestCase):
 	def setUp(self):
 		self.tmp = tempfile.TemporaryDirectory()

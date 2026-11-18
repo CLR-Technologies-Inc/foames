@@ -169,7 +169,7 @@ def _publish_dataset(staging: Path, folder: Path) -> None:
 	atomic; this is not a crash-atomic filesystem transaction or a concurrent-writer protocol.
 	"""
 	files, directories = [], set()
-	for path in staging.rglob("*"):
+	for path in _published_paths(staging, "*"):
 		relative = path.relative_to(staging)
 		dest = _safe_member_path(folder, relative.as_posix(), "dataset publication")
 		entry = folder
@@ -333,8 +333,21 @@ def _ts(value: str, fmt: str | None = None) -> datetime:
 	raise ValueError(f"unrecognised timestamp {value!r}")
 
 
+def _published_paths(folder: Path, pattern: str):
+	"""Ignore internal staging directories left behind by an interrupted fetch or extraction.
+
+	Inspect relative directory components so the staging root itself remains publishable, and an
+	ordinary file whose name starts with ``.fetch-`` remains usable.
+	"""
+	for path in folder.rglob(pattern):
+		relative = path.relative_to(folder)
+		directories = relative.parts if path.is_dir() else relative.parent.parts
+		if not any(part.startswith(".fetch-") for part in directories):
+			yield path
+
+
 def _csvs(folder: Path) -> list[Path]:
-	return sorted(p for p in folder.rglob("*.csv") if p.is_file())
+	return sorted(p for p in _published_paths(folder, "*.csv") if p.is_file())
 
 
 def _read_csv(path: Path) -> tuple[list[str], list[dict]]:
@@ -670,8 +683,8 @@ def check_bottling(downtime, counts, ds: dict, seed: int = 7) -> tuple[list[Chec
 
 def load_secom(folder: Path, ds: dict, max_rows: int | None):
 	cols = ds["columns"]
-	data = next(folder.rglob(cols["data_file"]), None)
-	labels = next(folder.rglob(cols["labels_file"]), None)
+	data = next((p for p in _published_paths(folder, cols["data_file"]) if p.is_file()), None)
+	labels = next((p for p in _published_paths(folder, cols["labels_file"]) if p.is_file()), None)
 	if not data or not labels:
 		raise SchemaMismatch(f"{folder}: missing {cols['data_file']} or {cols['labels_file']}")
 	X = [[float(v) for v in line.split()] for line in data.read_text().splitlines() if line.strip()]
