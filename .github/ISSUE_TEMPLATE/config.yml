@@ -1,0 +1,11 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability privately
+    url: https://github.com/CLR-Technologies-Inc/foames/security/advisories/new
+    about: Follow SECURITY.md and keep suspected vulnerabilities and reproduction details out of public issues.
+  - name: FoaMES documentation
+    url: https://github.com/CLR-Technologies-Inc/foames/blob/main/docs/README.md
+    about: Find installation, integration, agent and operator guides.

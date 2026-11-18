@@ -1,0 +1,66 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
+name: Bug report
+description: Report a reproducible problem in FoaMES.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Report suspected security vulnerabilities privately through [Security Advisories](https://github.com/CLR-Technologies-Inc/foames/security/advisories/new).
+        Remove credentials, site configuration, personal data and plant identifiers from examples and logs.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the problem and its effect on your work.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Include the smallest synthetic example that reproduces the problem.
+      placeholder: |
+        1. Configure ...
+        2. Run ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: Explain what should have happened.
+    validations:
+      required: true
+  - type: input
+    id: foames-version
+    attributes:
+      label: FoaMES version or commit
+    validations:
+      required: true
+  - type: dropdown
+    id: frappe-version
+    attributes:
+      label: Frappe version
+      options:
+        - v15
+        - v16
+        - No Frappe site (pure logic, bridge or benchmark)
+        - Other (describe below)
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment and relevant integration
+      description: Include the operating system, deployment method, Python version and adapter or gateway involved. State whether an ERP is installed.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs or other evidence
+      description: Include redacted errors and relevant test results. Do not include tokens, secrets, production records or private site details.

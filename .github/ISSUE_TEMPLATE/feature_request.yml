@@ -1,0 +1,55 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
+name: Feature request
+description: Propose a capability, integration or documentation improvement.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the plant or developer problem using generic examples. Do not include private site details or credentials.
+        FoaMES keeps ERP integrations behind adapters, preserves unknown time as loss, and gives people control over operational actions.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Who needs this, and what are they trying to accomplish?
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of improvement
+      options:
+        - Manufacturing capability
+        - Adapter or gateway integration
+        - Agent or benchmark tooling
+        - Documentation or usability
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the inputs, resulting behavior and what a person would see or do.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Give observable examples or checks that would show the improvement works.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and existing extension points
+      description: Describe any workaround or FoaMES hook that could meet the need.
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Link relevant public documentation or related issues.
