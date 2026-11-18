@@ -25,6 +25,7 @@ import fnmatch
 import hashlib
 import io
 import json
+import lzma
 import math
 import os
 import random
@@ -95,9 +96,19 @@ def fetch(ds: dict, dest: Path | None = None, getter=_get) -> Path:
 	enabled, whose source states a license outside the manifest's list, or whose checksum differs."""
 	if ds.get("status") != "enabled":
 		raise FetchRefused(f"{ds['id']} is {ds.get('status')}: {ds.get('note', 'not enabled')}")
-	src = ds["source"]
 	folder = Path(dest) if dest else _safe_member_path(cache_root(), ds["id"], f"dataset {ds['id']!r}")
 	folder.mkdir(parents=True, exist_ok=True)
+	# Stage the whole dataset, not each archive in isolation: a later Zenodo file can fail its
+	# checksum or decoding after an earlier one has been fully validated. Provenance is staged too.
+	with tempfile.TemporaryDirectory(prefix=".fetch-dataset-", dir=folder.parent) as temporary:
+		staging = Path(temporary)
+		_fetch_into(ds, staging, getter)
+		_publish_dataset(staging, folder)
+	return folder
+
+
+def _fetch_into(ds: dict, folder: Path, getter) -> None:
+	src = ds["source"]
 	provenance = {
 		"dataset": ds["id"],
 		"title": ds["title"],
@@ -149,7 +160,42 @@ def fetch(ds: dict, dest: Path | None = None, getter=_get) -> Path:
 	else:
 		raise FetchRefused(f"{ds['id']}: source type {src['type']!r} is not fetched automatically")
 	(folder / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
-	return folder
+
+
+def _publish_dataset(staging: Path, folder: Path) -> None:
+	"""Publish only after all downloads, checksum/ZIP validation and provenance serialization.
+
+	Preflight the complete destination namespace before replacing files. Individual replacements are
+	atomic; this is not a crash-atomic filesystem transaction or a concurrent-writer protocol.
+	"""
+	files, directories = [], set()
+	for path in staging.rglob("*"):
+		relative = path.relative_to(staging)
+		dest = _safe_member_path(folder, relative.as_posix(), "dataset publication")
+		entry = folder
+		for part in relative.parts:
+			entry = entry / part
+			try:
+				info = entry.lstat()
+			except (FileNotFoundError, NotADirectoryError):
+				break
+			if stat.S_ISLNK(info.st_mode) or getattr(info, "st_file_attributes", 0) & getattr(
+				stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0
+			):
+				raise FetchRefused(f"dataset publication: refusing symlink or junction {relative}")
+		if path.is_dir():
+			if dest.exists() and not dest.is_dir():
+				raise FetchRefused(f"dataset publication: directory {relative} is already a file")
+			directories.add(dest)
+		else:
+			if dest.exists() and not dest.is_file():
+				raise FetchRefused(f"dataset publication: file {relative} is already a directory")
+			files.append((path, dest))
+	for path in sorted(directories, key=lambda p: len(p.parts)):
+		path.mkdir(parents=True, exist_ok=True)
+	# Publish provenance last so successfully staged payloads precede their new record.
+	for path, dest in sorted(files, key=lambda item: item[1].name == "provenance.json"):
+		path.replace(dest)
 
 
 def _safe_member_path(folder: Path, name: str, what: str) -> Path:
@@ -221,7 +267,15 @@ def _store(folder: Path, name: str, data: bytes) -> None:
 				for path, dest in staged:
 					path.replace(dest)
 				archive.replace(target)
-	except (zipfile.BadZipFile, EOFError, RuntimeError, NotImplementedError, zlib.error) as error:
+	except (
+		zipfile.BadZipFile,
+		EOFError,
+		RuntimeError,
+		NotImplementedError,
+		zlib.error,
+		UnicodeDecodeError,
+		lzma.LZMAError,
+	) as error:
 		raise FetchRefused(f"{name}: invalid or unsupported zip archive: {error}") from error
 
 

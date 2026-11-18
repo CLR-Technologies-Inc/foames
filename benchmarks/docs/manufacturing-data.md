@@ -22,6 +22,8 @@ The cache is `$FOAMES_BENCH_DATA`, or `~/.cache/foames-bench/datasets`. Nothing 
 4. **Checks**: run FoaMES and compare. A check passes or fails. **Metrics** (for example SPC precision against fail labels) are reported but not graded.
 5. **Report**: `manufacturing-data.md` and `.json` in `--out`.
 
+Fetch stages every selected file, extracted ZIP member and the new provenance before replacing cached payloads. A later file's checksum, filename decoding or decompression failure leaves existing dataset bytes and provenance unchanged. Publication preflights destination conflicts, then replaces individual files and publishes provenance last. This does not guarantee a crash-atomic filesystem transaction or concurrent-writer coordination; avoid simultaneous fetches into one dataset folder.
+
 ## Stages
 
 | Stage | Rows | SPC features | Runs | When |

@@ -6,6 +6,7 @@
 import hashlib
 import io
 import json
+import lzma
 import os
 import stat
 import subprocess
@@ -246,6 +247,88 @@ class TestArchiveWrites(unittest.TestCase):
 				ds, self.folder, getter=lambda url: _zip({"existing.csv": "replacement", "../bad": "x"})
 			)
 		self.assertEqual(self.snapshot(), before)
+
+	def zenodo_files(self, payloads, *, invalid_checksum=False):
+		ds = {
+			"id": "multi-file",
+			"title": "Multi-file fixture",
+			"status": "enabled",
+			"licenses": ["cc-by-4.0"],
+			"source": {"type": "zenodo", "record": 1},
+		}
+		record = {
+			"metadata": {"license": {"id": "cc-by-4.0"}},
+			"files": [
+				{
+					"key": name,
+					"checksum": "md5:"
+					+ ("bad" if invalid_checksum and i == 1 else hashlib.md5(data).hexdigest()),
+					"links": {"self": f"https://fixture.example/{name}"},
+				}
+				for i, (name, data) in enumerate(payloads.items())
+			],
+		}
+
+		def getter(url):
+			return json.dumps(record).encode() if "/api/records/" in url else payloads[url.rsplit("/", 1)[-1]]
+
+		return ds, getter
+
+	def test_late_second_zenodo_checksum_failure_preserves_every_cached_byte(self):
+		before = self.snapshot()
+		ds, getter = self.zenodo_files(
+			{"existing.csv": b"replacement", "second.csv": b"second file"}, invalid_checksum=True
+		)
+		with self.assertRaises(mfgdata.FetchRefused):
+			mfgdata.fetch(ds, self.folder, getter=getter)
+		self.assertEqual(self.snapshot(), before)
+
+	def test_late_second_zenodo_bad_zip_preserves_first_archive_extraction_and_provenance(self):
+		before = self.snapshot()
+		ds, getter = self.zenodo_files(
+			{"data.zip": _zip({"existing.csv": "replacement", "new.csv": "new"}), "second.zip": b"not a ZIP"}
+		)
+		with self.assertRaises(mfgdata.FetchRefused):
+			mfgdata.fetch(ds, self.folder, getter=getter)
+		self.assertEqual(self.snapshot(), before)
+
+	def test_valid_multifile_dataset_publishes_payloads_and_matching_provenance(self):
+		payloads = {
+			"data.zip": _zip({"existing.csv": "replacement", "nested/new.csv": "new"}),
+			"second.csv": b"second file",
+		}
+		ds, getter = self.zenodo_files(payloads)
+		mfgdata.fetch(ds, self.folder, getter=getter)
+		self.assertEqual((self.folder / "existing.csv").read_text(), "replacement")
+		self.assertEqual((self.folder / "nested/new.csv").read_text(), "new")
+		self.assertEqual((self.folder / "second.csv").read_bytes(), payloads["second.csv"])
+		self.assertEqual(
+			[entry["name"] for entry in json.loads((self.folder / "provenance.json").read_text())["files"]],
+			list(payloads),
+		)
+
+	def test_invalid_utf8_filename_is_normalized_to_fetch_refused(self):
+		data = _zip({"existing.csv": "replacement", "é.csv": "invalid filename"})
+		data = data.replace("é.csv".encode(), b"\xff\xff.csv")
+		with self.assertRaises(UnicodeDecodeError):
+			zipfile.ZipFile(io.BytesIO(data))
+		self.assert_refused_without_changes(data)
+
+	def test_corrupt_lzma_options_are_normalized_to_fetch_refused(self):
+		buffer = io.BytesIO()
+		with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_LZMA) as archive:
+			archive.writestr("existing.csv", "replacement")
+			archive.writestr("late.csv", "corrupt LZMA payload")
+		data = bytearray(buffer.getvalue())
+		with zipfile.ZipFile(io.BytesIO(data)) as archive:
+			late = archive.getinfo("late.csv")
+			payload_offset = late.header_offset + 30 + len(late.filename.encode()) + len(late.extra)
+		# ZIP-LZMA stores four bytes of version/size then LZMA filter properties. 0xff is an
+		# invalid lc/lp/pb property and makes the real decoder raise LZMAError, before CRC checking.
+		data[payload_offset + 4] = 0xFF
+		with self.assertRaises(lzma.LZMAError), zipfile.ZipFile(io.BytesIO(data)) as archive:
+			archive.read("late.csv")
+		self.assert_refused_without_changes(bytes(data))
 
 	def test_valid_nested_archive_replaces_data_after_validation(self):
 		data = _zip({"existing.csv": "replacement", "nested/": "", "nested/new.csv": "new data"})
