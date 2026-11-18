@@ -6,6 +6,7 @@
 
 import json
 import os
+import shlex
 import shutil
 import signal
 import subprocess
@@ -238,8 +239,15 @@ class CommentHookTests(unittest.TestCase):
 		bin_dir = self.root / "bin"
 		for command in ("bash", "python3", "sed", "tr", "mkdir", "mktemp", "rm", "cat", "mv"):
 			(bin_dir / command).symlink_to(shutil.which(command))
-		(bin_dir / "gtimeout").symlink_to(shutil.which("timeout") or shutil.which("gtimeout"))
+		# uutils rejects executing its timeout binary under a different utility name.
+		# Emulate the gtimeout command while retaining the installed binary's argv[0].
+		timeout = shutil.which("timeout") or shutil.which("gtimeout")
+		fallback = bin_dir / "gtimeout"
+		fallback.write_text(f'#!/bin/sh\nexec {shlex.quote(timeout)} "$@"\n')
+		fallback.chmod(0o755)
 		self.env["PATH"] = str(bin_dir)
+		self.assertIsNone(shutil.which("timeout", path=self.env["PATH"]))
+		self.assertEqual(shutil.which("gtimeout", path=self.env["PATH"]), str(fallback))
 		_, items = self.output_activity(self.run_hook())
 		self.assertEqual(len(items), 1)
 
