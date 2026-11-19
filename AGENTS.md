@@ -39,6 +39,21 @@ Keep these whatever you build. A pull request that breaks one will not be merged
 8. **Secrets live in Password fields** of a Settings DocType (`Machine Data Settings`, or the adapter's own Settings), read with `get_password`. Never in code, hooks or site config, never logged.
 9. **Both Frappe versions.** Use `foames.tests_compat.IntegrationTestCase` for site tests. Avoid APIs that exist in only one of v15 and v16.
 
+## OEM terms and AI-assisted development
+
+**Scope.** FoaMES is an open-source, agent-enabled MES. Its agents assist with software development and operational analysis; **FoaMES does not train or fine-tune AI models**. Do not equate use of AI-assisted coding, runtime inference, model training, vendor-provided AI Services, and ordinary API interoperability. Each may have a different contract treatment. Vendor-specific interpretations belong in the vendor guide or [vendor interoperability register](docs/vendor-interoperability.md), not in this vendor-neutral file.
+
+**Rules for every coding or runtime agent working with third-party systems:**
+
+1. **Read the terms register before implementation.** Record the actual API, product/version, terms URL/date, and whose signed order, EULA, API agreement, supplement and developer terms govern the requested use. A valid key alone is not a grant of every commercial development, competitive use or data disclosure right. Do not represent a public website restriction as applying automatically to a separately licensed product API.
+2. **Build independently.** Prefer open protocols, independently written clients, self-authored test fixtures, and synthetic data. Do not import or publish proprietary vendor SDKs, protected API specifications, internal schemas, authenticated documentation, customer data or product output without an express right to do so. Do not reverse engineer or evade licensing controls.
+3. **Respect automated-access limits.** Do not use a bot, MCP client or LLM-driven browser to access a documentation site that disallows those methods; request human review and preserve only original, concise findings and links. Do not paste confidential or access-restricted vendor material into a third-party model.
+4. **Treat competitive and external-AI restrictions separately.** When an agreement may prohibit using a vendor offering to build a competing system, or a vendor-designated AI Service to operate/develop independent AI, stop that **vendor-dependent activity** pending human contractual review. This is not a blanket ban on original FoaMES development, AI-assisted coding, or all interoperability.
+5. **Protect operational data.** Before sending API responses, confidential engineering information or telemetry to an outside model/inference provider, check the customer's data rights, security requirements and permitted recipients. Keep agents read-only and within site authorization; all proposed writes follow the existing human write gate.
+6. **Record uncertainty honestly.** Label permissions as `verified`, `restricted`, or `unverified`, with source and scope. Do not claim an OEM integration is legally cleared, certified, partnered or production-tested because code and tests exist. Escalate licensing ambiguities to the responsible human and, when needed, counsel.
+
+Summarizing effective contractual requirements in original words in this `AGENTS.md` is a compliance practice, **not** model training and not a substitute for the signed agreement. The policy is conservative engineering guidance, not a legal determination. See [docs/vendor-interoperability.md](docs/vendor-interoperability.md) and [adapter instructions](foames/foames_adapters/AGENTS.md).
+
 ## Finding vendor guidance
 
 Vendors are open-ended: a site may have none, one or twenty adapters, bundled or added by other apps, and several of them may share a framework package (for example one REST framework with a thin profile per system). Do not take the list from a document; discover it, then read the guidance that sits next to the code.
