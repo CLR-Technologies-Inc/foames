@@ -1,0 +1,97 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-18 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "connection_section",
+  "provider_url",
+  "provider_token",
+  "column_break_connection",
+  "timeout",
+  "note_section",
+  "note"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "description": "Turns on simulation submissions to the isolated OpenFOAM provider. Runs execute in the provider's own container and never touch plant equipment, SCADA or an ERP.",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "connection_section",
+   "fieldtype": "Section Break",
+   "label": "Provider"
+  },
+  {
+   "description": "Base URL of the foames-openfoam provider service (bridges/openfoam), for example http://openfoam-worker:8765. Must be reachable from this site only.",
+   "fieldname": "provider_url",
+   "fieldtype": "Data",
+   "label": "Provider URL",
+   "options": "URL"
+  },
+  {
+   "description": "Bearer token the provider requires, when configured. Stored encrypted; never logged.",
+   "fieldname": "provider_token",
+   "fieldtype": "Password",
+   "label": "Provider Token"
+  },
+  {
+   "fieldname": "column_break_connection",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "30",
+   "description": "Per-request timeout in seconds for provider calls.",
+   "fieldname": "timeout",
+   "fieldtype": "Int",
+   "label": "Timeout (seconds)"
+  },
+  {
+   "fieldname": "note_section",
+   "fieldtype": "Section Break",
+   "label": "Note"
+  },
+  {
+   "description": "A converged solve is candidate evidence only: results still need human review against the Validation Protocol's acceptance criteria.",
+   "fieldname": "note",
+   "fieldtype": "Text",
+   "label": "Note",
+   "read_only": 1
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-11-18 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Simulation",
+ "name": "Simulation Settings",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "FoaMES Integration"
+  }
+ ]
+}

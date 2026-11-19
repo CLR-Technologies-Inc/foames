@@ -219,6 +219,13 @@
       "vendor": "DEXPI",
       "url": "https://dexpi.org/specifications/",
       "mode": "fetch"
+    },
+    {
+      "id": "openfoam-gpl",
+      "vendor": "OpenFOAM",
+      "url": "https://www.openfoam.com/legal/gpl-3.0",
+      "mode": "manual",
+      "reason": "GPL obligations for the solver must be reviewed by a person; binaries stay out of the FoaMES package"
     }
   ]
 }
