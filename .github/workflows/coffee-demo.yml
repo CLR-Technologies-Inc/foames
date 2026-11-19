@@ -16,6 +16,8 @@ on:
       - foames/foames_bms/doctype/facility_asset/**
       - foames/foames_bms/doctype/facility_zone/**
       - foames/foames_life_sciences/**
+      - foames/foames_validation/doctype/validation_protocol/**
+      - foames/foames_validation/doctype/validation_acceptance_criterion/**
       - foames/foames_process_mining/**
       - .github/workflows/coffee-demo.yml
   workflow_dispatch:
