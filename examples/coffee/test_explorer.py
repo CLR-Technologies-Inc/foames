@@ -8,7 +8,7 @@ import unittest
 from datetime import datetime
 from pathlib import Path
 
-from build import STAGES, make_scenario
+from build import SCENARIO_IDS, STAGES, make_scenario
 from explorer import build_explorer
 
 from foames.foames_life_sciences.npi import STAGES as NPI_STAGES
@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[2]
 class CoffeeExplorerTests(unittest.TestCase):
 	@classmethod
 	def setUpClass(cls):
-		cls.scenarios = [make_scenario(k) for k in ("normal", "moisture_hold", "network_gap", "recall")]
+		cls.scenarios = [make_scenario(k) for k in SCENARIO_IDS]
 		cls.explorer = build_explorer(cls.scenarios)
 		cls.schemas = {}
 		for module in ("foames_mes", "foames_bms", "foames_life_sciences", "foames_validation"):
@@ -72,7 +72,7 @@ class CoffeeExplorerTests(unittest.TestCase):
 		self.assertEqual(set(STAGES), {s for a in assets.values() for s in a["stage_ids"]})
 		self.assertEqual(assets["DEMO-ASSET-LAND"]["doctype"], "Facility Zone")
 		self.assertEqual(assets["DEMO-ASSET-TRELLIS"]["doctype"], "Facility Asset")
-		for kind in ("pulper", "dryer", "huller", "roaster", "packager", "grinder", "brewer"):
+		for kind in ("pulper", "dryer", "huller", "roaster", "packager", "grinder", "brewer", "espresso"):
 			asset = self.assert_single(a for a in assets.values() if a["kind"] == kind)
 			self.assertEqual(asset["doctype"], "Machine")
 			self.assertEqual(asset["document"]["code"], asset["name"])
@@ -133,6 +133,9 @@ class CoffeeExplorerTests(unittest.TestCase):
 				if signal["kind"] == "categorical":
 					continue
 				self.assertIn("time", signal["x_axis"])
+				if signal.get("origin") == "synthetic-pid-model":
+					self.assertEqual(asset["id"], "DEMO-ASSET-ESPRESSO")
+					continue
 				if asset["kind"] == "packager":
 					continue
 				for scenario in self.scenarios:
@@ -161,7 +164,10 @@ class CoffeeExplorerTests(unittest.TestCase):
 				for scenario in self.scenarios:
 					balances = [b for b in scenario["mass_balance"] if b["stage"] == stage]
 					points = signal["scenarios"][scenario["id"]]
-					if not balances:
+					inactive = (asset["kind"] == "espresso" and not scenario.get("espresso")) or (
+						asset["kind"] == "brewer" and scenario.get("espresso")
+					)
+					if not balances or inactive:
 						self.assertEqual(points, [])
 						continue
 					balance = self.assert_single(balances)
@@ -177,6 +183,35 @@ class CoffeeExplorerTests(unittest.TestCase):
 		for asset in brewing:
 			balance = self.assert_single(s for s in asset["signals"] if s["kind"] == "categorical")
 			self.assertEqual(balance["scenarios"]["normal"][0]["value"], 0.354)
+
+	def test_espresso_signals_are_scoped_to_the_model_and_filter_is_inactive(self):
+		scenario = self.assert_single(s for s in self.scenarios if s["id"] == "espresso_pid")
+		asset = self.assert_single(a for a in self.explorer["assets"] if a["kind"] == "espresso")
+		self.assertEqual(asset["document"]["status"], "Unknown")
+		self.assertEqual(asset["finish"]["body"], "#3683A4")
+		self.assertEqual(asset["finish"]["accent"], "#A2A342")
+		for signal in asset["signals"]:
+			for kind in set(SCENARIO_IDS) - {"espresso_pid"}:
+				self.assertEqual(signal["scenarios"][kind], [])
+			if signal.get("origin") == "synthetic-pid-model":
+				field = signal["id"].removeprefix("espresso-")
+				self.assertEqual(
+					signal["scenarios"]["espresso_pid"],
+					[{"time": row["time"], "value": row[field]} for row in scenario["espresso"]["samples"]],
+				)
+		brewer = self.assert_single(a for a in self.explorer["assets"] if a["kind"] == "brewer")
+		self.assertTrue(all(not s["scenarios"]["espresso_pid"] for s in brewer["signals"]))
+		instruction = self.assert_single(
+			w for w in self.explorer["work_instructions"] if w["id"] == "DEMO-WI-ESPRESSO"
+		)
+		self.assertEqual(instruction["sample_evaluations"]["espresso_pid"]["value_number"], 36)
+		self.assertEqual(instruction["sample_evaluations"]["espresso_pid"]["record_id"], "DEMO-ESPRESSO-01")
+		self.assertTrue(
+			all(
+				instruction["sample_evaluations"][kind] is None
+				for kind in set(SCENARIO_IDS) - {"espresso_pid"}
+			)
+		)
 
 	def test_work_instructions_are_drafts_and_moisture_evaluates_actual_rule(self):
 		for instruction in self.explorer["work_instructions"]:

@@ -1,0 +1,1 @@
+The coffee demo adds a CLR-colored Gaggia Classic Pro concept, a playable synthetic PID temperature-control model, a separately traceable espresso cup and a draft espresso-review work instruction, while retaining the existing filter-brew scenarios.

@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 import build as coffee_builder
 from build import (
+	SCENARIO_IDS,
 	STAGES,
 	build,
 	build_data,
@@ -137,7 +138,7 @@ class CoffeeAcceptanceTests(unittest.TestCase):
 							{"DEMO-GREEN-01", "DEMO-BREW-01", "DEMO-CUP-01", "DEMO-ORDER-01"} & objects.keys()
 						)
 						continue
-					pending, reached = ["DEMO-CUP-01"], set()
+					pending, reached = [scenario["cup"]["id"]], set()
 					while pending:
 						identity = pending.pop()
 						if identity not in reached:
@@ -194,6 +195,7 @@ class CoffeeAcceptanceTests(unittest.TestCase):
 			"moisture_hold.ocel.json",
 			"network_gap.ocel.json",
 			"recall.ocel.json",
+			"espresso_pid.ocel.json",
 		)
 		with tempfile.TemporaryDirectory() as folder:
 			root = Path(folder)
@@ -223,13 +225,13 @@ class CoffeeAcceptanceTests(unittest.TestCase):
 	def test_catalog_and_portable_build(self):
 		data = build_data()
 		self.assertEqual(len(data["stages"]), 12)
-		self.assertEqual(len(data["scenarios"]), 4)
+		self.assertEqual(tuple(s["id"] for s in data["scenarios"]), SCENARIO_IDS)
 		with tempfile.TemporaryDirectory() as folder:
 			build(folder)
 			output = Path(folder)
 			self.assertTrue((output / "index.html").is_file())
 			self.assertEqual(json.loads((output / "data.json").read_text(encoding="utf-8")), data)
-			self.assertEqual(len(list(output.glob("*.ocel.json"))), 4)
+			self.assertEqual(len(list(output.glob("*.ocel.json"))), len(SCENARIO_IDS))
 
 
 if __name__ == "__main__":
