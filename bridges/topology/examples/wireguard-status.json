@@ -1,0 +1,28 @@
+{
+ "observed_at": "2026-11-18T12:00:00+00:00",
+ "interfaces": [
+  {
+   "name": "wg0",
+   "peers": [
+    {
+     "public_key": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+     "endpoint": "192.0.2.10:51820",
+     "allowed_ips": ["10.10.0.0/24", "2001:db8:1::/64"],
+     "latest_handshake": 1795003140,
+     "transfer_rx": 1234,
+     "transfer_tx": 5678,
+     "persistent_keepalive": 25
+    },
+    {
+     "public_key": "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8=",
+     "endpoint": null,
+     "allowed_ips": [],
+     "latest_handshake": 0,
+     "transfer_rx": 0,
+     "transfer_tx": 0,
+     "persistent_keepalive": 0
+    }
+   ]
+  }
+ ]
+}
