@@ -25,7 +25,7 @@ export MSYS_NO_PATHCONV=1
 if [[ -z "${COMPOSE_PROJECT_NAME:-}" ]] && ! grep -qE '^COMPOSE_PROJECT_NAME=.+' .env 2>/dev/null; then
 	checkout="$(cd .. && pwd -P)"
 	suffix="$(printf '%s' "$checkout" | cksum | cut -d' ' -f1)"
-	export COMPOSE_PROJECT_NAME="foames-dev-$(basename "$checkout" | tr -c 'a-z0-9\n' '-' | tr 'A-Z' 'a-z')-$suffix"
+	export COMPOSE_PROJECT_NAME="foames-dev-$(basename "$checkout" | tr -c '[:lower:]0-9\n' '-' | tr '[:upper:]' '[:lower:]')-$suffix"
 fi
 
 # SITE_NAME and BENCH_DIR are set in the container's environment by docker-compose.yml.
