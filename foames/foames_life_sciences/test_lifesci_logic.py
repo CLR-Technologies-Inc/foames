@@ -128,6 +128,25 @@ class TestStageGates(unittest.TestCase):
 		overdue = npi.gate_findings(program, gates, [], date(2026, 11, 25))
 		self.assertEqual(overdue[0]["severity"], "Warning")
 
+	def test_gate_findings_rejects_an_open_program_without_a_valid_stage(self):
+		program = {"name": "NPI-1", "status": "Active"}
+		for stage_fields in (
+			{},
+			{"current_stage": None},
+			{"current_stage": ""},
+			{"current_stage": "Unknown"},
+			{"current_stage": 1},
+		):
+			with (
+				self.subTest(stage_fields=stage_fields),
+				self.assertRaisesRegex(ValueError, "unknown current stage"),
+			):
+				npi.gate_findings({**program, **stage_fields}, [], [], date(2026, 11, 15))
+		# Closed programs still produce no findings, even when historical stage data is missing.
+		self.assertEqual(
+			npi.gate_findings({**program, "status": "Cancelled"}, [], [], date(2026, 11, 15)), []
+		)
+
 
 def member(user, role="Member", present=1, vote=None):
 	return {"user": user, "board_role": role, "present": present, "vote": vote}
@@ -273,6 +292,12 @@ def req(rid, level, parent=None, **values):
 
 
 class TestRequirements(unittest.TestCase):
+	def test_unknown_level_reports_validation_problem_before_parent_lookup(self):
+		for level in (None, "", "Unknown", 1):
+			with self.subTest(level=level):
+				rows = [req("UN-1", "User Need"), req("DI-1", level, "UN-1")]
+				self.assertEqual(requirements.requirement_problems(rows), [f"DI-1: unknown level {level!r}"])
+
 	def test_structure(self):
 		rows = [
 			req("UN-1", "User Need"),

@@ -198,11 +198,13 @@ def gate_findings(
 ) -> list[dict]:
 	"""Suggestions for one program: the current gate overdue or near with required work missing,
 	and Conditional Go conditions past their due date and not closed."""
-	out = []
+	out: list[dict] = []
 	if program.get("status") in CLOSED_PROGRAM:
 		return out
 	name = program["name"]
 	stage = program.get("current_stage")
+	if not isinstance(stage, str) or stage not in STAGES:
+		raise ValueError(f"unknown current stage {stage!r}; use one of {', '.join(STAGES)}")
 	gate = next(
 		(g for g in gates if g.get("stage") == stage and g.get("decision") not in (*PASSING, "Kill")), None
 	)

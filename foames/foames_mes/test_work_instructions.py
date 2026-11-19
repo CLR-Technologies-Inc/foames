@@ -158,6 +158,13 @@ class TestOrderAndSignOff(unittest.TestCase):
 		with self.assertRaisesRegex(StepError, "no step"):
 			can_record(steps, 9)
 
+	def test_record_rejects_malformed_preceding_indices(self):
+		for bad in (None, "1", 0, -1, True, 1.5):
+			with self.subTest(idx=bad), self.assertRaisesRegex(StepError, "positive integers"):
+				can_record([step(bad, result="Done"), step(2)], 2)
+		with self.assertRaisesRegex(StepError, "positive integers"):
+			can_record([{"title": "Missing index", "result": "Done"}, step(2)], 2)
+
 	def test_sign_off_holds_the_next_step(self):
 		steps = self.steps()
 		steps[1].update(result="Pass", completed_by="op@x")
