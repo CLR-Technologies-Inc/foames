@@ -44,6 +44,26 @@ jobs:
         working-directory: bridges/bms
         run: python -m unittest discover -s tests -v
 
+  waft:
+    runs-on: ubuntu-latest
+    name: WAFT native bridge (Rust)
+    steps:
+      - name: Clone
+        uses: actions/checkout@v7
+      - name: Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: Test and build
+        working-directory: native/foames-waft
+        run: |
+          cargo test
+          cargo build --release
+      - name: Report artifact sizes
+        working-directory: native/foames-waft
+        run: |
+          ls -l target/release/foames-waft target/release/libfoames_waft.so 2>/dev/null || true
+
   agent-skills:
     runs-on: ubuntu-latest
     name: Discovery skills

@@ -1,0 +1,1 @@
+foames-waft (`native/foames-waft`) is a minimal native Rust bridge that streams signed machine events from simulations and edge devices into the existing foaMES webhook — bounded buffering, exponential backoff, stable event ids, no Python or Frappe on the device.

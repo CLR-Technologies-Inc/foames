@@ -60,7 +60,7 @@ These ship in the app today. They are **alpha**: built against the vendors' publ
 | Process historians: AVEVA PI (PI Web API), InfluxDB, Ignition Tag Historian, TimescaleDB and SQL historians | Historian, read-only, through a bridge outside the app | [docs/vendors/historian/](docs/vendors/historian/README.md) |
 | Building automation (BMS / BAS) controllers and meters over BACnet/IP and Modbus TCP | Building management, read-only, through a gateway outside the app | [docs/building-management.md](docs/building-management.md) |
 
-Any machine, PLC or SCADA system that can publish Sparkplug B, serve OPC UA, publish JSON over MQTT or post to a signed webhook can send machine data without a vendor-specific integration; see [docs/machine-data.md](docs/machine-data.md).
+Any machine, PLC or SCADA system that can publish Sparkplug B, serve OPC UA, publish JSON over MQTT or post to a signed webhook can send machine data without a vendor-specific integration; see [docs/machine-data.md](docs/machine-data.md). For simulations and constrained edge devices, the native Rust **foames-waft** bridge streams events to the same signed webhook — see [native/foames-waft](native/foames-waft/README.md).
 
 ### Planned integrations
 

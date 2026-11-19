@@ -1,0 +1,11 @@
+{
+  "endpoint": "https://mes.example.com/api/method/foames.foames_mes.api.ingest_machine_events",
+  "machine": "sim-press-1",
+  "secret_env": "FOAMES_WEBHOOK_SECRET",
+  "batch_size": 100,
+  "max_buffer": 10000,
+  "flush_interval_ms": 1000,
+  "timeout_ms": 10000,
+  "sample_rate_hz": 50,
+  "allow_http": false
+}
