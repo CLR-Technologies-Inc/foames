@@ -128,7 +128,7 @@ class TestStageGates(unittest.TestCase):
 		overdue = npi.gate_findings(program, gates, [], date(2026, 11, 25))
 		self.assertEqual(overdue[0]["severity"], "Warning")
 
-	def test_gate_findings_rejects_an_open_program_without_a_valid_stage(self):
+	def test_gate_findings_warns_for_an_open_program_without_a_valid_stage(self):
 		program = {"name": "NPI-1", "status": "Active"}
 		for stage_fields in (
 			{},
@@ -136,15 +136,48 @@ class TestStageGates(unittest.TestCase):
 			{"current_stage": ""},
 			{"current_stage": "Unknown"},
 			{"current_stage": 1},
+			{"current_stage": []},
 		):
-			with (
-				self.subTest(stage_fields=stage_fields),
-				self.assertRaisesRegex(ValueError, "unknown current stage"),
-			):
-				npi.gate_findings({**program, **stage_fields}, [], [], date(2026, 11, 15))
+			with self.subTest(stage_fields=stage_fields):
+				stage = stage_fields.get("current_stage")
+				# Even a matching malformed gate must not be treated as the current gate.
+				gates = [{"stage": stage, "target_date": date(2026, 11, 1)}]
+				findings = npi.gate_findings({**program, **stage_fields}, gates, [], date(2026, 11, 15))
+				self.assertEqual(len(findings), 1)
+				self.assertEqual(findings[0]["rule_key"], "npi-stage:NPI-1")
+				self.assertEqual(findings[0]["severity"], "Warning")
+				self.assertEqual(findings[0]["evidence"]["current_stage"], stage)
+				self.assertEqual(findings[0]["evidence"]["valid_stages"], list(npi.STAGES))
 		# Closed programs still produce no findings, even when historical stage data is missing.
 		self.assertEqual(
 			npi.gate_findings({**program, "status": "Cancelled"}, [], [], date(2026, 11, 15)), []
+		)
+
+	def test_invalid_stage_preserves_conditions_and_later_program_findings(self):
+		gates = [
+			{
+				"stage": "Concept",
+				"decision": "Conditional Go",
+				"conditions": "Close CAPA",
+				"conditions_due": date(2026, 11, 1),
+			},
+			{"stage": "Feasibility", "target_date": date(2026, 11, 10)},
+		]
+		programs = [
+			{"name": "NPI-BAD", "status": "On Hold", "current_stage": None},
+			{"name": "NPI-GOOD", "status": "Active", "current_stage": "Feasibility"},
+		]
+		findings = []
+		for program in programs:
+			findings.extend(npi.gate_findings(program, gates, [], date(2026, 11, 15)))
+		self.assertEqual(
+			[f["rule_key"] for f in findings],
+			[
+				"npi-stage:NPI-BAD",
+				"npi-conditions:NPI-BAD:Concept:2026-11-01",
+				"npi-gate:NPI-GOOD:Feasibility:2026-11-10",
+				"npi-conditions:NPI-GOOD:Concept:2026-11-01",
+			],
 		)
 
 

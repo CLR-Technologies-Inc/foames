@@ -755,7 +755,7 @@
 							"text-anchor": "middle",
 							class: "chart-label",
 						},
-						number.format(sample.value)
+						String(sample.value)
 					)
 				);
 			} else
@@ -840,7 +840,7 @@
 					"td",
 					sample.value === null || sample.value === undefined
 						? "Missing reading"
-						: format(sample.value)
+						: String(sample.value)
 				)
 			);
 			body.append(row);
