@@ -1,0 +1,1 @@
+Add a source-backed, simulated coffee journey from land and nursery through trellised cultivation, processing, packaging, brewing and cup handoff. The portable website demo uses FoaMES counter, OEE and process-mining calculations, with quality-hold, missing-signal and traceability scenarios and stage-specific research references.

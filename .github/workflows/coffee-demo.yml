@@ -1,0 +1,35 @@
+# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# SPDX-License-Identifier: Apache-2.0
+
+name: Coffee demo
+
+on:
+  pull_request:
+    paths:
+      - examples/coffee/**
+      - foames/foames_mes/counters.py
+      - foames/foames_mes/oee.py
+      - foames/foames_process_mining/**
+      - .github/workflows/coffee-demo.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.14']
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Verify coffee journey and calculations
+        run: python -m unittest discover -s examples/coffee -v
+      - name: Build portable website demo
+        run: python examples/coffee/build.py --out .coffee-build
+      - name: Check browser script syntax
+        run: node --check .coffee-build/app.js

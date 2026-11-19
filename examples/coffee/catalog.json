@@ -1,0 +1,308 @@
+{
+  "title": "From land to cup",
+  "disclaimer": "A fictional, simulated coffee journey for learning about FoaMES. Sources explain the process; they do not supply this demo's production data. No producer affiliation, live equipment connection, or food-safety certification is implied.",
+  "stages": [
+    {
+      "id": "land",
+      "title": "Land and soil",
+      "subtitle": "Start with a place and its evidence",
+      "summary": "Map a fictional plot, assess drainage and access, and review soil and water evidence before establishing the orchard. Keep the land assessment linked to every later harvest.",
+      "controls": ["Plot identity and boundaries", "Soil sample and laboratory result", "Drainage, water availability and access review"],
+      "foames_records": ["Facility Zone", "Hazard Assessment", "Work Instruction"],
+      "source_ids": ["ctahr-growing"],
+      "paper_status": "Papers welcome: land suitability and soil management"
+    },
+    {
+      "id": "nursery",
+      "title": "Seeds and nursery",
+      "subtitle": "Preserve identity as plants grow",
+      "summary": "Follow a seed lot into a nursery cohort and then into planted rows. Record variety, supplier, germination and plant health so the orchard retains its origin story.",
+      "controls": ["Seed lot and variety identity", "Germination and rejected seedlings", "Nursery health and transplant review"],
+      "foames_records": ["External Reference", "Work Instruction Run", "Process Event Log"],
+      "source_ids": ["wcr-seed", "wcr-nursery", "ctahr-growing"],
+      "paper_status": "Papers welcome: seed quality and nursery establishment"
+    },
+    {
+      "id": "trellis",
+      "title": "Trellis establishment",
+      "subtitle": "Explore the selected cultivation method",
+      "summary": "This scenario selects the Kona Joe-inspired method of training coffee shoots along wires into horizontal cordons. Track installation, training and pruning. No yield or flavor advantage is assumed.",
+      "controls": ["Trellis and irrigation inspection", "Training and pruning work record", "Cultivation method and comparison evidence"],
+      "foames_records": ["Facility Asset", "Commissioning Test", "Work Instruction Run"],
+      "source_ids": ["kona-method", "trellis-patent"],
+      "paper_status": "Independent trellis research paper pending"
+    },
+    {
+      "id": "cultivation",
+      "title": "Cultivation",
+      "subtitle": "Observe the orchard through the season",
+      "summary": "Connect field observations, water use, plant health and maintenance to the plot. A finding prompts a person to review the evidence and choose an action.",
+      "controls": ["Irrigation and weather observations", "Pest and disease scouting", "Reviewed nutrition and maintenance activities"],
+      "foames_records": ["Building Point Reading", "Maintenance Work Order", "Agent Suggestion"],
+      "source_ids": ["ctahr-growing", "ctahr-cbb"],
+      "paper_status": "Papers welcome: cultivation, water and plant health"
+    },
+    {
+      "id": "harvest",
+      "title": "Cherry harvest",
+      "subtitle": "Turn a crop into a traceable lot",
+      "summary": "Assign the picked cherries a harvest lot with plot, date, maturity sample and measured mass. Keep rejected fruit visible and preserve the time between picking and processing.",
+      "controls": ["Plot-to-harvest lot identity", "Maturity sample and accepted mass", "Harvest-to-processing elapsed time"],
+      "foames_records": ["Work Instruction Run", "External Reference", "Process Event Log"],
+      "source_ids": ["ctahr-growing", "kona-method", "kona-tour"],
+      "paper_status": "Papers welcome: ripeness and selective harvesting"
+    },
+    {
+      "id": "processing",
+      "title": "Wet processing",
+      "subtitle": "Separate fruit, seed and byproducts",
+      "summary": "Follow the selected washed route through pulping, monitored mucilage removal and washing. Link inputs and outputs, including pulp and wastewater, rather than hiding them inside one yield number.",
+      "controls": ["Process route and batch identity", "Time, observations and reviewed endpoint", "Input, output and byproduct reconciliation"],
+      "foames_records": ["Machine Event", "Work Instruction Run", "Process Event Log"],
+      "source_ids": ["ctahr-growing", "washed-mass-flow", "kona-tour"],
+      "paper_status": "Papers welcome: fermentation and water-efficient processing"
+    },
+    {
+      "id": "drying",
+      "title": "Drying and conditioning",
+      "subtitle": "Measure readiness for storage",
+      "summary": "Track drying conditions and sampled moisture before releasing parchment for storage. Keep sample identity and instrument checks with the result; water removed is different from rejected coffee.",
+      "controls": ["Drying time and condition history", "Moisture sample and meter calibration", "Reviewed storage release"],
+      "foames_records": ["Machine Event", "Building Point Reading", "Work Instruction Run"],
+      "source_ids": ["ctahr-moisture", "ctahr-growing", "washed-mass-flow"],
+      "paper_status": "Papers welcome: drying, moisture and storage stability"
+    },
+    {
+      "id": "green",
+      "title": "Green coffee and receiving",
+      "subtitle": "Keep quality and custody together",
+      "summary": "Hull, sort and identify the green lot, then reconcile dispatch with receipt at the roastery. Review the sample and storage evidence before the lot becomes available to a roast job.",
+      "controls": ["Hulling, sorting and reject records", "Bag identity and custody reconciliation", "Receiving sample and storage conditions"],
+      "foames_records": ["Material Queue Entry", "External Reference", "Work Instruction Run"],
+      "source_ids": ["ctahr-growing", "history-receiving", "sfb-receiving", "sca-assessment"],
+      "paper_status": "Papers welcome: grading, storage and transport"
+    },
+    {
+      "id": "roasting",
+      "title": "Roasting and cooling",
+      "subtitle": "A batch, a profile and a human release",
+      "summary": "Match a roast job to equipment capacity and a reviewed recipe. Follow the temperature trace, machine states, charge and discharge mass, cooling and sensory review as one batch history.",
+      "controls": ["Recipe revision and equipment capacity", "Roast profile, cooling and mass loss", "Sensory sample and batch disposition"],
+      "foames_records": ["Production Schedule", "Machine Event", "Work Instruction Run", "OEE Period"],
+      "source_ids": ["history-receiving", "sfb-roasting", "sca-assessment", "washed-mass-flow"],
+      "paper_status": "Papers welcome: roast development and sensory quality"
+    },
+    {
+      "id": "packaging",
+      "title": "Packaging and dispatch",
+      "subtitle": "Carry the lot through every pack",
+      "summary": "Connect the roast batch to package lots and shipments. A failed check creates a visible hold; reviewed evidence is required before the affected lot is released.",
+      "controls": ["Fill mass, seal and lot-label checks", "Package quality and retained sample", "Release, shipment and café receipt"],
+      "foames_records": ["Machine Event", "Work Instruction Run", "Andon Call", "External Reference"],
+      "source_ids": ["sfb-packaging", "sfb-retained"],
+      "paper_status": "Papers welcome: packaging, oxygen and shelf life"
+    },
+    {
+      "id": "brewing",
+      "title": "Grinding and brewing",
+      "subtitle": "Connect the recipe to the cup",
+      "summary": "Trace the package lot into a measured dose and brew run. Record water, beverage output, grind, time, temperature and dissolved solids against the selected method's recipe.",
+      "controls": ["Released lot and measured dose", "Method-specific recipe and equipment checks", "Beverage mass, dissolved solids and sensory result"],
+      "foames_records": ["Work Instruction Run", "Machine Event", "Cycle Time Standard"],
+      "source_ids": ["ucd-brewing", "ecbc-filter", "washed-mass-flow"],
+      "paper_status": "Papers welcome: grinding, extraction and consumer preferences"
+    },
+    {
+      "id": "delivery",
+      "title": "Cup delivery",
+      "subtitle": "Close the journey with a handoff",
+      "summary": "Connect an order to its brew and record the cup handoff. Trace backward to the plot or forward from a held lot to affected cups. A prepared cup is not counted as delivered until its handoff is recorded.",
+      "controls": ["Order-to-brew identity", "Ready and handoff timestamps", "Remakes, returns and backward trace"],
+      "foames_records": ["External Reference", "Work Instruction Run", "Process Event Log"],
+      "source_ids": ["demo-handoff"],
+      "paper_status": "Papers welcome: service quality and delivery"
+    }
+  ],
+  "sources": [
+    {
+      "id": "ctahr-growing",
+      "title": "Growing Coffee in Hawaii",
+      "publisher": "University of Hawaiʻi at Mānoa, CTAHR",
+      "url": "https://www3.ctahr.hawaii.edu/oc/freepubs/pdf/coffee08.pdf",
+      "kind": "Extension guidance",
+      "locator": "March 2008 revision; printed pp. 3–17 and 32–39",
+      "claim": "Covers site assessment, nursery establishment, cultivation, harvesting, wet processing, drying, hulling and grading.",
+      "limitations": "Historical Hawaii guidance. Local agronomy and current requirements need separate review; this demo does not adopt its fertilizer, pesticide or operating recipes."
+    },
+    {
+      "id": "wcr-seed",
+      "title": "Good Practice Guide: Seed Producers",
+      "publisher": "World Coffee Research",
+      "url": "https://worldcoffeeresearch.org/resources/good-practice-guide-seed-producers",
+      "kind": "Research organization guidance",
+      "locator": "Guide overview and supporting traceability tables",
+      "claim": "Provides resources for coffee seed production and traceability.",
+      "limitations": "The landing page and resource descriptions were reviewed. The full technical manual was not reviewed for this demo."
+    },
+    {
+      "id": "wcr-nursery",
+      "title": "Good Practice Guide: Coffee Nursery Management",
+      "publisher": "World Coffee Research",
+      "url": "https://worldcoffeeresearch.org/resources/good-practice-guide-coffee-nursery-management",
+      "kind": "Research organization guidance",
+      "locator": "Guide overview and supporting traceability tables",
+      "claim": "Provides nursery-management guidance and traceability resources for producing quality planting material.",
+      "limitations": "The landing page was reviewed. The full PDF exceeded the research tool's size limit; no detailed nursery prescription is inferred."
+    },
+    {
+      "id": "kona-method",
+      "title": "What Makes Us Different?",
+      "publisher": "Kona Joe Coffee",
+      "url": "https://www.konajoe.com/pages/what-makes-us-different",
+      "kind": "Producer description",
+      "locator": "An Innovative Process",
+      "claim": "The producer describes horizontal cordons, managed vertical growth and maturity observations including pH, sugar concentration and titratable acidity.",
+      "limitations": "Producer-reported practices and benefits, not independent comparative evidence. The demo has no producer affiliation and applies no yield or flavor uplift. Independent trellis paper pending."
+    },
+    {
+      "id": "trellis-patent",
+      "title": "US6449898B1: Method and apparatus for enhancing coffee bean production",
+      "publisher": "US patent publication; inventor Joseph B. Alban",
+      "url": "https://patents.google.com/patent/US6449898B1/en",
+      "kind": "Patent description",
+      "locator": "Published September 17, 2002; abstract and detailed description",
+      "claim": "Describes a coffee trellis with posts and wires, attachment of growing shoots, and optional drip irrigation.",
+      "limitations": "Documents an invention rather than independently validating agronomic results. No legal-status conclusion or implementation license is asserted. Independent research paper pending."
+    },
+    {
+      "id": "kona-tour",
+      "title": "Kona Joe Self Guided Tour",
+      "publisher": "Kona Joe Coffee",
+      "url": "https://www.konajoe.com/pages/kona-joe-self-guided-tour",
+      "kind": "Producer description",
+      "locator": "The Trellised Coffee Tree and subsequent wet-processing description",
+      "claim": "Describes the producer's hand harvesting, pulping, washing and drying sequence.",
+      "limitations": "Tour and marketing material. Its reported production increase is not used as a demo parameter or an independently established benefit."
+    },
+    {
+      "id": "ctahr-cbb",
+      "title": "Coffee Berry Borer: How Can We Manage It?",
+      "publisher": "University of Hawaiʻi at Mānoa, CTAHR",
+      "url": "https://www.ctahr.hawaii.edu/site/CBBManage.aspx",
+      "kind": "Extension guidance",
+      "locator": "Damage and integrated management sections",
+      "claim": "Describes coffee berry borer damage and the role of integrated management.",
+      "limitations": "Used to motivate scouting and evidence records. Treatment decisions require current local guidance; no automatic treatment or loss forecast is derived."
+    },
+    {
+      "id": "ctahr-moisture",
+      "title": "Measuring Coffee Bean Moisture Content",
+      "publisher": "University of Hawaiʻi at Mānoa, CTAHR",
+      "url": "https://www3.ctahr.hawaii.edu/oc/freepubs/pdf/EN-3.pdf",
+      "kind": "Extension guidance",
+      "locator": "EN-3, March 2008; pp. 1–3",
+      "claim": "Explains why coffee moisture matters for quality and traded mass, and discusses measurement and calibration.",
+      "limitations": "Historical guidance. Demo moisture limits are illustrative site specifications, not a claim about current legal grading limits."
+    },
+    {
+      "id": "washed-mass-flow",
+      "title": "A comprehensive analysis of operations and mass flows in postharvest processing of washed coffee",
+      "publisher": "Rotta et al.; Resources, Conservation and Recycling, 2021",
+      "url": "https://doi.org/10.1016/j.resconrec.2021.105554",
+      "kind": "Peer-reviewed research",
+      "locator": "Volume 170, article 105554; abstract and UC Davis Coffee Center author-institution summary",
+      "claim": "Examines washed-coffee operations and material flows from harvest to consumption, including byproducts.",
+      "limitations": "Abstract and institutional summary reviewed; publisher full text was inaccessible. Study averages are not this fictional lot's yields. Consumed coffee solids are distinct from beverage mass."
+    },
+    {
+      "id": "history-receiving",
+      "title": "Modern Marvels: How Coffee is Made",
+      "publisher": "HISTORY",
+      "url": "https://www.youtube.com/watch?v=lmAJGymXXAc&t=56s",
+      "kind": "Video captions",
+      "locator": "00:56–03:13; receiving, cleaning, roasting and cooling",
+      "claim": "Presents an industrial example of receiving coffee, removing foreign material and running roast batches.",
+      "limitations": "Based on exported English captions, not visual inspection. Captions may contain errors. Historical documentary figures are examples, not current facility data or operating instructions."
+    },
+    {
+      "id": "sfb-receiving",
+      "title": "Production Facility Tour: Green Coffee and Incoming Quality",
+      "publisher": "San Francisco Bay Coffee",
+      "url": "https://www.youtube.com/watch?v=-Ie3RhSTtn8&t=87s",
+      "kind": "Producer video captions",
+      "locator": "01:27–03:09; sorting, storage, sample roasting and cupping",
+      "claim": "Describes green-bean sorting and incoming quality evaluation before production.",
+      "limitations": "Based on exported auto-generated English captions, not visual inspection. Captions contain transcription errors. Producer statements are not independent verification or demo production measurements."
+    },
+    {
+      "id": "sfb-roasting",
+      "title": "Production Facility Tour: Roasting and Quality",
+      "publisher": "San Francisco Bay Coffee",
+      "url": "https://www.youtube.com/watch?v=-Ie3RhSTtn8&t=190s",
+      "kind": "Producer video captions",
+      "locator": "03:10–04:39; roaster selection, sensors and quality review",
+      "claim": "Describes matching batch size to roasters, monitoring the roast and stopping production when quality is out of specification.",
+      "limitations": "Based on exported auto-generated English captions, not visual inspection. Captions contain transcription errors. Equipment capacities and sensor counts are producer-reported examples, not demo parameters."
+    },
+    {
+      "id": "sfb-packaging",
+      "title": "Production Facility Tour: Packaging Checks",
+      "publisher": "San Francisco Bay Coffee",
+      "url": "https://www.youtube.com/watch?v=-Ie3RhSTtn8&t=280s",
+      "kind": "Producer video captions",
+      "locator": "04:40–05:40; dissolved solids, package oxygen and form-fill-seal packaging",
+      "claim": "Describes product and packaging quality checks alongside automated filling and packaging.",
+      "limitations": "Based on exported auto-generated English captions, not visual inspection. Captions contain transcription errors. Packaging settings, rates and material claims are not independently verified."
+    },
+    {
+      "id": "sfb-retained",
+      "title": "Production Facility Tour: Retained Samples",
+      "publisher": "San Francisco Bay Coffee",
+      "url": "https://www.youtube.com/watch?v=-Ie3RhSTtn8&t=48s",
+      "kind": "Producer video captions",
+      "locator": "00:48–01:26; retained production samples and complaint investigation",
+      "claim": "Describes retaining samples to investigate package integrity and complaints.",
+      "limitations": "Based on exported auto-generated English captions, not visual inspection. Captions contain transcription errors. The producer's retention practice is not a universal retention requirement."
+    },
+    {
+      "id": "sca-assessment",
+      "title": "Coffee Value Assessment Standards",
+      "publisher": "Specialty Coffee Association",
+      "url": "https://sca.coffee/research/coffee-standards/",
+      "kind": "Standards overview",
+      "locator": "Published standards: SCA-102, SCA-103, SCA-104 and SCA-105",
+      "claim": "Distinguishes sample preparation and tasting mechanics, descriptive assessment, affective assessment and extrinsic assessment.",
+      "limitations": "The public standards overview was reviewed. Demo samples and scores are simulated; the demo does not claim SCA certification or complete implementation of these standards."
+    },
+    {
+      "id": "ucd-brewing",
+      "title": "Coffee Brewing Research",
+      "publisher": "UC Davis Coffee Center",
+      "url": "https://coffeecenter.ucdavis.edu/faculty-research/publications",
+      "kind": "Author-institution research summary",
+      "locator": "Brew temperature, at fixed brew strength and extraction, has little impact on the sensory profile of drip brew coffee; consumer-preference research",
+      "claim": "Reports interactions among brew strength, extraction and sensory outcomes. Temperature alone does not determine quality in the studied drip-brew conditions.",
+      "limitations": "Institutional summaries reviewed. Findings are limited to the studied methods and conditions; the demo does not predict flavor or prescribe a universally preferred cup."
+    },
+    {
+      "id": "ecbc-filter",
+      "title": "Certification Standards: Brewers",
+      "publisher": "European Coffee Brewing Centre",
+      "url": "https://ecbc.coffee/overview/domestic/certification-standards/",
+      "kind": "Equipment certification requirements",
+      "locator": "Scope, brewing time and brewing temperature",
+      "claim": "Specifies method-dependent testing of filter and fresh-brew machines, including time, grind and temperature measurements.",
+      "limitations": "Its scope excludes manual pour-over, French press, espresso and pod/capsule machines. It does not establish a safe serving temperature or certify this demo."
+    },
+    {
+      "id": "demo-handoff",
+      "title": "FoaMES Coffee Demo: Order and Cup Handoff",
+      "publisher": "FoaMES example",
+      "url": "https://github.com/CLR-Technologies-Inc/foames",
+      "kind": "Demo design assumption",
+      "locator": "Coffee example catalog and replay",
+      "claim": "Uses explicit order, brew and handoff events to demonstrate traceability through cup delivery.",
+      "limitations": "A fictional operational design, not a published service standard. Timestamps, customer orders and outcomes are simulated."
+    }
+  ]
+}
