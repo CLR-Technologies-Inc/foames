@@ -15,6 +15,7 @@ from collections import defaultdict
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from typing import cast
 
 START, COMPLETE = "start", "complete"
 
@@ -164,7 +165,7 @@ def seconds_between(earlier: datetime, later: datetime) -> float:
 
 
 def event_to_dict(event: Event) -> dict:
-	row = {
+	row: dict[str, object] = {
 		"case_id": event.case_id,
 		"activity": event.activity,
 		"timestamp": event.timestamp.isoformat(),
@@ -186,7 +187,8 @@ def event_from_dict(row: dict) -> Event:
 	return Event(
 		case_id=str(row.get("case_id") or row.get("case") or ""),
 		activity=str(row.get("activity") or ""),
-		timestamp=timestamp,
+		# Event.__post_init__ retains the runtime check for invalid imported timestamps.
+		timestamp=cast(datetime, timestamp),
 		resource=row.get("resource") or None,
 		lifecycle=row.get("lifecycle") or COMPLETE,
 		attributes=dict(row.get("attributes") or {}),

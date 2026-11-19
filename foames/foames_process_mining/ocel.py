@@ -49,7 +49,7 @@ def to_ocel(log: EventLog, case_object_type: str = CASE_OBJECT_TYPE) -> dict:
 				objects.setdefault((object_type, raw_id), {"id": oid, "type": object_type, "attributes": []})
 				relationships.append({"objectId": oid, "qualifier": object_type})
 		activity_type = event_types.setdefault(event.activity, {"name": event.activity, "attributes": []})
-		attributes = [{"name": "lifecycle", "value": event.lifecycle or COMPLETE}]
+		attributes: list[dict[str, object]] = [{"name": "lifecycle", "value": event.lifecycle or COMPLETE}]
 		if event.resource:
 			attributes.append({"name": "resource", "value": event.resource})
 		for key, value in event.attributes.items():
