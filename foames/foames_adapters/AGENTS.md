@@ -27,6 +27,22 @@ Files that are not in a vendor's folder must not name a vendor, except where a l
 6. **Keep arithmetic, parsing and protocol code pure.** Payload building, retry rules, roll-up arithmetic and wire-format parsing import nothing from Frappe, so a unit test needs no site. The Frappe modules around them stay thin. Each vendor's `AGENTS.md` lists which of its modules are pure.
 7. **Register through the hook.** `foames_erp_adapters` in `hooks.py` for a bundled adapter, in the other app's `hooks.py` for one that ships elsewhere. An adapter should report `is_available() == False` when its ERP is absent or not configured; the core treats that as "leave the reference Unverified", not as an error.
 
+## OEM API and AI-use review gate
+
+The project uses AI-assisted coding and runtime analysis; it **does not train or fine-tune AI models**. Terms that address vendor-provided AI Services, competitive-product development, website scraping, third-party integrations, data export and redistribution are different questions. Check [vendor-interoperability.md](../../docs/vendor-interoperability.md) and the nearest vendor-specific `AGENTS.md` before beginning work.
+
+Before live vendor connectivity, authenticated documentation access or release of a new adapter:
+
+- [ ] Identify which organization/account accepted which product order, EULA, API/developer agreement, supplementary terms and applicable version. Record the product/API, permitted use case, commercial use, any competitor restriction, integration permissions, data export rights and write rights. An API token does **not** by itself resolve licensing.
+- [ ] Distinguish public website/portal access rules from authenticated API-contract rules, and separately identify Siemens-style **designated AI Services** from ordinary industrial APIs. Do not generalize one document to all of a vendor's products.
+- [ ] If automated access is prohibited, stop the agent's access to that site; a person may review the relevant documentation and record independently phrased interface facts/requirements where authorized. Never upload confidential vendor documentation, proprietary response bodies or credentials into an external model.
+- [ ] Keep protocol and client code independently written, vendor libraries installed only by the authorized customer where permitted, and tests synthetic. Avoid a production-substituting vendor API clone and any prohibited performance comparison.
+- [ ] Determine whether use of a licensed OEM environment to develop or improve FoaMES as a competing MES is contractually restricted. If uncertain, stop **that OEM-dependent use**, not unrelated open-source development, and request human/contract review. Do not use customer integration credentials as development or benchmarking credentials without approval.
+- [ ] Require data-controller approval before routing production/customer data through an independent inference service or external AI agent. No unattended writes to production systems; existing connector write policy, signatures, least privilege, outbox and audit remain mandatory.
+- [ ] Record a human-reviewed result for each combination of vendor, account, product, API and operation: `verified`, `restricted`, or `unverified` (not an invented global "approved" status). Unverified live permission is a deployment gate, not a prohibition on original synthetic development.
+
+Where restrictions are unresolved, submit a PR with original code and mocked tests, document the dependency, and request review. Do not claim legal compliance from automated interpretation alone. Compliance summaries in these `AGENTS.md` files are not AI training. See [Siemens terms review issue #119](https://github.com/CLR-Technologies-Inc/foames/issues/119) for one example and consult the individual vendor guide for the actual applicable terms.
+
 ## Adding a reference type
 
 Add the kernel type to `REFERENCE_TYPES` in `base.py` together with the Select options on `External Reference` and on every adapter mapping DocType that lists reference types (each vendor's `AGENTS.md` names its own). Then map the new type in each adapter that supports it. An adapter that does not support a type must answer `supports() == False`, not guess.
