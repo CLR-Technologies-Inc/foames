@@ -31,6 +31,11 @@ class CoffeeExplorerTests(unittest.TestCase):
 				schema = json.loads(path.read_text(encoding="utf-8"))
 				cls.schemas[schema["name"]] = schema
 
+	def assert_single(self, rows):
+		matches = list(rows)
+		self.assertEqual(len(matches), 1, f"Expected exactly one matching sample, found {len(matches)}")
+		return matches[0]
+
 	def assert_document_matches_schema(self, document):
 		schema = self.schemas[document["doctype"]]
 		fields = {f["fieldname"]: f for f in schema["fields"]}
@@ -68,7 +73,7 @@ class CoffeeExplorerTests(unittest.TestCase):
 		self.assertEqual(assets["DEMO-ASSET-LAND"]["doctype"], "Facility Zone")
 		self.assertEqual(assets["DEMO-ASSET-TRELLIS"]["doctype"], "Facility Asset")
 		for kind in ("pulper", "dryer", "huller", "roaster", "packager", "grinder", "brewer"):
-			asset = next(a for a in assets.values() if a["kind"] == kind)
+			asset = self.assert_single(a for a in assets.values() if a["kind"] == kind)
 			self.assertEqual(asset["doctype"], "Machine")
 			self.assertEqual(asset["document"]["code"], asset["name"])
 			self.assertEqual(asset["silhouette"], kind)
@@ -96,11 +101,13 @@ class CoffeeExplorerTests(unittest.TestCase):
 				self.assertIsNone(instruction["sample_evaluations"]["moisture_hold"])
 
 	def test_packaging_charts_keep_baselines_null_gap_and_observed_deltas(self):
-		packager = next(a for a in self.explorer["assets"] if a["kind"] == "packager")
+		packager = self.assert_single(a for a in self.explorer["assets"] if a["kind"] == "packager")
 		self.assertEqual(packager["document"]["ideal_cycle_seconds"], 6)
 		for scenario in self.scenarios:
 			for counter in ("good", "scrap"):
-				signal = next(s for s in packager["signals"] if s["id"] == f"packager-{counter}-counter")
+				signal = self.assert_single(
+					s for s in packager["signals"] if s["id"] == f"packager-{counter}-counter"
+				)
 				points = signal["scenarios"][scenario["id"]]
 				if scenario["id"] == "moisture_hold":
 					self.assertEqual(points, [])
@@ -136,7 +143,9 @@ class CoffeeExplorerTests(unittest.TestCase):
 					)
 					for point in points:
 						self.assertEqual(point["time"], stage["time"])
-						metric = next(m for m in stage["metrics"] if m["label"] == signal["label"])
+						metric = self.assert_single(
+							m for m in stage["metrics"] if m["label"] == signal["label"]
+						)
 						self.assertEqual(point["value"], metric["value"])
 						self.assertEqual(signal["unit"], metric["unit"])
 
@@ -150,11 +159,12 @@ class CoffeeExplorerTests(unittest.TestCase):
 				self.assertIn("not individual machine telemetry", signal["source_note"])
 				self.assertEqual(signal["interpolation"], "none")
 				for scenario in self.scenarios:
-					balance = next((b for b in scenario["mass_balance"] if b["stage"] == stage), None)
+					balances = [b for b in scenario["mass_balance"] if b["stage"] == stage]
 					points = signal["scenarios"][scenario["id"]]
-					if balance is None:
+					if not balances:
 						self.assertEqual(points, [])
 						continue
+					balance = self.assert_single(balances)
 					self.assertEqual([p["time"] for p in points], ["Input", "Product", "Other"])
 					self.assertEqual(
 						[p["value"] for p in points],
@@ -165,7 +175,7 @@ class CoffeeExplorerTests(unittest.TestCase):
 		brewing = [a for a in self.explorer["assets"] if a["kind"] in ("grinder", "brewer")]
 		self.assertEqual(len(brewing), 2)
 		for asset in brewing:
-			balance = next(s for s in asset["signals"] if s["kind"] == "categorical")
+			balance = self.assert_single(s for s in asset["signals"] if s["kind"] == "categorical")
 			self.assertEqual(balance["scenarios"]["normal"][0]["value"], 0.354)
 
 	def test_work_instructions_are_drafts_and_moisture_evaluates_actual_rule(self):
@@ -175,7 +185,9 @@ class CoffeeExplorerTests(unittest.TestCase):
 			for step in instruction["document"]["steps"]:
 				self.assertEqual(validate_template_step(step), [])
 				self.assertFalse(step.get("post_measurement"))
-		drying = next(w for w in self.explorer["work_instructions"] if w["stage_ids"] == ["drying"])
+		drying = self.assert_single(
+			w for w in self.explorer["work_instructions"] if w["stage_ids"] == ["drying"]
+		)
 		self.assertEqual(drying["sample_evaluations"]["normal"]["result"], "Pass")
 		self.assertEqual(drying["sample_evaluations"]["moisture_hold"]["result"], "Fail")
 		self.assertEqual(drying["sample_evaluations"]["moisture_hold"]["value_number"], 13.5)
