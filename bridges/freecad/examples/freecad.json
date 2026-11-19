@@ -1,0 +1,6 @@
+{
+  "freecad_python": "",
+  "allowed_roots": ["C:/cad/documents"],
+  "max_bytes": 209715200,
+  "timeout_seconds": 120
+}

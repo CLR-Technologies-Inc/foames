@@ -43,6 +43,9 @@ jobs:
       - name: BMS gateway
         working-directory: bridges/bms
         run: python -m unittest discover -s tests -v
+      - name: FreeCAD bridge
+        working-directory: bridges/freecad
+        run: python -m unittest discover -s tests -v
 
   agent-skills:
     runs-on: ubuntu-latest
