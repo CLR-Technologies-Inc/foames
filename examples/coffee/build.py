@@ -245,6 +245,7 @@ def _stage_records(hold, metrics, notes):
 			elif i > 6:
 				record.update(
 					status="pending",
+					record_id=None,
 					time=None,
 					metrics=[],
 					note="Not executed: the upstream dry parchment is held.",
@@ -286,8 +287,19 @@ def _scenario_trace(hold, good):
 			node("DEMO-ROAST-01", "roasting", "Cooled roast batch", ["DEMO-GREEN-01"], 138.6, "kg"),
 			node("DEMO-PACK-01", "packaging", "Packaged coffee lot", ["DEMO-ROAST-01"], good, "250 g bags"),
 			node("DEMO-SHIP-01", "packaging", "Cafe receipt", ["DEMO-PACK-01"], 1, "250 g bag"),
-			node("DEMO-BREW-01", "brewing", "Filter brew", ["DEMO-SHIP-01"], 300, "g beverage"),
-			node("DEMO-CUP-01", "delivery", "Delivered cup", ["DEMO-BREW-01"], 1, "cup", "Delivered"),
+			node("DEMO-ORDER-01", "brewing", "Cafe order", [], 1, "cup", "Fulfilled"),
+			node(
+				"DEMO-BREW-01", "brewing", "Filter brew", ["DEMO-SHIP-01", "DEMO-ORDER-01"], 300, "g beverage"
+			),
+			node(
+				"DEMO-CUP-01",
+				"delivery",
+				"Delivered cup",
+				["DEMO-BREW-01", "DEMO-ORDER-01"],
+				1,
+				"cup",
+				"Delivered",
+			),
 		]
 	return trace
 
@@ -399,6 +411,7 @@ def _scenario_events(hold, recall, stages):
 			"activity": ACTIVITIES[i],
 			"timestamp": TIMES[i],
 			"record_id": stages[stage]["record_id"],
+			"related_record_ids": ["DEMO-SHIP-01"] if stage == "packaging" else [],
 		}
 		for i, stage in enumerate(STAGES)
 		if not hold or i < 6
@@ -428,8 +441,8 @@ def _scenario_cup(hold, recall):
 	"""Keep a held journey distinct from a recorded cup and its later review."""
 	if hold:
 		return {
-			"id": "DEMO-CUP-01",
-			"status": "Held",
+			"id": None,
+			"status": "Not reached",
 			"beverage_g": 0,
 			"coffee_dose_g": 0,
 			"tds_percent": None,
@@ -504,7 +517,13 @@ def event_log(scenario):
 				datetime.fromisoformat(e["timestamp"]),
 				resource="Simulated operator",
 				attributes={"simulation": True, "stage": e["stage"]},
-				objects={"record": [e["record_id"], *by_id[e["record_id"]]["parent_ids"]]},
+				objects={
+					"record": [
+						e["record_id"],
+						*by_id[e["record_id"]]["parent_ids"],
+						*e.get("related_record_ids", []),
+					]
+				},
 			)
 			for e in scenario["events"]
 		],
@@ -513,13 +532,17 @@ def event_log(scenario):
 
 
 def coffee_ocel(scenario):
-	"""Keep material genealogy as OCEL 2.0 object relationships, not just co-occurrence."""
+	"""Keep material and order provenance as OCEL 2.0 object relationships."""
 	exported = to_ocel(event_log(scenario))
 	parents = {node["id"]: node["parent_ids"] for node in scenario["trace"]}
 	for obj in exported["objects"]:
 		if obj["type"] == "record":
 			obj["relationships"] = [
-				{"objectId": identity, "qualifier": "derivedFrom"} for identity in parents[obj["id"]]
+				{
+					"objectId": identity,
+					"qualifier": "fulfillsOrder" if identity == "DEMO-ORDER-01" else "derivedFrom",
+				}
+				for identity in parents[obj["id"]]
 			]
 	return exported
 
@@ -529,10 +552,14 @@ def _source_revision():
 	git_executable = shutil.which("git")
 	if git_executable is None:
 		return "source archive"
+	git_executable = str(Path(git_executable).resolve())
 	try:
-		return subprocess.check_output(
-			[str(Path(git_executable).resolve()), "rev-parse", "HEAD"], cwd=ROOT, text=True
+		toplevel = subprocess.check_output(
+			[git_executable, "rev-parse", "--show-toplevel"], cwd=ROOT, text=True
 		).strip()
+		if Path(toplevel).resolve() != ROOT:
+			return "source archive"
+		return subprocess.check_output([git_executable, "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
 	except (subprocess.CalledProcessError, OSError):
 		return "source archive"
 
@@ -571,6 +598,12 @@ def build(destination):
 	if destination in {ROOT, HERE, HERE / "web"}:
 		raise ValueError("Choose a separate output directory")
 	data = build_data()
+	output_names = ["index.html", "app.js", "styles.css", "data.json"]
+	output_names.extend(f"{scenario['id']}.ocel.json" for scenario in data["scenarios"])
+	# Check every artifact before writing any: even a late export may redirect outside the build.
+	for name in output_names:
+		if (destination / name).is_symlink():
+			raise ValueError(f"Build output must not be a symlink: {name}")
 	destination.mkdir(parents=True, exist_ok=True)
 	for name in ("index.html", "app.js", "styles.css"):
 		shutil.copyfile(HERE / "web" / name, destination / name)

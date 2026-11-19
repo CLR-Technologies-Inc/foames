@@ -5,7 +5,7 @@
 
 (() => {
 	const $ = (id) => document.getElementById(id);
-	const state = { data: null, scenario: null, stage: 0, trace: null };
+	const state = { data: null, scenario: null, stage: 0, trace: null, ocelRequest: 0 };
 	const number = new Intl.NumberFormat("en", { maximumFractionDigits: 2 });
 	const shortTitles = {
 		land: "Land & soil",
@@ -215,21 +215,26 @@
 			})
 		);
 	}
-	function chooseTrace(id) {
+	function chooseTrace(id, focus = false) {
 		state.trace = id;
 		$("trace-select").value = id;
 		renderTrace();
+		if (focus) $("trace-selected-title").focus({ preventScroll: true });
 	}
 	function renderCup() {
 		const cup = state.scenario.cup || {};
-		$("cup-id").textContent = cup.id || "No cup created";
-		badge($("cup-status"), cup.status || "Not reached");
-		const values = [
-			["Beverage", cup.beverage_g, "g"],
-			["Coffee dose", cup.coffee_dose_g, "g"],
-			["Dissolved solids (TDS)", cup.tds_percent, "%"],
-			["Extraction yield", cup.extraction_percent, "%"],
-		];
+		const trace = state.scenario.trace || [];
+		const cupRecord = trace.find((record) => record.id === cup.id);
+		$("cup-id").textContent = cupRecord ? cup.id : "No cup created";
+		badge($("cup-status"), cupRecord ? cup.status : "Not reached");
+		const values = cupRecord
+			? [
+					["Beverage", cup.beverage_g, "g"],
+					["Coffee dose", cup.coffee_dose_g, "g"],
+					["Dissolved solids (TDS)", cup.tds_percent, "%"],
+					["Extraction yield", cup.extraction_percent, "%"],
+			  ]
+			: [];
 		$("cup-metrics").replaceChildren(
 			...values.map(([label, value, unit]) => {
 				const row = element("div");
@@ -237,10 +242,11 @@
 				return row;
 			})
 		);
-		$("cup-handoff").textContent = cup.handoff_at
+		$("cup-handoff").textContent = !cupRecord
+			? "The journey stopped before brewing. No cup was produced or delivered."
+			: cup.handoff_at
 			? `Recorded handoff: ${date(cup.handoff_at)}`
 			: "No completed handoff event. This cup has not been delivered in this scenario.";
-		const trace = state.scenario.trace || [];
 		const affected = new Set(state.scenario.recall_affected_ids || []);
 		const reviewRecords = trace.filter((record) => affected.has(record.id));
 		$("recall-review").hidden = reviewRecords.length === 0;
@@ -261,7 +267,6 @@
 				return option;
 			})
 		);
-		const cupRecord = trace.find((record) => record.id === cup.id);
 		$("trace-cup").disabled = !cupRecord;
 		$("trace-cup").textContent = cupRecord ? "Trace this cup ↑" : "No cup to trace";
 		$("all-records").replaceChildren(
@@ -287,6 +292,16 @@
 			for (const parent of record.parent_ids || []) visit(parent);
 		}
 		visit(state.trace);
+		let selectedTitle = $("trace-selected-title");
+		if (!selectedTitle) {
+			selectedTitle = element("h3", null, "trace-selected-title");
+			selectedTitle.id = "trace-selected-title";
+			selectedTitle.tabIndex = -1;
+			$("trace-chain").before(selectedTitle);
+		}
+		selectedTitle.textContent = chain.length
+			? `${chain[0].label} · ${chain[0].id}`
+			: "No selected record";
 		$("trace-caption").textContent = chain.length
 			? `${chain.length} connected records, from selected record back to origin. Quantities at different stages represent different materials.`
 			: "No traceable material record exists yet in this scenario.";
@@ -325,7 +340,7 @@
 					for (const parent of record.parent_ids) {
 						const link = element("button", parent);
 						link.type = "button";
-						link.addEventListener("click", () => chooseTrace(parent));
+						link.addEventListener("click", () => chooseTrace(parent, true));
 						links.append(link);
 					}
 					body.append(links);
@@ -413,12 +428,15 @@
 			);
 	}
 	function selectScenario(id) {
+		state.ocelRequest += 1;
 		state.scenario =
 			state.data.scenarios.find((scenario) => scenario.id === id) || state.data.scenarios[0];
 		$("scenario").value = state.scenario.id;
 		$("scenario-summary").textContent = state.scenario.summary;
 		$("download-ocel").href = `./${encodeURIComponent(state.scenario.id)}.ocel.json`;
 		$("download-ocel").setAttribute("download", `${state.scenario.id}.ocel.json`);
+		$("download-ocel").textContent = "Download OCEL event log ↓";
+		$("download-ocel").removeAttribute("aria-busy");
 		renderStage();
 		renderOperations();
 		renderCup();
@@ -450,15 +468,22 @@
 	async function downloadOCEL(event) {
 		event.preventDefault();
 		const scenarioId = state.scenario.id;
+		const request = ++state.ocelRequest;
 		const control = $("download-ocel");
 		control.textContent = "Preparing event log…";
+		control.setAttribute("aria-busy", "true");
 		try {
 			const response = await fetch(`./${encodeURIComponent(scenarioId)}.ocel.json`);
 			if (!response.ok) throw new Error("Event log unavailable");
-			downloadFile(await response.json(), `foames-coffee-${scenarioId}.ocel.json`);
+			const eventLog = await response.json();
+			if (request !== state.ocelRequest) return;
+			downloadFile(eventLog, `foames-coffee-${scenarioId}.ocel.json`);
 			control.textContent = "Download OCEL event log ↓";
 		} catch {
-			control.textContent = "Download failed. Try again ↓";
+			if (request === state.ocelRequest)
+				control.textContent = "Download failed. Try again ↓";
+		} finally {
+			if (request === state.ocelRequest) control.removeAttribute("aria-busy");
 		}
 	}
 	async function load() {

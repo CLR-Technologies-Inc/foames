@@ -6,7 +6,9 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
+import build as coffee_builder
 from build import (
 	STAGES,
 	build,
@@ -35,6 +37,8 @@ class CoffeeAcceptanceTests(unittest.TestCase):
 
 	def test_hold_does_not_invent_downstream_production_or_delivery(self):
 		scenario = make_scenario("moisture_hold")
+		self.assertIsNone(scenario["cup"]["id"])
+		self.assertEqual(scenario["cup"]["status"], "Not reached")
 		self.assertIsNone(scenario["cup"]["handoff_at"])
 		self.assertEqual(scenario["cup"]["beverage_g"], 0)
 		self.assertEqual(scenario["oee"]["good_count"], 0)
@@ -43,6 +47,7 @@ class CoffeeAcceptanceTests(unittest.TestCase):
 		self.assertEqual(scenario["events"][-1]["activity"], "Hold parchment after moisture sample")
 		for stage in STAGES[7:]:
 			self.assertEqual(scenario["stages"][stage]["status"], "pending")
+			self.assertIsNone(scenario["stages"][stage]["record_id"])
 			self.assertEqual(scenario["stages"][stage]["metrics"], [])
 			self.assertIsNone(scenario["stages"][stage]["time"])
 
@@ -108,17 +113,108 @@ class CoffeeAcceptanceTests(unittest.TestCase):
 			self.assertIn("DEMO-SEED-01", [o["id"] for o in exported["objects"]])
 
 	def test_downloaded_ocel_preserves_complete_material_genealogy(self):
+		with tempfile.TemporaryDirectory() as folder:
+			data = build(folder)
+			for scenario in data["scenarios"]:
+				with self.subTest(kind=scenario["id"]):
+					exported = json.loads(
+						(Path(folder) / f"{scenario['id']}.ocel.json").read_text(encoding="utf-8")
+					)
+					restored = from_ocel(exported)
+					expected = event_log(scenario)
+					self.assertEqual([e.activity for e in restored], [e.activity for e in expected])
+					self.assertEqual([e.timestamp for e in restored], [e.timestamp for e in expected])
+					objects = {o["id"]: o for o in exported["objects"] if o["type"] == "record"}
+					self.assertEqual(set(objects), {n["id"] for n in scenario["trace"]})
+					for record in scenario["trace"]:
+						self.assertEqual(
+							{r["objectId"] for r in objects[record["id"]]["relationships"]},
+							set(record["parent_ids"]),
+						)
+					if scenario["id"] == "moisture_hold":
+						self.assertEqual(len(objects), 8)
+						self.assertFalse(
+							{"DEMO-GREEN-01", "DEMO-BREW-01", "DEMO-CUP-01", "DEMO-ORDER-01"} & objects.keys()
+						)
+						continue
+					pending, reached = ["DEMO-CUP-01"], set()
+					while pending:
+						identity = pending.pop()
+						if identity not in reached:
+							reached.add(identity)
+							pending.extend(r["objectId"] for r in objects[identity]["relationships"])
+					self.assertEqual(reached, set(objects))
+					self.assertEqual(len(reached), 15)
+
+	def test_receipt_and_order_are_attached_to_their_recorded_activities(self):
 		for kind in ("normal", "network_gap", "recall"):
-			exported = coffee_ocel(make_scenario(kind))
-			objects = {o["id"]: o for o in exported["objects"]}
-			pending, reached = ["DEMO-CUP-01"], set()
-			while pending:
-				identity = pending.pop()
-				if identity not in reached:
-					reached.add(identity)
-					pending.extend(r["objectId"] for r in objects[identity].get("relationships", []))
-			self.assertTrue({"DEMO-SEED-01", "DEMO-PLOT-01", "DEMO-PACK-01"} <= reached)
-			self.assertEqual(len(reached), 14)
+			with self.subTest(kind=kind):
+				exported = coffee_ocel(make_scenario(kind))
+				events = {e["type"]: {r["objectId"] for r in e["relationships"]} for e in exported["events"]}
+				self.assertIn("DEMO-SHIP-01", events["Release packages and receive at cafe"])
+				self.assertIn("DEMO-ORDER-01", events["Complete filter brew"])
+				self.assertIn("DEMO-ORDER-01", events["Confirm cup handoff"])
+				objects = {o["id"]: o for o in exported["objects"]}
+				self.assertEqual(objects["DEMO-ORDER-01"]["relationships"], [])
+				for identity in ("DEMO-BREW-01", "DEMO-CUP-01"):
+					self.assertIn(
+						{"objectId": "DEMO-ORDER-01", "qualifier": "fulfillsOrder"},
+						objects[identity]["relationships"],
+					)
+				self.assertIn(
+					{"objectId": "DEMO-SHIP-01", "qualifier": "derivedFrom"},
+					objects["DEMO-BREW-01"]["relationships"],
+				)
+
+	def test_nested_source_archive_does_not_report_its_enclosing_repositories_revision(self):
+		revision = coffee_builder._source_revision()
+		if revision == "source archive":
+			self.skipTest("A Git checkout is required to exercise nested source archives")
+		self.assertRegex(revision, r"^[0-9a-f]{40,64}$")
+		with tempfile.TemporaryDirectory(dir=coffee_builder.ROOT) as archive:
+			with patch.object(coffee_builder, "ROOT", Path(archive).resolve()):
+				self.assertEqual(coffee_builder._source_revision(), "source archive")
+
+	def test_source_archive_without_git_still_builds(self):
+		with patch.object(coffee_builder.shutil, "which", return_value=None):
+			with tempfile.TemporaryDirectory() as folder:
+				self.assertEqual(build(folder)["engine"]["revision"], "source archive")
+
+	def test_output_symlinks_are_rejected_before_any_artifact_is_written(self):
+		names = (
+			"index.html",
+			"app.js",
+			"styles.css",
+			"data.json",
+			"normal.ocel.json",
+			"moisture_hold.ocel.json",
+			"network_gap.ocel.json",
+			"recall.ocel.json",
+		)
+		with tempfile.TemporaryDirectory() as folder:
+			root = Path(folder)
+			target = root / "unrelated.txt"
+			target.write_text("Preserve this unrelated file", encoding="utf-8")
+			probe = root / "symlink-probe"
+			try:
+				probe.symlink_to(target)
+			except OSError as exc:
+				if getattr(exc, "winerror", None) == 1314:
+					self.skipTest("Windows does not grant this process native symlink creation privilege")
+				raise
+			probe.unlink()
+			for dangling in (False, True):
+				for index, name in enumerate(names):
+					with self.subTest(name=name, dangling=dangling):
+						output = root / f"output-{dangling}-{index}"
+						output.mkdir()
+						link_target = root / "absent.txt" if dangling else target
+						(output / name).symlink_to(link_target)
+						with self.assertRaisesRegex(ValueError, "must not be a symlink"):
+							build(output)
+						self.assertEqual(target.read_text(encoding="utf-8"), "Preserve this unrelated file")
+						self.assertFalse((root / "absent.txt").exists())
+						self.assertEqual({p.name for p in output.iterdir()}, {name})
 
 	def test_catalog_and_portable_build(self):
 		data = build_data()
