@@ -30,6 +30,7 @@ They are adoption files for agents that set FoaMES up at a plant. Each skill is 
 | SAP S/4HANA | ERP | [s4hana/SKILL.md](s4hana/SKILL.md) | `foames-discover-s4hana` |
 | SAP Digital Manufacturing | MES / MOM | [sap_dmc/SKILL.md](sap_dmc/SKILL.md) | `foames-discover-sap-dmc` |
 | Tulip | MES / MOM | [tulip/SKILL.md](tulip/SKILL.md) | `foames-discover-tulip` |
+| WireGuard | Native VPN topology | [wireguard/SKILL.md](wireguard/SKILL.md) | `foames-discover-wireguard` |
 
 There is one skill per vendor folder under [docs/vendors/](../../vendors/README.md), named the same way.
 

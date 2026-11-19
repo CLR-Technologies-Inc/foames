@@ -6,6 +6,32 @@
 	],
 	"components": [
 		{
+			"bom-ref": "component:wireguard-tools",
+			"type": "application",
+			"name": "wireguard-tools",
+			"description": "Optional external command installed by the operating system. The native WireGuard topology collector invokes selected non-secret wg show fields to observe existing interfaces and peers. FoaMES does not bundle WireGuard source or binaries, implement its tunnel cryptography, or read private or preshared keys.",
+			"scope": "optional",
+			"licenses": [
+				{
+					"license": {
+						"id": "GPL-2.0-only"
+					}
+				}
+			],
+			"externalReferences": [
+				{
+					"type": "vcs",
+					"url": "https://git.zx2c4.com/wireguard-tools/"
+				}
+			],
+			"properties": [
+				{
+					"name": "foames:sourceLocation",
+					"value": "bridges/topology/foames_topology_collectors/wireguard.py"
+				}
+			]
+		},
+		{
 			"bom-ref": "pkg:github/frappe/erpnext",
 			"type": "application",
 			"name": "erpnext",
@@ -72,7 +98,7 @@
 			"bom-ref": "crypto:algorithm:sha-256",
 			"type": "cryptographic-asset",
 			"name": "SHA-256",
-			"description": "Derives identifiers, not secrets: External Reference keys and the document markers that make ERPNext, S/4HANA, Insights Hub and other MES postings idempotent. Also the hash inside HMAC-SHA256.",
+			"description": "Derives identifiers, not secrets: External Reference keys, native WireGuard topology observation ids, and the document markers that make ERPNext, S/4HANA, Insights Hub and other MES postings idempotent. Also the hash inside HMAC-SHA256.",
 			"cryptoProperties": {
 				"assetType": "algorithm",
 				"oid": "2.16.840.1.101.3.4.2.1",
@@ -107,6 +133,10 @@
 				{
 					"name": "foames:crypto:sourceLocation",
 					"value": "foames/foames_adapters/mes/outbox.py"
+				},
+				{
+					"name": "foames:crypto:sourceLocation",
+					"value": "bridges/topology/foames_topology_collectors/wireguard.py"
 				},
 				{
 					"name": "foames:crypto:implementation",

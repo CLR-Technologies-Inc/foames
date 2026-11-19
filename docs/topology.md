@@ -50,9 +50,9 @@ Anything the sync wrote before and no longer finds is **retired** (disabled, sta
 deleted. A link or binding someone else made that still points at it shows up as drift.
 
 **Collectors** add what FoaMES cannot see itself. They post a report to
-`foames.foames_topology.api.ingest` (see below). Two optional ones ship in
-[bridges/topology](../bridges/topology/README.md): a network collector for hosts on a Tailscale
-tailnet, and an agent-event collector for AI agent activity read from a JSON Lines log. Other apps
+`foames.foames_topology.api.ingest` (see below). Optional collectors ship in
+[bridges/topology](../bridges/topology/README.md) for network hosts, native VPN interfaces and
+peers ([deployment guide](vendors/wireguard/README.md)), and AI agent activity read from a JSON Lines log. Other apps
 can register their own with the `foames_topology_collectors` hook.
 
 ## Isolation: tenants and providers

@@ -1,0 +1,1 @@
+Native WireGuard can be used alongside the existing connectivity options, with a read-only topology collector for interfaces, peer handshake observations and transfer counters, plus deployment guidance for gateways and bridges.

@@ -55,6 +55,7 @@ These ship in the app today. They are **alpha**: built against the vendors' publ
 | Körber Werum PAS-X MES | MES (REST profile) | [docs/vendors/koerber_pasx/](docs/vendors/koerber_pasx/README.md) |
 | Proficy Smart Factory MES (Velotic) | MES (REST profile) | [docs/vendors/proficy/](docs/vendors/proficy/README.md) |
 | Ignition (Inductive Automation) | SCADA, through Sparkplug B, OPC UA or a gateway script | [docs/vendors/ignition/](docs/vendors/ignition/README.md) |
+| WireGuard | Native VPN transport with a read-only topology collector outside the app | [docs/vendors/wireguard/](docs/vendors/wireguard/README.md) |
 | Bluesky and Tiled (NSLS-II) | Lab and beamline data acquisition, through a bridge outside the app | [docs/vendors/bluesky/](docs/vendors/bluesky/README.md) |
 | Process historians: AVEVA PI (PI Web API), InfluxDB, Ignition Tag Historian, TimescaleDB and SQL historians | Historian, read-only, through a bridge outside the app | [docs/vendors/historian/](docs/vendors/historian/README.md) |
 | Building automation (BMS / BAS) controllers and meters over BACnet/IP and Modbus TCP | Building management, read-only, through a gateway outside the app | [docs/building-management.md](docs/building-management.md) |
