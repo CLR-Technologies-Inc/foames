@@ -507,5 +507,5 @@
 	$("download-json").addEventListener("click", downloadJSON);
 	$("download-ocel").addEventListener("click", downloadOCEL);
 	$("retry").addEventListener("click", load);
-	load();
+	void load();
 })();

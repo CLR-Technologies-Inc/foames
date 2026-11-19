@@ -68,7 +68,7 @@ class CoffeeAcceptanceTests(unittest.TestCase):
 				self.assertAlmostEqual(flow["input_kg"], flow["output_kg"] + flow["other_kg"])
 				self.assertGreaterEqual(flow["other_kg"], 0)
 			if kind != "moisture_hold":
-				pack = next(row for row in scenario["mass_balance"] if row["stage"] == "packaging")
+				pack = {row["stage"]: row for row in scenario["mass_balance"]}["packaging"]
 				self.assertAlmostEqual(sum(pack["other_streams_kg"].values()), pack["other_kg"])
 				self.assertAlmostEqual(
 					pack["other_streams_kg"]["rejected_packages"], scenario["oee"]["scrap_count"] * 0.25

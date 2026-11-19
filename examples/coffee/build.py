@@ -137,14 +137,8 @@ def validate_trace(nodes):
 		visit(identity)
 
 
-def make_scenario(kind="normal"):
-	if kind not in {"normal", "moisture_hold", "network_gap", "recall"}:
-		raise ValueError("Unknown scenario")
-	hold = kind == "moisture_hold"
-	gap = kind == "network_gap"
-	recall = kind == "recall"
-	good = 0 if hold else 450 if gap else 550
-	scrap = 0 if hold else 4
+def _packaging_oee(hold, gap, good, scrap):
+	"""Compute the packaging window from state intervals and running counters."""
 	intervals = (
 		[]
 		if hold
@@ -165,7 +159,12 @@ def make_scenario(kind="normal"):
 	totals = {key: counter_delta(None, vals[0]) + counter_delta(*vals) for key, vals in readings.items()}
 	oee = asdict(compute_oee(ledger, totals["good"], totals["scrap"], 6))
 	oee["coverage"] = ledger.coverage
-	metrics = [
+	return readings, oee
+
+
+def _scenario_metrics(hold, gap, good, scrap):
+	"""Explicit teaching measurements, in the same order as the journey stages."""
+	return [
 		[metric("Plot", "DEMO-PLOT-01"), metric("Soil review", "Approved"), metric("Area", 1, "ha")],
 		[
 			metric("Seeds sown", 1200, "seeds"),
@@ -209,7 +208,11 @@ def make_scenario(kind="normal"):
 		],
 		[metric("Order", "DEMO-ORDER-01"), metric("Handoff", "Recorded at 09:05 HST")],
 	]
-	notes = [
+
+
+def _stage_notes():
+	"""Explain the assumptions behind each stage without implying real operations."""
+	return [
 		"A fictional plot and soil review establish provenance. No location or soil measurement describes a real farm.",
 		"Seed lot DEMO-SEED-01 becomes a nursery cohort. Plant counts are not coffee mass.",
 		"The producer-described method is attributed; the independent paper is pending. No yield benefit is assumed.",
@@ -223,15 +226,35 @@ def make_scenario(kind="normal"):
 		"A 250 g bag supplies an 18 g dose, leaving 232 g. 18 g coffee + 336 g water becomes 300 g beverage and 54 g wet grounds / retained water / evaporation.",
 		"Only an explicit simulated handoff event marks the cup delivered. Delivery is not inferred from brewing or elapsed time.",
 	]
+
+
+def _stage_records(hold, metrics, notes):
+	"""Create stage observations and leave held downstream work unexecuted."""
 	stages = {}
 	for i, stage in enumerate(STAGES):
-		stages[stage] = {
-			"status": "pending" if hold and i > 6 else "held" if hold and i == 6 else "complete",
+		record = {
+			"status": "complete",
 			"record_id": RECORD_IDS[i],
-			"time": None if hold and i > 6 else TIMES[i],
-			"metrics": [] if hold and i > 6 else metrics[i],
-			"note": "Not executed: the upstream dry parchment is held." if hold and i > 6 else notes[i],
+			"time": TIMES[i],
+			"metrics": metrics[i],
+			"note": notes[i],
 		}
+		if hold:
+			if i == 6:
+				record["status"] = "held"
+			elif i > 6:
+				record.update(
+					status="pending",
+					time=None,
+					metrics=[],
+					note="Not executed: the upstream dry parchment is held.",
+				)
+		stages[stage] = record
+	return stages
+
+
+def _scenario_trace(hold, good):
+	"""Build only genealogy records supported by the selected scenario."""
 	trace = [
 		node("DEMO-PLOT-01", "land", "Approved land plot", [], 1, "ha"),
 		node("DEMO-SEED-01", "nursery", "Seed lot", [], 1200, "seeds"),
@@ -266,6 +289,11 @@ def make_scenario(kind="normal"):
 			node("DEMO-BREW-01", "brewing", "Filter brew", ["DEMO-SHIP-01"], 300, "g beverage"),
 			node("DEMO-CUP-01", "delivery", "Delivered cup", ["DEMO-BREW-01"], 1, "cup", "Delivered"),
 		]
+	return trace
+
+
+def _scenario_suggestions(hold, gap, recall, stages):
+	"""Attach review evidence while preserving observed history."""
 	suggestions = []
 	if hold:
 		stages["drying"]["note"] = (
@@ -303,6 +331,11 @@ def make_scenario(kind="normal"):
 				"action": "Review inventory, cafe receipt and delivered cup. This demo does not notify customers or reverse history.",
 			}
 		)
+	return suggestions
+
+
+def _mass_balances(hold, gap, good, scrap):
+	"""Keep each material transformation and its named nonproduct streams explicit."""
 	balances = [
 		{
 			"stage": "processing",
@@ -355,6 +388,11 @@ def make_scenario(kind="normal"):
 				"other_label": "Wet grounds, retained water and evaporation; includes 336 g added water",
 			},
 		]
+	return balances
+
+
+def _scenario_events(hold, recall, stages):
+	"""Record completed activities, including the hold or later package concern."""
 	events = [
 		{
 			"stage": stage,
@@ -383,6 +421,48 @@ def make_scenario(kind="normal"):
 				"record_id": "DEMO-PACK-01",
 			}
 		)
+	return events
+
+
+def _scenario_cup(hold, recall):
+	"""Keep a held journey distinct from a recorded cup and its later review."""
+	if hold:
+		return {
+			"id": "DEMO-CUP-01",
+			"status": "Held",
+			"beverage_g": 0,
+			"coffee_dose_g": 0,
+			"tds_percent": None,
+			"extraction_percent": None,
+			"handoff_at": None,
+		}
+	return {
+		"id": "DEMO-CUP-01",
+		"status": "Recall review" if recall else "Delivered",
+		"beverage_g": 300,
+		"coffee_dose_g": 18,
+		"tds_percent": 1.2,
+		"extraction_percent": 300 * (1.2 / 100) / 18 * 100,
+		"handoff_at": TIMES[-1],
+	}
+
+
+def make_scenario(kind="normal"):
+	good_counts = {"normal": 550, "moisture_hold": 0, "network_gap": 450, "recall": 550}
+	if kind not in good_counts:
+		raise ValueError("Unknown scenario")
+	hold = kind == "moisture_hold"
+	gap = kind == "network_gap"
+	recall = kind == "recall"
+	good = good_counts[kind]
+	scrap = 0 if hold else 4
+	readings, oee = _packaging_oee(hold, gap, good, scrap)
+	metrics = _scenario_metrics(hold, gap, good, scrap)
+	stages = _stage_records(hold, metrics, _stage_notes())
+	trace = _scenario_trace(hold, good)
+	suggestions = _scenario_suggestions(hold, gap, recall, stages)
+	balances = _mass_balances(hold, gap, good, scrap)
+	events = _scenario_events(hold, recall, stages)
 	titles = {
 		"normal": "Seed to delivered cup",
 		"moisture_hold": "Moisture hold",
@@ -407,15 +487,7 @@ def make_scenario(kind="normal"):
 		"mass_balance": balances,
 		"suggestions": suggestions,
 		"recall_affected_ids": descendants(trace, "DEMO-PACK-01") if recall else [],
-		"cup": {
-			"id": "DEMO-CUP-01",
-			"status": "Held" if hold else "Recall review" if recall else "Delivered",
-			"beverage_g": 0 if hold else 300,
-			"coffee_dose_g": 0 if hold else 18,
-			"tds_percent": None if hold else 1.2,
-			"extraction_percent": None if hold else 300 * (1.2 / 100) / 18 * 100,
-			"handoff_at": None if hold else TIMES[-1],
-		},
+		"cup": _scenario_cup(hold, recall),
 	}
 	result["process_graph"] = discover_dfg(event_log(result)).to_dict()
 	validate_trace(trace)
@@ -452,6 +524,19 @@ def coffee_ocel(scenario):
 	return exported
 
 
+def _source_revision():
+	"""Read revision metadata when Git is available, including source archives."""
+	git_executable = shutil.which("git")
+	if git_executable is None:
+		return "source archive"
+	try:
+		return subprocess.check_output(
+			[str(Path(git_executable).resolve()), "rev-parse", "HEAD"], cwd=ROOT, text=True
+		).strip()
+	except (subprocess.CalledProcessError, OSError):
+		return "source archive"
+
+
 def build_data():
 	catalog = json.loads((HERE / "catalog.json").read_text(encoding="utf-8"))
 	if tuple(s["id"] for s in catalog["stages"]) != STAGES:
@@ -460,10 +545,7 @@ def build_data():
 	for stage in catalog["stages"]:
 		if not set(stage["source_ids"]) <= sources:
 			raise ValueError(f"Unknown source for {stage['id']}")
-	try:
-		revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
-	except (subprocess.CalledProcessError, OSError):
-		revision = "source archive"
+	revision = _source_revision()
 	data = copy.deepcopy(catalog)
 	data.update(
 		{
@@ -486,7 +568,7 @@ def build_data():
 def build(destination):
 	destination = Path(destination).resolve()
 	# Never overwrite the hand-authored web source or repository checkout.
-	if destination == ROOT or destination == HERE or destination == HERE / "web":
+	if destination in {ROOT, HERE, HERE / "web"}:
 		raise ValueError("Choose a separate output directory")
 	data = build_data()
 	destination.mkdir(parents=True, exist_ok=True)
