@@ -219,6 +219,20 @@
       "vendor": "DEXPI",
       "url": "https://dexpi.org/specifications/",
       "mode": "fetch"
+    },
+    {
+      "id": "onshape-api-limits",
+      "vendor": "Onshape",
+      "url": "https://onshape-public.github.io/docs/auth/limits/",
+      "mode": "manual",
+      "reason": "Documentation site; terms of use must be read by a person before relying on API quota terms"
+    },
+    {
+      "id": "onshape-terms-of-use",
+      "vendor": "Onshape",
+      "url": "https://www.onshape.com/en/terms",
+      "mode": "manual",
+      "reason": "Website terms; a person must confirm what they say about API use and redistribution"
     }
   ]
 }
