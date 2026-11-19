@@ -86,7 +86,8 @@ class TestUsageParsers(unittest.TestCase):
 
 
 class TestScoring(unittest.TestCase):
-	def graded(self, functional=1.0, invariant=1.0, regression=1.0):
+	@staticmethod
+	def graded(functional=1.0, invariant=1.0, regression=1.0):
 		return {
 			"hidden": {"functional": {"pass_rate": functional}, "invariant": {"pass_rate": invariant}},
 			"regression": {"pass_rate": regression},
@@ -384,7 +385,8 @@ if __name__ == "__main__":
 class TestTaskFamilies(unittest.TestCase):
 	"""Tasks that share a family folder (tasks/_<family>/), such as the sector case studies."""
 
-	def sectors(self):
+	@staticmethod
+	def sectors():
 		return [t for t in tasks.all_tasks() if t.family == "sector-case-study"]
 
 	def test_a_family_task_gets_the_family_prompt_and_rubric(self):

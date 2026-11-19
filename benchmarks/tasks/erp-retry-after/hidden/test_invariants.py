@@ -31,7 +31,8 @@ class TestNoDuplicatePostings(unittest.TestCase):
 			self.operation, {"OrderID": "1000123", "ConfirmationYieldQuantity": "40"}, "conf-1"
 		)
 
-	def posts(self, fake):
+	@staticmethod
+	def posts(fake):
 		return [r for r in fake.requests if r["method"] == "POST"]
 
 	def test_gateway_timeout_then_retry_posts_once(self):

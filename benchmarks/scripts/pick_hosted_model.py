@@ -255,7 +255,9 @@ def main(argv=None):
 	ap.add_argument("--notes", type=Path, default=Path("notes"))
 	opts = ap.parse_args(argv)
 	doc = json.loads(opts.agents.read_text(encoding="utf-8"))  # NOSONAR -- --agents is the operator's path
-	agent = next(a for a in doc["agents"] if a["name"] == opts.agent)
+	agent = next((a for a in doc["agents"] if a["name"] == opts.agent), None)
+	if agent is None:
+		raise SystemExit(f"no agent named {opts.agent!r} in {opts.agents}")
 	if not agent.get("_model_candidates"):
 		return
 	agent["model"] = pick(agent, opts.notes)

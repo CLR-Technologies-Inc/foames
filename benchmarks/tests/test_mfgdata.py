@@ -178,7 +178,8 @@ class TestFetch(unittest.TestCase):
 		self.addCleanup(self.tmp.cleanup)
 		self.m = mfgdata.load_manifest()
 
-	def zenodo(self, license_id="cc-by-4.0", data=b"timestamp,session,phase\n", checksum=None):
+	@staticmethod
+	def zenodo(license_id="cc-by-4.0", data=b"timestamp,session,phase\n", checksum=None):
 		md5 = checksum or "md5:" + hashlib.md5(data).hexdigest()
 		record = {
 			"doi": "10.5281/zenodo.0",
@@ -324,7 +325,8 @@ class TestArchiveWrites(unittest.TestCase):
 			)
 		self.assertEqual(self.snapshot(), before)
 
-	def zenodo_files(self, payloads, *, invalid_checksum=False):
+	@staticmethod
+	def zenodo_files(payloads, *, invalid_checksum=False):
 		ds = {
 			"id": "multi-file",
 			"title": "Multi-file fixture",
