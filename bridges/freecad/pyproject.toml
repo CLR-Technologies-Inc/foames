@@ -1,0 +1,19 @@
+[project]
+name = "foames-freecad"
+description = "Read-only bridge that inspects FreeCAD documents for FoaMES without FreeCAD in the Frappe runtime"
+authors = [{ name = "CLR Technologies Inc." }]
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+readme = "README.md"
+classifiers = ["License :: OSI Approved :: Apache Software License"]
+dynamic = ["version"]
+# The bridge itself is standard library only; FreeCAD is reached through a separate
+# FreeCAD Python runtime the operator installs, never imported here.
+dependencies = []
+
+[project.scripts]
+foames-freecad = "foames_freecad.__main__:main"
+
+[build-system]
+requires = ["flit_core >=3.4,<5"]
+build-backend = "flit_core.buildapi"

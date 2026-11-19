@@ -219,6 +219,12 @@
       "vendor": "DEXPI",
       "url": "https://dexpi.org/specifications/",
       "mode": "fetch"
+    },
+    {
+      "id": "freecad-license",
+      "vendor": "FreeCAD",
+      "url": "https://raw.githubusercontent.com/FreeCAD/FreeCAD/main/LICENSE",
+      "mode": "fetch"
     }
   ]
 }
