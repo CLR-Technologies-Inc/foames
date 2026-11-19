@@ -183,7 +183,8 @@ class TestWireGuardReport(unittest.TestCase):
 
 
 class TestWireGuardRead(unittest.TestCase):
-	def outputs(self):
+	@staticmethod
+	def outputs():
 		return {
 			("interfaces",): "wg0 wg1\n",
 			("wg0", "endpoints"): f"{KEY}\t[2001:db8::1]:51820\n{KEY2}\t(none)\n",
@@ -222,25 +223,33 @@ class TestWireGuardRead(unittest.TestCase):
 			subprocess.CalledProcessError(1, "wg", stderr="sensitive-detail"),
 			subprocess.TimeoutExpired("wg", 10, output="sensitive-detail"),
 		):
-			with patch.object(wireguard.subprocess, "run", side_effect=error):
-				with self.assertRaises(wireguard.StatusError) as caught:
-					wireguard.read_status()
+			with (
+				patch.object(wireguard.subprocess, "run", side_effect=error),
+				self.assertRaises(wireguard.StatusError) as caught,
+			):
+				wireguard.read_status()
 			self.assertNotIn("sensitive-detail", str(caught.exception))
 
 	def test_stderr_alongside_success_is_refused(self):
-		with patch.object(
-			wireguard.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, "wg0", "failure")
+		with (
+			patch.object(
+				wireguard.subprocess,
+				"run",
+				return_value=subprocess.CompletedProcess([], 0, "wg0", "failure"),
+			),
+			self.assertRaises(wireguard.StatusError),
 		):
-			with self.assertRaises(wireguard.StatusError):
-				wireguard.read_status()
+			wireguard.read_status()
 
 	def test_peer_changes_and_malformed_rows_are_refused(self):
 		for value in ("", f"{KEY}\t1\n", f"{KEY}\t1\t2\n{KEY}\t1\t2\n"):
 			outputs = self.outputs()
 			outputs[("wg0", "transfer")] = value
-			with patch.object(wireguard, "_show", side_effect=lambda *args: outputs[args]):
-				with self.assertRaises(wireguard.StatusError):
-					wireguard.read_status()
+			with (
+				patch.object(wireguard, "_show", side_effect=lambda *args: outputs[args]),
+				self.assertRaises(wireguard.StatusError),
+			):
+				wireguard.read_status()
 
 	def test_interface_changes_are_refused(self):
 		outputs = self.outputs()
@@ -279,9 +288,12 @@ class TestWireGuardCli(unittest.TestCase):
 
 	def test_invalid_options_fail_before_reading(self):
 		for args in (["--handshake-max-age", "0"], ["--snapshot", "--url", "https://foames.example.com"]):
-			with patch.object(wireguard, "read_status") as read, redirect_stderr(io.StringIO()):
-				with self.assertRaises(SystemExit):
-					cli.main([*self.args, *args])
+			with (
+				patch.object(wireguard, "read_status") as read,
+				redirect_stderr(io.StringIO()),
+				self.assertRaises(SystemExit),
+			):
+				cli.main([*self.args, *args])
 			read.assert_not_called()
 
 	def test_snapshot_and_dry_run_as_real_cli_processes(self):
@@ -332,6 +344,7 @@ class TestWireGuardCli(unittest.TestCase):
 				self.wfile.write(b'{"message":{"inserted":2}}')
 
 			def log_message(self, *args):
+				# silenced: request logs are noise in tests
 				pass
 
 		with HTTPServer(("127.0.0.1", 0), Handler) as server:
