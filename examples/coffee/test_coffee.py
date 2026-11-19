@@ -171,14 +171,18 @@ class CoffeeAcceptanceTests(unittest.TestCase):
 		if revision == "source archive":
 			self.skipTest("A Git checkout is required to exercise nested source archives")
 		self.assertRegex(revision, r"^[0-9a-f]{40,64}$")
-		with tempfile.TemporaryDirectory(dir=coffee_builder.ROOT) as archive:
-			with patch.object(coffee_builder, "ROOT", Path(archive).resolve()):
-				self.assertEqual(coffee_builder._source_revision(), "source archive")
+		with (
+			tempfile.TemporaryDirectory(dir=coffee_builder.ROOT) as archive,
+			patch.object(coffee_builder, "ROOT", Path(archive).resolve()),
+		):
+			self.assertEqual(coffee_builder._source_revision(), "source archive")
 
 	def test_source_archive_without_git_still_builds(self):
-		with patch.object(coffee_builder.shutil, "which", return_value=None):
-			with tempfile.TemporaryDirectory() as folder:
-				self.assertEqual(build(folder)["engine"]["revision"], "source archive")
+		with (
+			patch.object(coffee_builder.shutil, "which", return_value=None),
+			tempfile.TemporaryDirectory() as folder,
+		):
+			self.assertEqual(build(folder)["engine"]["revision"], "source archive")
 
 	def test_output_symlinks_are_rejected_before_any_artifact_is_written(self):
 		names = (
