@@ -493,6 +493,15 @@
 			);
 		return links;
 	}
+	function definitionDetails(title, document, sourcePath) {
+		const details = element("details", null, "sample-record-definition");
+		details.append(
+			element("summary", `Full ${title} sample definition`),
+			definitionTable(document || {}),
+			repositoryLink(`View ${title} schema`, sourcePath)
+		);
+		return details;
+	}
 	function openMaterial(node) {
 		const record = state.scenario.stages[node.stage] || {};
 		const related = state.scenario.events.filter(
@@ -529,12 +538,8 @@
 		intro.append(assetIllustration(asset.kind), element("p", asset.description));
 		const contents = [
 			intro,
+			signalPanel(asset),
 			sampleSection(modes[state.mode].label, bullets(asset[state.mode] || [])),
-			sampleSection(
-				`${asset.doctype} sample definition`,
-				definitionTable(asset.document || { name: asset.name }),
-				repositoryLink(`View ${asset.doctype} schema`, asset.source_definition)
-			),
 		];
 		const instructions = element("div", null, "sample-actions");
 		for (const instructionId of asset.work_instruction_ids || []) {
@@ -550,7 +555,14 @@
 		}
 		if (instructions.children.length)
 			contents.push(sampleSection("Work instructions", instructions));
-		contents.push(signalPanel(asset), stageButtons(asset.stage_ids));
+		contents.push(
+			definitionDetails(
+				asset.doctype,
+				asset.document || { name: asset.name },
+				asset.source_definition
+			),
+			stageButtons(asset.stage_ids)
+		);
 		openSample(
 			asset.label,
 			`${asset.doctype.toUpperCase()} / ${asset.name || asset.id}`,
@@ -912,11 +924,14 @@
 				`Revision ${instruction.revision} · ${instruction.status}. An example for review; it is not an approved operating procedure.`,
 				"sample-note"
 			),
-			definitionTable(instruction.document || {}),
-			repositoryLink("View Work Instruction schema", instruction.source_definition),
-			sampleSection("Example check using FoaMES rules", evaluationBody),
 			sampleSection("Execution steps", steps),
+			sampleSection("Example check using FoaMES rules", evaluationBody),
 			sampleSection("Linked assets", linkedAssets),
+			definitionDetails(
+				"Work Instruction",
+				instruction.document,
+				instruction.source_definition
+			),
 			stageButtons(instruction.stage_ids),
 		]);
 	}
