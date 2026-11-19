@@ -56,6 +56,9 @@ def requirement_problems(rows: list[dict]) -> list[str]:
 		if parent not in ids:
 			problems.append(f"{rid}: parent {parent} is not in this document")
 			continue
+		if not isinstance(level, str) or level not in LEVELS:
+			# The first pass already reported this malformed level.
+			continue
 		allowed = PARENT_LEVELS.get(level)
 		if allowed is None:
 			problems.append(f"{rid}: a {level} is a top-level requirement and takes no parent")

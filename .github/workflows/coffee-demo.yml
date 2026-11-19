@@ -9,6 +9,15 @@ on:
       - examples/coffee/**
       - foames/foames_mes/counters.py
       - foames/foames_mes/oee.py
+      - foames/foames_mes/work_instructions.py
+      - foames/foames_mes/doctype/machine/**
+      - foames/foames_mes/doctype/work_instruction/**
+      - foames/foames_mes/doctype/work_instruction_step/**
+      - foames/foames_bms/doctype/facility_asset/**
+      - foames/foames_bms/doctype/facility_zone/**
+      - foames/foames_life_sciences/**
+      - foames/foames_validation/doctype/validation_protocol/**
+      - foames/foames_validation/doctype/validation_acceptance_criterion/**
       - foames/foames_process_mining/**
       - .github/workflows/coffee-demo.yml
   workflow_dispatch:

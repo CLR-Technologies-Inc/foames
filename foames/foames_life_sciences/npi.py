@@ -197,38 +197,60 @@ def gate_findings(
 	warning_days: int = DEFAULT_GATE_WARNING_DAYS,
 ) -> list[dict]:
 	"""Suggestions for one program: the current gate overdue or near with required work missing,
-	and Conditional Go conditions past their due date and not closed."""
-	out = []
+	and Conditional Go conditions past their due date and not closed. Invalid current stages
+	produce a warning without preventing the independent condition checks."""
+	out: list[dict] = []
 	if program.get("status") in CLOSED_PROGRAM:
 		return out
 	name = program["name"]
 	stage = program.get("current_stage")
-	gate = next(
-		(g for g in gates if g.get("stage") == stage and g.get("decision") not in (*PASSING, "Kill")), None
-	)
-	if gate and gate.get("target_date") and program.get("status") == "Active":
-		missing = missing_deliverables(deliverables, stage)
-		days = (gate["target_date"] - today).days
-		if days < 0 or (missing and days <= warning_days):
-			out.append(
-				{
-					"rule_key": f"npi-gate:{name}:{stage}:{gate['target_date']}",
-					"title": f"{name}: {stage} gate {'overdue' if days < 0 else f'due in {days} days'}",
-					"category": "Other",
-					"severity": "Warning" if days < 0 else "Info",
-					"suggestion": (
-						f"The {stage} gate of {program.get('title') or name} was due on {gate['target_date']}. "
-						if days < 0
-						else f"The {stage} gate of {program.get('title') or name} is due on {gate['target_date']}. "
-					)
-					+ (
-						f"{len(missing)} required deliverable(s) are open: {'; '.join(missing)}."
-						if missing
-						else "All required deliverables are done; schedule the gate review."
-					),
-					"evidence": {"stage": stage, "target_date": str(gate["target_date"]), "missing": missing},
-				}
-			)
+	if not isinstance(stage, str) or stage not in STAGES:
+		out.append(
+			{
+				"rule_key": f"npi-stage:{name}",
+				"title": f"{name}: current stage is missing or invalid",
+				"category": "Other",
+				"severity": "Warning",
+				"suggestion": (
+					f"Review the current stage of {program.get('title') or name} against its gate history. "
+					"Current-stage due-date checks cannot run until the stage is corrected; "
+					"Conditional Go conditions are still checked."
+				),
+				"evidence": {"current_stage": stage, "valid_stages": list(STAGES)},
+			}
+		)
+	else:
+		gate = next(
+			(g for g in gates if g.get("stage") == stage and g.get("decision") not in (*PASSING, "Kill")),
+			None,
+		)
+		if gate and gate.get("target_date") and program.get("status") == "Active":
+			missing = missing_deliverables(deliverables, stage)
+			days = (gate["target_date"] - today).days
+			if days < 0 or (missing and days <= warning_days):
+				out.append(
+					{
+						"rule_key": f"npi-gate:{name}:{stage}:{gate['target_date']}",
+						"title": f"{name}: {stage} gate {'overdue' if days < 0 else f'due in {days} days'}",
+						"category": "Other",
+						"severity": "Warning" if days < 0 else "Info",
+						"suggestion": (
+							f"The {stage} gate of {program.get('title') or name} was due on {gate['target_date']}. "
+							if days < 0
+							else f"The {stage} gate of {program.get('title') or name} is due on {gate['target_date']}. "
+						)
+						+ (
+							f"{len(missing)} required deliverable(s) are open: {'; '.join(missing)}."
+							if missing
+							else "All required deliverables are done; schedule the gate review."
+						),
+						"evidence": {
+							"stage": stage,
+							"target_date": str(gate["target_date"]),
+							"missing": missing,
+						},
+					}
+				)
 	for g in gates:
 		if (
 			g.get("decision") == "Conditional Go"

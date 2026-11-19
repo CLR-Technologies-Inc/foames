@@ -1,0 +1,1 @@
+The coffee demonstration offers supply chain, manufacturing and engineering views of the same assets, with sample work instructions, equipment graphs and a proposed Arabica product introduction route.

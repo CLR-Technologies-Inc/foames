@@ -88,6 +88,74 @@ production lot, post an ERP transaction or claim to be a live plant connection.
 Any later authenticated write path must retain FoaMES permissions, the write gate,
 human approval where required, and idempotent event handling.
 
+## Three views of one operation
+
+The supply chain, manufacturing and engineering modes share the same stage,
+scenario, material trace and asset identities. Changing the view changes the
+information emphasized; it does not restart a lot, create equipment or change a
+quality decision. Supply chain follows material and handoffs, manufacturing
+connects work instructions to production evidence, and engineering exposes asset
+definitions and signals.
+
+[`explorer.py`](explorer.py) supplies sample assets, work instructions, graphs and
+a new-product proposal. Equipment silhouettes are keyed to named sample records
+using the actual FoaMES DocType fields. Agricultural locations and infrastructure
+retain their appropriate Facility Zone or Facility Asset identity. The drawings
+identify equipment functions; they are original schematic illustrations, not OEM
+drawings, dimensional models or verified installed hardware.
+
+The **How FoaMES supports this** controls open concrete sample instructions and
+record definitions. Work-instruction examples expose steps, capture types and
+review requirements. They are teaching examples, not approved operating procedures;
+opening a sample neither starts a Work Instruction Run nor signs a step. Graphs
+identify their units and scenario, and include readable data tables. Missing
+signals remain missing; stages not reached by a held lot have no production data.
+
+## New coffee introduction and feature coverage
+
+The Arabica introduction is a proposed product/variety trial, not a claim that
+Arabica is new to Kona or that the existing lot has changed species. Its visual
+route reuses the same stage and equipment IDs. Requirements, trial planning,
+review gates, transfer and release evidence remain distinct from the completed
+coffee scenario. A proposal does not add production events, release a held lot,
+or enter material genealogy.
+
+The feature coverage view distinguishes computed replay behavior, sample record
+mappings and future integrations. In a real deployment the next work includes
+supplier and ERP identities, finite-capacity scheduling, maintenance and
+commissioning, calibration/qualification, safety and risk, utilities and climate
+context, and authenticated work-instruction execution. A link to a FoaMES feature
+does not mean that feature has executed in this static demo. The future climate
+providers require their own data acquisition, provenance and licensing review.
+
+| Capability | Coffee use and remaining coverage |
+| --- | --- |
+| [Work instructions](../../docs/work-instructions.md) | Inspect sample steps and limits here; an authenticated site is needed for released revisions, execution, independent sign-off and hold disposition. |
+| [NPI and transfer](../../docs/life-sciences.md) | The Arabica proposal maps product requirements and trial evidence onto the existing route. Customize the life-sciences templates for coffee; no review is approved here. |
+| [Scheduling](../../docs/scheduling.md) | Plan trial and regular batches against shared roaster/packager capacity. This demo does not reserve equipment or compute a finite-capacity schedule. |
+| [Maintenance](../../docs/maintenance.md) and [commissioning](../../docs/commissioning.md) | Shared asset IDs provide the link for readiness, service and handover evidence; current sample graphs are not service or commissioning records. |
+| [SPC](../../docs/spc.md) and [qualification](../../docs/validation.md) | Future measured roast, fill-weight and brew trials can support analysis. The sample graphs do not establish statistical control, calibration or qualification. |
+| [Risk](../../docs/risk-management.md) and [P&IDs](../../docs/pid.md) | Link hazards, controls and instrument tags to the same equipment. Neither a safety review nor an engineered drawing is completed by this replay. |
+| [Building management](../../docs/building-management.md) | Utilities and environmental context can later join the asset framework with explicit measurement quality and provenance. No weather provider is connected here. |
+| [Adapters](../../docs/adapters.md) and [machine data](../../docs/machine-data.md) | Supplier/order identities and actual equipment observations need configured connections. All shown identities and readings remain simulated. |
+
+## Acceptance checks
+
+Run the coffee suite above after changing the explorer, including its DocType
+field checks and scenario consistency checks. The Coffee demo workflow runs it
+on Python 3.10 and 3.14. Browser verification additionally checks:
+
+- Switching all three modes preserves the selected stage, scenario and trace.
+- Each stage resolves its asset and work-instruction sample; equipment dialogs
+  display the corresponding definition, graph units and underlying table.
+- Keyboard users can open and close dialogs, including Escape, and return to
+  their originating control. The layout remains usable on a narrow viewport.
+- The moisture hold has no downstream readings or cup; the network gap remains
+  visible; recall preserves delivery history and forward-trace scope.
+- The proposed Arabica route uses existing stages/assets without changing replay
+  records, quantities, OEE, work-instruction execution or release decisions.
+- Downloaded scenario data retains the shared definitions and simulation labels.
+
 Before calling a hosted version complete, verify the deployed journey from the
 first stage to cup handoff, backward lot tracing, held-lot behavior, source links,
 simulation labels and the calculations shown. Report separately which checks ran

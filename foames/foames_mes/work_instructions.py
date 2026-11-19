@@ -147,7 +147,7 @@ def evaluate_capture(step: dict, value=None) -> dict:
 			return {"result": "Fail", "value_number": None, "value_text": "Fail"}
 		raise StepError("Record Pass or Fail")
 	if capture == "Number":
-		if text in (None, ""):
+		if text is None or text == "":
 			raise StepError("Enter a number")
 		try:
 			number = float(text)
@@ -211,7 +211,10 @@ def can_record(steps: list[dict], step_no: int, skip: bool = False) -> None:
 	if skip and not target.get("optional"):
 		raise StepError(f"Step {step_no} is required and cannot be skipped")
 	for step in steps:
-		if step.get("idx") >= step_no:
+		idx = step.get("idx")
+		if not isinstance(idx, int) or isinstance(idx, bool) or idx < 1:
+			raise StepError("Step indices must be positive integers")
+		if idx >= step_no:
 			break
 		if not is_complete(step):
 			raise StepError(f"Step {step['idx']} ({step.get('title')}) comes first")

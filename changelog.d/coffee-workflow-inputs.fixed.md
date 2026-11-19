@@ -1,0 +1,1 @@
+NPI gate checks report invalid open-program stages as warnings without interrupting later programs or overdue Conditional Go checks. Workflow helpers report malformed step indices explicitly and avoid misleading parent-level errors after an invalid requirement level is found.
