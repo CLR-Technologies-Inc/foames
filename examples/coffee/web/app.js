@@ -5,7 +5,16 @@
 
 (() => {
 	const $ = (id) => document.getElementById(id);
-	const state = { data: null, scenario: null, stage: 0, trace: null, ocelRequest: 0 };
+	const state = {
+		data: null,
+		scenario: null,
+		stage: 0,
+		trace: null,
+		ocelRequest: 0,
+		mode: "supply",
+		npi: false,
+		dialogOpener: null,
+	};
 	const number = new Intl.NumberFormat("en", { maximumFractionDigits: 2 });
 	const shortTitles = {
 		land: "Land & soil",
@@ -72,6 +81,937 @@
 		container.append(element("dt", label), detail);
 		return container;
 	}
+	const modes = {
+		supply: {
+			label: "Supply chain",
+			description:
+				"Follow material identity, custody and the handoff to the next operation.",
+		},
+		manufacturing: {
+			label: "Manufacturing",
+			description: "Connect recorded work, quality checks and equipment performance.",
+		},
+		engineering: {
+			label: "Engineering",
+			description:
+				"Inspect equipment definitions, signals and the evidence needed for readiness.",
+		},
+	};
+	const assetPaths = {
+		land: ["M8 75 40 42 67 61 92 30 132 75Z", "M12 86 123 86M23 74l25-13 26 13 22-16 25 16"],
+		nursery: [
+			"M18 67h28l-4 24H22ZM56 67h28l-4 24H60ZM94 67h28l-4 24H98Z",
+			"M32 67V47m0 8q-19-1-17-17 18 0 17 17m0-5q18-1 18-18-18 0-18 18M70 67V39m0 9q-17-2-16-18 18 1 16 18m0-5q17-2 18-18-18 0-18 18M108 67V47m0 8q-17-1-17-17 17 0 17 17m0-5q18-1 18-18-18 0-18 18",
+		],
+		trellis: [
+			"M18 91V23m104 68V23M18 43h104M18 64h104",
+			"M42 89V56q0-13 28-13m0 46V72q0-8 30-8M48 43q-8-18 4-22 12 7 2 22m30 21q-8-18 4-22 12 7 2 22",
+		],
+		irrigation: [
+			"M16 80h32V50h44v30h32M30 80v14m80-14v14M49 42h43V25H49Z",
+			"M70 6v19m-11-10h22M19 98l-6 8m19-8 6 8m66-8-6 8m19-8 6 8",
+		],
+		harvest: [
+			"M22 48h96l-14 43H36ZM41 48l17-27m42 27L83 21",
+			"M43 61h53M40 73h62M54 55l6 29m26-29-6 29M61 17q-8-15 5-14 9 4 2 14m7 0q6-15 17-9-1 11-17 9",
+		],
+		pulper: [
+			"M21 25h60L69 45H34ZM28 46h65v35H28ZM93 53h25v21H93ZM38 81v17m43-17v17",
+			"M61 46v35m-12-20h24M109 74v17H90M36 18h35",
+		],
+		dryer: [
+			"M17 35h106v48H17ZM17 50h106M17 66h106M29 83v15m82-15v15",
+			"M33 43h74M33 58h74M33 74h74M44 25q-10-9 0-17m25 17q-10-9 0-17m25 17q-10-9 0-17",
+		],
+		huller: [
+			"M38 16h57L85 39H49ZM35 39h62v43H35ZM46 82v16m39-16v16M97 62h25v20H97Z",
+			"M51 60a15 15 0 1 0 30 0 15 15 0 1 0-30 0M52 60h27M110 82v14H95",
+		],
+		roaster: [
+			"M43 38a27 27 0 1 0 54 0 27 27 0 1 0-54 0M70 65v17M30 83h80v13H30ZM97 38h24V12h-14v26",
+			"M57 38a13 13 0 1 0 26 0 13 13 0 1 0-26 0M42 26H22v34h21M64 18l8 7",
+		],
+		packager: [
+			"M32 11h77v81H32ZM46 25h48v31H46ZM51 65h38v26H51ZM13 91h115v10H13Z",
+			"M58 34h24M70 56v9M57 71l3 14h20l3-14M115 25v30h12M22 45h10",
+		],
+		grinder: [
+			"M45 9h50l-9 29H54ZM49 38h42v24H49ZM46 62h48v32H46ZM36 94h68",
+			"M61 49h18M64 62v11h25M56 77h23v12H56Z",
+		],
+		brewer: [
+			"M31 15h65v76H31ZM41 25h45v18H41ZM42 56h44v29H42ZM22 92h86v8H22Z",
+			"M58 44v12M48 65h24v15H48ZM72 67h7v9h-7M104 38h20v43h-20M109 48h10m-10 9h10",
+		],
+		handoff: [
+			"M37 33h51v36q-25 17-51 0ZM88 41h10q19 18-10 23M24 83h83",
+			"M51 23q-8-8 0-17m20 17q-8-8 0-17M20 96h102M114 27l7 7 12-16",
+		],
+	};
+	function svgNode(tag, attributes = {}, text) {
+		const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+		for (const [key, value] of Object.entries(attributes))
+			node.setAttribute(key, String(value));
+		if (text !== undefined) node.textContent = String(text);
+		return node;
+	}
+	function assetIllustration(kind) {
+		const svg = svgNode("svg", {
+			viewBox: "0 0 140 112",
+			"aria-hidden": "true",
+			focusable: "false",
+			class: "asset-illustration",
+		});
+		const shapes = assetPaths[kind] || assetPaths.packager;
+		svg.append(svgNode("ellipse", { cx: 70, cy: 103, rx: 55, ry: 5, fill: "#d9dfc9" }));
+		shapes.forEach((path, index) =>
+			svg.append(
+				svgNode("path", {
+					d: path,
+					fill: index ? "none" : "#d6ddbf",
+					stroke: index ? "#8b5922" : "#38543a",
+					"stroke-width": index ? 2.3 : 2.8,
+					"stroke-linecap": "round",
+					"stroke-linejoin": "round",
+				})
+			)
+		);
+		return svg;
+	}
+	function actionButton(label, action, className = "sample-link") {
+		const button = element("button", label, className);
+		button.type = "button";
+		button.addEventListener("click", action);
+		return button;
+	}
+	function repositoryLink(label, path) {
+		const wrapper = element("span", null, "definition-source");
+		if (
+			typeof path !== "string" ||
+			!path ||
+			path.split("/").some((part) => ["", ".", ".."].includes(part))
+		)
+			return wrapper;
+		const revision = /^[a-f0-9]{40}$/i.test(state.data.engine?.revision)
+			? state.data.engine.revision
+			: "main";
+		const url = safeURL(
+			`https://github.com/CLR-Technologies-Inc/foames/blob/${revision}/${path
+				.split("/")
+				.map(encodeURIComponent)
+				.join("/")}`
+		);
+		if (!url) return wrapper;
+		const link = element("a", label, "sample-link");
+		link.href = url;
+		link.target = "_blank";
+		link.rel = "noopener noreferrer";
+		wrapper.append(link);
+		return wrapper;
+	}
+	function explorer() {
+		return state.data?.explorer || {};
+	}
+	function stageName(id) {
+		return state.data.stages.find((stage) => stage.id === id)?.title || id;
+	}
+	function selectedAssets() {
+		const stage = state.data.stages[state.stage].id;
+		return (explorer().assets || []).filter((asset) => asset.stage_ids.includes(stage));
+	}
+	function relatedInstructions(stageId) {
+		return (explorer().work_instructions || []).filter((instruction) =>
+			instruction.stage_ids.includes(stageId)
+		);
+	}
+	function renderViewContext() {
+		if (!state.data?.explorer) return;
+		$("perspective-context").textContent = `${stageName(
+			state.data.stages[state.stage].id
+		)} · ${state.scenario.title}`;
+		$("asset-context").textContent = `Shared selection: ${
+			state.trace || "no trace record"
+		}. Changing perspective keeps the stage, scenario and trace selection.`;
+	}
+	function setMode(mode) {
+		if (!modes[mode]) return;
+		state.mode = mode;
+		renderExplorer();
+		$(
+			"journey-announcement"
+		).textContent = `${modes[mode].label} view. Stage, scenario and trace selection preserved.`;
+	}
+	function renderExplorer() {
+		const config = explorer();
+		const enabled = Array.isArray(config.assets) && config.assets.length > 0;
+		$("perspective-bar").hidden = !enabled;
+		$("asset-explorer").hidden = !enabled;
+		if (!enabled) return;
+		const stageId = state.data.stages[state.stage].id;
+		const record = state.scenario.stages[stageId] || {};
+		const assets = selectedAssets();
+		for (const button of document.querySelectorAll("[data-perspective]"))
+			button.setAttribute("aria-pressed", String(button.dataset.perspective === state.mode));
+		$("asset-eyebrow").textContent = `${modes[
+			state.mode
+		].label.toUpperCase()} / SHARED ASSETS`;
+		$("asset-heading").textContent = `${stageName(stageId)}, connected to the operation`;
+		$("mode-description").textContent = modes[state.mode].description;
+		const notes =
+			config.stage_views?.[stageId]?.[state.mode] ||
+			assets.flatMap((asset) => asset[state.mode] || []).slice(0, 3);
+		const overview = element("div", null, "perspective-overview");
+		overview.append(
+			element(
+				"p",
+				{
+					supply: "Material & custody",
+					manufacturing: "Work & quality",
+					engineering: "Definition & readiness",
+				}[state.mode],
+				"eyebrow"
+			)
+		);
+		const list = element("ul");
+		(notes || []).forEach((note) => list.append(element("li", note)));
+		overview.append(list);
+		const facts = element("div", null, "perspective-facts");
+		if (state.mode === "supply") {
+			facts.append(element("p", "RECORDED MATERIAL AT THIS STEP", "eyebrow"));
+			const nodes = state.scenario.trace.filter((node) => node.stage === stageId);
+			if (!nodes.length)
+				facts.append(
+					element(
+						"p",
+						"No material was produced at this step in the selected scenario.",
+						"sample-empty"
+					)
+				);
+			nodes.forEach((node) => {
+				const button = actionButton(
+					node.label,
+					() => {
+						chooseTrace(node.id);
+						openMaterial(node);
+					},
+					"material-button"
+				);
+				button.append(
+					element("span", `${node.id} · ${format(node.quantity, node.unit)}`),
+					element(
+						"small",
+						node.parent_ids.length
+							? `From ${node.parent_ids.join(", ")}`
+							: "Origin record"
+					)
+				);
+				facts.append(button);
+			});
+		} else if (state.mode === "manufacturing") {
+			facts.append(
+				element("p", "RECORDED WORK", "eyebrow"),
+				element(
+					"strong",
+					{
+						complete: "Stage recorded",
+						held: "Quality hold",
+						pending: "Not reached",
+						attention: "Review needed",
+					}[record.status] || "No work recorded"
+				),
+				element("p", record.note || "No observation for this stage.")
+			);
+			relatedInstructions(stageId).forEach((instruction) =>
+				facts.append(
+					actionButton(`Open ${instruction.title}`, () =>
+						openInstruction(instruction.id)
+					)
+				)
+			);
+			if (stageId === "packaging")
+				facts.append(
+					element(
+						"p",
+						Number(state.scenario.oee?.ledger?.planned_minutes) > 0
+							? `Packaging OEE ${percent(
+									state.scenario.oee.oee
+							  )}. The full time ledger appears below.`
+							: "Packaging has not run. No OEE measurement is shown.",
+						"small-copy"
+					)
+				);
+		} else {
+			facts.append(element("p", "SCHEMA & SIGNALS", "eyebrow"));
+			assets.forEach((asset) =>
+				facts.append(
+					actionButton(
+						`${asset.doctype} · ${asset.name || asset.id}`,
+						() => openAsset(asset.id),
+						"schema-button"
+					)
+				)
+			);
+			facts.append(
+				element(
+					"p",
+					`${assets.reduce(
+						(count, asset) => count + (asset.signals?.length || 0),
+						0
+					)} named sample signals. Open an asset to inspect its definition and scenario readings.`,
+					"small-copy"
+				)
+			);
+			if (config.npi)
+				facts.append(
+					actionButton("Review Arabica introduction evidence", () => {
+						state.npi = true;
+						$("npi-toggle").checked = true;
+						renderNPI();
+						$("npi-route").scrollIntoView({
+							behavior: reducedMotion() ? "instant" : "smooth",
+							block: "nearest",
+						});
+					})
+				);
+		}
+		$("mode-details").replaceChildren(overview, facts);
+		$("asset-cards").replaceChildren(
+			...assets.map((asset) => {
+				const button = actionButton(null, () => openAsset(asset.id), "asset-card");
+				button.setAttribute(
+					"aria-label",
+					`${asset.label}. Open ${asset.doctype} sample and graphs`
+				);
+				const copy = element("div", null, "asset-copy");
+				copy.append(
+					element("span", `${asset.doctype} · ${asset.kind}`, "asset-type"),
+					element("strong", asset.label),
+					element("code", asset.name || asset.id),
+					element("p", (asset[state.mode] || [asset.description])[0]),
+					element(
+						"span",
+						`${
+							{
+								supply: "View material & handoffs",
+								manufacturing: "View work & signals",
+								engineering: "Inspect definition & signals",
+							}[state.mode]
+						}`,
+						"asset-action"
+					)
+				);
+				button.append(assetIllustration(asset.kind), copy);
+				return button;
+			})
+		);
+		$("instruction-links").replaceChildren(
+			...relatedInstructions(stageId).map((instruction) =>
+				actionButton(
+					`▤ ${instruction.title}`,
+					() => openInstruction(instruction.id),
+					"instruction-link"
+				)
+			)
+		);
+		renderViewContext();
+		renderNPI();
+	}
+	function renderNPI() {
+		const npi = explorer().npi;
+		$("npi-route").hidden = !npi || !state.npi;
+		if (!npi) return;
+		$("npi-title").textContent = npi.title;
+		$("npi-summary").textContent = npi.summary;
+		const stageId = state.data.stages[state.stage].id;
+		$("npi-gates").replaceChildren(
+			...(npi.gates || []).map((gate, index) => {
+				const item = element("li");
+				const button = actionButton(null, () => openGate(gate.id), "npi-gate");
+				if (gate.stage_ids.includes(stageId)) button.dataset.current = "true";
+				button.append(
+					element("span", `0${index + 1}`, "gate-number"),
+					element("strong", gate.title),
+					element(
+						"small",
+						gate.stage_ids.map((id) => shortTitles[id] || id).join(" · ")
+					),
+					element("span", gate.status || "Proposed", "gate-status")
+				);
+				item.append(button);
+				return item;
+			})
+		);
+	}
+	function openSample(title, kind, contents) {
+		const dialog = $("sample-dialog");
+		if (!dialog.open) state.dialogOpener = document.activeElement;
+		$("sample-title").textContent = title;
+		$("sample-kind").textContent = kind;
+		$("sample-content").replaceChildren(...contents);
+		if (!dialog.open) dialog.showModal();
+		$("sample-title").focus();
+	}
+	function sampleSection(title, ...nodes) {
+		const section = element("section", null, "sample-section");
+		section.append(element("h3", title), ...nodes);
+		return section;
+	}
+	function bullets(values) {
+		const list = element("ul", null, "sample-bullets");
+		for (const value of values || [])
+			list.append(element("li", typeof value === "string" ? value : JSON.stringify(value)));
+		return list;
+	}
+	function definitionTable(document) {
+		const dl = element("dl", null, "definition-grid");
+		for (const [key, value] of Object.entries(document || {})) {
+			const row = element("div");
+			row.append(element("dt", key));
+			const rendered =
+				typeof value === "object" && value !== null
+					? JSON.stringify(value, null, 2)
+					: format(value);
+			row.append(element("dd", rendered));
+			dl.append(row);
+		}
+		return dl;
+	}
+	function stageButtons(stageIds) {
+		const links = element("div", null, "sample-actions");
+		for (const stageId of stageIds || [])
+			links.append(
+				actionButton(`Go to ${stageName(stageId)}`, () => {
+					const index = state.data.stages.findIndex((stage) => stage.id === stageId);
+					if (index < 0) return;
+					setStage(index);
+					state.dialogOpener = $("stage-title");
+					$("sample-dialog").close();
+					$("journey").scrollIntoView({
+						behavior: reducedMotion() ? "instant" : "smooth",
+					});
+				})
+			);
+		return links;
+	}
+	function openMaterial(node) {
+		const record = state.scenario.stages[node.stage] || {};
+		const related = state.scenario.events.filter(
+			(event) => event.record_id === node.id || event.related_record_ids?.includes(node.id)
+		);
+		const events = element("ol", null, "sample-events");
+		related.forEach((event) => {
+			const item = element("li");
+			item.append(element("strong", event.activity), element("span", date(event.timestamp)));
+			events.append(item);
+		});
+		openSample(node.label, "SIMULATED MATERIAL / CUSTODY RECORD", [
+			definitionTable({
+				record_id: node.id,
+				status: node.status,
+				quantity: format(node.quantity, node.unit),
+				parents: node.parent_ids.join(", ") || "Origin",
+				scenario: state.scenario.title,
+			}),
+			element("p", record.note, "sample-note"),
+			sampleSection(
+				"Recorded handoffs",
+				related.length
+					? events
+					: element("p", "No handoff event is recorded for this object.")
+			),
+			stageButtons([node.stage]),
+		]);
+	}
+	function openAsset(id) {
+		const asset = (explorer().assets || []).find((item) => item.id === id);
+		if (!asset) return;
+		const intro = element("div", null, "sample-asset-intro");
+		intro.append(assetIllustration(asset.kind), element("p", asset.description));
+		const contents = [
+			intro,
+			sampleSection(modes[state.mode].label, bullets(asset[state.mode] || [])),
+			sampleSection(
+				`${asset.doctype} sample definition`,
+				definitionTable(asset.document || { name: asset.name }),
+				repositoryLink(`View ${asset.doctype} schema`, asset.source_definition)
+			),
+		];
+		const instructions = element("div", null, "sample-actions");
+		for (const instructionId of asset.work_instruction_ids || []) {
+			const instruction = explorer().work_instructions?.find(
+				(row) => row.id === instructionId
+			);
+			if (instruction)
+				instructions.append(
+					actionButton(`Open ${instruction.title}`, () =>
+						openInstruction(instruction.id)
+					)
+				);
+		}
+		if (instructions.children.length)
+			contents.push(sampleSection("Work instructions", instructions));
+		contents.push(signalPanel(asset), stageButtons(asset.stage_ids));
+		openSample(
+			asset.label,
+			`${asset.doctype.toUpperCase()} / ${asset.name || asset.id}`,
+			contents
+		);
+	}
+	function signalPanel(asset) {
+		const section = sampleSection("Scenario signals");
+		const signals = asset.signals || [];
+		if (!signals.length) {
+			section.append(
+				element(
+					"p",
+					"No sample signal is defined for this asset. Its work and inspection records remain available.",
+					"sample-empty"
+				)
+			);
+			return section;
+		}
+		const label = element("label", "Select a signal", "signal-label");
+		const select = element("select");
+		select.id = "sample-signal";
+		label.htmlFor = select.id;
+		select.setAttribute("aria-label", `${asset.label} signal`);
+		signals.forEach((signal) => {
+			const option = element(
+				"option",
+				`${signal.label}${signal.unit ? ` (${signal.unit})` : ""}`
+			);
+			option.value = signal.id;
+			select.append(option);
+		});
+		const chart = element("div", null, "signal-content");
+		function showSignal() {
+			const signal = signals.find((item) => item.id === select.value) || signals[0];
+			const samples = signal.scenarios?.[state.scenario.id] || [];
+			chart.replaceChildren(
+				element("p", `Selected scenario: ${state.scenario.title}`, "signal-scenario"),
+				element(
+					"p",
+					signal.source_note || "Illustrative scenario readings, not live telemetry.",
+					"sample-note"
+				)
+			);
+			if (signal.scenario_notes?.[state.scenario.id])
+				chart.append(
+					element("p", signal.scenario_notes[state.scenario.id], "sample-note")
+				);
+			const hasReachedStage = asset.stage_ids.some(
+				(id) =>
+					state.scenario.stages[id]?.status &&
+					state.scenario.stages[id].status !== "pending"
+			);
+			if (!samples.length || !hasReachedStage) {
+				chart.append(
+					element(
+						"p",
+						`No sample readings for this asset in “${state.scenario.title}”. The definition remains available for planning.`,
+						"sample-empty"
+					)
+				);
+				return;
+			}
+			chart.append(signalChart(signal, samples), signalTable(signal, samples));
+		}
+		select.addEventListener("change", showSignal);
+		section.append(label, select, chart);
+		showSignal();
+		return section;
+	}
+	function isTimedSignal(signal, samples) {
+		return (
+			signal.kind !== "categorical" &&
+			samples.every(
+				(sample) =>
+					/^\d{4}-\d{2}-\d{2}T/.test(sample.time) &&
+					Number.isFinite(Date.parse(sample.time))
+			)
+		);
+	}
+	function signalChart(signal, samples) {
+		const valid = samples.filter(
+			(sample) => typeof sample.value === "number" && Number.isFinite(sample.value)
+		);
+		if (!valid.length)
+			return element(
+				"p",
+				"No observed values. Missing samples remain gaps.",
+				"sample-empty"
+			);
+		const width = 640,
+			height = 250,
+			left = 62,
+			right = 20,
+			top = 25,
+			bottom = 52;
+		const categorical = signal.kind === "categorical";
+		const timed = isTimedSignal(signal, samples);
+		const svg = svgNode("svg", {
+			viewBox: `0 0 ${width} ${height}`,
+			class: "signal-chart",
+			role: "img",
+			"aria-label": `${signal.label}, ${signal.unit || "value"}. ${
+				categorical
+					? "Separate mass-balance categories."
+					: "Individual observations only; no interpolation."
+			} Exact readings follow in a table.`,
+		});
+		const values = valid.map((sample) => sample.value);
+		let min = Math.min(...values),
+			max = Math.max(...values);
+		const pad = Math.max((max - min) * 0.12, Math.abs(max) * 0.025, 0.1);
+		min = categorical ? Math.min(0, min) : min - pad;
+		max += pad;
+		const parsed = timed ? samples.map((sample) => Date.parse(sample.time)) : [];
+		const span = timed ? parsed.at(-1) - parsed[0] : 0;
+		const plotWidth = width - left - right;
+		const x = (index) =>
+			left +
+			(categorical
+				? (index + 0.5) / samples.length
+				: samples.length === 1 || (timed && span === 0)
+				? 0.5
+				: timed
+				? (parsed[index] - parsed[0]) / span
+				: index / (samples.length - 1)) *
+				plotWidth;
+		const y = (value) => top + ((max - value) / (max - min)) * (height - top - bottom);
+		for (let tick = 0; tick <= 4; tick++) {
+			const value = min + ((max - min) * tick) / 4;
+			svg.append(
+				svgNode("line", {
+					x1: left,
+					x2: width - right,
+					y1: y(value),
+					y2: y(value),
+					class: "chart-grid",
+				}),
+				svgNode(
+					"text",
+					{ x: left - 9, y: y(value) + 4, "text-anchor": "end", class: "chart-label" },
+					number.format(value)
+				)
+			);
+		}
+		svg.append(
+			svgNode(
+				"text",
+				{ x: left, y: 14, class: "chart-unit" },
+				signal.y_axis || signal.unit || "Value"
+			)
+		);
+		samples.forEach((sample, index) => {
+			if (typeof sample.value !== "number" || !Number.isFinite(sample.value)) {
+				svg.append(
+					svgNode("line", {
+						x1: x(index),
+						x2: x(index),
+						y1: top,
+						y2: height - bottom,
+						class: "chart-missing",
+					}),
+					svgNode(
+						"text",
+						{
+							x: x(index),
+							y: top + 15,
+							"text-anchor": "middle",
+							class: "chart-label",
+						},
+						"Missing"
+					)
+				);
+			} else if (categorical) {
+				const barWidth = Math.min(76, (plotWidth / samples.length) * 0.48);
+				svg.append(
+					svgNode("rect", {
+						x: x(index) - barWidth / 2,
+						y: Math.min(y(sample.value), y(0)),
+						width: barWidth,
+						height: Math.max(1, Math.abs(y(0) - y(sample.value))),
+						rx: 3,
+						class: "chart-bar",
+					}),
+					svgNode(
+						"text",
+						{
+							x: x(index),
+							y: y(sample.value) - 8,
+							"text-anchor": "middle",
+							class: "chart-label",
+						},
+						number.format(sample.value)
+					)
+				);
+			} else
+				svg.append(
+					svgNode("circle", {
+						cx: x(index),
+						cy: y(sample.value),
+						r: 4.5,
+						class: "chart-dot",
+					})
+				);
+		});
+		const label = (sample) =>
+			timed
+				? new Date(sample.time).toISOString().slice(5, 16).replace("T", " ")
+				: String(sample.time);
+		if (categorical || samples.length === 1)
+			samples.forEach((sample, index) =>
+				svg.append(
+					svgNode(
+						"text",
+						{
+							x: x(index),
+							y: height - 28,
+							"text-anchor": "middle",
+							class: "chart-label",
+						},
+						label(sample)
+					)
+				)
+			);
+		else
+			svg.append(
+				svgNode(
+					"text",
+					{ x: left, y: height - 28, class: "chart-label" },
+					label(samples[0])
+				),
+				svgNode(
+					"text",
+					{
+						x: width - right,
+						y: height - 28,
+						"text-anchor": "end",
+						class: "chart-label",
+					},
+					label(samples.at(-1))
+				)
+			);
+		svg.append(
+			svgNode(
+				"text",
+				{ x: width / 2, y: height - 8, "text-anchor": "middle", class: "chart-label" },
+				timed ? "Observation time (UTC)" : "Checkpoint"
+			)
+		);
+		return svg;
+	}
+	function signalTable(signal, samples) {
+		const details = element("details", null, "sample-readings");
+		details.append(element("summary", `View ${samples.length} sample readings`));
+		const timed = isTimedSignal(signal, samples);
+		const table = element("table");
+		table.append(element("caption", `${signal.label} · ${state.scenario.title}`));
+		const head = element("thead"),
+			headers = element("tr");
+		for (const name of [
+			timed ? "Observation time (UTC)" : "Checkpoint",
+			`${signal.label}${signal.unit ? ` (${signal.unit})` : ""}`,
+		]) {
+			const th = element("th", name);
+			th.scope = "col";
+			headers.append(th);
+		}
+		head.append(headers);
+		const body = element("tbody");
+		samples.forEach((sample) => {
+			const row = element("tr");
+			row.append(
+				element("td", timed ? date(sample.time) : sample.time),
+				element(
+					"td",
+					sample.value === null || sample.value === undefined
+						? "Missing reading"
+						: format(sample.value)
+				)
+			);
+			body.append(row);
+		});
+		table.append(head, body);
+		const scroll = element("div", null, "table-scroll");
+		scroll.append(table);
+		details.append(scroll);
+		return details;
+	}
+	function openInstruction(id) {
+		const instruction = explorer().work_instructions?.find((item) => item.id === id);
+		if (!instruction) return;
+		const steps = element("ol", null, "instruction-steps");
+		for (const [index, step] of (instruction.steps || []).entries()) {
+			const item = element("li");
+			item.append(element("span", String(index + 1).padStart(2, "0"), "instruction-number"));
+			const body = element("div");
+			body.append(element("h4", step.title), element("p", step.instruction));
+			if (step.acceptance)
+				body.append(
+					element("p", `Acceptance: ${step.acceptance}`, "instruction-acceptance")
+				);
+			if (step.evidence)
+				body.append(element("p", `Evidence to capture: ${step.evidence}`, "small-copy"));
+			if (step.document) {
+				const details = element("details", null, "step-definition");
+				details.append(
+					element("summary", "Step field mapping"),
+					definitionTable(step.document)
+				);
+				body.append(details);
+			}
+			item.append(body);
+			steps.append(item);
+		}
+		const linkedAssets = element("div", null, "sample-actions");
+		for (const assetId of instruction.asset_ids || []) {
+			const asset = explorer().assets.find((row) => row.id === assetId);
+			if (asset)
+				linkedAssets.append(actionButton(`${asset.label}`, () => openAsset(assetId)));
+		}
+		const evaluation = instruction.sample_evaluations?.[state.scenario.id];
+		const evaluationBody = element("div", null, "instruction-evaluation");
+		evaluationBody.append(
+			element("p", `Selected scenario: ${state.scenario.title}`, "signal-scenario")
+		);
+		if (evaluation) {
+			evaluationBody.append(
+				element("strong", `Pure-rule result: ${evaluation.result}`),
+				definitionTable({
+					value: evaluation.value_number ?? evaluation.value_text,
+					record_id: evaluation.record_id,
+				}),
+				element(
+					"p",
+					evaluation.note ||
+						"Illustration only. No Work Instruction Run or approval was created.",
+					"sample-note"
+				)
+			);
+			if (evaluation.result === "Fail")
+				evaluationBody.append(
+					element(
+						"p",
+						"The sample check fails its fictional acceptance limits. The scenario remains on hold pending human review; viewing this sample does not release it.",
+						"sample-empty"
+					)
+				);
+		} else
+			evaluationBody.append(
+				element(
+					"p",
+					"No value was recorded at this stage in the selected scenario. No rule result or executed Work Instruction Run is implied.",
+					"sample-empty"
+				)
+			);
+		openSample(instruction.title, `WORK INSTRUCTION SAMPLE / ${instruction.id}`, [
+			element(
+				"p",
+				`Revision ${instruction.revision} · ${instruction.status}. An example for review; it is not an approved operating procedure.`,
+				"sample-note"
+			),
+			definitionTable(instruction.document || {}),
+			repositoryLink("View Work Instruction schema", instruction.source_definition),
+			sampleSection("Example check using FoaMES rules", evaluationBody),
+			sampleSection("Execution steps", steps),
+			sampleSection("Linked assets", linkedAssets),
+			stageButtons(instruction.stage_ids),
+		]);
+	}
+	function openGate(id) {
+		const npi = explorer().npi;
+		const gate = npi?.gates?.find((item) => item.id === id);
+		if (!gate) return;
+		const assets = element("div", null, "sample-actions");
+		for (const assetId of gate.asset_ids || []) {
+			const asset = explorer().assets.find((row) => row.id === assetId);
+			if (asset) assets.append(actionButton(`${asset.label}`, () => openAsset(asset.id)));
+		}
+		const linked = element("div", null, "sample-actions");
+		for (const [key, title] of [
+			["program", "NPI Program"],
+			["requirements", "Product Requirements"],
+			["transfer", "Tech Transfer Package"],
+			["validation", "Validation Protocol"],
+		]) {
+			if (npi[key])
+				linked.append(
+					actionButton(`Inspect ${title} sample`, () =>
+						openSample(title, "ARABICA INTRODUCTION / PROPOSED SAMPLE", [
+							element(
+								"p",
+								"A proposed coffee-specific record. No approval, qualification or trial outcome is implied.",
+								"sample-note"
+							),
+							definitionTable(npi[key]),
+							repositoryLink(`View ${title} schema`, npi.source_definitions?.[key]),
+							actionButton(`Back to ${gate.title}`, () => openGate(id)),
+						])
+					)
+				);
+		}
+		openSample(gate.title, `ARABICA NPI / ${gate.status || "PROPOSED"}`, [
+			element(
+				"p",
+				"This gate is a proposal layered onto the same asset framework. It does not change the recorded scenario or certify the product.",
+				"sample-note"
+			),
+			sampleSection("Proposed deliverables", bullets(gate.deliverables)),
+			sampleSection(
+				"Acceptance evidence",
+				Array.isArray(gate.acceptance)
+					? bullets(gate.acceptance)
+					: element("p", gate.acceptance)
+			),
+			sampleSection("Shared equipment", assets),
+			sampleSection("Sample FoaMES records", linked),
+			stageButtons(gate.stage_ids),
+		]);
+	}
+	function renderCoverage() {
+		const coverage = explorer().coverage || [];
+		$("coverage-section").hidden = !coverage.length;
+		$("coverage-list").replaceChildren(
+			...coverage.map((item) => {
+				const card = element("article", null, "coverage-card");
+				card.append(
+					element("span", item.status || "Example", "coverage-status"),
+					element("h3", item.feature),
+					element("p", item.summary)
+				);
+				const links = element("div", null, "sample-actions");
+				if (item.guide_path)
+					links.append(repositoryLink("Read the guide", item.guide_path));
+				for (const id of item.work_instruction_ids || []) {
+					const instruction = explorer().work_instructions?.find((row) => row.id === id);
+					if (instruction)
+						links.append(actionButton("Work instruction", () => openInstruction(id)));
+				}
+				for (const id of (item.asset_ids || []).slice(0, 2)) {
+					const asset = explorer().assets?.find((row) => row.id === id);
+					if (asset) links.append(actionButton(`${asset.label}`, () => openAsset(id)));
+				}
+				if (item.stage_ids?.length)
+					links.append(
+						actionButton(`Explore ${shortTitles[item.stage_ids[0]]}`, () => {
+							const index = state.data.stages.findIndex(
+								(stage) => stage.id === item.stage_ids[0]
+							);
+							if (index >= 0) {
+								setStage(index, true);
+								$("journey").scrollIntoView({
+									behavior: reducedMotion() ? "instant" : "smooth",
+								});
+							}
+						})
+					);
+				card.append(links);
+				return card;
+			})
+		);
+	}
 	function setStage(index, focus = false) {
 		state.stage = Math.max(0, Math.min(state.data.stages.length - 1, index));
 		renderStage();
@@ -137,6 +1077,7 @@
 			$("stage-status").textContent
 		}. ${record.note || ""}`;
 		renderSources();
+		renderExplorer();
 	}
 	function renderOperations() {
 		const oee = state.scenario.oee || {};
@@ -219,6 +1160,7 @@
 		state.trace = id;
 		$("trace-select").value = id;
 		renderTrace();
+		renderViewContext();
 		if (focus) $("trace-selected-title").focus({ preventScroll: true });
 	}
 	function renderCup() {
@@ -450,6 +1392,13 @@
 			disclaimer: state.data.disclaimer,
 			engine: state.data.engine,
 			scenario: state.scenario,
+			explorer: state.data.explorer || null,
+			view: {
+				perspective: state.mode,
+				stage: state.data.stages[state.stage].id,
+				trace: state.trace,
+				npi_proposal_visible: state.npi,
+			},
 		};
 		downloadFile(file, `foames-coffee-${state.scenario.id}.json`);
 	}
@@ -515,6 +1464,7 @@
 				.filter(Boolean)
 				.join(" · ");
 			selectScenario("normal");
+			renderCoverage();
 			$("demo").hidden = false;
 			$("loading").hidden = true;
 		} catch {
@@ -532,5 +1482,17 @@
 	$("download-json").addEventListener("click", downloadJSON);
 	$("download-ocel").addEventListener("click", downloadOCEL);
 	$("retry").addEventListener("click", load);
+	for (const button of document.querySelectorAll("[data-perspective]"))
+		button.addEventListener("click", () => setMode(button.dataset.perspective));
+	$("npi-toggle").addEventListener("change", (event) => {
+		state.npi = event.target.checked;
+		renderNPI();
+	});
+	$("sample-close").addEventListener("click", () => $("sample-dialog").close());
+	$("sample-dialog").addEventListener("close", () => {
+		const opener = state.dialogOpener;
+		state.dialogOpener = null;
+		(opener?.isConnected ? opener : $("stage-title")).focus({ preventScroll: true });
+	});
 	void load();
 })();

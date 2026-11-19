@@ -65,7 +65,17 @@
       <section class="journey-section wrap" id="journey" aria-labelledby="journey-heading">
         <div class="section-heading"><div><p class="eyebrow">01 / THE JOURNEY</p><h2 id="journey-heading">Every step leaves a record.</h2></div><p>Choose a scenario, then follow the lot.<br>Each step connects process, quality and evidence.</p></div>
         <div class="scenario-bar"><div><label for="scenario">Explore a scenario</label><select id="scenario"></select></div><p id="scenario-summary"></p><span class="replay-label">SIMULATED REPLAY</span></div>
+        <div class="perspective-bar" id="perspective-bar" hidden>
+          <div class="perspective-label"><span class="eyebrow">ONE OPERATION, THREE VIEWS</span><p id="perspective-context">The same assets and the same lot.</p></div>
+          <div class="perspective-buttons" role="group" aria-label="Operation perspective">
+            <button type="button" data-perspective="supply" aria-pressed="true">Supply chain</button>
+            <button type="button" data-perspective="manufacturing" aria-pressed="false">Manufacturing</button>
+            <button type="button" data-perspective="engineering" aria-pressed="false">Engineering</button>
+          </div>
+          <label class="npi-toggle"><input type="checkbox" id="npi-toggle"> Arabica introduction (NPI)</label>
+        </div>
         <nav class="stage-nav" aria-label="Coffee journey stages"><ol id="stage-list"></ol></nav>
+        <section class="npi-route" id="npi-route" aria-labelledby="npi-title" hidden><div class="npi-intro"><div><p class="eyebrow">PROPOSED PRODUCT INTRODUCTION</p><h3 id="npi-title">Arabica, from concept to cup</h3></div><span class="proposal-badge">DRAFT PROPOSAL</span></div><p id="npi-summary"></p><ol id="npi-gates" class="npi-gates"></ol><p class="small-copy">This proposal uses the same process and equipment. Gate approvals and trial results are not part of the recorded production scenario.</p></section>
         <div class="journey-main">
           <article class="stage-detail" aria-labelledby="stage-title">
             <div class="stage-top"><p class="eyebrow" id="stage-position"></p><span class="status-badge" id="stage-status"></span></div>
@@ -75,8 +85,9 @@
             <div class="stage-record"><span>EXAMPLE RECORD</span><code id="stage-record-id"></code><time id="stage-time"></time></div>
             <div class="stage-bottom"><div><button class="button secondary small" id="previous" aria-label="Previous stage">← Previous</button><button class="button primary small" id="next">Next step →</button></div><button class="text-button" id="replay">Replay from land ↺</button></div>
           </article>
-          <aside class="stage-aside" aria-label="Stage controls and records"><div><p class="eyebrow">WHAT WE CHECK</p><ul id="stage-controls" class="check-list"></ul></div><div class="mapping"><p class="eyebrow">HOW FOAMES SUPPORTS THIS</p><div id="stage-records" class="record-tags"></div><p class="small-copy">Record types and extension points for an implementation. This public replay does not create site records.</p></div><div class="paper-slot"><span class="paper-icon" aria-hidden="true">↗</span><div><strong>Research, connected to practice.</strong><p id="paper-status"></p><a class="text-link" href="#evidence">See this step’s sources ↓</a></div></div></aside>
+          <aside class="stage-aside" aria-label="Stage controls and records"><div><p class="eyebrow">WHAT WE CHECK</p><ul id="stage-controls" class="check-list"></ul></div><div class="mapping"><p class="eyebrow">HOW FOAMES SUPPORTS THIS</p><div id="stage-records" class="record-tags"></div><div id="instruction-links" class="instruction-links"></div><p class="small-copy">Explore sample records and work instructions. These are illustrative definitions, not records created on a live FoaMES site.</p></div><div class="paper-slot"><span class="paper-icon" aria-hidden="true">↗</span><div><strong>Research, connected to practice.</strong><p id="paper-status"></p><a class="text-link" href="#evidence">See this step’s sources ↓</a></div></div></aside>
         </div>
+        <section class="asset-explorer" id="asset-explorer" aria-labelledby="asset-heading" hidden><div class="asset-section-heading"><div><p class="eyebrow" id="asset-eyebrow">THE SHARED ASSET FRAMEWORK</p><h3 id="asset-heading">The assets behind this step</h3></div><p id="mode-description"></p></div><div id="mode-details" class="mode-details"></div><div id="asset-cards" class="asset-cards"></div><p class="small-copy" id="asset-context"></p></section>
         <p id="journey-announcement" class="sr-only" role="status" aria-live="polite"></p>
       </section>
 
@@ -92,11 +103,14 @@
 
       <section class="wrap balances-section" aria-labelledby="balance-heading"><div class="section-heading compact"><div><p class="eyebrow">FOLLOW THE MATERIAL</p><h2 id="balance-heading">The same lot. A changing form.</h2></div><p>Simulated mass balances keep products,<br>byproducts and moisture loss distinct.</p></div><div class="table-scroll"><table><caption class="sr-only">Simulated mass balance by process stage</caption><thead><tr><th scope="col">Process</th><th scope="col">Input</th><th scope="col">Product output</th><th scope="col">Other output / loss</th></tr></thead><tbody id="mass-balance"></tbody></table></div><p class="small-copy">These are educational example quantities, not a production recipe or a measured farm yield. Brewing adds water; beverage mass is not coffee yield.</p></section>
 
+      <section class="wrap coverage-section" id="coverage-section" aria-labelledby="coverage-heading" hidden><div class="section-heading compact"><div><p class="eyebrow">FROM THE EXAMPLE TO AN IMPLEMENTATION</p><h2 id="coverage-heading">What does this cover?</h2></div><p>Open a concrete sample to see the connection.<br>Proposals and future integrations stay explicit.</p></div><div id="coverage-list" class="coverage-list"></div></section>
+
       <section class="evidence-band" id="evidence" aria-labelledby="evidence-heading"><div class="wrap"><div class="section-heading"><div><p class="eyebrow">04 / THE EVIDENCE</p><h2 id="evidence-heading">Sources, with their limits.</h2></div><p>Videos, extension guidance and research<br>support the process. Papers can build on it.</p></div><div class="evidence-filter"><p>Showing evidence for <strong id="evidence-stage"></strong></p><label class="checkbox-label"><input type="checkbox" id="all-sources"> Show all sources</label></div><div id="source-list" class="source-grid"></div><div class="research-note"><span aria-hidden="true">＋</span><p><strong>A place for the next paper.</strong> Each stage has an evidence slot. New papers can add a supported claim, a method or a limitation without turning a producer’s claim into a measured result. The independent paper for the Kona Joe trellis system is still pending.</p></div></div></section>
 
       <section class="wrap data-section" aria-labelledby="data-heading"><div><p class="eyebrow">OPEN THE RECORD</p><h2 id="data-heading">Take the example with you.</h2><p>Inspect the current scenario’s records or its object-centric event log.</p><p id="engine-details" class="small-copy"></p></div><div class="download-actions"><button class="button secondary" id="download-json">Download scenario JSON ↓</button><a class="button secondary" id="download-ocel" download>Download OCEL event log ↓</a></div></section>
     </div>
   </main>
+  <dialog id="sample-dialog" class="sample-dialog" aria-labelledby="sample-title" aria-describedby="sample-disclaimer"><div class="dialog-shell"><div class="dialog-heading"><div><p class="eyebrow" id="sample-kind">ILLUSTRATIVE SAMPLE</p><h2 id="sample-title" tabindex="-1">Sample record</h2></div><button type="button" id="sample-close" class="dialog-close" aria-label="Close sample">×</button></div><p id="sample-disclaimer" class="dialog-disclaimer">A fictional educational sample. No equipment is controlled and no site record is changed.</p><div id="sample-content"></div></div></dialog>
   <footer class="wrap site-footer"><div><a class="brand" href="/">foa<span class="brand-weight">MES</span></a><p>Connected work. Traceable decisions.</p></div><p>Built with FoaMES · A fictional educational example.<br>No affiliation with the producers cited in the sources.</p><a href="https://github.com/CLR-Technologies-Inc/foames" target="_blank" rel="noopener noreferrer">Source on GitHub ↗</a></footer>
   <noscript><p class="wrap">This interactive demo needs JavaScript. Its source and evidence catalog are available in the FoaMES repository.</p></noscript>
 </body>
