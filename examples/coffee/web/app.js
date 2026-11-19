@@ -999,10 +999,24 @@
 				const links = element("div", null, "sample-actions");
 				if (item.guide_path)
 					links.append(repositoryLink("Read the guide", item.guide_path));
+				const instructionLinks = element("div", null, "sample-actions");
 				for (const id of item.work_instruction_ids || []) {
 					const instruction = explorer().work_instructions?.find((row) => row.id === id);
 					if (instruction)
-						links.append(actionButton("Work instruction", () => openInstruction(id)));
+						instructionLinks.append(
+							actionButton(instruction.title, () => openInstruction(id))
+						);
+				}
+				if (instructionLinks.children.length) {
+					const samples = element("details", null, "sample-record-definition");
+					samples.append(
+						element(
+							"summary",
+							`Browse ${instructionLinks.children.length} sample instructions`
+						),
+						instructionLinks
+					);
+					card.append(samples);
 				}
 				for (const id of (item.asset_ids || []).slice(0, 2)) {
 					const asset = explorer().assets?.find((row) => row.id === id);

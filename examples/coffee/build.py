@@ -22,6 +22,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
+from explorer import build_explorer
+
 from foames.foames_mes.counters import counter_delta
 from foames.foames_mes.oee import compute_oee, ledger_from_states
 from foames.foames_process_mining.discovery import discover_dfg
@@ -585,10 +587,14 @@ def build_data():
 					"foames.foames_mes.oee",
 					"foames.foames_process_mining.discovery",
 					"foames.foames_process_mining.ocel",
+					"foames.foames_mes.work_instructions",
+					"foames.foames_life_sciences.npi",
+					"foames.foames_life_sciences.requirements",
 				],
 			},
 		}
 	)
+	data["explorer"] = build_explorer(data["scenarios"])
 	return data
 
 
