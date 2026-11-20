@@ -1,0 +1,1 @@
+Signed machine-event webhook calls may now set "source" on each event to MQTT, OPC UA or WAFT, so gateways posting through the webhook keep their source attribution; logged-in callers still record Manual, and anything else records Webhook. Machine Event gains WAFT as a source option.
