@@ -1,0 +1,1 @@
+Proposed a native Rust gateway design for high-rate MQTT, Sparkplug B and OPC UA ingest under docs/native-gateway.md; it reuses the foames-waft transport and the signed webhook, keeping all validation in Core.
