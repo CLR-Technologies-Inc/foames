@@ -17,18 +17,22 @@ class Backend:
 	def infer(self, inputs: list):
 		raise NotImplementedError
 
-	def peak_memory_bytes(self) -> int | None:
+	@staticmethod
+	def peak_memory_bytes() -> int | None:
 		"""Backend-private peak memory if measurable; the harness uses process RSS."""
 		return None
 
-	def artifact_size_bytes(self) -> int | None:
+	@staticmethod
+	def artifact_size_bytes() -> int | None:
 		"""Deployed artifact size (binary for compiled backends); None if not meaningful."""
 		return None
 
-	def versions(self) -> dict:
+	@staticmethod
+	def versions() -> dict:
 		return {}
 
-	def runtime(self) -> str | None:
+	@staticmethod
+	def runtime() -> str | None:
 		return None
 
 

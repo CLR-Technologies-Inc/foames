@@ -62,8 +62,6 @@ These ship in the app today. They are **alpha**: built against the vendors' publ
 
 Any machine, PLC or SCADA system that can publish Sparkplug B, serve OPC UA, publish JSON over MQTT or post to a signed webhook can send machine data without a vendor-specific integration; see [docs/machine-data.md](docs/machine-data.md).
 
-For running trained small models on memory-constrained edge assets, [smells/](smells/README.md) is a standalone testbench (Python, C and Rust backends) whose results are intended as evidence for ECL tier decisions.
-
 ### Planned integrations
 
 Not built yet; listed so contributors can see where help is wanted. Each would follow [docs/adapters.md](docs/adapters.md) and the "Adding a vendor" checklist in [foames/foames_adapters/AGENTS.md](foames/foames_adapters/AGENTS.md).
@@ -118,6 +116,7 @@ The full guide, including roles, the scheduler, running the gateways and a smoke
 | [docs/agents/research-to-code.md](docs/agents/research-to-code.md) | For an agent or developer turning a published method into a FoaMES change |
 | [docs/agents/discovery/](docs/agents/discovery/README.md) | For an agent and a plant operator discovering, read-only, how a site's ERP, MES, SCADA or historian is set up before a connector is configured |
 | [benchmarks/README.md](benchmarks/README.md) | A benchmark of coding agents on FoaMES tasks, with model recommendations by TRL and process complexity |
+| [smells/README.md](smells/README.md) | foaMES-smells: a standalone testbench for running trained small models on memory-constrained edge assets, with results intended as evidence for ECL tier decisions |
 
 ## Agent benchmark results
 

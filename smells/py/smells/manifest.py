@@ -23,23 +23,44 @@ def load(path: str | Path) -> dict:
 	"""Read and validate a smells manifest. Returns the manifest plus _path/_dir/_sha256."""
 	path = Path(path)
 	try:
-		data = json.loads(path.read_text(encoding="utf-8"))
+		raw = path.read_bytes()  # NOSONAR -- the operator's manifest path
+		data = json.loads(raw)
 	except (OSError, ValueError) as e:
 		raise ManifestError(f"cannot read manifest {path}: {e}") from e
 	if not isinstance(data, dict):
 		raise ManifestError("manifest must be a JSON object")
+	_validate(data)
+	data["_path"] = str(path)
+	data["_dir"] = path.parent
+	data["_sha256"] = hashlib.sha256(raw).hexdigest()
+	return data
+
+
+def _validate(data: dict) -> None:
 	missing = [k for k in REQUIRED if k not in data]
 	if missing:
 		raise ManifestError(f"manifest missing keys: {', '.join(missing)}")
-	model = data["model"]
+	_check_model(data["model"])
+	_check_inputs(data["inputs"])
+	_check_iterations(data)
+	_check_budget(data)
+
+
+def _check_model(model) -> None:
 	if not isinstance(model, dict) or not model.get("path") or not model.get("format"):
 		raise ManifestError("manifest 'model' needs 'path' and 'format'")
 	if model["format"] not in MODEL_FORMATS:
 		raise ManifestError(f"unknown model format {model['format']!r}; known: {', '.join(MODEL_FORMATS)}")
-	if not isinstance(data["inputs"], list) or not data["inputs"]:
+
+
+def _check_inputs(inputs) -> None:
+	if not isinstance(inputs, list) or not inputs:
 		raise ManifestError("manifest 'inputs' must be a non-empty list")
-	for spec in data["inputs"]:
+	for spec in inputs:
 		_check_input(spec)
+
+
+def _check_iterations(data: dict) -> None:
 	for key in ("iters", "warmup"):
 		if key in data and (not isinstance(data[key], int) or data[key] < 0):
 			raise ManifestError(f"{key!r} must be a non-negative integer")
@@ -47,12 +68,17 @@ def load(path: str | Path) -> dict:
 	if data["iters"] < 1:
 		raise ManifestError("manifest 'iters' must be at least 1")
 	data.setdefault("warmup", 0)
-	if "budget" in data and not isinstance(data["budget"], dict):
+
+
+def _check_budget(data: dict) -> None:
+	if "budget" not in data:
+		return
+	budget = data["budget"]
+	if not isinstance(budget, dict):
 		raise ManifestError("'budget' must be an object of dotted metric -> limit")
-	data["_path"] = str(path)
-	data["_dir"] = path.parent
-	data["_sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
-	return data
+	for key, limit in budget.items():
+		if isinstance(limit, bool) or not isinstance(limit, (int, float)):
+			raise ManifestError(f"budget limit for {key!r} must be a number, got {limit!r}")
 
 
 def _check_input(spec):

@@ -54,6 +54,13 @@ class TestManifest(unittest.TestCase):
 			with self.assertRaises(manifest.ManifestError):
 				manifest.load(bad)
 
+	def test_rejects_non_numeric_budget_limit(self):
+		with tempfile.TemporaryDirectory() as d:
+			tmp = Path(d)
+			mp = write_manifest(tmp, MLP, budget={"latency_ms.p95": "50"})
+			with self.assertRaises(manifest.ManifestError):
+				manifest.load(mp)
+
 
 class TestRefBackend(unittest.TestCase):
 	def test_mlp_forward_pass(self):
@@ -79,6 +86,7 @@ class TestRunner(unittest.TestCase):
 			self.assertEqual(result["verdict"], "pass")
 			self.assertEqual(len(result["metrics"]["latency_ms"]), 4)
 			self.assertIsNotNone(result["device"]["arch"])
+			self.assertIsNotNone(result["metrics"]["cold_start_ms"])
 
 	def test_verdict_fail_and_unknown(self):
 		with tempfile.TemporaryDirectory() as d:
@@ -90,10 +98,21 @@ class TestRunner(unittest.TestCase):
 			m2 = manifest.load(mp2)
 			self.assertEqual(runner.run(m2, "python_ref")["verdict"], "unknown")
 
+	def test_verdict_inferences_per_s_is_a_floor(self):
+		with tempfile.TemporaryDirectory() as d:
+			tmp = Path(d)
+			mp = write_manifest(tmp, MLP, budget={"inferences_per_s": 0.001})
+			m = manifest.load(mp)
+			self.assertEqual(runner.run(m, "python_ref")["verdict"], "pass")
+			mp2 = write_manifest(tmp, MLP, budget={"inferences_per_s": 1e12})
+			m2 = manifest.load(mp2)
+			self.assertEqual(runner.run(m2, "python_ref")["verdict"], "fail")
+
 
 class TestMetrics(unittest.TestCase):
 	def test_percentile(self):
 		self.assertEqual(metrics.percentile([1, 2, 3, 4], 50), 2)
+		self.assertEqual(metrics.percentile([1, 2, 3, 4], 95), 4)
 		self.assertIsNone(metrics.percentile([], 50))
 
 	def test_latency_stats_keys(self):

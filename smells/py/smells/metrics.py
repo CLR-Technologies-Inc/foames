@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import math
 import os
 import platform
 
@@ -14,8 +15,8 @@ def percentile(values: list[float], pct: float) -> float | None:
 	if not values:
 		return None
 	sorted_v = sorted(values)
-	idx = min(len(sorted_v) - 1, max(0, int(round((pct / 100.0) * (len(sorted_v) - 1)))))
-	return sorted_v[idx]
+	rank = min(len(sorted_v), max(1, math.ceil((pct / 100.0) * len(sorted_v))))
+	return sorted_v[rank - 1]
 
 
 def latency_stats(samples_ms: list[float]) -> dict:
@@ -35,9 +36,9 @@ def peak_rss_mb() -> float | None:
 	try:
 		import resource
 
-		# Linux reports kilobytes, macOS reports bytes.
+		# Linux reports kilobytes, macOS reports bytes; pick by platform, not magnitude.
 		rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-		return rss / (1024 * 1024) if rss > 1 << 30 else rss / 1024
+		return rss / (1024 * 1024) if platform.system() == "Darwin" else rss / 1024
 	except (ImportError, AttributeError, OSError):
 		pass
 	try:

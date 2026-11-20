@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import time
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -33,6 +34,9 @@ _BUDGET_GETTERS = {
 	"latency_ms.mean": lambda m: (m.get("latency_ms") or {}).get("mean"),
 }
 
+# Budget metrics where a larger value is better; every other budget is an upper bound.
+_HIGHER_IS_BETTER = frozenset({"inferences_per_s"})
+
 
 def run(manifest: dict, backend_name: str = "auto", t0: float | None = None) -> dict:
 	"""Execute one benchmark. `t0` is a perf_counter timestamp for cold-start
@@ -48,8 +52,11 @@ def run(manifest: dict, backend_name: str = "auto", t0: float | None = None) -> 
 	model_load_ms = (time.perf_counter() - load_t0) * 1000
 
 	inputs = make_inputs(manifest)
+	cold_start_ms = None
 	for _ in range(manifest.get("warmup", 0)):
 		backend.infer(inputs)
+		if cold_start_ms is None:
+			cold_start_ms = (time.perf_counter() - t0) * 1000
 
 	first_infer_ms = None
 	samples = []
@@ -58,6 +65,8 @@ def run(manifest: dict, backend_name: str = "auto", t0: float | None = None) -> 
 		call_t0 = time.perf_counter()
 		backend.infer(inputs)
 		call_ms = (time.perf_counter() - call_t0) * 1000
+		if cold_start_ms is None:
+			cold_start_ms = (time.perf_counter() - t0) * 1000
 		if i == 0:
 			first_infer_ms = call_ms
 		samples.append(call_ms)
@@ -67,14 +76,14 @@ def run(manifest: dict, backend_name: str = "auto", t0: float | None = None) -> 
 	result_metrics = {
 		"peak_rss_mb": metrics.peak_rss_mb(),
 		"binary_size_bytes": backend.artifact_size_bytes(),
-		"cold_start_ms": (time.perf_counter() - t0) * 1000,
+		"cold_start_ms": cold_start_ms,
 		"model_load_ms": model_load_ms,
 		"first_infer_ms": first_infer_ms,
 		"latency_ms": {k: lat[k] for k in ("p50", "p95", "p99", "mean")},
 		"inferences_per_s": manifest["iters"] / infer_seconds if infer_seconds > 0 else None,
 	}
 
-	result = {
+	result: dict = {
 		"schema": SCHEMA,
 		"run": {
 			"id": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -119,7 +128,8 @@ def _verdict(metrics_out: dict, budget: dict | None) -> str:
 		if value is None:
 			unknown = True
 			continue
-		if value > limit:
+		breached = value < limit if key in _HIGHER_IS_BETTER else value > limit
+		if breached:
 			return "fail"
 	return "unknown" if unknown else "pass"
 
@@ -127,7 +137,7 @@ def _verdict(metrics_out: dict, budget: dict | None) -> str:
 def write_result(result: dict, out_dir: str | Path = "results") -> Path:
 	out = Path(out_dir)
 	out.mkdir(parents=True, exist_ok=True)
-	name = f"{result['run']['id'].replace(':', '')}-{result['backend']['name']}.json"
+	name = f"{result['run']['id'].replace(':', '')}-{result['backend']['name']}-{uuid.uuid4().hex[:8]}.json"
 	path = out / name
 	path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
 	return path

@@ -11,7 +11,7 @@ from .python_ref import JsonMlpBackend
 _AUTO = {"smells-json-mlp": "python_ref", "onnx": "python_onnx"}
 
 
-def get_backend(name: str, model_format: str) -> Backend:
+def get_backend(name: str | None, model_format: str) -> Backend:
 	if name in (None, "", "auto"):
 		name = _AUTO.get(model_format)
 		if not name:
