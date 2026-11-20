@@ -79,10 +79,10 @@ function check(frm) {
 		(values) => {
 			frm.call("check_against", { reference: values.reference }).then((r) => {
 				const c = r.message || {};
-				const values = [c.conforming_cases, c.cases, (c.fitness || 0).toFixed(3)];
+				const figures = [c.conforming_cases, c.cases, (c.fitness || 0).toFixed(3)];
 				frappe.msgprint({
 					title: __("Conformance"),
-					message: __("{0} of {1} cases conform; fitness {2}", values),
+					message: __("{0} of {1} cases conform; fitness {2}", figures),
 				});
 			});
 		},

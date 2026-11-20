@@ -271,7 +271,6 @@ def _store(folder: Path, name: str, data: bytes) -> None:
 		zipfile.BadZipFile,
 		EOFError,
 		RuntimeError,
-		NotImplementedError,
 		zlib.error,
 		UnicodeDecodeError,
 		lzma.LZMAError,

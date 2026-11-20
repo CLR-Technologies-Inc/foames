@@ -72,20 +72,25 @@ class NoSandbox:
 	name = "none"
 	python = sys.executable
 
-	def available(self) -> tuple[bool, str]:
+	@staticmethod
+	def available() -> tuple[bool, str]:
 		return True, "no isolation"
 
-	def inside(self, workspace: Path, path: Path) -> str:
+	@staticmethod
+	def inside(workspace: Path, path: Path) -> str:
 		"""A host path as the sandboxed process sees it."""
 		return str(path)
 
-	def wrap(self, argv: list[str], workspace: Path, env: dict, forward=()) -> tuple[list[str], dict]:
+	@staticmethod
+	def wrap(argv: list[str], workspace: Path, env: dict, forward=()) -> tuple[list[str], dict]:
 		"""The command line to run, and the environment to run it with. `forward` names the
 		variables of `env` that the sandboxed process must see (the host environment is inherited
 		where the backend allows it)."""
 		return argv, env
 
-	def cleanup(self):
+	@staticmethod
+	def cleanup():
+		# nothing to tear down: there is no isolation
 		pass
 
 

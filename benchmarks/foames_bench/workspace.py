@@ -24,7 +24,7 @@ GIT = [
 ]
 
 
-def _ignore(directory, names):
+def _ignore(_directory, names):
 	return [n for n in names if n in EXCLUDE or n.endswith(".pyc")]
 
 
@@ -47,7 +47,10 @@ def create(repo: Path, workspace: Path, task) -> Path:
 	# in place.
 	workspace.mkdir(parents=True, exist_ok=True)
 	for child in workspace.iterdir():
-		shutil.rmtree(child) if child.is_dir() and not child.is_symlink() else child.unlink()
+		if child.is_dir() and not child.is_symlink():
+			shutil.rmtree(child)
+		else:
+			child.unlink()
 	shutil.copytree(repo, workspace, ignore=_ignore, dirs_exist_ok=True)
 	# The Frappe stub lets the agent run pure tests the same way the grader does.
 	shutil.copytree(STUBS_DIR, workspace / ".foames-bench" / "stubs", ignore=_ignore)
