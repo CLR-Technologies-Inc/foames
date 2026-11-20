@@ -1,0 +1,1 @@
+Onshape CAD/PDM can be connected read-only: Items, Work Orders and other records link to Onshape documents, parts, assemblies and drawings, pinned to immutable versions or microversions so a design change never silently moves a production baseline.
