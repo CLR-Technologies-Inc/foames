@@ -62,6 +62,8 @@ These ship in the app today. They are **alpha**: built against the vendors' publ
 
 Any machine, PLC or SCADA system that can publish Sparkplug B, serve OPC UA, publish JSON over MQTT or post to a signed webhook can send machine data without a vendor-specific integration; see [docs/machine-data.md](docs/machine-data.md).
 
+For running trained small models on memory-constrained edge assets, [smells/](smells/README.md) is a standalone testbench (Python, C and Rust backends) whose results are intended as evidence for ECL tier decisions.
+
 ### Planned integrations
 
 Not built yet; listed so contributors can see where help is wanted. Each would follow [docs/adapters.md](docs/adapters.md) and the "Adding a vendor" checklist in [foames/foames_adapters/AGENTS.md](foames/foames_adapters/AGENTS.md).
