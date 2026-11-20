@@ -108,6 +108,26 @@ class TestWebhook(IntegrationTestCase):
 		with self.assertRaises(frappe.AuthenticationError):
 			self.post(body, user="foames-wh-quality@example.com")
 
+	def test_signed_caller_may_claim_a_gateway_source(self):
+		events = [
+			{"machine": "wh-press", "type": "Message", "text": "a", "source": "MQTT"},
+			{"machine": "wh-press", "type": "Message", "text": "b", "source": "OPC UA"},
+			{"machine": "wh-press", "type": "Message", "text": "c", "source": "WAFT"},
+			{"machine": "wh-press", "type": "Message", "text": "d", "source": "Root"},
+			{"machine": "wh-press", "type": "Message", "text": "e"},
+		]
+		body = json.dumps({"events": events}).encode()
+		result = self.post(body, signed_headers(body))
+		self.assertEqual(len(result["accepted"]), 5)
+		self.assertEqual([e.source for e in self.events_of()], ["MQTT", "OPC UA", "WAFT", "Webhook", "Webhook"])
+
+	def test_logged_in_caller_cannot_claim_a_source(self):
+		make_user("foames-wh-operator2@example.com", "FoaMES Operator")
+		body = {"machine": "wh-press", "type": "Message", "text": "hi", "source": "MQTT"}
+		result = self.post(body, user="foames-wh-operator2@example.com")
+		self.assertEqual(len(result["accepted"]), 1)
+		self.assertEqual(self.events_of()[-1].source, "Manual")
+
 	def test_guest_webhook_closes_downtime(self):
 		# Processing runs with the webhook's authority: a machine coming back up must close its downtime.
 		events = [

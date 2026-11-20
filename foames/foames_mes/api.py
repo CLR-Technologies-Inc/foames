@@ -7,6 +7,8 @@ POST JSON to /api/method/foames.foames_mes.api.ingest_machine_events with the bo
 {"events": [...]} (or a single event object), signed as described in foames.foames_mes.signing.
 Each event is {"machine": "<source id>", "type": "State|Count|Measurement|Alarm|Message",
 "timestamp": ..., ...}. Unsigned calls need a logged-in user with the FoaMES Operator role.
+A signature-authorised call may set "source" on each event to one of MQTT, OPC UA or WAFT,
+so gateways posting through the webhook keep their attribution; anything else records "Webhook".
 """
 
 import json
@@ -19,6 +21,9 @@ from foames.foames_kernel.access import readable, require_read
 from foames.foames_mes.doctype.machine.machine import get_machine_by_source
 from foames.foames_mes.gateway.mapping import EventError, normalise_event
 from foames.foames_mes.signing import SIGNATURE_HEADER, TIMESTAMP_HEADER, verify
+
+# The gateway sources a signed webhook caller may claim; the Machine Event select holds the same values.
+INGEST_SOURCES = ("MQTT", "OPC UA", "WAFT")
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])  # nosemgrep
@@ -42,6 +47,13 @@ def ingest_machine_events():
 	return record_events(events, source=source)
 
 
+def _event_source(raw, default: str) -> str:
+	"""The source one event records under. Only a signed webhook caller (default "Webhook") may
+	claim a gateway source; logged-in callers and unknown values keep the default."""
+	claimed = raw.get("source") if isinstance(raw, dict) else None
+	return claimed if default == "Webhook" and claimed in INGEST_SOURCES else default
+
+
 def _authorised(body: bytes) -> bool:
 	roles = set(frappe.get_roles())
 	if frappe.session.user != "Guest" and roles & {"FoaMES Operator", "FoaMES Engineer", "System Manager"}:
@@ -61,7 +73,7 @@ def record_events(events: list[dict], source: str = "Manual") -> dict:
 	accepted, rejected = [], []
 	for raw in events or []:
 		try:
-			name = record_event(raw, source)
+			name = record_event(raw, _event_source(raw, source))
 			accepted.append(name)
 		except EventError as e:
 			rejected.append({"event": raw, "reason": str(e)})
