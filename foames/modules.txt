@@ -9,4 +9,5 @@ FoaMES PID
 FoaMES EHS
 FoaMES Commissioning
 FoaMES Validation
+FoaMES Simulation
 FoaMES BMS

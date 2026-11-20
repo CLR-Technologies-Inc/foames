@@ -1,0 +1,8 @@
+{
+  "work_root": "/var/lib/foames-openfoam",
+  "tutorials_root": "",
+  "token_env": "FOAMES_OPENFOAM_TOKEN",
+  "command_timeout": 3600,
+  "run_timeout": 14400,
+  "solver_version": "2606"
+}

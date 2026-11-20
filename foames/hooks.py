@@ -321,6 +321,9 @@ scheduler_events = {
 		# Raises suggestions for Critical and High building alarms nobody acknowledged, and for hazardous
 		# material storage with no active hazard assessment or no monitored point.
 		"foames.foames_bms.tasks.check_bms",
+		# Pulls provider status into Simulation Run records; does nothing unless enabled in
+		# Simulation Settings.
+		"foames.foames_simulation.tasks.sync_runs",
 	],
 	"daily": [
 		# Raises suggestions for risks above tolerance, overdue risk reviews and control verifications,

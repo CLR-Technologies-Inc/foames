@@ -58,6 +58,7 @@ These ship in the app today. They are **alpha**: built against the vendors' publ
 | WireGuard | Native VPN transport with a read-only topology collector outside the app | [docs/vendors/wireguard/](docs/vendors/wireguard/README.md) |
 | Bluesky and Tiled (NSLS-II) | Lab and beamline data acquisition, through a bridge outside the app | [docs/vendors/bluesky/](docs/vendors/bluesky/README.md) |
 | Process historians: AVEVA PI (PI Web API), InfluxDB, Ignition Tag Historian, TimescaleDB and SQL historians | Historian, read-only, through a bridge outside the app | [docs/vendors/historian/](docs/vendors/historian/README.md) |
+| OpenFOAM | CFD solver, isolated runner and provider outside the app | [docs/vendors/openfoam/](docs/vendors/openfoam/README.md) |
 | Building automation (BMS / BAS) controllers and meters over BACnet/IP and Modbus TCP | Building management, read-only, through a gateway outside the app | [docs/building-management.md](docs/building-management.md) |
 
 Any machine, PLC or SCADA system that can publish Sparkplug B, serve OPC UA, publish JSON over MQTT or post to a signed webhook can send machine data without a vendor-specific integration; see [docs/machine-data.md](docs/machine-data.md).

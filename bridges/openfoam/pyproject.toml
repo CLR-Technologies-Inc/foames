@@ -1,0 +1,19 @@
+[project]
+name = "foames-openfoam"
+description = "Isolated OpenFOAM CFD runner and provider contract for FoaMES (solver runs outside the Frappe process)"
+authors = [{ name = "CLR Technologies Inc." }]
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+readme = "README.md"
+classifiers = ["License :: OSI Approved :: Apache Software License"]
+dynamic = ["version"]
+# Standard library only: the runner shells out to OpenFOAM's own command-line
+# tools inside the worker container; nothing is linked or imported.
+dependencies = []
+
+[project.scripts]
+foames-openfoam = "foames_openfoam.__main__:main"
+
+[build-system]
+requires = ["flit_core >=3.4,<5"]
+build-backend = "flit_core.buildapi"

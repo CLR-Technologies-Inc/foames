@@ -1,0 +1,205 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-18 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "run_id",
+  "case",
+  "status",
+  "title",
+  "sb_run",
+  "requester",
+  "submitted_on",
+  "column_break_run",
+  "solver",
+  "solver_version",
+  "config_hash",
+  "sb_result",
+  "error",
+  "finished_on",
+  "result_summary",
+  "manifest",
+  "artifacts"
+ ],
+ "fields": [
+  {
+   "description": "The provider's run id; unique per submission.",
+   "fieldname": "run_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Run ID",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "case",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Case",
+   "reqd": 1
+  },
+  {
+   "default": "draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "draft\nqueued\nrunning\nsucceeded\nfailed\ncancelled\ntimed_out",
+   "reqd": 1
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title"
+  },
+  {
+   "fieldname": "sb_run",
+   "fieldtype": "Section Break",
+   "label": "Run"
+  },
+  {
+   "fieldname": "requester",
+   "fieldtype": "Data",
+   "label": "Requester"
+  },
+  {
+   "fieldname": "submitted_on",
+   "fieldtype": "Datetime",
+   "label": "Submitted On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_run",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "solver",
+   "fieldtype": "Data",
+   "label": "Solver"
+  },
+  {
+   "fieldname": "solver_version",
+   "fieldtype": "Data",
+   "label": "Solver Version"
+  },
+  {
+   "fieldname": "config_hash",
+   "fieldtype": "Data",
+   "label": "Config Hash",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_result",
+   "fieldtype": "Section Break",
+   "label": "Result"
+  },
+  {
+   "fieldname": "error",
+   "fieldtype": "Small Text",
+   "label": "Error",
+   "read_only": 1
+  },
+  {
+   "fieldname": "finished_on",
+   "fieldtype": "Datetime",
+   "label": "Finished On",
+   "read_only": 1
+  },
+  {
+   "description": "Residual summary, mesh status and post-processing output listing from the provider. A converged solve is candidate evidence only — never auto-approved.",
+   "fieldname": "result_summary",
+   "fieldtype": "Code",
+   "label": "Result Summary",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "fieldname": "manifest",
+   "fieldtype": "Code",
+   "label": "Case Manifest",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "description": "Artifact names the provider holds for this run (logs).",
+   "fieldname": "artifacts",
+   "fieldtype": "Small Text",
+   "label": "Artifacts",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-11-18 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Simulation",
+ "name": "Simulation Run",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "SIM-.YYYY.-.#####",
+ "title_field": "title",
+ "search_fields": "run_id,case",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "write": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Integration",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  }
+ ]
+}
