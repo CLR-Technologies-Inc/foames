@@ -1,0 +1,33 @@
+[package]
+name = "foames-waft"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+description = "WAFT: Lightweight Affordable Frequent Transmission — a minimal native streaming bridge from simulators and machines to the foaMES signed machine-event webhook"
+license = "Apache-2.0"
+repository = "https://github.com/CLR-Technologies-Inc/foames"
+readme = "README.md"
+
+[lib]
+name = "foames_waft"
+path = "src/lib.rs"
+crate-type = ["rlib", "cdylib", "staticlib"]
+
+[[bin]]
+name = "foames-waft"
+path = "src/main.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+hmac = "0.12"
+hex = "0.4"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls", "json"] }
+thiserror = "2"
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
