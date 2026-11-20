@@ -14,6 +14,7 @@
 		mode: "supply",
 		npi: false,
 		dialogOpener: null,
+		espressoCleanup: null,
 	};
 	const number = new Intl.NumberFormat("en", { maximumFractionDigits: 2 });
 	const shortTitles = {
@@ -156,6 +157,7 @@
 		return node;
 	}
 	function assetIllustration(kind) {
+		if (kind === "espresso") return espressoIllustration();
 		const svg = svgNode("svg", {
 			viewBox: "0 0 140 112",
 			"aria-hidden": "true",
@@ -177,6 +179,442 @@
 			)
 		);
 		return svg;
+	}
+	function espressoCup(fill = 0) {
+		const cup = svgNode("g", { class: "espresso-cup" });
+		cup.append(
+			svgNode("ellipse", { cx: 190, cy: 315, rx: 52, ry: 7, fill: "#d8dedb" }),
+			svgNode("path", {
+				d: "M220 275h12c21 0 18 28-12 27",
+				fill: "none",
+				stroke: "#A2A342",
+				"stroke-width": 9,
+			}),
+			svgNode("path", {
+				d: "M156 268h68l-6 36q-28 18-56 0Z",
+				fill: "#A2A342",
+				stroke: "#666d35",
+				"stroke-width": 2,
+			}),
+			svgNode("ellipse", {
+				cx: 190,
+				cy: 269,
+				rx: 33,
+				ry: 10,
+				fill: "#f4f3e9",
+				stroke: "#666d35",
+				"stroke-width": 2,
+			}),
+			svgNode("ellipse", {
+				cx: 190,
+				cy: 269,
+				rx: 28,
+				ry: 7,
+				fill: "#c39658",
+				class: "espresso-liquid",
+				opacity: fill,
+			}),
+			svgNode("path", {
+				d: "M170 286q17 6 32 0",
+				fill: "none",
+				stroke: "#c4c78c",
+				"stroke-width": 3,
+			})
+		);
+		return cup;
+	}
+	function espressoIllustration() {
+		const svg = svgNode("svg", {
+			viewBox: "0 0 400 390",
+			"aria-hidden": "true",
+			focusable: "false",
+			class: "asset-illustration espresso-machine",
+		});
+		svg.append(
+			svgNode("ellipse", { cx: 207, cy: 365, rx: 155, ry: 13, fill: "#dce4e0" }),
+			svgNode("path", {
+				d: "M93 46 128 28h196v305l-33 20H93Z",
+				fill: "#A2A342",
+				stroke: "#243943",
+				"stroke-width": 2,
+			}),
+			svgNode("rect", {
+				x: 93,
+				y: 46,
+				width: 198,
+				height: 302,
+				rx: 7,
+				fill: "#3683A4",
+				stroke: "#243943",
+				"stroke-width": 2,
+			}),
+			svgNode("path", { d: "M103 47 134 33h180l-29 14Z", fill: "#c6d1d2" }),
+			svgNode("path", { d: "M109 37h176m-160-7h175", stroke: "#e9efed", "stroke-width": 4 }),
+			svgNode("rect", { x: 105, y: 150, width: 174, height: 164, rx: 3, fill: "#243943" }),
+			svgNode("path", { d: "M111 157h162v150H111Z", fill: "#d4dddc" }),
+			svgNode("path", { d: "M112 158h18v149h-18Zm144 0h17v149h-17Z", fill: "#a3b5b8" }),
+			svgNode(
+				"text",
+				{ x: 192, y: 79, "text-anchor": "middle", class: "espresso-brand" },
+				"GAGGIA"
+			),
+			svgNode(
+				"text",
+				{ x: 192, y: 91, "text-anchor": "middle", class: "espresso-model" },
+				"CLASSIC PRO"
+			),
+			svgNode("rect", {
+				x: 163,
+				y: 164,
+				width: 56,
+				height: 31,
+				rx: 6,
+				fill: "#879b9f",
+				stroke: "#243943",
+				"stroke-width": 2,
+			}),
+			svgNode("ellipse", {
+				cx: 191,
+				cy: 196,
+				rx: 29,
+				ry: 9,
+				fill: "#e6eeeb",
+				stroke: "#243943",
+				"stroke-width": 2,
+			}),
+			svgNode("path", {
+				d: "M178 201v13h11m15-13v13h-8",
+				fill: "none",
+				stroke: "#788f95",
+				"stroke-width": 6,
+			}),
+			svgNode("path", {
+				d: "M173 195 112 212",
+				stroke: "#27363d",
+				"stroke-width": 17,
+				"stroke-linecap": "round",
+			}),
+			svgNode("path", {
+				d: "M299 142v57l-13 42v22l13 9",
+				fill: "none",
+				stroke: "#d2dddf",
+				"stroke-width": 8,
+				"stroke-linejoin": "round",
+			}),
+			svgNode("path", {
+				d: "M298 143v55l-13 44",
+				fill: "none",
+				stroke: "#758e94",
+				"stroke-width": 2,
+			}),
+			svgNode("ellipse", {
+				cx: 303,
+				cy: 127,
+				rx: 20,
+				ry: 15,
+				fill: "#263a42",
+				stroke: "#16272e",
+				"stroke-width": 2,
+			}),
+			svgNode("path", {
+				d: "M293 120v14m7-20v25m7-26v26m7-20v16",
+				stroke: "#657781",
+				"stroke-width": 2,
+			}),
+			svgNode("rect", {
+				x: 104,
+				y: 314,
+				width: 176,
+				height: 26,
+				rx: 4,
+				fill: "#99aeb1",
+				stroke: "#243943",
+				"stroke-width": 2,
+			}),
+			svgNode("path", {
+				d: "M111 321h161m-161 9h161M121 316v21m15-21v21m15-21v21m15-21v21m15-21v21m15-21v21m15-21v21m15-21v21m15-21v21m15-21v21",
+				stroke: "#e4e9e5",
+				"stroke-width": 2,
+			}),
+			svgNode("path", { d: "M112 349v9h27v-9m109 0v9h27v-9", fill: "#243943" })
+		);
+		for (const x of [142, 180, 218]) {
+			svg.append(
+				svgNode("rect", {
+					x,
+					y: 108,
+					width: 24,
+					height: 29,
+					rx: 3,
+					fill: "#21363e",
+					stroke: "#adc7cc",
+					"stroke-width": 1,
+				})
+			);
+			svg.append(
+				svgNode("path", { d: `M${x + 5} 115h14`, stroke: "#a8bdc1", "stroke-width": 2 })
+			);
+			svg.append(
+				svgNode("circle", {
+					cx: x + 12,
+					cy: 129,
+					r: 2,
+					fill: x === 142 ? "#bdd98d" : "#dd9b4b",
+				})
+			);
+		}
+		svg.append(
+			svgNode("path", {
+				d: "M91 183H72",
+				fill: "none",
+				stroke: "#344e58",
+				"stroke-width": 4,
+			}),
+			svgNode("rect", {
+				x: 13,
+				y: 150,
+				width: 66,
+				height: 62,
+				rx: 5,
+				fill: "#263c46",
+				stroke: "#839ba2",
+				"stroke-width": 2,
+			}),
+			svgNode(
+				"text",
+				{ x: 46, y: 166, "text-anchor": "middle", class: "espresso-pid-label" },
+				"CUSTOM PID"
+			),
+			svgNode(
+				"text",
+				{ x: 46, y: 187, "text-anchor": "middle", class: "espresso-pid-value" },
+				"93.0"
+			),
+			svgNode(
+				"text",
+				{ x: 46, y: 202, "text-anchor": "middle", class: "espresso-pid-label" },
+				"°C · MODEL"
+			),
+			svgNode("path", {
+				d: "M185 219v47m13-47v47",
+				fill: "none",
+				stroke: "#91602d",
+				"stroke-width": 2.5,
+				class: "espresso-flow",
+				opacity: 0,
+			}),
+			espressoCup()
+		);
+		return svg;
+	}
+	function stopEspressoReplay() {
+		const cleanup = state.espressoCleanup;
+		state.espressoCleanup = null;
+		if (cleanup) cleanup();
+	}
+	function espressoPlot(model) {
+		const svg = svgNode("svg", {
+			viewBox: "0 0 660 225",
+			role: "img",
+			class: "espresso-plot",
+			"aria-label":
+				"Synthetic boiler temperature and setpoint over elapsed seconds. Readouts show the selected sample; all samples are available under Scenario signals.",
+		});
+		const values = model.samples.flatMap((sample) => [
+			sample.temperature_c,
+			sample.setpoint_c,
+		]);
+		const min = Math.floor(Math.min(...values) - 2),
+			max = Math.ceil(Math.max(...values) + 2);
+		const x = (elapsed) => 48 + (elapsed / model.duration_seconds) * 590;
+		const y = (value) => 178 - ((value - min) / (max - min)) * 148;
+		for (let i = 0; i < 4; i++) {
+			const value = min + ((max - min) * i) / 3;
+			svg.append(svgNode("path", { d: `M48 ${y(value)}H638`, class: "espresso-grid" }));
+			svg.append(
+				svgNode(
+					"text",
+					{ x: 40, y: y(value) + 4, "text-anchor": "end", class: "espresso-axis" },
+					value.toFixed(0)
+				)
+			);
+		}
+		for (const elapsed of [0, model.brew_start_s, model.brew_end_s, model.duration_seconds]) {
+			svg.append(
+				svgNode(
+					"text",
+					{ x: x(elapsed), y: 201, "text-anchor": "middle", class: "espresso-axis" },
+					`${elapsed}s`
+				)
+			);
+		}
+		svg.append(svgNode("text", { x: 48, y: 15, class: "espresso-axis" }, "Boiler °C"));
+		svg.append(
+			svgNode("rect", {
+				x: x(model.brew_start_s),
+				y: 27,
+				width: x(model.brew_end_s) - x(model.brew_start_s),
+				height: 151,
+				class: "espresso-brew-window",
+			})
+		);
+		for (const [key, className] of [
+			["setpoint_c", "espresso-setpoint"],
+			["temperature_c", "espresso-temperature"],
+		]) {
+			const d = model.samples
+				.map((sample, i) => `${i ? "L" : "M"}${x(sample.elapsed_s)} ${y(sample[key])}`)
+				.join(" ");
+			svg.append(svgNode("path", { d, class: className }));
+		}
+		const cursor = svgNode("path", { class: "espresso-cursor" });
+		const point = svgNode("circle", { r: 4, class: "espresso-point" });
+		svg.append(cursor, point);
+		return {
+			node: svg,
+			update(sample) {
+				cursor.setAttribute("d", `M${x(sample.elapsed_s)} 27V178`);
+				point.setAttribute("cx", x(sample.elapsed_s));
+				point.setAttribute("cy", y(sample.temperature_c));
+			},
+		};
+	}
+	function espressoReplay(model) {
+		const section = element("section", null, "espresso-replay");
+		section.append(
+			element("p", "Synthetic PID model · custom finish/retrofit concept", "espresso-kicker")
+		);
+		const layout = element("div", null, "espresso-layout");
+		const figure = element("figure", null, "espresso-figure");
+		const machine = espressoIllustration();
+		figure.append(
+			machine,
+			element("figcaption", "Gaggia Classic Pro · CLR powder-coat concept")
+		);
+		const panel = element("div", null, "espresso-panel");
+		panel.append(
+			element("h3", "One espresso, sample by sample."),
+			element(
+				"p",
+				`${format(model.dose_g, "g")} coffee → ${format(
+					model.yield_g,
+					"g"
+				)} beverage · ${format(model.water_g, "g")} brew water`,
+				"espresso-recipe"
+			)
+		);
+		const phase = element("p", null, "espresso-phase");
+		const readouts = element("dl", null, "espresso-readouts");
+		const fields = {};
+		for (const [key, label] of [
+			["temperature_c", "Boiler"],
+			["setpoint_c", "Setpoint"],
+			["heater_percent", "Heater output"],
+			["beverage_g", "In the cup"],
+		]) {
+			const cell = element("div");
+			fields[key] = element("dd");
+			cell.append(element("dt", label), fields[key]);
+			readouts.append(cell);
+		}
+		const controls = element("div", null, "espresso-controls");
+		const play = actionButton("Play replay", toggle, "button espresso-play");
+		const restart = actionButton(
+			"Restart",
+			() => {
+				stop();
+				seek(0);
+			},
+			"button secondary"
+		);
+		controls.append(play, restart);
+		const label = element("label", "Replay position", "espresso-scrub-label");
+		const scrub = element("input");
+		scrub.type = "range";
+		scrub.id = "espresso-position";
+		scrub.min = "0";
+		scrub.max = String(model.duration_seconds);
+		scrub.step = "1";
+		label.htmlFor = scrub.id;
+		const elapsed = element("output", null, "espresso-elapsed");
+		elapsed.htmlFor = scrub.id;
+		const plot = espressoPlot(model);
+		panel.append(phase, readouts, controls, label, scrub, elapsed);
+		layout.append(figure, panel);
+		section.append(
+			layout,
+			plot.node,
+			element(
+				"p",
+				"Blue: synthetic boiler temperature · dashed: setpoint · shaded: brew window. The cursor follows recorded model samples.",
+				"espresso-chart-note"
+			),
+			element("p", model.model_note, "sample-note"),
+			element(
+				"p",
+				"Replay only: no physical control. Moving time does not create a cup or record a delivery.",
+				"sample-note"
+			)
+		);
+		let timer = null,
+			position = 0,
+			started = 0,
+			startPosition = 0;
+		function stop() {
+			if (timer !== null) window.clearInterval(timer);
+			timer = null;
+			play.textContent = "Play replay";
+		}
+		function seek(seconds) {
+			position = Math.min(model.duration_seconds, Math.max(0, seconds));
+			const sample =
+				model.samples.findLast((row) => row.elapsed_s <= position) || model.samples[0];
+			scrub.value = String(position);
+			elapsed.textContent = `${position} / ${model.duration_seconds} s · sample at ${sample.elapsed_s} s`;
+			scrub.setAttribute(
+				"aria-valuetext",
+				`${position} seconds, ${String(sample.phase).replaceAll("_", " ")}`
+			);
+			phase.textContent = String(sample.phase).replaceAll("_", " ");
+			fields.temperature_c.textContent = format(sample.temperature_c, "°C");
+			fields.setpoint_c.textContent = format(sample.setpoint_c, "°C");
+			fields.heater_percent.textContent = format(sample.heater_percent, "%");
+			fields.beverage_g.textContent = format(sample.beverage_g, "g");
+			const fill = Math.min(1, Math.max(0, sample.beverage_g / model.yield_g));
+			const liquid = machine.querySelector(".espresso-liquid");
+			liquid.setAttribute("opacity", fill > 0 ? "1" : "0");
+			liquid.setAttribute("rx", 23 + fill * 5);
+			liquid.setAttribute("cy", 274 - fill * 5);
+			machine.querySelector(".espresso-pid-value").textContent =
+				sample.temperature_c.toFixed(1);
+			machine
+				.querySelector(".espresso-flow")
+				.setAttribute(
+					"opacity",
+					position >= model.brew_start_s && position < model.brew_end_s ? "1" : "0"
+				);
+			plot.update(sample);
+		}
+		function toggle() {
+			if (timer !== null) {
+				stop();
+				return;
+			}
+			if (position >= model.duration_seconds) seek(0);
+			started = performance.now();
+			startPosition = position;
+			play.textContent = "Pause replay";
+			timer = window.setInterval(() => {
+				seek(Math.floor(startPosition + (performance.now() - started) / 1000));
+				if (position >= model.duration_seconds) stop();
+			}, 100);
+		}
+		scrub.addEventListener("input", () => {
+			stop();
+			seek(Number(scrub.value));
+		});
+		seek(0);
+		return { node: section, stop };
 	}
 	function actionButton(label, action, className = "sample-link") {
 		const button = element("button", label, className);
@@ -443,6 +881,7 @@
 		);
 	}
 	function openSample(title, kind, contents) {
+		stopEspressoReplay();
 		const dialog = $("sample-dialog");
 		if (!dialog.open) state.dialogOpener = document.activeElement;
 		$("sample-title").textContent = title;
@@ -541,6 +980,10 @@
 			signalPanel(asset),
 			sampleSection(modes[state.mode].label, bullets(asset[state.mode] || [])),
 		];
+		const model = state.scenario.espresso;
+		const replay =
+			model?.asset_id === asset.id && model.samples?.length ? espressoReplay(model) : null;
+		if (replay) contents.splice(0, 1, replay.node);
 		const instructions = element("div", null, "sample-actions");
 		for (const instructionId of asset.work_instruction_ids || []) {
 			const instruction = explorer().work_instructions?.find(
@@ -568,6 +1011,7 @@
 			`${asset.doctype.toUpperCase()} / ${asset.name || asset.id}`,
 			contents
 		);
+		if (replay) state.espressoCleanup = replay.stop;
 	}
 	function signalPanel(asset) {
 		const section = sampleSection("Scenario signals");
@@ -1194,6 +1638,18 @@
 	}
 	function renderCup() {
 		const cup = state.scenario.cup || {};
+		const espresso = state.scenario.espresso;
+		$("espresso-cup-drawing").hidden = !espresso;
+		$("filter-cup-drawing").hidden = Boolean(espresso);
+		if (espresso) {
+			const drawing = svgNode("svg", {
+				viewBox: "130 247 130 83",
+				"aria-hidden": "true",
+				focusable: "false",
+			});
+			drawing.append(espressoCup(cup.beverage_g > 0 ? 1 : 0));
+			$("espresso-cup-drawing").replaceChildren(drawing);
+		}
 		const trace = state.scenario.trace || [];
 		const cupRecord = trace.find((record) => record.id === cup.id);
 		$("cup-id").textContent = cupRecord ? cup.id : "No cup created";
@@ -1399,6 +1855,8 @@
 			);
 	}
 	function selectScenario(id) {
+		stopEspressoReplay();
+		if ($("sample-dialog").open) $("sample-dialog").close();
 		state.ocelRequest += 1;
 		state.scenario =
 			state.data.scenarios.find((scenario) => scenario.id === id) || state.data.scenarios[0];
@@ -1493,6 +1951,9 @@
 				.filter(Boolean)
 				.join(" · ");
 			selectScenario("normal");
+			$("explore-espresso").hidden = !data.scenarios.some(
+				(scenario) => scenario.id === "espresso_pid"
+			);
 			renderCoverage();
 			$("demo").hidden = false;
 			$("loading").hidden = true;
@@ -1502,6 +1963,12 @@
 		}
 	}
 	$("scenario").addEventListener("change", (event) => selectScenario(event.target.value));
+	$("explore-espresso").addEventListener("click", () => {
+		selectScenario("espresso_pid");
+		const stage = state.data.stages.findIndex((item) => item.id === "brewing");
+		if (stage >= 0) setStage(stage);
+		openAsset(state.scenario.espresso.asset_id);
+	});
 	$("previous").addEventListener("click", () => setStage(state.stage - 1, true));
 	$("next").addEventListener("click", () => setStage(state.stage + 1, true));
 	$("replay").addEventListener("click", () => setStage(0, true));
@@ -1519,9 +1986,11 @@
 	});
 	$("sample-close").addEventListener("click", () => $("sample-dialog").close());
 	$("sample-dialog").addEventListener("close", () => {
+		stopEspressoReplay();
 		const opener = state.dialogOpener;
 		state.dialogOpener = null;
 		(opener?.isConnected ? opener : $("stage-title")).focus({ preventScroll: true });
 	});
+	window.addEventListener("pagehide", stopEspressoReplay);
 	void load();
 })();

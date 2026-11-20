@@ -22,6 +22,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
+from espresso import make_espresso_scenario
 from explorer import build_explorer
 
 from foames.foames_mes.counters import counter_delta
@@ -31,6 +32,7 @@ from foames.foames_process_mining.eventlog import Event, EventLog
 from foames.foames_process_mining.ocel import to_ocel
 
 HERE = Path(__file__).resolve().parent
+SCENARIO_IDS = ("normal", "moisture_hold", "network_gap", "recall", "espresso_pid")
 STAGES = (
 	"land",
 	"nursery",
@@ -463,6 +465,11 @@ def _scenario_cup(hold, recall):
 
 
 def make_scenario(kind="normal"):
+	if kind == "espresso_pid":
+		result = make_espresso_scenario(make_scenario("normal"))
+		result["process_graph"] = discover_dfg(event_log(result)).to_dict()
+		validate_trace(result["trace"])
+		return result
 	good_counts = {"normal": 550, "moisture_hold": 0, "network_gap": 450, "recall": 550}
 	if kind not in good_counts:
 		raise ValueError("Unknown scenario")
@@ -578,7 +585,7 @@ def build_data():
 	data = copy.deepcopy(catalog)
 	data.update(
 		{
-			"scenarios": [make_scenario(k) for k in ("normal", "moisture_hold", "network_gap", "recall")],
+			"scenarios": [make_scenario(k) for k in SCENARIO_IDS],
 			"engine": {
 				"name": "FoaMES computed replay",
 				"revision": revision,

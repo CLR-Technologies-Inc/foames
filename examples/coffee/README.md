@@ -66,7 +66,7 @@ styles and JSON from its own origin on that path. No CDN, server, cookies, accou
 third-party scripts or new service subscription is required.
 
 The public replay executes FoaMES's actual pure counter, OEE, process discovery and
-OCEL export modules at build time. The browser explores the resulting four recorded
+OCEL export modules at build time. The browser explores the resulting five recorded
 scenarios; it does not connect to a live Frappe database. `data.json` identifies the
 source revision and every input is simulated. The normal scenario has an explicit
 cup handoff; a moisture hold has no downstream records; a missing state interval
@@ -110,6 +110,31 @@ review requirements. They are teaching examples, not approved operating procedur
 opening a sample neither starts a Work Instruction Run nor signs a step. Graphs
 identify their units and scenario, and include readable data tables. Missing
 signals remain missing; stages not reached by a held lot have no production data.
+
+## CLR espresso and PID demonstration
+
+**Explore CLR espresso** opens a Gaggia Classic Pro RI9380-inspired sample Machine
+with an original SVG illustration, a CLR blue (`#3683A4`) powder-coat concept,
+olive (`#A2A342`) accents, a custom PID display and an espresso cup. Manufacturer
+documentation supports the machine's recognizable form; the coating, retrofit
+and model values are fictional customizations. Source links and their limits are
+included under brewing evidence. This is not a depiction of the newer Classic UP
+or an assertion that the original Classic Pro shipped with a PID.
+
+The `espresso_pid` scenario reuses the normal upstream lot and adds its own brew
+and cup identities. Its teaching balance is 18 g coffee plus 54 g water becoming
+36 g beverage and 36 g wet puck/retention; the original filter route stays unchanged.
+At an assumed 10% TDS, that espresso has 20% extraction. A separate recorded handoff
+is still required; filling the cup in the playback does not create a delivery.
+
+[`espresso.py`](espresso.py) computes a deterministic, one-second PID teaching
+model with proportional, integral and derivative feedback, output clamping and
+anti-windup. Its 90-second replay starts at an assumed 90°C, uses a fictional 93°C
+setpoint, introduces a brew heat load at 45 seconds and shows recovery after 75.
+The coefficients are not fitted to Gaggia equipment, and assumed cup flow is
+independent of temperature control. The panel can play, pause, restart or scrub
+the precomputed samples; it never writes tags or connects to hardware. The full
+sample tables and a Draft espresso-review instruction remain available.
 
 ## New coffee introduction and feature coverage
 
@@ -155,6 +180,10 @@ on Python 3.10 and 3.14. Browser verification additionally checks:
 - The proposed Arabica route uses existing stages/assets without changing replay
   records, quantities, OEE, work-instruction execution or release decisions.
 - Downloaded scenario data retains the shared definitions and simulation labels.
+- The espresso view preserves exact model samples, pauses on dialog close and
+  scenario changes, and supports keyboard scrubbing without automatic playback.
+  Cup fill and readouts agree with the selected sample. Filter and espresso assets
+  never display each other's signals, and the espresso OCEL retains its own cup.
 
 Before calling a hosted version complete, verify the deployed journey from the
 first stage to cup handoff, backward lot tracing, held-lot behavior, source links,

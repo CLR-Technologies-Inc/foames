@@ -109,7 +109,7 @@
       "summary": "Trace the package lot into a measured dose and brew run. Record water, beverage output, grind, time, temperature and dissolved solids against the selected method's recipe.",
       "controls": ["Released lot and measured dose", "Method-specific recipe and equipment checks", "Beverage mass, dissolved solids and sensory result"],
       "foames_records": ["Work Instruction Run", "Machine Event", "Cycle Time Standard"],
-      "source_ids": ["ucd-brewing", "ecbc-filter", "washed-mass-flow"],
+      "source_ids": ["ucd-brewing", "ecbc-filter", "washed-mass-flow", "gaggia-classic-pro-manual", "gaggia-pid-retrofit", "clr-palette"],
       "paper_status": "Papers welcome: grinding, extraction and consumer preferences"
     },
     {
@@ -124,6 +124,36 @@
     }
   ],
   "sources": [
+    {
+      "id": "gaggia-classic-pro-manual",
+      "title": "Gaggia Classic Pro RI9380 operating instructions",
+      "publisher": "Gaggia",
+      "url": "https://www.gaggia.com/app/uploads/2023/07/4219-465-10461-MANUAL-GAG.-CLASSIC-USA-Rev-00_Classic_Energy_Vibes_Evo.pdf",
+      "kind": "Manufacturer documentation",
+      "locator": "RI9380 (SIN035R), November 2022 revision; Fig. 1 and component description",
+      "claim": "Identifies the Classic Pro's power, brew and steam controls, filter holder, steam wand, water tank and drip tray; used as a reference for the original schematic illustration.",
+      "limitations": "The CLR powder-coated finish and external PID are fictional customizations. The model does not reproduce measured Gaggia thermal dynamics or newer Classic variants. No manufacturer affiliation is implied."
+    },
+    {
+      "id": "gaggia-pid-retrofit",
+      "title": "Classic PIDs?",
+      "publisher": "Gaggia UK / Gaggia Direct",
+      "url": "https://www.gaggiadirect.com/blog/classic-pids",
+      "kind": "Distributor explanation",
+      "locator": "May 30, 2022; discussion of Classic thermostats and PID modifications",
+      "claim": "Describes thermostat-based temperature control and discusses PID modifications on the Classic models of that period.",
+      "limitations": "Historical distributor commentary, not a retrofit design or a statement about all current Classic variants. The demo provides no installation, tuning or machine certification."
+    },
+    {
+      "id": "clr-palette",
+      "title": "CLR website color palette",
+      "publisher": "CLR Technologies Inc.",
+      "url": "https://github.com/CLR-Technologies-Inc/clr-prod-cloudflare/blob/465afad7d02c0e7a7465aeeed7f9ae6d1bec6292/sites/foames/public/styles.css#L1-L23",
+      "kind": "Brand source",
+      "locator": "CSS design tokens at the existing website revision",
+      "claim": "Defines CLR blue #3683A4 and olive #A2A342 with mist, ink and sky supporting colors.",
+      "limitations": "Digital color reference for the illustrative powder-coat concept, not a physical coating specification or exact printed color match."
+    },
     {
       "id": "ctahr-growing",
       "title": "Growing Coffee in Hawaii",
