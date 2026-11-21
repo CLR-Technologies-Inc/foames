@@ -1,0 +1,109 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-18 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "connection_section",
+  "base_url",
+  "access_key",
+  "secret_key",
+  "column_break_connection",
+  "timeout",
+  "scope_section",
+  "allowed_documents",
+  "sb_scope_note"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "description": "Turns on Onshape reads and CAD reference refresh. Everything is read-only; FoaMES never writes to Onshape.",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "connection_section",
+   "fieldtype": "Section Break",
+   "label": "Connection"
+  },
+  {
+   "default": "https://cad.onshape.com",
+   "description": "The Onshape base URL; use the Enterprise tenant URL when the account is on Onshape's enterprise deployment.",
+   "fieldname": "base_url",
+   "fieldtype": "Data",
+   "label": "Base URL",
+   "options": "URL"
+  },
+  {
+   "description": "The API key's access key, from Onshape's developer portal (dev-portal.onshape.com). Request-signature authentication is used; Basic auth is not supported.",
+   "fieldname": "access_key",
+   "fieldtype": "Data",
+   "label": "Access Key"
+  },
+  {
+   "description": "The API key's secret half. Stored encrypted; never logged. Shown only once at creation in Onshape.",
+   "fieldname": "secret_key",
+   "fieldtype": "Password",
+   "label": "Secret Key"
+  },
+  {
+   "fieldname": "column_break_connection",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "30",
+   "description": "Per-request timeout in seconds.",
+   "fieldname": "timeout",
+   "fieldtype": "Int",
+   "label": "Timeout (seconds)"
+  },
+  {
+   "fieldname": "scope_section",
+   "fieldtype": "Section Break",
+   "label": "Scope"
+  },
+  {
+   "description": "Optional scope limit: one Onshape document id per line. When set, only these documents can be linked or refreshed; leave empty to allow any document the API key can read.",
+   "fieldname": "allowed_documents",
+   "fieldtype": "Small Text",
+   "label": "Allowed Documents"
+  },
+  {
+   "fieldname": "sb_scope_note",
+   "fieldtype": "Section Break"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-11-18 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Adapters",
+ "name": "Onshape Settings",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "report": 1,
+   "role": "FoaMES Integration"
+  }
+ ]
+}

@@ -1,0 +1,225 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-11-18 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "title",
+  "sb_link",
+  "link_doctype",
+  "link_name",
+  "reference_kind",
+  "status",
+  "sb_revision",
+  "wvm_type",
+  "wvm_id",
+  "document_id",
+  "element_id",
+  "part_id",
+  "configuration",
+  "column_break_rev",
+  "pinned",
+  "canonical_url",
+  "source_revision",
+  "last_synced_on"
+ ],
+ "fields": [
+  {
+   "default": "OS-CAD-",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Series",
+   "options": "OS-CAD-"
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sb_link",
+   "fieldtype": "Section Break",
+   "label": "Linked FoaMES Record"
+  },
+  {
+   "description": "The DocType of the FoaMES record this design reference belongs to, for example Item or Work Order.",
+   "fieldname": "link_doctype",
+   "fieldtype": "Link",
+   "label": "DocType",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "fieldname": "link_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Record",
+   "options": "link_doctype",
+   "reqd": 1
+  },
+  {
+   "default": "Document",
+   "fieldname": "reference_kind",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Reference Kind",
+   "options": "Document\nPart\nAssembly\nDrawing",
+   "reqd": 1
+  },
+  {
+   "default": "Linked",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Linked\nStale\nInaccessible\nSuperseded",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sb_revision",
+   "fieldtype": "Section Break",
+   "label": "Onshape Revision"
+  },
+  {
+   "description": "w = mutable workspace (unreleased), v = immutable version, m = immutable microversion. A pinned reference never moves when the design changes.",
+   "fieldname": "wvm_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Workspace / Version / Microversion",
+   "options": "w\nv\nm",
+   "reqd": 1
+  },
+  {
+   "fieldname": "wvm_id",
+   "fieldtype": "Data",
+   "label": "WVM ID",
+   "reqd": 1
+  },
+  {
+   "fieldname": "document_id",
+   "fieldtype": "Data",
+   "label": "Document ID",
+   "reqd": 1
+  },
+  {
+   "fieldname": "element_id",
+   "fieldtype": "Data",
+   "label": "Element ID"
+  },
+  {
+   "fieldname": "part_id",
+   "fieldtype": "Data",
+   "label": "Part ID"
+  },
+  {
+   "fieldname": "configuration",
+   "fieldtype": "Data",
+   "label": "Configuration"
+  },
+  {
+   "fieldname": "column_break_rev",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "Set automatically: true when the reference names an immutable version or microversion.",
+   "fieldname": "pinned",
+   "fieldtype": "Check",
+   "label": "Pinned",
+   "read_only": 1
+  },
+  {
+   "fieldname": "canonical_url",
+   "fieldtype": "Data",
+   "label": "Onshape URL",
+   "options": "URL",
+   "read_only": 1
+  },
+  {
+   "description": "Release or revision metadata Onshape supplies, when it does.",
+   "fieldname": "source_revision",
+   "fieldtype": "Data",
+   "label": "Source Revision"
+  },
+  {
+   "fieldname": "last_synced_on",
+   "fieldtype": "Datetime",
+   "label": "Last Synced On",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-11-18 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FoaMES Adapters",
+ "name": "Onshape CAD Reference",
+ "owner": "Administrator",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "autoname": "naming_series:",
+ "title_field": "title",
+ "search_fields": "title,document_id,element_id,link_name",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Engineer",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1,
+   "delete": 1
+  },
+  {
+   "role": "FoaMES Quality",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Supervisor",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "FoaMES Integration",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1,
+   "create": 1,
+   "write": 1
+  }
+ ]
+}
