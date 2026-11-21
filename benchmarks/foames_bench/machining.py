@@ -505,11 +505,11 @@ def _mill_rows(path: Path, columns: dict) -> list[tuple[float, float, float]]:
 			out.append((x, y, z))
 		else:
 			try:
-				x, y, z = (_float(cells[j]) for j in idx)
+				vx, vy, vz = (_float(cells[j]) for j in idx)
 			except IndexError:
 				continue
-			if x is not None and y is not None and z is not None:
-				out.append((x, y, z))
+			if vx is not None and vy is not None and vz is not None:
+				out.append((vx, vy, vz))
 	return out
 
 
