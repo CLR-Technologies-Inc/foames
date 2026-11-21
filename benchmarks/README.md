@@ -78,7 +78,7 @@ Isolation is one of two defences. The runner also hashes the task folder, the ha
 
 ### Sector case studies
 
-A second suite, `sector-case-study`, has 29 tasks: one per major industrial sector (the NAICS manufacturing subsectors, plus oil and gas, mining and utilities), each built on an improvement reported in a public US government document or record from DOE, EPA or NIST MEP. The agent measures a week before and a week after the change from FoaMES machine events, checks the document's claim against the measurement, and writes the case study up. All of them share one specification and one grader, so results compare across sectors. Run them with `--suite sector-case-study`; `run` without `--suite` or `--tasks` runs only the six tasks above. The sectors, sources and scoring are in [docs/sector-case-studies.md](docs/sector-case-studies.md).
+A second suite, `sector-case-study`, has 43 tasks: one per major industrial sector (the NAICS manufacturing subsectors, plus oil and gas, mining, utilities, and data centers, healthcare, higher education, commercial real estate, warehousing and trucking), each built on an improvement reported in a public US government document or record from DOE, EPA or NIST MEP. The agent measures a week before and a week after the change from FoaMES machine events, checks the document's claim against the measurement, and writes the case study up. All of them share one specification and one grader, so results compare across sectors. Run them with `--suite sector-case-study`; `run` without `--suite` or `--tasks` runs only the six tasks above. The sectors, sources and scoring are in [docs/sector-case-studies.md](docs/sector-case-studies.md).
 
 ### Manufacturing-data validation
 

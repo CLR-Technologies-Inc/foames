@@ -7,10 +7,10 @@ Run them with `--suite sector-case-study`:
 ```bash
 foames-bench list --suite sector-case-study
 foames-bench validate --suite sector-case-study
-foames-bench run --suite sector-case-study --agents claude-code-baseline --reps 1 --cap-usd 50
+foames-bench run --suite sector-case-study --agents claude-code-baseline --reps 1 --cap-usd 70
 ```
 
-`foames-bench run` without `--suite` or `--tasks` runs only the core tasks, so adding this suite does not make an existing paid run larger. Twenty-nine tasks at the task budget of $1.50 are $43.50 per agent per repetition; that is a scoring reference, not a price.
+`foames-bench run` without `--suite` or `--tasks` runs only the core tasks, so adding this suite does not make an existing paid run larger. Forty-three tasks at the task budget of $1.50 are $64.50 per agent per repetition; that is a scoring reference, not a price.
 
 ## What every task asks
 
@@ -34,11 +34,12 @@ The reference solution ([solution_case_study.py](../tasks/_sector-case-study/sol
 
 ## The sectors and their sources
 
-Sectors follow NAICS 2022: the manufacturing subsectors 311 to 339, plus oil and gas extraction and mining (21) and utilities (22). Each task's `hidden/sector.json` holds the full citation and the claim.
+Sectors follow NAICS 2022: the manufacturing subsectors 311 to 339, plus oil and gas extraction and mining (21), utilities (22), and the service industries in the [industry list](#industry-coverage) (data centers, healthcare, higher education, commercial real estate, warehousing and trucking). For a building or a fleet, the "line" is whatever FoaMES counts as its output (IT kWh, patient-days, classroom-hours, occupant-hours, cartons, miles) and the meter is its energy. Each task's `hidden/sector.json` holds the full citation and the claim.
 
 | Task | NAICS | Sector | Source (US government) | Claim checked | Verdict in the data |
 | --- | --- | --- | --- | --- | --- |
 | `sector-211-oil-gas` | 211 | Oil and gas extraction (gas wells) | EPA Natural Gas STAR, *Lessons Learned: Installing Plunger Lift Systems in Gas Wells* (2006), [PDF](https://19january2017snapshot.epa.gov/sites/production/files/2016-06/documents/ll_plungerlift.pdf) | production ratio 1.545 (167 to 258 Mcf/d) | supported |
+| `sector-2211-power` | 2211 | Power generation (lignite station) | DOE Office of Fossil Energy, *DOE Receives First Repayment from Successful DryFining Clean Coal Power Initiative Project* (2011), [page](https://www.energy.gov/node/605426) | 4 % less fuel per MWh | supported |
 | `sector-212-mining` | 212 | Coal preparation | DOE Office of Industrial Technologies, *Optimized Pump Systems Save Coal Preparation Plant Money and Energy* (1999), [PDF](https://www.energy.gov/sites/prod/files/2014/05/f16/optimized_coal_plant_pump.pdf) | 87,184 kWh/yr | supported |
 | `sector-2213-wastewater` | 2213 | Municipal wastewater | DOE ITP, *Process Optimization Saves Energy at Metropolitan Syracuse Wastewater Treatment Plant*, DOE/GO-102005-2136, [OSTI](https://www.osti.gov/servlets/purl/1218544) | 2.81 million kWh/yr | supported |
 | `sector-311-food` | 311 | Food (nutritional powders) | DOE OIT, *Compressed Air System Renovation Project Improves Production at a Food Processing Facility*, DOE/GO-102001-1330, [PDF](https://nrel.gov/docs/fy01osti/30231.pdf) | 2,542,000 kWh/yr | supported |
@@ -53,7 +54,9 @@ Sectors follow NAICS 2022: the manufacturing subsectors 311 to 339, plus oil and
 | `sector-324-refining` | 324 | Petroleum refining | DOE ITP, *Refinery Identifies $4.4 Million in Annual Savings by Using Process Simulation Models*, DOE/GO-102004-1759, [PDF](https://nrel.gov/docs/fy04osti/34403.pdf) | 25,528 MMBtu/yr | supported |
 | `sector-325-chemicals` | 325 | Chemicals (petrochemicals) | DOE ITP, *Assessment Leads to Steam System Energy Savings in a Petrochemical Plant*, DOE/GO-102007-2467, [PDF](https://www1.eere.energy.gov/manufacturing/tech_assistance/pdfs/42009.pdf) | 272,000 MMBtu/yr | supported |
 | `sector-3254-pharmaceuticals` | 3254 | Pharmaceutical preparations | DOE Industrial Assessment Centers, assessment record MI0445 (University of Miami IAC, 2024), [record](https://itac.university/assessment/MI0445) | 2,207,693 kWh/yr (implemented) | supported |
+| `sector-325620-consumer-packaged-goods` | 325620 | Consumer packaged goods (health and beauty) | DOE Industrial Assessment Centers, assessment record UU0241 (University of Utah IAC, 2024), [record](https://itac.university/assessment/UU0241) | 67,490 kWh/yr (implemented) | supported |
 | `sector-326-plastics` | 326 | Plastics (blow moulding) | DOE AMO Industrial Assessment Centers, case study UA0108 (University of Alabama IAC), [PDF](https://iac.university/case_studies/UA0108CaseStudy.pdf) | 361,081 kWh/yr | supported |
+| `sector-326211-tires` | 326211 | Tires (off-road) | DOE Industrial Assessment Centers, assessment record TT0317 (Tennessee Tech IAC, 2024), [record](https://itac.university/assessment/TT0317) | 15,786 MMBtu/yr (from $79,406 of gas at $5.03/MMBtu) | supported |
 | `sector-3272-glass` | 3272 | Glass (automotive glass) | DOE OIT, *Compressed Air System Upgrade Improves Production at an Automotive Glass Plant*, DOE/GO-102003-1657, [PDF](https://nrel.gov/docs/fy03osti/33096.pdf) | 7.9 million kWh/yr | supported |
 | `sector-3273-cement` | 3273 | Cement | DOE OIT, *Fan System Optimization Improves Production and Saves Energy at Ash Grove Cement Plant*, DOE/GO-102002-1599, [PDF](https://nrel.gov/docs/fy02osti/32107.pdf) | 175,000 kWh/yr | supported |
 | `sector-331-aluminum` | 331 | Primary metals (aluminum) | DOE ITP, *Energy Assessment Helps Kaiser Aluminum Save Energy and Improve Productivity*, DOE/GO-102008-2561, [PDF](https://www1.eere.energy.gov/manufacturing/tech_assistance/pdfs/42782.pdf) | 45,000 MMBtu/yr | supported |
@@ -61,14 +64,61 @@ Sectors follow NAICS 2022: the manufacturing subsectors 311 to 339, plus oil and
 | `sector-332-forging` | 332 | Fabricated metals (forging) | DOE ITP, *Compressed Air System Optimization Project Saves Energy and Improves Production at Forging Plant*, DOE/GO-102003-1654, [OSTI](https://www.osti.gov/biblio/15003882) | 820,000 kWh/yr | supported |
 | `sector-332-machine-shop` | 332 | Fabricated metals (machining) | NIST MEP, *Success Story: Improvement Effort Reduces Changeover Time* (2018), [page](https://www.nist.gov/blogs/manufacturing-innovation-blog/success-story-improvement-effort-reduces-changeover-time) | 70 % shorter changeover | supported |
 | `sector-333-machinery` | 333 | Machinery (diesel engines) | DOE AMO, *SEP Measurement & Verification Case Study Webinar* (2015), [slides](https://www.energy.gov/sites/prod/files/2015/12/f27/Cummins%20MV%20Slides%20r3_17Nov2016.pdf) | 12.6 % lower energy per unit (new kind `specific_energy_reduction`) | supported |
+| `sector-333131-heavy-equipment` | 333131 | Heavy equipment (mining machinery) | DOE Industrial Assessment Centers, assessment record WV0692 (West Virginia University IAC, 2025), [record](https://itac.university/assessment/WV0692) | 92,823 kWh/yr (implemented) | supported |
+| `sector-333611-wind` | 333611 | Wind (nacelles and hubs) | DOE Industrial Assessment Centers, assessment record OK0965 (Oklahoma State IAC, 2017), [record](https://itac.university/assessment/OK0965) | 458,772 kWh/yr (implemented) | supported |
 | `sector-3344-semiconductors` | 3344 | Semiconductors | DOE ITP, *Freescale Semiconductor Successfully Implements an Energy Management System*, DOE/EE-0579, [PDF](https://www1.eere.energy.gov/manufacturing/tech_assistance/pdfs/freescale_case_study.pdf) | 2.55 million kWh/yr | not supported (the week-to-week noise is larger than the saving) |
+| `sector-334413-solar` | 334413 | Solar (PV panels) | DOE Industrial Assessment Centers, assessment record AM0715 (Texas A&M IAC, 2016), [record](https://itac.university/assessment/AM0715) | 952,167 kWh/yr (implemented) | supported |
 | `sector-335-electrical-equipment` | 335 | Electrical equipment (switchgear) | DOE AMO Industrial Assessment Centers, case study TT0052 (Tennessee Tech IAC), [PDF](https://iac.university/case_studies/TT0052CaseStudy.pdf) | 201,360 kWh/yr (estimate) | not supported |
+| `sector-335911-batteries` | 335911 | Batteries (lead-acid) | DOE Industrial Assessment Centers, assessment record GT0978 (Georgia Tech IAC, 2024), [record](https://itac.university/assessment/GT0978) | 695,508 kWh/yr (implemented) | supported |
 | `sector-3361-motor-vehicles` | 3361 | Motor vehicle assembly | DOE ITP, *Save Energy Now Assessment Enables a Vehicle Assembly Complex to Achieve Significant Natural Gas Savings*, DOE/GO-102008-2485, [PDF](https://nrel.gov/docs/fy08osti/42136.pdf) | 70,000 MMBtu/yr | supported |
 | `sector-3364-aerospace` | 3364 | Aerospace parts | NIST MEP, *Total Productive Maintenance Reduces Equipment Downtime and Lost Capacity* (2022), [page](https://www.nist.gov/mep/successstories/2022/total-productive-maintenance-reduces-equipment-downtime-and-lost-capacity) | OEE 45 % after | supported |
+| `sector-336611-marine` | 336611 | Marine (ship building) | DOE Industrial Assessment Centers, assessment record LS2503 (2025), [record](https://itac.university/assessment/LS2503) | 2,873,935 kWh/yr (implemented) | supported |
 | `sector-337-furniture` | 337 | Furniture | NIST MEP, *Lean Is A "Game-Changer," Shortening Furniture Production Time From Days to Hours*, [page](https://www.nist.gov/mep/successstories/2024/lean-game-changer-shortening-furniture-production-time-days-hours) | 20-minute lead time | not measurable (FoaMES events carry no lead time) |
 | `sector-3391-medical-devices` | 3391 | Medical devices | NIST MEP, *Learning, Doubling Throughput, and Having Fun*, [page](https://www.nist.gov/mep/successstories/2025/learning-doubling-throughput-and-having-fun) | throughput doubled | supported |
+| `sector-484-transportation-logistics` | 484 | Transportation logistics (truckload carrier) | EPA SmartWay, *Featured Partner: Brown Trucking*, EPA-420-F-21-011 (2021), [PDF](https://www.epa.gov/sites/production/files/2021-04/documents/420f21011.pdf) | 5.7 to 6.4 MPG (10.94 % less fuel per mile) | supported |
+| `sector-493-intralogistics` | 493 | Intralogistics (distribution center) | DOE Building Technologies Office, *Prologis Rolls Out Warehouse Energy Retrofits*, DOE/GO-102013-3864, [PDF](https://www1.eere.energy.gov/buildings/publications/pdfs/alliances/prologis_retrofit_30_percent_savings.pdf) | 1.9 million kWh/yr | supported |
+| `sector-518-data-centers` | 518 | Data centers | DOE Better Buildings showcase, *No Cost Energy-Savings Measures at a 1 MW Data Center* (2016), [page](https://betterbuildingssolutioncenter.energy.gov/showcase-projects/no-cost-energy-savings-measures-at-a-1-mw-data-center) | 46 % lower PUE minus 1 | supported |
+| `sector-531-commercial-real-estate` | 531 | Commercial real estate (office) | DOE Better Buildings showcase, *Nuveen Real Estate: No- and Low-Cost Energy Savings at 1001 Pennsylvania Avenue* (2016), [page](https://betterbuildingssolutioncenter.energy.gov/showcase-projects/nuveen-real-estate-no-and-low-cost-energy-savings-1001-pennsylvania-avenue) | 35 % energy saving | supported |
+| `sector-6113-higher-education` | 6113 | Higher education (college campus) | DOE Better Buildings showcase, *CCAC: South Campus Energy Project* (2016), [page](https://betterbuildingssolutioncenter.energy.gov/showcase-projects/community-college-allegheny-county-ccac-south-campus-energy-project) | 37 % energy saving | supported |
+| `sector-622-healthcare` | 622 | Healthcare (hospital) | DOE Better Buildings showcase, *Cleveland Clinic: Hillcrest Hospital*, [page](https://betterbuildingssolutioncenter.energy.gov/showcase-projects/cleveland-clinic-hillcrest-hospital) | 127,000 MMBtu/yr (EUI 587 to 460 kBtu/sq ft over 1,000,000 sq ft) | supported |
 
 The verdict column is what the illustrative data was built to show, not a finding about the plant in the source. Each verdict follows from the data: the after week's energy use is calibrated so the measured saving lands at a stated share of the claim (`target_ratio` in `sector.json`), and the operating parameters decide the OEE, changeover and throughput results.
+
+### Industry coverage
+
+Every industry on the project's featured-industry list has at least one task:
+
+| Industry | Tasks |
+| --- | --- |
+| Aerospace and defense | `sector-3364-aerospace` |
+| Automotive | `sector-3361-motor-vehicles` |
+| Batteries | `sector-335911-batteries` |
+| Cement | `sector-3273-cement` |
+| Chemicals | `sector-325-chemicals` |
+| Commercial real estate | `sector-531-commercial-real-estate` |
+| Consumer packaged goods | `sector-325620-consumer-packaged-goods`, `sector-311-food`, `sector-312-beverage` |
+| Data centers | `sector-518-data-centers` |
+| Electronics | `sector-3344-semiconductors`, `sector-335-electrical-equipment` |
+| Glass | `sector-3272-glass` |
+| Healthcare | `sector-622-healthcare` |
+| Heavy equipment | `sector-333131-heavy-equipment` |
+| Higher education | `sector-6113-higher-education` |
+| Home lifestyle products | `sector-337-furniture`, `sector-314-carpet` |
+| Industrial machinery | `sector-333-machinery`, `sector-332-machine-shop` |
+| Intralogistics | `sector-493-intralogistics` |
+| Life sciences | `sector-3254-pharmaceuticals`, `sector-3391-medical-devices` |
+| Marine | `sector-336611-marine` |
+| Metals | `sector-331-aluminum`, `sector-3315-foundry`, `sector-332-forging` |
+| Mining | `sector-212-mining` |
+| Oil and gas | `sector-211-oil-gas`, `sector-324-refining` |
+| Power utilities | `sector-2211-power` |
+| Pulp and paper | `sector-322-paper` |
+| Semiconductors | `sector-3344-semiconductors` |
+| Solar | `sector-334413-solar` |
+| Tires | `sector-326211-tires` |
+| Transportation logistics | `sector-484-transportation-logistics` |
+| Water and waste | `sector-2213-wastewater` |
+| Wind | `sector-333611-wind` |
 
 ### Sources searched for the second batch
 
@@ -84,7 +134,7 @@ IAC assessment records are entries in DOE's Industrial Assessment Center databas
 
 ## Rules for sources
 
-- **US government works first.** DOE (EERE, the Office of Industrial Technologies, the Industrial Technologies Program, the Advanced Manufacturing Office, the Industrial Assessment Center database), EPA and NIST MEP publications. A non-US public source is used only when its terms allow reuse, and it is credited as they require. Works of the US government are not subject to copyright in the US (17 U.S.C. 105). DOE case studies printed by a national laboratory for DOE, and the Industrial Assessment Center case studies written by DOE-funded university centres and published by DOE's Advanced Manufacturing Office, may not be strictly federal works; for them, as for all, the tasks take only facts (figures, units, the kind of change), which are not copyrightable, and cite the document.
+- **US government works first.** DOE (EERE, the Office of Industrial Technologies, the Industrial Technologies Program, the Advanced Manufacturing Office, the Building Technologies Office, the Office of Fossil Energy, Better Buildings, the Industrial Assessment Center database), EPA and NIST MEP publications. A non-US public source is used only when its terms allow reuse, and it is credited as they require. Works of the US government are not subject to copyright in the US (17 U.S.C. 105). DOE case studies printed by a national laboratory for DOE, and the Industrial Assessment Center case studies written by DOE-funded university centres and published by DOE's Advanced Manufacturing Office, may not be strictly federal works, and Better Buildings showcase pages say their information is provided by the partner; for them, as for all, the tasks take only facts (figures, units, the kind of change), which are not copyrightable, and cite the document.
 - **No third-party material.** No text is copied beyond short factual statements of the claim, and no image, logo or chart. Several sources carry photos credited to the company or to another organisation (for example the IAC case studies and DOE/EE-0579); none is reproduced.
 - **The plant is Plant A.** Prompts, data and write-ups describe an anonymised, illustrative plant. Companies are named only in the citation of the source; a hidden test and a harness test check that the prompt does not name them.
 - **Claims are claims.** Where a source is internally inconsistent (cost and payback in DOE/GO-102001-1330, the unreconciled total in DOE/GO-102008-2537, the percentage in the coal pump fact sheet, the dollar figure in DOE/GO-102004-1759, the 2.9 million kWh given only in the summary of DOE/GO-102002-1546, the plunger lift table's footnote that calls 1,348 Mcf/d both the initial production and the increase), the task states the figure it checks and the prompt or claim text notes the inconsistency rather than resolving it.

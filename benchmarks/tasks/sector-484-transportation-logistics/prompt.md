@@ -1,0 +1,5 @@
+# Did the fleet's equipment and idle changes raise fuel economy from 5.7 to 6.4 MPG?
+
+Terminal A runs 40 dry van tractors on short regional hauls. The carrier fitted wide-based tires and aluminium wheels, lowered the rear-end ratio, set 10-minute automatic idle shutdown and progressive shifting, added battery APUs to sleeper tractors and governed road speed to 65 mph.
+
+A US Environmental Protection Agency SmartWay profile of a carrier that did this (EPA-420-F-21-011, <https://www.epa.gov/sites/production/files/2021-04/documents/420f21011.pdf>, a US government work) reports fuel economy rising from 5.7 to 6.4 MPG, which is 10.94% less fuel per mile. Terminal A's FoaMES site reports the fleet's miles from telematics as its output and the fuel logged at the pumps as its energy. The fleet manager wants FoaMES's reduction in gallons per mile next to the claim. Idling counts as Idle, loading and hook-up as Setup and breakdowns as unplanned downtime; there is no scrap counter, so the `scrap` counter stays at zero.

@@ -5,6 +5,8 @@
  "tier": "pure",
  "complexity": "medium",
  "trl_bands": ["4-6", "7-9"],
+ "ecl": 3,
+ "machine_class": "Spray dryer and powder filling line, with a compressed air plant kWh meter",
  "dimension": "Measurement and verification of a published improvement from FoaMES events: counter rules, unknown time, OEE, claim against measurement",
  "hidden": {"functional": ["test_functional.py"], "invariant": ["test_invariants.py"]},
  "regression": ["foames/foames_mes/test_machine_data_logic.py", "foames/foames_mes/test_oee_ledger.py"],

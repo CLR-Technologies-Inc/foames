@@ -1,0 +1,112 @@
+{
+ "case_id": "sector-531-commercial-real-estate",
+ "sector": "Commercial real estate (multi-tenant office building)",
+ "naics": "531",
+ "seed": 531,
+ "source": {
+  "title": "Nuveen Real Estate: No- and Low-Cost Energy Savings at 1001 Pennsylvania Avenue",
+  "publisher": "U.S. Department of Energy, Better Buildings Initiative (showcase project)",
+  "report": "Better Buildings showcase project",
+  "date": "2016-03-23",
+  "url": "https://betterbuildingssolutioncenter.energy.gov/showcase-projects/nuveen-real-estate-no-and-low-cost-energy-savings-1001-pennsylvania-avenue",
+  "us_government_work": "DOE Better Buildings page whose information is provided by the partner; only figures are used",
+  "named_organisations": [
+   "Nuveen",
+   "1001 Pennsylvania"
+  ]
+ },
+ "claim": {
+  "kind": "specific_energy_reduction",
+  "value": 0.35,
+  "unit": "fraction",
+  "text": "Controls, sensors, variable frequency drives, heat pump, ventilation and lighting work saved 35% of the building's energy and $797,000 a year at 2015 electricity rates."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-03-02T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-05-04T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   7,
+   19
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4
+ ],
+ "mark_unknown_after_minutes": 30,
+ "production_unit": "occupant-hours",
+ "energy_unit": "kWh",
+ "energy_price": 0.11,
+ "line": {
+  "source_id": "BUILDING-A-OCCUPANCY",
+  "description": "Occupant-hours from badge access",
+  "ideal_cycle_seconds": 2.4,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "BUILDING-A-MAIN-KWH",
+  "description": "Building electricity meter",
+  "counter": "energy_kwh",
+  "rollover": 10000000,
+  "every_minutes": 15,
+  "start_value": 5000000
+ },
+ "baseline": {
+  "rate_per_run_hour": 1200,
+  "scrap_fraction": 0.0,
+  "down_per_day": 0.1,
+  "down_minutes": 45,
+  "idle_per_day": 0.5,
+  "idle_minutes": 60,
+  "setup_per_day": 0.0,
+  "setup_minutes": 0,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 620,
+  "energy_per_unit": 0.35
+ },
+ "after": {
+  "rate_per_run_hour": 1200,
+  "scrap_fraction": 0.0,
+  "down_per_day": 0.1,
+  "down_minutes": 45,
+  "idle_per_day": 0.5,
+  "idle_minutes": 60,
+  "setup_per_day": 0.0,
+  "setup_minutes": 0,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 380,
+  "energy_per_unit": 0.35
+ },
+ "traps": {
+  "duplicate": {
+   "window": "after"
+  },
+  "plc_reset": {
+   "window": "baseline",
+   "at": 0.36
+  },
+  "network_gap": {
+   "window": "baseline",
+   "at": 0.65,
+   "hours": 2
+  },
+  "meter_rollover": {
+   "window": "after",
+   "at": 0.55
+  }
+ },
+ "target_ratio": 0.94
+}

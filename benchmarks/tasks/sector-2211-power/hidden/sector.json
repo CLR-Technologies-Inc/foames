@@ -1,0 +1,115 @@
+{
+ "case_id": "sector-2211-power",
+ "sector": "Power utilities (lignite-fired generating station)",
+ "naics": "2211",
+ "seed": 2211,
+ "source": {
+  "title": "DOE Receives First Repayment from Successful DryFining Clean Coal Power Initiative Project",
+  "publisher": "U.S. Department of Energy, Office of Fossil Energy (press release)",
+  "report": "DOE press release",
+  "date": "2011-07-06",
+  "url": "https://www.energy.gov/node/605426",
+  "us_government_work": true,
+  "named_organisations": [
+   "Great River",
+   "Coal Creek",
+   "Lehigh",
+   "WorleyParsons",
+   "Heyl",
+   "EPRI"
+  ]
+ },
+ "claim": {
+  "kind": "specific_energy_reduction",
+  "value": 0.04,
+  "unit": "fraction",
+  "text": "Drying the lignite with the plant's own waste heat improved the station's overall performance by almost 4 percent; DOE's 2004 announcement expected 2.8 to 5 percent."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-01-05T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-04-06T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   0,
+   24
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6
+ ],
+ "mark_unknown_after_minutes": 30,
+ "production_unit": "MWh",
+ "energy_unit": "MMBtu",
+ "energy_price": 1.8,
+ "line": {
+  "source_id": "UNIT-A-GENERATOR",
+  "description": "Unit A net generation",
+  "ideal_cycle_seconds": 6.5,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "UNIT-A-FUEL-HEAT",
+  "description": "Unit A fuel heat input",
+  "counter": "fuel_mmbtu",
+  "rollover": 10000000,
+  "every_minutes": 15,
+  "start_value": 8200000
+ },
+ "baseline": {
+  "rate_per_run_hour": 520,
+  "scrap_fraction": 0.0,
+  "down_per_day": 0.15,
+  "down_minutes": 180,
+  "idle_per_day": 0.3,
+  "idle_minutes": 60,
+  "setup_per_day": 0.0,
+  "setup_minutes": 0,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 300,
+  "energy_per_unit": 10.4
+ },
+ "after": {
+  "rate_per_run_hour": 520,
+  "scrap_fraction": 0.0,
+  "down_per_day": 0.15,
+  "down_minutes": 180,
+  "idle_per_day": 0.3,
+  "idle_minutes": 60,
+  "setup_per_day": 0.0,
+  "setup_minutes": 0,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 300,
+  "energy_per_unit": 10.4
+ },
+ "traps": {
+  "plc_reset": {
+   "window": "after",
+   "at": 0.35
+  },
+  "network_gap": {
+   "window": "baseline",
+   "at": 0.55,
+   "hours": 4
+  },
+  "meter_rollover": {
+   "window": "baseline",
+   "at": 0.6
+  }
+ },
+ "target_ratio": 0.95
+}
