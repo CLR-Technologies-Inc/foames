@@ -27,6 +27,7 @@ Standard library only. Imported by mfgdata, which owns fetch, stages and the rep
 from __future__ import annotations
 
 import csv
+import functools
 import io
 import json
 import math
@@ -567,6 +568,14 @@ def _mill_features(f: dict, columns: dict, rate: float) -> dict | None:
 	return feats
 
 
+def _cached_mill_features(f: dict, *, cache: dict, columns: dict, rate: float) -> dict | None:
+	"""_mill_features, parsed at most once per file within one cache."""
+	key = f["path"]
+	if key not in cache:
+		cache[key] = _mill_features(f, columns, rate)
+	return cache[key]
+
+
 def load_milling(folder: Path, ds: dict, max_rows: int | None) -> dict:
 	"""Per file: machine, operation, timeframe, label and per-axis RMS and peak acceleration. A stage
 	limit spreads its file budget evenly over machines and operations, in time order: each group keeps
@@ -593,13 +602,7 @@ def load_milling(folder: Path, ds: dict, max_rows: int | None) -> dict:
 		# budget, so a budget never pulls a later recording into it and an unreadable file never
 		# leaves it short. Each file is parsed at most once.
 		cache: dict = {}
-
-		def feats_of(f, cache=cache):
-			key = f["path"]
-			if key not in cache:
-				cache[key] = _mill_features(f, ds["columns"], rate)
-			return cache[key]
-
+		feats_of = functools.partial(_cached_mill_features, cache=cache, columns=ds["columns"], rate=rate)
 		good = [f for f in g if not f["bad"]]
 		if per:
 			# A budget shortens the baseline to its earliest recordings, never below the minimum, so
