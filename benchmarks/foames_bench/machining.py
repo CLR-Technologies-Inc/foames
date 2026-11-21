@@ -551,55 +551,70 @@ def _spread(items, k):
 	return [items[int(i * step)] for i in range(k)]
 
 
+def _mill_features(f: dict, columns: dict, rate: float) -> dict | None:
+	"""Per-axis RMS and peak acceleration (mean-removed) and duration of one file, or None when the
+	file has fewer than two usable rows."""
+	rows = _mill_rows(f["path"], columns)
+	if len(rows) < 2:
+		return None
+	feats = {}
+	for a, axis in enumerate("xyz"):
+		col = [r[a] for r in rows]
+		centred = statistics.fmean(col)
+		feats[f"rms_{axis}"] = rms([v - centred for v in col])
+		feats[f"peak_{axis}"] = max(abs(v - centred) for v in col)
+	feats["duration_s"] = len(rows) / rate
+	return feats
+
+
 def load_milling(folder: Path, ds: dict, max_rows: int | None) -> dict:
 	"""Per file: machine, operation, timeframe, label and per-axis RMS and peak acceleration. A stage
 	limit spreads its file budget evenly over machines and operations, in time order: each group keeps
-	its earliest good recordings as the baseline and a time-spread sample of what follows."""
+	its earliest usable good recordings as the baseline and a time-spread sample of what follows."""
 	files = list_mill_files(folder)
 	study = ds.get("study", {})
 	share, min_base = study.get("baseline_share", 0.3), study.get("min_baseline", 8)
+	rate = ds["columns"].get("sample_rate_hz", 2000)
 	groups: dict = {}
 	for f in files:
 		groups.setdefault((f["machine"], f["op"]), []).append(f)
 	per = max(6, max_rows // len(groups)) if max_rows else None
-	files = []
+	records = []
+
+	def record(f, feats, baseline):
+		return {k: f[k] for k in ("machine", "op", "when", "n", "bad")} | {
+			"baseline": baseline,
+			"features": feats,
+			"file": f["path"].name,
+		}
+
 	for g in groups.values():
-		# The baseline is the earliest good recordings of the whole group, chosen before any budget,
-		# so a budget never pulls a later recording into the baseline.
+		# The baseline is the earliest usable good recordings of the whole group, chosen before any
+		# budget, so a budget never pulls a later recording into it and an unreadable file never
+		# leaves it short.
 		good = [f for f in g if not f["bad"]]
 		nbase = max(min_base, int(len(good) * share))
 		if per:
 			# A budget shortens the baseline to its earliest recordings, never below the minimum.
 			nbase = min(nbase, max(min_base, per // 2))
-		base = good[:nbase]
-		for f in g:
-			f["baseline"] = False
-		for f in base:
-			f["baseline"] = True
-		cut = g.index(base[-1]) + 1 if base else 0
-		rest = g[cut:]
+		base, last = [], None
+		for f in good:
+			if len(base) >= nbase:
+				break
+			feats = _mill_features(f, ds["columns"], rate)
+			if feats is not None:
+				base.append(record(f, feats, True))
+				last = f
+		rest = g[g.index(last) + 1 :] if last else g
 		if per:
 			# Keep at least half the group budget for judged recordings, so the budget bounds the file
 			# count (at most min_baseline + per per group) without starving the judged tail.
 			rest = _spread(rest, max(per - len(base), per // 2, 2))
-		files += base + rest
-	rate = ds["columns"].get("sample_rate_hz", 2000)
-	records = []
-	for f in files:
-		rows = _mill_rows(f["path"], ds["columns"])
-		if len(rows) < 2:
-			continue
-		feats = {}
-		for a, axis in enumerate("xyz"):
-			col = [r[a] for r in rows]
-			centred = statistics.fmean(col)
-			feats[f"rms_{axis}"] = rms([v - centred for v in col])
-			feats[f"peak_{axis}"] = max(abs(v - centred) for v in col)
-		feats["duration_s"] = len(rows) / rate
-		records.append(
-			{k: f[k] for k in ("machine", "op", "when", "n", "bad", "baseline")}
-			| {"features": feats, "file": f["path"].name}
-		)
+		records += base
+		for f in rest:
+			feats = _mill_features(f, ds["columns"], rate)
+			if feats is not None:
+				records.append(record(f, feats, False))
 	if not records:
 		raise SchemaMismatch(f"{folder}: mill files have no three numeric axis columns")
 	return {"files": records}
@@ -623,10 +638,12 @@ def check_milling(data: dict, ds: dict, max_features: int) -> tuple[list, dict, 
 		else:
 			base = good[: max(min_base, int(len(good) * share))]
 		nb = len(base)
-		if nb < min_base or len(good) < nb + 1:
+		if nb < min_base:
 			continue
-		# Judge only recordings made after the baseline: nothing earlier is held out.
+		# Judge only recordings made after the baseline, good or bad: nothing earlier is held out.
 		cut = max(rs.index(r) for r in base) + 1
+		if cut >= len(rs):
+			continue
 		order = base + rs[cut:]
 		layout[key] = order
 		for f in feats:

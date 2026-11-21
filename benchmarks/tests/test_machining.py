@@ -138,6 +138,33 @@ class TestMillingFleet(StudyBase):
 			self.assertGreaterEqual(len(budget_base), 8)
 			self.assertGreaterEqual(len(pick(data["files"], baseline=False)), per // 2)
 
+	def test_baseline_skips_unreadable_early_recording(self):
+		ds = mfgdata.dataset(self.m, "cnc-milling-vibration")
+		folder = mfgdata.synthetic("cnc-milling-vibration", self.root / "mill")
+		files = machining.list_mill_files(folder)
+		first = next(f for f in files if not f["bad"])
+		first["path"].write_text("x,y,z\n")  # no usable rows
+		key = (first["machine"], first["op"])
+		data = machining.load_milling(folder, ds, None)["files"]
+		base = [r for r in data if (r["machine"], r["op"]) == key and r["baseline"]]
+		self.assertNotIn(first["path"].name, [r["file"] for r in base])
+		self.assertGreaterEqual(len(base), 8)
+		_, metrics, _ = machining.check_milling({"files": data}, ds, 3)
+		self.assertIn(first["machine"].upper(), [m.upper() for m in metrics["machines"]])
+
+	def test_group_with_only_bad_recordings_after_baseline_is_judged(self):
+		ds = mfgdata.dataset(self.m, "cnc-milling-vibration")
+		folder = mfgdata.synthetic("cnc-milling-vibration", self.root / "mill")
+		data = machining.load_milling(folder, ds, None)["files"]
+		key = (data[0]["machine"], data[0]["op"])
+		rs = [r for r in data if (r["machine"], r["op"]) == key]
+		cut = max(i for i, r in enumerate(rs) if r["baseline"]) + 1
+		tail = [dict(r, bad=True) for r in rs[cut:]]
+		# Only this group, so a skipped group would leave nothing to chart.
+		_, metrics, _ = machining.check_milling({"files": rs[:cut] + tail}, ds, 3)
+		self.assertEqual(len(tail), metrics["per_machine"][key[0]]["bad"])
+		self.assertEqual(0, metrics["per_machine"][key[0]]["good"])
+
 	def test_headerless_and_unnamed_columns(self):
 		ds = mfgdata.dataset(self.m, "cnc-milling-vibration")
 		f = self.root / "M01_Aug_2019_OP00_000.csv"
