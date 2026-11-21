@@ -272,7 +272,9 @@ def import_archive(ds: dict, archive: Path, dest: Path | None = None) -> Path:
 	folder.mkdir(parents=True, exist_ok=True)
 	with tempfile.TemporaryDirectory(prefix=".fetch-dataset-", dir=folder) as temporary:
 		staging = Path(temporary)
-		_store(staging, archive.name, data)
+		# The stored name comes from the manifest, never from the user's path.
+		name = f"{ds['id']}.zip"
+		_store(staging, name, data)
 		provenance = {
 			"dataset": ds["id"],
 			"title": ds["title"],
@@ -282,7 +284,7 @@ def import_archive(ds: dict, archive: Path, dest: Path | None = None) -> Path:
 			"license_evidence": ds.get("license_evidence"),
 			"imported_from": "manual download",
 			"source": ds["source"],
-			"files": [{"name": archive.name, "bytes": len(data), "sha256": got, "pinned": bool(pinned)}],
+			"files": [{"name": name, "bytes": len(data), "sha256": got, "pinned": bool(pinned)}],
 		}
 		(staging / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
 		_publish_dataset(staging, folder)
