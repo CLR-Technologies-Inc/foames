@@ -570,6 +570,7 @@ class Result:
 			"error": self.error,
 			"checks": [c.as_dict() for c in self.checks],
 			"metrics": self.metrics,
+			"notes": self.notes,
 		}
 
 

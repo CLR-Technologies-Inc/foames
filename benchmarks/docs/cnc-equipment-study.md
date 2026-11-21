@@ -9,9 +9,17 @@ This study is part of the [manufacturing-data validation track](manufacturing-da
 cd benchmarks
 python -m foames_bench data validate --synthetic --datasets cnc-turning-xquality cnc-milling-vibration
 python -m foames_bench data fetch --datasets cnc-turning-xquality cnc-milling-vibration    # needs Kaggle credentials
-python -m foames_bench data import cnc-turning-xquality    # or: save a browser download as <cache>/_inbox/cnc-turning-xquality.zip first
 python -m foames_bench data validate --stage full --datasets cnc-turning-xquality cnc-milling-vibration --out runs/cnc
 ```
+
+Without Kaggle credentials, download each dataset in a browser, save the archives as `<cache>/_inbox/cnc-turning-xquality.zip` and `<cache>/_inbox/cnc-milling-vibration.zip`, and import both before you validate:
+
+```bash
+python -m foames_bench data import cnc-turning-xquality
+python -m foames_bench data import cnc-milling-vibration
+```
+
+To study only one machine type, import that dataset and pass only its id to `data validate --datasets`.
 
 ## The equipment
 
@@ -26,7 +34,7 @@ Both ratings come from the public [ECL list](https://github.com/CLR-Technologies
 
 **Lathe.** Each part becomes one row of features: for every operation and channel, the signal's mean, peak and RMS, the operation's duration, and its spindle energy (power integrated over time). Parts are taken in production order (part 020 to 081). Limits come from the first 20 normal parts. Every later part is judged against them, including the two normal parts made after the abnormal batches (076 and 077), which act as a check on false alarms. The feature budget of a stage (5, 20 or 60) is spread over channels and both operations: means first, then peaks, then RMS.
 
-**Milling fleet.** Each recording becomes per-axis RMS and peak acceleration, mean-removed, and a duration. Within each machine and operation, limits come from the earliest 30 percent of good recordings (at least eight). Every later recording, good or bad, is judged against them in time order. A stage's row limit becomes a file budget spread evenly over machines and operations.
+**Milling fleet.** Each recording becomes per-axis RMS and peak acceleration, mean-removed, and a duration. Within each machine and operation, limits come from the earliest 30 percent of good recordings (at least eight). Every recording made after the last baseline recording, good or bad, is judged against them in time order. A stage's row limit becomes a file budget spread evenly over machines and operations; the baseline is chosen from all recordings first, so a budget only thins the recordings judged against it.
 
 **Graded checks**, each compared with a value computed inside the benchmark from the raw signals:
 

@@ -119,10 +119,18 @@ class TestMillingFleet(StudyBase):
 	def test_stage_budget_spreads_over_groups(self):
 		ds = mfgdata.dataset(self.m, "cnc-milling-vibration")
 		folder = mfgdata.synthetic("cnc-milling-vibration", self.root / "mill")
+		full = machining.load_milling(folder, ds, None)["files"]
 		data = machining.load_milling(folder, ds, 54)
 		groups = {(r["machine"], r["op"]) for r in data["files"]}
 		self.assertEqual(9, len(groups))
-		self.assertEqual(54, len(data["files"]))
+		self.assertLess(len(data["files"]), len(full))
+		for key in groups:
+			# A budget keeps each group's baseline: its earliest good recordings, not a sample of them.
+			def base(rs, key=key):
+				return [r["file"] for r in rs if (r["machine"], r["op"]) == key and r["baseline"]]
+
+			self.assertEqual(base(full), base(data["files"]))
+			self.assertGreaterEqual(len(base(full)), 8)
 
 	def test_headerless_and_unnamed_columns(self):
 		ds = mfgdata.dataset(self.m, "cnc-milling-vibration")
@@ -131,6 +139,8 @@ class TestMillingFleet(StudyBase):
 		self.assertEqual([(1.0, 2.0, 3.0), (4.0, 5.0, 6.0)], machining._mill_rows(f, ds["columns"]))
 		f.write_text("idx,a,b,c\n0,1,2,3\n1,4,5,6\n")
 		self.assertEqual([(1.0, 2.0, 3.0), (4.0, 5.0, 6.0)], machining._mill_rows(f, ds["columns"]))
+		f.write_text("0,1,2\n7,8,9\n")
+		self.assertEqual([(7.0, 8.0, 9.0)], machining._mill_rows(f, {"axes": [["0", "1", "2"]]}))
 		f.write_text("Z,Y,X,t\n3,2,1,0\n")
 		self.assertEqual([(1.0, 2.0, 3.0)], machining._mill_rows(f, ds["columns"]))
 

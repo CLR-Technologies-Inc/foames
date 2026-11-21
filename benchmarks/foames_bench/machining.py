@@ -480,7 +480,8 @@ def _mill_rows(path: Path, columns: dict) -> list[tuple[float, float, float]]:
 	delim = ";" if lines[0].count(";") > lines[0].count(",") else ","
 	first = [c.strip() for c in lines[0].split(delim)]
 	idx = None
-	if any(_float(c) is None for c in first):
+	named = any(all(c in first for c in cand) for cand in columns["axes"])
+	if named or any(_float(c) is None for c in first):
 		for cand in columns["axes"]:
 			if all(c in first for c in cand):
 				idx = [first.index(c) for c in cand]
@@ -554,12 +555,27 @@ def load_milling(folder: Path, ds: dict, max_rows: int | None) -> dict:
 	"""Per file: machine, operation, timeframe, label and per-axis RMS and peak acceleration. A stage
 	limit spreads its file budget evenly over machines and operations, in time order."""
 	files = list_mill_files(folder)
+	study = ds.get("study", {})
+	share, min_base = study.get("baseline_share", 0.3), study.get("min_baseline", 8)
 	groups: dict = {}
 	for f in files:
 		groups.setdefault((f["machine"], f["op"]), []).append(f)
-	if max_rows:
-		per = max(6, max_rows // len(groups))
-		files = [f for g in groups.values() for f in _spread(g, per)]
+	per = max(6, max_rows // len(groups)) if max_rows else None
+	files = []
+	for g in groups.values():
+		# The baseline is the earliest good recordings of the whole group, chosen before any budget,
+		# so a budget never pulls a later recording into the baseline.
+		good = [f for f in g if not f["bad"]]
+		base = good[: max(min_base, int(len(good) * share))]
+		for f in g:
+			f["baseline"] = False
+		for f in base:
+			f["baseline"] = True
+		cut = g.index(base[-1]) + 1 if base else 0
+		rest = g[cut:]
+		if per:
+			rest = _spread(rest, max(per - len(base), 2))
+		files += base + rest
 	rate = ds["columns"].get("sample_rate_hz", 2000)
 	records = []
 	for f in files:
@@ -574,7 +590,7 @@ def load_milling(folder: Path, ds: dict, max_rows: int | None) -> dict:
 			feats[f"peak_{axis}"] = max(abs(v - centred) for v in col)
 		feats["duration_s"] = len(rows) / rate
 		records.append(
-			{k: f[k] for k in ("machine", "op", "when", "n", "bad")}
+			{k: f[k] for k in ("machine", "op", "when", "n", "bad", "baseline")}
 			| {"features": feats, "file": f["path"].name}
 		)
 	if not records:
@@ -595,12 +611,16 @@ def check_milling(data: dict, ds: dict, max_features: int) -> tuple[list, dict, 
 	series, baselines, layout, limits = {}, {}, {}, {}
 	for key, rs in sorted(groups.items()):
 		good = [r for r in rs if not r["bad"]]
-		nb = max(min_base, int(len(good) * share))
-		if len(good) < nb + 1:
+		if any(r.get("baseline") for r in rs):
+			base = [r for r in rs if r.get("baseline")]
+		else:
+			base = good[: max(min_base, int(len(good) * share))]
+		nb = len(base)
+		if nb < min_base or len(good) < nb + 1:
 			continue
-		base = good[:nb]
-		ids = {id(r) for r in base}
-		order = base + [r for r in rs if id(r) not in ids]
+		# Judge only recordings made after the baseline: nothing earlier is held out.
+		cut = max(rs.index(r) for r in base) + 1
+		order = base + rs[cut:]
 		layout[key] = order
 		for f in feats:
 			vals = [r["features"][f] for r in order]
