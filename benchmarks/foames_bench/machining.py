@@ -589,20 +589,32 @@ def load_milling(folder: Path, ds: dict, max_rows: int | None) -> dict:
 		}
 
 	for g in groups.values():
-		# The baseline is the earliest usable good recordings of the whole group, chosen before any
+		# The baseline is the earliest readable good recordings of the whole group, chosen before any
 		# budget, so a budget never pulls a later recording into it and an unreadable file never
-		# leaves it short.
+		# leaves it short. Each file is parsed at most once.
+		cache: dict = {}
+
+		def feats_of(f, cache=cache):
+			key = f["path"]
+			if key not in cache:
+				cache[key] = _mill_features(f, ds["columns"], rate)
+			return cache[key]
+
 		good = [f for f in g if not f["bad"]]
-		nbase = max(min_base, int(len(good) * share))
 		if per:
-			# A budget shortens the baseline to its earliest recordings, never below the minimum.
-			nbase = min(nbase, max(min_base, per // 2))
+			# A budget shortens the baseline to its earliest recordings, never below the minimum, so
+			# only as many files are read as the baseline needs.
+			nbase = max(min_base, per // 2)
+		else:
+			# A full run reads every file anyway: size the baseline share on the readable ones.
+			readable = [f for f in good if feats_of(f) is not None]
+			nbase = max(min_base, int(len(readable) * share))
 		base: list = []
 		last = None
 		for f in good:
 			if len(base) >= nbase:
 				break
-			feats = _mill_features(f, ds["columns"], rate)
+			feats = feats_of(f)
 			if feats is not None:
 				base.append(record(f, feats, True))
 				last = f
@@ -613,7 +625,7 @@ def load_milling(folder: Path, ds: dict, max_rows: int | None) -> dict:
 			rest = _spread(rest, max(per - len(base), per // 2, 2))
 		records += base
 		for f in rest:
-			feats = _mill_features(f, ds["columns"], rate)
+			feats = feats_of(f)
 			if feats is not None:
 				records.append(record(f, feats, False))
 	if not records:
