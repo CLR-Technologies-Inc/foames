@@ -1079,7 +1079,6 @@ def cmd_data(opts) -> int:
 			)
 			print(f"{d['id']:30} {d.get('status', ''):8} {d.get('kind', ''):27} {lic}")
 		return 0
-	chosen = [dataset(manifest, i) for i in opts.datasets] if opts.datasets else enabled(manifest)
 	if opts.data_command == "import":
 		ds = dataset(manifest, opts.dataset)
 		try:
@@ -1088,6 +1087,7 @@ def cmd_data(opts) -> int:
 			print(f"{ds['id']}: not imported: {exc}", file=sys.stderr)
 			return 1
 		return 0
+	chosen = [dataset(manifest, i) for i in opts.datasets] if opts.datasets else enabled(manifest)
 	if opts.data_command == "fetch":
 		code = 0
 		for ds in chosen:

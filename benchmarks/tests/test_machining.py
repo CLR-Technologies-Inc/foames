@@ -268,6 +268,20 @@ class TestKaggle(unittest.TestCase):
 		self.assertEqual(self.root / "cache" / "cnc-turning-xquality", folder)
 		self.assertTrue((folder / "provenance.json").is_file())
 
+	def test_import_command_line(self):
+		from foames_bench import cli
+
+		ds = mfgdata.dataset(self.m, "cnc-turning-xquality")
+		src = mfgdata.synthetic("cnc-turning-xquality", self.root / "src")
+		with mock.patch.object(mfgdata, "cache_root", return_value=self.root / "cache"):
+			inbox = mfgdata.inbox_path(ds)
+			inbox.parent.mkdir(parents=True)
+			inbox.write_bytes(_zip_folder(src))
+			with mock.patch("sys.stdout", new_callable=io.StringIO):
+				code = cli.main(["data", "import", "cnc-turning-xquality"])
+		self.assertEqual(0, code)
+		self.assertTrue((self.root / "cache" / "cnc-turning-xquality" / "provenance.json").is_file())
+
 	def test_import_refuses_unverified_license(self):
 		ds = json.loads(json.dumps(mfgdata.dataset(self.m, "cnc-milling-vibration")))
 		ds["license_verified"] = False
