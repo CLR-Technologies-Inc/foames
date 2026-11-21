@@ -597,7 +597,8 @@ def load_milling(folder: Path, ds: dict, max_rows: int | None) -> dict:
 		if per:
 			# A budget shortens the baseline to its earliest recordings, never below the minimum.
 			nbase = min(nbase, max(min_base, per // 2))
-		base, last = [], None
+		base: list = []
+		last = None
 		for f in good:
 			if len(base) >= nbase:
 				break
