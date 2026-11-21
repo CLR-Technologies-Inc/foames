@@ -366,7 +366,7 @@ def check_turning(data: dict, ds: dict, max_features: int) -> tuple[list, dict, 
 	pos = {i: n for n, i in enumerate(order)}
 	evaluated = list(rest)
 	flagged = {i for i in evaluated if any(pos[i] in signals[k] for k in chosen)}
-	by_batch = {}
+	by_batch: dict = {}
 	for i in evaluated:
 		p = parts[i]
 		b = by_batch.setdefault(
@@ -393,7 +393,7 @@ def check_turning(data: dict, ds: dict, max_features: int) -> tuple[list, dict, 
 			{"feature": k, "cohens_d": round(d, 2), "parts_flagged": h, "of": len(members)}
 			for _, k, d, h in ranked[:5]
 		]
-	energy_shift = {}
+	energy_shift: dict = {}
 	for batch in by_batch:
 		for op in ds["columns"]["operations"]:
 			a = [parts[i]["energy_j"].get(op) for i in base_idx]
@@ -494,12 +494,11 @@ def _mill_rows(path: Path, columns: dict) -> list[tuple[float, float, float]]:
 		body = lines[1:]
 	else:
 		body = lines
-	out = []
+	out: list[tuple[float, float, float]] = []
 	for ln in body:
 		cells = ln.split(delim)
 		if idx is None:
-			nums = [_float(c) for c in cells]
-			nums = [v for v in nums if v is not None]
+			nums = [v for v in (_float(c) for c in cells) if v is not None]
 			if len(nums) < 3:
 				continue
 			x, y, z = nums[-3:]
@@ -555,7 +554,7 @@ def load_milling(folder: Path, ds: dict, max_rows: int | None) -> dict:
 	"""Per file: machine, operation, timeframe, label and per-axis RMS and peak acceleration. A stage
 	limit spreads its file budget evenly over machines and operations, in time order."""
 	files = list_mill_files(folder)
-	groups = {}
+	groups: dict = {}
 	for f in files:
 		groups.setdefault((f["machine"], f["op"]), []).append(f)
 	if max_rows:
@@ -589,7 +588,7 @@ def check_milling(data: dict, ds: dict, max_features: int) -> tuple[list, dict, 
 	spc = _foames("spc")
 	share = ds.get("study", {}).get("baseline_share", 0.3)
 	min_base = ds.get("study", {}).get("min_baseline", 8)
-	groups = {}
+	groups: dict = {}
 	for r in data["files"]:
 		groups.setdefault((r["machine"], r["op"]), []).append(r)
 	feats = ds["columns"].get("features", ["rms_x", "rms_y", "rms_z"])[: max(1, max_features)]
@@ -617,7 +616,7 @@ def check_milling(data: dict, ds: dict, max_features: int) -> tuple[list, dict, 
 	eq_checks, eq_metrics = check_equipment(Check, ds.get("equipment", []))
 	checks += eq_checks
 
-	per_machine = {}
+	per_machine: dict = {}
 	for key, order in layout.items():
 		charted = [baselines[(key, f)] for f in feats if (key, f) in baselines]
 		if not charted:
@@ -641,7 +640,7 @@ def check_milling(data: dict, ds: dict, max_features: int) -> tuple[list, dict, 
 
 	# Transfer: limits learned on one mill, applied to another mill's good files for the same operation.
 	transfer = []
-	ops = {}
+	ops: dict = {}
 	for machine, op in layout:
 		ops.setdefault(op, []).append(machine)
 	for op, machines in sorted(ops.items()):
