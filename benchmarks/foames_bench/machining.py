@@ -553,7 +553,8 @@ def _spread(items, k):
 
 def load_milling(folder: Path, ds: dict, max_rows: int | None) -> dict:
 	"""Per file: machine, operation, timeframe, label and per-axis RMS and peak acceleration. A stage
-	limit spreads its file budget evenly over machines and operations, in time order."""
+	limit spreads its file budget evenly over machines and operations, in time order: each group keeps
+	its earliest good recordings as the baseline and a time-spread sample of what follows."""
 	files = list_mill_files(folder)
 	study = ds.get("study", {})
 	share, min_base = study.get("baseline_share", 0.3), study.get("min_baseline", 8)
@@ -566,7 +567,11 @@ def load_milling(folder: Path, ds: dict, max_rows: int | None) -> dict:
 		# The baseline is the earliest good recordings of the whole group, chosen before any budget,
 		# so a budget never pulls a later recording into the baseline.
 		good = [f for f in g if not f["bad"]]
-		base = good[: max(min_base, int(len(good) * share))]
+		nbase = max(min_base, int(len(good) * share))
+		if per:
+			# A budget shortens the baseline to its earliest recordings, never below the minimum.
+			nbase = min(nbase, max(min_base, per // 2))
+		base = good[:nbase]
 		for f in g:
 			f["baseline"] = False
 		for f in base:
@@ -574,7 +579,9 @@ def load_milling(folder: Path, ds: dict, max_rows: int | None) -> dict:
 		cut = g.index(base[-1]) + 1 if base else 0
 		rest = g[cut:]
 		if per:
-			rest = _spread(rest, max(per - len(base), 2))
+			# Keep at least half the group budget for judged recordings, so the budget bounds the file
+			# count (at most min_baseline + per per group) without starving the judged tail.
+			rest = _spread(rest, max(per - len(base), per // 2, 2))
 		files += base + rest
 	rate = ds["columns"].get("sample_rate_hz", 2000)
 	records = []

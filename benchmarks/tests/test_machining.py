@@ -124,13 +124,19 @@ class TestMillingFleet(StudyBase):
 		groups = {(r["machine"], r["op"]) for r in data["files"]}
 		self.assertEqual(9, len(groups))
 		self.assertLess(len(data["files"]), len(full))
+		per = max(6, 54 // 9)
+		self.assertLessEqual(len(data["files"]), 9 * (8 + per))
 		for key in groups:
-			# A budget keeps each group's baseline: its earliest good recordings, not a sample of them.
-			def base(rs, key=key):
-				return [r["file"] for r in rs if (r["machine"], r["op"]) == key and r["baseline"]]
 
-			self.assertEqual(base(full), base(data["files"]))
-			self.assertGreaterEqual(len(base(full)), 8)
+			def pick(rs, key=key, baseline=True):
+				return [r["file"] for r in rs if (r["machine"], r["op"]) == key and r["baseline"] == baseline]
+
+			# A budget keeps the earliest good recordings as the baseline (a prefix of the full run's),
+			# never fewer than the minimum, and still judges more than a token tail.
+			budget_base = pick(data["files"])
+			self.assertEqual(pick(full)[: len(budget_base)], budget_base)
+			self.assertGreaterEqual(len(budget_base), 8)
+			self.assertGreaterEqual(len(pick(data["files"], baseline=False)), per // 2)
 
 	def test_headerless_and_unnamed_columns(self):
 		ds = mfgdata.dataset(self.m, "cnc-milling-vibration")
