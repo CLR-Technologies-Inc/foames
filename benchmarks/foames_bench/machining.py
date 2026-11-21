@@ -603,8 +603,8 @@ def load_milling(folder: Path, ds: dict, max_rows: int | None) -> dict:
 		good = [f for f in g if not f["bad"]]
 		if per:
 			# A budget shortens the baseline to its earliest recordings, never below the minimum, so
-			# only as many files are read as the baseline needs.
-			nbase = max(min_base, per // 2)
+			# only as many files are read as the baseline needs (the share is then an upper bound).
+			nbase = min(max(min_base, int(len(good) * share)), max(min_base, per // 2))
 		else:
 			# A full run reads every file anyway: size the baseline share on the readable ones.
 			readable = [f for f in good if feats_of(f) is not None]
