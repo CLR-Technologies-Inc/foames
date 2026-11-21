@@ -5,7 +5,7 @@
  "tier": "pure",
  "complexity": "medium",
  "trl_bands": ["4-6", "7-9"],
- "ecl": null,
+ "ecl": 3,
  "machine_class": "Occupant-hours from badge access, with a building electricity meter",
  "dimension": "Measurement and verification of a published improvement from FoaMES events: counter rules, unknown time, OEE, claim against measurement",
  "hidden": {"functional": ["test_functional.py"], "invariant": ["test_invariants.py"]},

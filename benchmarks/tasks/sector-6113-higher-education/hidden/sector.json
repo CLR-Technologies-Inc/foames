@@ -19,7 +19,7 @@
   "kind": "specific_energy_reduction",
   "value": 0.37,
   "unit": "fraction",
-  "text": "Commissioning, HVAC, heating, chiller and lighting work on the campus saved 37% of its energy ($184,000 a year) and 52% of its water."
+  "text": "Commissioning, HVAC, heating, chiller and lighting work on the campus saved 37% of its energy ($184,000 a year) and 52% of its water. The 37% is a source EUI (per square foot) saving; it is compared with site energy per classroom-hour only on the assumption that floor area, bookings and fuel mix are unchanged."
  },
  "windows": {
   "baseline": {

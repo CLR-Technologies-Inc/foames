@@ -21,9 +21,9 @@
  },
  "claim": {
   "kind": "specific_energy_reduction",
-  "value": 0.04,
+  "value": 0.0385,
   "unit": "fraction",
-  "text": "Drying the lignite with the plant's own waste heat improved the station's overall performance by almost 4 percent; DOE's 2004 announcement expected 2.8 to 5 percent."
+  "text": "Drying the lignite with the plant's own waste heat improved the station's overall performance by almost 4 percent (DOE's 2004 announcement expected 2.8 to 5 percent). The source does not give fuel per MWh; read as a 4 percent heat-rate gain, the equivalent is 1 - 1/1.04 = 3.85 percent less fuel heat per MWh, an assumed equivalence."
  },
  "windows": {
   "baseline": {
