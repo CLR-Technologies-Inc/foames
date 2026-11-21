@@ -142,7 +142,8 @@ class TestMillingFleet(StudyBase):
 		ds = mfgdata.dataset(self.m, "cnc-milling-vibration")
 		folder = mfgdata.synthetic("cnc-milling-vibration", self.root / "mill")
 		files = machining.list_mill_files(folder)
-		first = next(f for f in files if not f["bad"])
+		first = next((f for f in files if not f["bad"]), None)
+		self.assertIsNotNone(first)
 		first["path"].write_text("x,y,z\n")  # no usable rows
 		key = (first["machine"], first["op"])
 		data = machining.load_milling(folder, ds, None)["files"]
