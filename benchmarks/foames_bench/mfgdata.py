@@ -251,11 +251,23 @@ def _fetch_into(ds: dict, folder: Path, getter) -> None:
 	(folder / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
 
 
+_DATASET_ID = re.compile(r"[a-z0-9][a-z0-9-]{0,63}")
+
+
+def _dataset_slug(ds: dict) -> str:
+	"""The dataset id as a single safe path segment: lower-case letters, digits and hyphens only."""
+	match = _DATASET_ID.fullmatch(str(ds.get("id", "")))
+	if not match:
+		raise FetchRefused(f"dataset id {ds.get('id')!r} is not a plain slug")
+	return match.group(0)
+
+
 def inbox_path(ds: dict) -> Path:
 	"""Where `data import` looks for a hand-downloaded archive: `<cache>/_inbox/<dataset>.zip`. A fixed
 	place in the cache, so no path from the command line reaches a read or a write."""
+	slug = _dataset_slug(ds)
 	inbox = _safe_member_path(cache_root(), "_inbox", "import inbox")
-	return _safe_member_path(inbox, f"{ds['id']}.zip", f"dataset {ds['id']!r}")
+	return _safe_member_path(inbox, f"{slug}.zip", f"dataset {slug!r}")
 
 
 def import_archive(ds: dict, archive: Path | None = None, dest: Path | None = None) -> Path:
@@ -267,6 +279,7 @@ def import_archive(ds: dict, archive: Path | None = None, dest: Path | None = No
 		raise FetchRefused(f"{ds['id']} is {ds.get('status')}: {ds.get('note', 'not enabled')}")
 	if not ds.get("license_verified"):
 		raise FetchRefused(f"{ds['id']}: license not verified in the manifest")
+	slug = _dataset_slug(ds)
 	archive = Path(archive) if archive else inbox_path(ds)
 	if archive.suffix.lower() != ".zip" or not archive.is_file():
 		raise FetchRefused(f"{ds['id']}: put the downloaded .zip at {inbox_path(ds)}")
@@ -275,12 +288,12 @@ def import_archive(ds: dict, archive: Path | None = None, dest: Path | None = No
 	pinned = ds["source"].get("sha256")
 	if pinned and got != pinned:
 		raise FetchRefused(f"{ds['id']}: sha256 {got} != pinned {pinned}")
-	folder = Path(dest) if dest else _safe_member_path(cache_root(), ds["id"], f"dataset {ds['id']!r}")
+	folder = Path(dest) if dest else _safe_member_path(cache_root(), slug, f"dataset {slug!r}")
 	folder.mkdir(parents=True, exist_ok=True)
 	with tempfile.TemporaryDirectory(prefix=".fetch-dataset-", dir=folder) as temporary:
 		staging = Path(temporary)
-		# The stored name comes from the manifest, never from the user's path.
-		name = f"{ds['id']}.zip"
+		# The stored name is the checked slug, never anything from the user's path.
+		name = f"{slug}.zip"
 		_store(staging, name, data)
 		provenance = {
 			"dataset": ds["id"],
