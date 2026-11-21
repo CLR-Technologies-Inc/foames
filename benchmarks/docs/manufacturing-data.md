@@ -17,7 +17,7 @@ The cache is `$FOAMES_BENCH_DATA`, or `~/.cache/foames-bench/datasets`. Nothing 
 ## Pipeline
 
 1. **Manifest** ([datasets/manifest.json](../datasets/manifest.json)): source, accepted licenses, citation, column names, how to split the data.
-2. **Fetch**: downloads a dataset only when its status is `enabled`. For a Zenodo record, it reads the license the record states at download time and refuses one the manifest does not accept. It also checks each file's MD5 against Zenodo's checksum. For a direct URL, it requires a license verified in the manifest and checks a pinned SHA-256 when one is set. Zip members cannot write outside the dataset folder. Each dataset folder gets a `provenance.json` with the license, DOI, version, creators, file sizes and checksums.
+2. **Fetch**: downloads a dataset only when its status is `enabled`. A Kaggle source needs Kaggle credentials (`KAGGLE_USERNAME` and `KAGGLE_KEY`, `KAGGLE_API_TOKEN`, or `~/.kaggle/kaggle.json`); the fetch reads the license Kaggle states and refuses one the manifest does not accept before it downloads anything, and the credentials are never sent on to the storage the download redirects to. Without credentials, download the archive in a browser and run `foames-bench data import <dataset> <zip>`, which applies the manifest's verified license, the same zip rules and writes the same provenance. For a Zenodo record, it reads the license the record states at download time and refuses one the manifest does not accept. It also checks each file's MD5 against Zenodo's checksum. For a direct URL, it requires a license verified in the manifest and checks a pinned SHA-256 when one is set. Zip members cannot write outside the dataset folder. Each dataset folder gets a `provenance.json` with the license, DOI, version, creators, file sizes and checksums.
 3. **Adapters**: normalise timestamps, sessions, phases, downtime intervals, counts and measurements. When a file's columns do not match the manifest, the adapter stops and lists the headers it found, so fixing the mapping is a one-line manifest change.
 4. **Checks**: run FoaMES and compare. A check passes or fails. **Metrics** (for example SPC precision against fail labels) are reported but not graded.
 5. **Report**: `manufacturing-data.md` and `.json` in `--out`.
@@ -41,8 +41,10 @@ Dataset size is not statistical sample size. Thousands of successive readings fr
 | 1 | Five-axis CNC milling with multiple changeovers (Zenodo 15735480) | enabled | Phase segments, process-mining variants, median phase durations, repeated phases, setup time, and that the OEE ledger accounts for every minute of each session |
 | 2 | Industrial beverage bottling line (Zenodo 18146866) | enabled | Hourly counts replayed as a PLC counter with a 16-bit rollover and with a controller restart, which must give the source total exactly. Also availability from merged downtime, every minute accounted for, and missing signal counted as loss |
 | 3 | SECOM semiconductor manufacturing (UCI) | enabled | I-MR limits and beyond-limit signals against an independent computation, missing values never charted, time-aware precision and recall against pass/fail (reported) |
-| 4 | NoBOOM chemical processes | planned | The first continuous-process anomaly benchmark, once its license and a non-Kaggle download are confirmed |
-| 5-8 | Multi-stage continuous flow, CNC tool wear, AI4I 2020, NASA C-MAPSS | planned | See the manifest notes |
+| 4 | XQuality CNC turning: one CNC lathe, 62 labelled parts (Kaggle) | enabled | I-MR limits and signals on per-part sensor features, spindle energy per part, ECL profile and agent eligibility. Part of the [CNC equipment study](cnc-equipment-study.md) |
+| 5 | CNC milling fleet: three mills, 15 operations, vibration 2018-2021 (Kaggle CSV of the upstream repository) | enabled | I-MR limits per machine and operation, fleet ECL. Part of the [CNC equipment study](cnc-equipment-study.md) |
+| 6 | NoBOOM chemical processes | planned | The first continuous-process anomaly benchmark, once its license and a non-Kaggle download are confirmed |
+| 7-10 | Multi-stage continuous flow, CNC tool wear, AI4I 2020, NASA C-MAPSS | planned | See the manifest notes |
 | later | Bosch production line (about 14 GB), IoT-enriched smart-factory event log (about 1.9 GB) | later | Too large to start with; the event log will come in later as a compact extract |
 
 Notes on interpretation:
@@ -59,7 +61,8 @@ Notes on interpretation:
 | SECOM | CC BY 4.0 | [UCI dataset page](https://archive.ics.uci.edu/dataset/179/secom), checked 2026-11-16 | McCann, M. & Johnston, A. (2008). SECOM [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C54305 |
 | AI4I 2020 | CC BY 4.0 | [UCI dataset page](https://archive.ics.uci.edu/dataset/601/ai4i+2020+predictive+maintenance+dataset), checked 2026-11-16 | AI4I 2020 Predictive Maintenance Dataset [Dataset]. (2020). UCI Machine Learning Repository. https://doi.org/10.24432/C5HS5C |
 | CNC changeover, beverage bottling | CC BY 4.0 expected | Checked against the Zenodo record's own license field at every fetch | Creators and DOI as Zenodo lists them, recorded in `provenance.json` |
-| Kaggle-hosted sets | not yet confirmed | | |
+| XQuality CNC turning, CNC milling fleet | CC BY 4.0 | See the [CNC equipment study](cnc-equipment-study.md#sources-and-licenses), checked 2026-11-21; Kaggle fetches also check the license Kaggle states | See the study |
+| Other Kaggle-hosted sets | not yet confirmed | | |
 
 If you publish results, cite each dataset you used, link its license, and say that FoaMES normalised the data (CC BY 4.0 asks you to indicate changes). The synthetic fixtures (`--synthetic`) are invented and carry no third-party terms.
 
