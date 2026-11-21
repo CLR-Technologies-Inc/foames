@@ -1,0 +1,1 @@
+A read-only FreeCAD bridge (`bridges/freecad`) inspects `.FCStd` documents in a separate FreeCAD runtime and returns a versioned JSON manifest — object tree, placements, bounding boxes and provenance — without FreeCAD or any CAD dependency in Frappe.
