@@ -220,7 +220,7 @@ def _fetch_into(ds: dict, folder: Path, getter) -> None:
 				raise FetchRefused(
 					f"{ds['id']}: Kaggle needs credentials (KAGGLE_USERNAME and KAGGLE_KEY, KAGGLE_API_TOKEN, or "
 					+ "~/.kaggle/kaggle.json). Or download the archive from "
-					+ f"https://www.kaggle.com/datasets/{src['ref']} and run `foames-bench data import {ds['id']} <zip>`"
+					+ f"https://www.kaggle.com/datasets/{src['ref']} save it as {inbox_path(ds)} and run `foames-bench data import {ds['id']}`"
 				)
 			get = functools.partial(_get, auth=auth)
 
@@ -251,17 +251,25 @@ def _fetch_into(ds: dict, folder: Path, getter) -> None:
 	(folder / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
 
 
-def import_archive(ds: dict, archive: Path, dest: Path | None = None) -> Path:
+def inbox_path(ds: dict) -> Path:
+	"""Where `data import` looks for a hand-downloaded archive: `<cache>/_inbox/<dataset>.zip`. A fixed
+	place in the cache, so no path from the command line reaches a read or a write."""
+	inbox = _safe_member_path(cache_root(), "_inbox", "import inbox")
+	return _safe_member_path(inbox, f"{ds['id']}.zip", f"dataset {ds['id']!r}")
+
+
+def import_archive(ds: dict, archive: Path | None = None, dest: Path | None = None) -> Path:
 	"""Put an archive downloaded by hand (a Kaggle download in a browser, say) into the cache, with
 	the same license gate, zip rules and provenance as a fetch. The license must be verified in the
-	manifest, since a local file cannot state one."""
+	manifest, since a local file cannot state one. The archive is read from `inbox_path(ds)` unless
+	a test passes one."""
 	if ds.get("status") != "enabled":
 		raise FetchRefused(f"{ds['id']} is {ds.get('status')}: {ds.get('note', 'not enabled')}")
 	if not ds.get("license_verified"):
 		raise FetchRefused(f"{ds['id']}: license not verified in the manifest")
-	archive = Path(archive)
+	archive = Path(archive) if archive else inbox_path(ds)
 	if archive.suffix.lower() != ".zip" or not archive.is_file():
-		raise FetchRefused(f"{archive}: give the dataset's .zip archive")
+		raise FetchRefused(f"{ds['id']}: put the downloaded .zip at {inbox_path(ds)}")
 	data = archive.read_bytes()
 	got = hashlib.sha256(data).hexdigest()
 	pinned = ds["source"].get("sha256")
@@ -1062,7 +1070,7 @@ def cmd_data(opts) -> int:
 	if opts.data_command == "import":
 		ds = dataset(manifest, opts.dataset)
 		try:
-			print(f"{ds['id']}: {import_archive(ds, Path(opts.archive))}")
+			print(f"{ds['id']}: {import_archive(ds)}")
 		except (FetchRefused, OSError) as exc:
 			print(f"{ds['id']}: not imported: {exc}", file=sys.stderr)
 			return 1
@@ -1116,9 +1124,10 @@ def add_parser(sub) -> None:
 	d = dsub.add_parser("fetch", help="download enabled datasets into the cache ($FOAMES_BENCH_DATA)")
 	d.add_argument("--datasets", nargs="*")
 	d.set_defaults(fn=cmd_data)
-	d = dsub.add_parser("import", help="put a hand-downloaded .zip into the cache (license gate, provenance)")
+	d = dsub.add_parser(
+		"import", help="import <cache>/_inbox/<dataset>.zip, downloaded by hand (license gate, provenance)"
+	)
 	d.add_argument("dataset")
-	d.add_argument("archive")
 	d.set_defaults(fn=cmd_data)
 	d = dsub.add_parser("validate", help="replay datasets through FoaMES and compare with independent values")
 	d.add_argument("--datasets", nargs="*")

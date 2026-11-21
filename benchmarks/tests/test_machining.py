@@ -255,6 +255,19 @@ class TestKaggle(unittest.TestCase):
 		res = mfgdata.validate(ds, folder, self.m["stages"]["smoke"], "smoke", False)
 		self.assertTrue(res.passed, mfgdata.render([res]))
 
+	def test_import_reads_the_cache_inbox(self):
+		ds = mfgdata.dataset(self.m, "cnc-turning-xquality")
+		src = mfgdata.synthetic("cnc-turning-xquality", self.root / "src")
+		with mock.patch.object(mfgdata, "cache_root", return_value=self.root / "cache"):
+			with self.assertRaisesRegex(mfgdata.FetchRefused, "_inbox"):
+				mfgdata.import_archive(ds)
+			inbox = mfgdata.inbox_path(ds)
+			inbox.parent.mkdir(parents=True)
+			inbox.write_bytes(_zip_folder(src))
+			folder = mfgdata.import_archive(ds)
+		self.assertEqual(self.root / "cache" / "cnc-turning-xquality", folder)
+		self.assertTrue((folder / "provenance.json").is_file())
+
 	def test_import_refuses_unverified_license(self):
 		ds = json.loads(json.dumps(mfgdata.dataset(self.m, "cnc-milling-vibration")))
 		ds["license_verified"] = False

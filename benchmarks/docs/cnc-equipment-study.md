@@ -9,7 +9,7 @@ This study is part of the [manufacturing-data validation track](manufacturing-da
 cd benchmarks
 python -m foames_bench data validate --synthetic --datasets cnc-turning-xquality cnc-milling-vibration
 python -m foames_bench data fetch --datasets cnc-turning-xquality cnc-milling-vibration    # needs Kaggle credentials
-python -m foames_bench data import cnc-turning-xquality ~/Downloads/xquality-cnc-turning-data.zip   # or a browser download
+python -m foames_bench data import cnc-turning-xquality    # or: save a browser download as <cache>/_inbox/cnc-turning-xquality.zip first
 python -m foames_bench data validate --stage full --datasets cnc-turning-xquality cnc-milling-vibration --out runs/cnc
 ```
 
