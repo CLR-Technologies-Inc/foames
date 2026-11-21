@@ -19,7 +19,7 @@
   "kind": "specific_energy_reduction",
   "value": 0.35,
   "unit": "fraction",
-  "text": "Controls, sensors, variable frequency drives, heat pump, ventilation and lighting work saved 35% of the building's energy and $797,000 a year at 2015 electricity rates."
+  "text": "Controls, sensors, variable frequency drives, heat pump, ventilation and lighting work saved 35% of the building's energy and $797,000 a year at 2015 electricity rates. The 35% is a saving in annual energy use per square foot; it is compared with energy per occupant-hour only on the assumption that floor area is unchanged."
  },
  "windows": {
   "baseline": {
