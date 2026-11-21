@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import csv
 import fnmatch
+import functools
 import hashlib
 import io
 import json
@@ -221,9 +222,7 @@ def _fetch_into(ds: dict, folder: Path, getter) -> None:
 					+ "~/.kaggle/kaggle.json). Or download the archive from "
 					+ f"https://www.kaggle.com/datasets/{src['ref']} and run `foames-bench data import {ds['id']} <zip>`"
 				)
-
-			def get(url):
-				return _get(url, auth=auth)
+			get = functools.partial(_get, auth=auth)
 
 		meta = json.loads(get(f"{KAGGLE_API}/datasets/view/{src['ref']}"))
 		lic = kaggle_license(meta)

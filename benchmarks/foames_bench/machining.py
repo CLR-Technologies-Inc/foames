@@ -364,7 +364,7 @@ def check_turning(data: dict, ds: dict, max_features: int) -> tuple[list, dict, 
 
 	# The study: reported, not graded.
 	pos = {i: n for n, i in enumerate(order)}
-	evaluated = [i for i in rest]
+	evaluated = list(rest)
 	flagged = {i for i in evaluated if any(pos[i] in signals[k] for k in chosen)}
 	by_batch = {}
 	for i in evaluated:
@@ -502,18 +502,19 @@ def _mill_rows(path: Path, columns: dict) -> list[tuple[float, float, float]]:
 			nums = [v for v in nums if v is not None]
 			if len(nums) < 3:
 				continue
-			out.append(tuple(nums[-3:]))
+			x, y, z = nums[-3:]
+			out.append((x, y, z))
 		else:
 			try:
-				vals = tuple(_float(cells[j]) for j in idx)
+				x, y, z = (_float(cells[j]) for j in idx)
 			except IndexError:
 				continue
-			if None not in vals:
-				out.append(vals)
+			if x is not None and y is not None and z is not None:
+				out.append((x, y, z))
 	return out
 
 
-def list_mill_files(folder: Path, ds: dict) -> list[dict]:
+def list_mill_files(folder: Path) -> list[dict]:
 	files = []
 	for p in _visible(folder, "*.csv"):
 		m = FILE_RE.search(p.name)
@@ -553,7 +554,7 @@ def _spread(items, k):
 def load_milling(folder: Path, ds: dict, max_rows: int | None) -> dict:
 	"""Per file: machine, operation, timeframe, label and per-axis RMS and peak acceleration. A stage
 	limit spreads its file budget evenly over machines and operations, in time order."""
-	files = list_mill_files(folder, ds)
+	files = list_mill_files(folder)
 	groups = {}
 	for f in files:
 		groups.setdefault((f["machine"], f["op"]), []).append(f)
@@ -618,7 +619,10 @@ def check_milling(data: dict, ds: dict, max_features: int) -> tuple[list, dict, 
 
 	per_machine = {}
 	for key, order in layout.items():
-		nb = next(baselines[(key, f)] for f in feats if (key, f) in baselines)
+		charted = [baselines[(key, f)] for f in feats if (key, f) in baselines]
+		if not charted:
+			continue  # no feature of this group varied in its baseline, so nothing was charted
+		nb = charted[0]
 		for pos, r in enumerate(order):
 			if pos < nb:
 				continue
