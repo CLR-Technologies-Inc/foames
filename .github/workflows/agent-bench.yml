@@ -42,7 +42,7 @@ jobs:
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - id: plan
         env:
           AGENTS: ${{ inputs.agents || '' }}
@@ -111,8 +111,8 @@ jobs:
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     name: ${{ matrix.agent }} ${{ contains(matrix.task, ' ') && 'all tasks' || matrix.task }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
       - id: names
@@ -205,7 +205,7 @@ jobs:
           cat "$OUT/summary.md" >> "$GITHUB_STEP_SUMMARY" || true
           # The end of each agent transcript, in the log, for debugging a failed run.
           for f in "$OUT"/*/*/rep-*/agent.std*; do echo "::group::$f"; tail -c 6000 "$f"; echo "::endgroup::"; done
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: run-${{ steps.names.outputs.slug }}
@@ -222,14 +222,14 @@ jobs:
       # Read, to download the run files of earlier workflow runs named on a "collect:" line.
       actions: read
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # The branch as it is now, so this report adds to results that other runs committed meanwhile.
           ref: ${{ github.ref_name }}
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: run-*
           path: runs
@@ -262,7 +262,7 @@ jobs:
           # The results table in the repository README, and the website's top models page, from every dated report.
           python benchmarks/scripts/readme_status.py
           python benchmarks/scripts/site_top_models.py
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: bench-report
           path: benchmarks/results
