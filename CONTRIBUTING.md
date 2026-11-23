@@ -2,6 +2,11 @@
 
 Thanks for helping build FoaMES. Bug reports, fixes, adapters and documentation are all welcome.
 
+## Obligation of an Engineer
+I am an Engineer. In my profession I take deep pride. To it I owe solemn obligations. As an Engineer, I pledge to practice integrity and fair dealing, tolerance and respect; and to uphold devotion to the standards and the dignity of my profession, conscious always that my skill carries with it the obligation to serve humanity by making the best use of the Earth’s precious wealth. As an Engineer, I shall participate in none but honest enterprises. When needed, my skill and knowledge shall be given without reservation for the public good. In the performance of duty and with deep fidelity to my profession, I shall give my utmost.
+
+[Pledge to the Obligation of an Engineer](https://order-of-the-engineer.org/about-the-order/obligation/)
+
 ## Contributor License Agreement
 
 FoaMES is licensed under the [Apache License 2.0](LICENSE). Before CLR Technologies Inc. ("CLR") can merge your first pull request, you need to agree to a Contributor License Agreement (CLA). You keep the copyright in your work. The CLA gives CLR and everyone who receives FoaMES a copyright license and a patent license for your contribution, on the same terms as the Apache Software Foundation's CLAs.
