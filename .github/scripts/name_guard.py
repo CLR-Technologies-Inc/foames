@@ -289,8 +289,10 @@ def tracked_files() -> list[str]:
 
 def emails_at(rev: str) -> set[str]:
 	"""Every address already in the tree at rev (public before the change)."""
+	if not REV.fullmatch(rev):
+		raise SystemExit(f"name guard: {rev!r} is not a revision")
 	result = subprocess.run(
-		["git", "grep", "-I", "-h", "-o", "-E", EMAIL_ERE, rev],
+		["git", "grep", "-I", "-h", "-o", "-E", "-e", EMAIL_ERE, rev],
 		capture_output=True,
 		text=True,
 	)
@@ -310,11 +312,13 @@ def run_range(rev_range: str, guard: GuardList, text_vars: list[str]) -> list[st
 	for rev in (base, head):
 		if not REV.fullmatch(rev):
 			raise SystemExit(f"name guard: {rev!r} is not a revision range endpoint")
-	merge_base = git("merge-base", base, head).strip() or base
+	merge_base = git("merge-base", "--end-of-options", base, head).strip() or base
 	problems = []
 
 	commits = []
-	for record in git("log", "--format=%h%x00%ae%x00%ce%x00%B%x1e", f"{base}..{head}").split("\x1e"):
+	for record in git(
+		"log", "--format=%h%x00%ae%x00%ce%x00%B%x1e", "--end-of-options", f"{base}..{head}"
+	).split("\x1e"):
 		if record.strip():
 			sha, author, committer, message = record.strip("\n").split("\0", 3)
 			commits.append((sha, author.lower(), committer.lower(), message))
@@ -327,7 +331,9 @@ def run_range(rev_range: str, guard: GuardList, text_vars: list[str]) -> list[st
 			problems += check_identity(f"commit {sha} committer", committer, guard)
 	policy = EmailPolicy(participants, emails_at(merge_base))
 
-	problems += check_added_lines(git("diff", "-U0", "--no-color", f"{merge_base}..{head}"), policy)
+	problems += check_added_lines(
+		git("diff", "-U0", "--no-color", "--end-of-options", f"{merge_base}..{head}"), policy
+	)
 	for sha, _a, _c, message in commits:
 		for lineno in emails_in_text(message_without_trailers(message), policy):
 			problems.append(
