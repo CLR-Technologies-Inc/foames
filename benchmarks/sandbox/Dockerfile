@@ -30,4 +30,11 @@ RUN git config --system user.name "foames-bench agent" \
 	&& git config --system user.email "agent@localhost" \
 	&& git config --system --add safe.directory /workspace
 ENV PYTHONDONTWRITEBYTECODE=1
+# Never run agents as root. On Linux and macOS the harness passes --user with your uid:gid,
+# which overrides this; where it cannot (Windows hosts), the agent runs as this unprivileged
+# user with the same HOME=/tmp layout.
+RUN useradd --uid 10001 --user-group --no-create-home --home-dir /tmp --shell /usr/sbin/nologin agent \
+	&& mkdir -p /workspace && chown agent:agent /workspace
+ENV HOME=/tmp
+USER agent
 WORKDIR /workspace

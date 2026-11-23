@@ -17,12 +17,15 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     name: Copy docs/wiki to the GitHub wiki
+    # Pushing to the wiki repository is the only write; keep it on this job.
+    permissions:
+      contents: write
     steps:
       - name: Clone
         uses: actions/checkout@v7
