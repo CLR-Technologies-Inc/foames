@@ -1,0 +1,106 @@
+{
+ "case_id": "sector-518-data-centers",
+ "sector": "Data centers (enterprise data hall)",
+ "naics": "518",
+ "seed": 518,
+ "source": {
+  "title": "No Cost Energy-Savings Measures at a 1 MW Data Center",
+  "publisher": "U.S. Department of Energy, Better Buildings Initiative (showcase project)",
+  "report": "Better Buildings showcase project",
+  "date": "2016-03-09",
+  "url": "https://betterbuildingssolutioncenter.energy.gov/showcase-projects/no-cost-energy-savings-measures-at-a-1-mw-data-center",
+  "us_government_work": "DOE Better Buildings page whose information is provided by the partner; only figures are used",
+  "named_organisations": []
+ },
+ "claim": {
+  "kind": "specific_energy_reduction",
+  "value": 0.46,
+  "unit": "fraction",
+  "text": "Chiller, cooling and fan changes that cost nothing gave a 46% reduction in PUE minus 1, that is in the overhead energy per kWh delivered to IT equipment."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-02-02T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-03-30T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   0,
+   24
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6
+ ],
+ "mark_unknown_after_minutes": 30,
+ "production_unit": "IT kWh",
+ "energy_unit": "kWh",
+ "energy_price": 0.09,
+ "line": {
+  "source_id": "DC-A-IT-LOAD",
+  "description": "IT load (UPS output kWh as the hall's output)",
+  "ideal_cycle_seconds": 3.0,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "DC-A-OVERHEAD-KWH",
+  "description": "Facility overhead meter (cooling, fans, losses)",
+  "counter": "energy_kwh",
+  "rollover": 10000000,
+  "every_minutes": 15,
+  "start_value": 2400000
+ },
+ "baseline": {
+  "rate_per_run_hour": 950,
+  "scrap_fraction": 0.0,
+  "down_per_day": 0.05,
+  "down_minutes": 30,
+  "idle_per_day": 0.0,
+  "idle_minutes": 0,
+  "setup_per_day": 0.0,
+  "setup_minutes": 0,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 250,
+  "energy_per_unit": 0.55
+ },
+ "after": {
+  "rate_per_run_hour": 950,
+  "scrap_fraction": 0.0,
+  "down_per_day": 0.05,
+  "down_minutes": 30,
+  "idle_per_day": 0.0,
+  "idle_minutes": 0,
+  "setup_per_day": 0.0,
+  "setup_minutes": 0,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 250,
+  "energy_per_unit": 0.55
+ },
+ "traps": {
+  "out_of_order": {
+   "window": "after"
+  },
+  "network_gap": {
+   "window": "after",
+   "at": 0.4,
+   "hours": 3
+  },
+  "duplicate": {
+   "window": "baseline"
+  }
+ },
+ "target_ratio": 1.0
+}

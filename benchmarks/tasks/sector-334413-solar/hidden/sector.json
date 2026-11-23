@@ -1,0 +1,108 @@
+{
+ "case_id": "sector-334413-solar",
+ "sector": "Solar (photovoltaic panel manufacturing)",
+ "naics": "334413",
+ "seed": 334413,
+ "source": {
+  "title": "ITAC Assessment: AM0715 (solar panels)",
+  "publisher": "U.S. Department of Energy, Industrial Assessment Centers (Texas A&M University IAC), assessment database record",
+  "report": "IAC assessment AM0715",
+  "date": "2016 assessment",
+  "url": "https://itac.university/assessment/AM0715",
+  "us_government_work": "DOE Industrial Assessment Center database record written by a DOE-funded university assessment centre; only figures are used",
+  "named_organisations": []
+ },
+ "claim": {
+  "kind": "annual_energy_saving",
+  "value": 952167,
+  "unit": "kWh/yr",
+  "text": "The implemented recommendations (solar heat, lighting, lower compressed air pressure and leak repair) save 952,167 kWh a year; the largest recommendation was not implemented."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-02-02T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-05-04T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   0,
+   24
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6
+ ],
+ "mark_unknown_after_minutes": 30,
+ "production_unit": "panels",
+ "energy_unit": "kWh",
+ "energy_price": 0.058,
+ "line": {
+  "source_id": "PLANT-A-MODULE-LINE",
+  "description": "Module assembly line (finished panels)",
+  "ideal_cycle_seconds": 45.0,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "PLANT-A-MAIN-KWH",
+  "description": "Plant electricity meter",
+  "counter": "energy_kwh",
+  "rollover": 100000000,
+  "every_minutes": 15,
+  "start_value": 40000000
+ },
+ "baseline": {
+  "rate_per_run_hour": 72,
+  "scrap_fraction": 0.02,
+  "down_per_day": 0.7,
+  "down_minutes": 40,
+  "idle_per_day": 1.0,
+  "idle_minutes": 20,
+  "setup_per_day": 0.5,
+  "setup_minutes": 60,
+  "planned_down_per_week": 1,
+  "planned_down_minutes": 360,
+  "energy_base_per_hour": 3100,
+  "energy_per_unit": 9.0
+ },
+ "after": {
+  "rate_per_run_hour": 72,
+  "scrap_fraction": 0.02,
+  "down_per_day": 0.7,
+  "down_minutes": 40,
+  "idle_per_day": 1.0,
+  "idle_minutes": 20,
+  "setup_per_day": 0.5,
+  "setup_minutes": 60,
+  "planned_down_per_week": 1,
+  "planned_down_minutes": 360,
+  "energy_base_per_hour": 3000,
+  "energy_per_unit": 9.0
+ },
+ "traps": {
+  "out_of_order": {
+   "window": "after"
+  },
+  "network_gap": {
+   "window": "after",
+   "at": 0.6,
+   "hours": 4
+  },
+  "meter_rollover": {
+   "window": "baseline",
+   "at": 0.45
+  }
+ },
+ "target_ratio": 0.9,
+ "integer_counts": true
+}

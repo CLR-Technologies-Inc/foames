@@ -1,0 +1,17 @@
+{
+ "id": "sector-6113-higher-education",
+ "title": "Verify an energy saving on a college campus (NAICS 6113)",
+ "family": "sector-case-study",
+ "tier": "pure",
+ "complexity": "medium",
+ "trl_bands": ["4-6", "7-9"],
+ "ecl": 3,
+ "machine_class": "Occupied classroom-hours from the room booking system, with a campus site energy in MMBtu",
+ "dimension": "Measurement and verification of a published improvement from FoaMES events: counter rules, unknown time, OEE, claim against measurement",
+ "hidden": {"functional": ["test_functional.py"], "invariant": ["test_invariants.py"]},
+ "regression": ["foames/foames_mes/test_machine_data_logic.py", "foames/foames_mes/test_oee_ledger.py"],
+ "allowed_paths": ["analysis/*", "case_study.json", "CASE_STUDY.md"],
+ "deliverables": ["analysis/case_study.py", "case_study.json", "CASE_STUDY.md"],
+ "rubric": "rubric.json",
+ "budget": {"usd": 1.5, "seconds": 1200}
+}

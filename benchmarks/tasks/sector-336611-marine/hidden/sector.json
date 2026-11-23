@@ -1,0 +1,107 @@
+{
+ "case_id": "sector-336611-marine",
+ "sector": "Marine (ship building and repairing)",
+ "naics": "336611",
+ "seed": 336611,
+ "source": {
+  "title": "ITAC Assessment: LS2503 (ship building)",
+  "publisher": "U.S. Department of Energy, Industrial Assessment Centers, assessment database record",
+  "report": "IAC assessment LS2503",
+  "date": "2025 assessment",
+  "url": "https://itac.university/assessment/LS2503",
+  "us_government_work": "DOE Industrial Assessment Center database record written by a DOE-funded university assessment centre; only figures are used",
+  "named_organisations": []
+ },
+ "claim": {
+  "kind": "annual_energy_saving",
+  "value": 2873935,
+  "unit": "kWh/yr",
+  "text": "All four recommendations were implemented: LED lamps, daylighting, compressor controls and timers, saving 2,873,935 kWh a year, 29.5% of the yard's electricity."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-01-12T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-04-13T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   2,
+   23
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5
+ ],
+ "mark_unknown_after_minutes": 30,
+ "production_unit": "t",
+ "energy_unit": "kWh",
+ "energy_price": 0.082,
+ "line": {
+  "source_id": "YARD-A-PANEL-LINE",
+  "description": "Panel line and block assembly (steel tonnes fabricated)",
+  "ideal_cycle_seconds": 200.0,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "YARD-A-MAIN-KWH",
+  "description": "Shipyard electricity meter",
+  "counter": "energy_kwh",
+  "rollover": 100000000,
+  "every_minutes": 15,
+  "start_value": 12000000
+ },
+ "baseline": {
+  "rate_per_run_hour": 12,
+  "scrap_fraction": 0.015,
+  "down_per_day": 1.0,
+  "down_minutes": 45,
+  "idle_per_day": 1.5,
+  "idle_minutes": 30,
+  "setup_per_day": 1.0,
+  "setup_minutes": 60,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 900,
+  "energy_per_unit": 18
+ },
+ "after": {
+  "rate_per_run_hour": 12,
+  "scrap_fraction": 0.015,
+  "down_per_day": 1.0,
+  "down_minutes": 45,
+  "idle_per_day": 1.5,
+  "idle_minutes": 30,
+  "setup_per_day": 1.0,
+  "setup_minutes": 60,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 640,
+  "energy_per_unit": 18
+ },
+ "traps": {
+  "plc_reset": {
+   "window": "baseline",
+   "at": 0.35
+  },
+  "network_gap": {
+   "window": "after",
+   "at": 0.55,
+   "hours": 5
+  },
+  "meter_rollover": {
+   "window": "after",
+   "at": 0.25
+  }
+ },
+ "target_ratio": 0.97
+}

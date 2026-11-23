@@ -1,0 +1,109 @@
+{
+ "case_id": "sector-484-transportation-logistics",
+ "sector": "Transportation logistics (truckload carrier)",
+ "naics": "484",
+ "seed": 484,
+ "source": {
+  "title": "SmartWay Transport Partnership Featured Partner: Brown Trucking",
+  "publisher": "U.S. Environmental Protection Agency, SmartWay Transport Partnership (featured partner profile)",
+  "report": "EPA-420-F-21-011",
+  "date": "2021-01",
+  "url": "https://www.epa.gov/sites/production/files/2021-04/documents/420f21011.pdf",
+  "us_government_work": true,
+  "named_organisations": [
+   "Brown Trucking",
+   "Brown Integrated"
+  ]
+ },
+ "claim": {
+  "kind": "specific_energy_reduction",
+  "value": 0.1094,
+  "unit": "fraction",
+  "text": "Wide-based tires, a lower rear-end ratio, 10-minute idle shutdown, progressive shifting, APUs and a 65 mph road speed raised fuel economy from 5.7 to 6.4 MPG (fuel per mile down 10.94%) and cut idle gallons by 35%."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-01-19T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-05-18T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   5,
+   21
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4
+ ],
+ "mark_unknown_after_minutes": 60,
+ "production_unit": "miles",
+ "energy_unit": "gal",
+ "energy_price": 3.9,
+ "line": {
+  "source_id": "FLEET-A-TELEMATICS",
+  "description": "Terminal A tractors (40 reported as one line, miles from telematics)",
+  "ideal_cycle_seconds": 1.8,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "FLEET-A-FUEL",
+  "description": "Fuel dispensed and logged (gallons)",
+  "counter": "fuel_gal",
+  "rollover": 1000000,
+  "every_minutes": 15,
+  "start_value": 250000
+ },
+ "baseline": {
+  "rate_per_run_hour": 1500,
+  "scrap_fraction": 0.0,
+  "down_per_day": 0.6,
+  "down_minutes": 60,
+  "idle_per_day": 2.5,
+  "idle_minutes": 30,
+  "setup_per_day": 1.0,
+  "setup_minutes": 40,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 28,
+  "energy_per_unit": 0.157
+ },
+ "after": {
+  "rate_per_run_hour": 1500,
+  "scrap_fraction": 0.0,
+  "down_per_day": 0.6,
+  "down_minutes": 60,
+  "idle_per_day": 2.5,
+  "idle_minutes": 30,
+  "setup_per_day": 1.0,
+  "setup_minutes": 40,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 18,
+  "energy_per_unit": 0.157
+ },
+ "traps": {
+  "plc_reset": {
+   "window": "baseline",
+   "at": 0.5
+  },
+  "network_gap": {
+   "window": "after",
+   "at": 0.45,
+   "hours": 3
+  },
+  "meter_rollover": {
+   "window": "baseline",
+   "at": 0.35
+  }
+ },
+ "target_ratio": 0.98
+}

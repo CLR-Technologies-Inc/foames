@@ -1,0 +1,108 @@
+{
+ "case_id": "sector-6113-higher-education",
+ "sector": "Higher education (college campus)",
+ "naics": "6113",
+ "seed": 6113,
+ "source": {
+  "title": "Community College of Allegheny County (CCAC): South Campus Energy Project",
+  "publisher": "U.S. Department of Energy, Better Buildings Initiative (showcase project)",
+  "report": "Better Buildings showcase project",
+  "date": "2016-07-28",
+  "url": "https://betterbuildingssolutioncenter.energy.gov/showcase-projects/community-college-allegheny-county-ccac-south-campus-energy-project",
+  "us_government_work": "DOE Better Buildings page whose information is provided by the partner; only figures are used",
+  "named_organisations": [
+   "Allegheny",
+   "CCAC"
+  ]
+ },
+ "claim": {
+  "kind": "specific_energy_reduction",
+  "value": 0.37,
+  "unit": "fraction",
+  "text": "Commissioning, HVAC, heating, chiller and lighting work on the campus saved 37% of its energy ($184,000 a year) and 52% of its water. The 37% is a source EUI (per square foot) saving; it is compared with site energy per classroom-hour only on the assumption that floor area, bookings and fuel mix are unchanged."
+ },
+ "windows": {
+  "baseline": {
+   "start": "2026-02-09T00:00:00Z",
+   "days": 7
+  },
+  "after": {
+   "start": "2026-04-20T00:00:00Z",
+   "days": 7
+  }
+ },
+ "planned_hours": [
+  [
+   7,
+   22
+  ]
+ ],
+ "planned_weekdays": [
+  0,
+  1,
+  2,
+  3,
+  4
+ ],
+ "mark_unknown_after_minutes": 30,
+ "production_unit": "classroom-hours",
+ "energy_unit": "MMBtu",
+ "energy_price": 14.0,
+ "line": {
+  "source_id": "CAMPUS-A-TIMETABLE",
+  "description": "Occupied classroom-hours from the room booking system",
+  "ideal_cycle_seconds": 60.0,
+  "count_every_minutes": 15
+ },
+ "meter": {
+  "source_id": "CAMPUS-A-SITE-MMBTU",
+  "description": "Campus site energy in MMBtu",
+  "counter": "energy_mmbtu",
+  "rollover": null,
+  "every_minutes": 15,
+  "start_value": 0
+ },
+ "baseline": {
+  "rate_per_run_hour": 45,
+  "scrap_fraction": 0.0,
+  "down_per_day": 0.2,
+  "down_minutes": 60,
+  "idle_per_day": 1.0,
+  "idle_minutes": 45,
+  "setup_per_day": 0.0,
+  "setup_minutes": 0,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 2.6,
+  "energy_per_unit": 0.02
+ },
+ "after": {
+  "rate_per_run_hour": 45,
+  "scrap_fraction": 0.0,
+  "down_per_day": 0.2,
+  "down_minutes": 60,
+  "idle_per_day": 1.0,
+  "idle_minutes": 45,
+  "setup_per_day": 0.0,
+  "setup_minutes": 0,
+  "planned_down_per_week": 0,
+  "planned_down_minutes": 0,
+  "energy_base_per_hour": 1.5,
+  "energy_per_unit": 0.02
+ },
+ "traps": {
+  "plc_reset": {
+   "window": "baseline",
+   "at": 0.45
+  },
+  "network_gap": {
+   "window": "after",
+   "at": 0.5,
+   "hours": 3
+  },
+  "out_of_order": {
+   "window": "after"
+  }
+ },
+ "target_ratio": 0.97
+}
