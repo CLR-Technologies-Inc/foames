@@ -42,6 +42,10 @@ What you get back depends on the level:
 | 4 | Gives two or three options, without choosing one | One expert in that equipment (**Human Expert Recommended**) |
 | 5 | Lists options and open questions, and decides nothing | A team of experts (**Expert Team Required**) |
 
+## Evidence for CNC lathes and mills
+
+The benchmark's [CNC equipment study](https://github.com/CLR-Technologies-Inc/foames/blob/main/benchmarks/docs/cnc-equipment-study.md) replays a public CNC lathe dataset and a three-machine CNC milling dataset through FoaMES. Both machine types are ECL 3, so a `baseline` agent or better may suggest one action. The study reports which sensor features separate a feedrate, material or tooling deviation on the lathe, the false-alarm rate on normal parts across all charted features, and whether one mill's control limits carry over to another. Use it to decide which signals to give the agent, and whether a new machine needs its own baseline before the agent advises on it.
+
 ## Check it worked
 
 - `foames_get_equipment_profile` for a rated machine shows its `ecl`, `min_tier` and `human_oversight`. With `tier` given, it also returns an `eligibility` verdict.

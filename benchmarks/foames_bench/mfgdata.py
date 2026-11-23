@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import csv
 import fnmatch
+import functools
 import hashlib
 import io
 import json
@@ -43,6 +44,7 @@ from datetime import datetime, timedelta, timezone
 from itertools import pairwise
 from pathlib import Path
 
+from . import machining
 from .paths import BENCH_ROOT, repo_root
 
 MANIFEST = BENCH_ROOT / "datasets" / "manifest.json"
@@ -79,10 +81,63 @@ class FetchRefused(Exception):
 	pass
 
 
-def _get(url: str, timeout: int = 120) -> bytes:
+def _get(url: str, timeout: int = 120, auth: str | None = None) -> bytes:
 	req = urllib.request.Request(url, headers={"User-Agent": "foames-bench"})
+	if auth:
+		# Unredirected: Kaggle answers a download with a redirect to signed storage, which must not
+		# receive the Kaggle credentials.
+		req.add_unredirected_header("Authorization", auth)
 	with urllib.request.urlopen(req, timeout=timeout) as resp:
 		return resp.read()
+
+
+KAGGLE_API = "https://www.kaggle.com/api/v1"
+
+
+def kaggle_auth(env=None, home: Path | None = None) -> str | None:
+	"""An Authorization header from KAGGLE_API_TOKEN, KAGGLE_USERNAME and KAGGLE_KEY, or
+	~/.kaggle/kaggle.json, the places the Kaggle CLI reads. None when there are no credentials."""
+	import base64
+
+	env = os.environ if env is None else env
+	if env.get("KAGGLE_API_TOKEN"):
+		return f"Bearer {env['KAGGLE_API_TOKEN']}"
+	user, key = env.get("KAGGLE_USERNAME"), env.get("KAGGLE_KEY")
+	if not (user and key):
+		path = Path(env.get("KAGGLE_CONFIG_DIR") or (home or Path.home()) / ".kaggle") / "kaggle.json"
+		try:
+			cfg = json.loads(path.read_text())
+		except (OSError, ValueError):
+			return None
+		user, key = cfg.get("username"), cfg.get("key")
+	if not (user and key):
+		return None
+	return "Basic " + base64.b64encode(f"{user}:{key}".encode()).decode()
+
+
+def kaggle_license(meta: dict) -> str:
+	"""The license a Kaggle dataset states, normalised to an SPDX-style id where it is a common one.
+	Share-alike, non-commercial and no-derivatives variants never normalise to plain CC BY."""
+	names = [meta.get("licenseName"), meta.get("license_name")]
+	for lic in meta.get("licenses") or []:
+		names.append(lic.get("name") if isinstance(lic, dict) else lic)
+	for name in names:
+		text = str(name or "").strip().lower()
+		if not text:
+			continue
+		flat = re.sub(r"[\s_()]+", "-", text)
+		if re.search(r"(^|-)(sa|nc|nd)(-|$)|sharealike|noncommercial|noderiv|non-commercial", flat):
+			return flat.strip("-")
+		if "cc0" in flat or "public-domain" in flat:
+			return "cc0-1.0"
+		if re.search(r"cc-by-4\.0|attribution-4\.0", flat):
+			return "cc-by-4.0"
+		if "apache" in flat and "2.0" in flat:
+			return "apache-2.0"
+		if flat in ("mit", "mit-license"):
+			return "mit"
+		return flat.strip("-")
+	return ""
 
 
 def _norm_license(value) -> str:
@@ -157,9 +212,103 @@ def _fetch_into(ds: dict, folder: Path, getter) -> None:
 		provenance["files"].append(
 			{"name": name, "bytes": len(data), "sha256": got, "pinned": bool(src.get("sha256"))}
 		)
+	elif src["type"] == "kaggle":
+		get = getter
+		if getter is _get:
+			auth = kaggle_auth()
+			if not auth:
+				raise FetchRefused(
+					f"{ds['id']}: Kaggle needs credentials (KAGGLE_USERNAME and KAGGLE_KEY, KAGGLE_API_TOKEN, or "
+					+ "~/.kaggle/kaggle.json). Or download the archive from "
+					+ f"https://www.kaggle.com/datasets/{src['ref']} save it as {inbox_path(ds)} and run `foames-bench data import {ds['id']}`"
+				)
+			get = functools.partial(_get, auth=auth)
+
+		meta = json.loads(get(f"{KAGGLE_API}/datasets/view/{src['ref']}"))
+		lic = kaggle_license(meta)
+		if lic not in allowed:
+			raise FetchRefused(
+				f"{ds['id']}: Kaggle states license {lic!r}, manifest allows {sorted(allowed)}"
+			)
+		data = get(f"{KAGGLE_API}/datasets/download/{src['ref']}")
+		got = hashlib.sha256(data).hexdigest()
+		if src.get("sha256") and got != src["sha256"]:
+			raise FetchRefused(f"{ds['id']}: sha256 {got} != pinned {src['sha256']}")
+		name = src["ref"].rsplit("/", 1)[-1] + ".zip"
+		_store(folder, name, data)
+		provenance.update(
+			license=lic,
+			kaggle=src["ref"],
+			url=f"https://www.kaggle.com/datasets/{src['ref']}",
+			version=meta.get("currentVersionNumber") or meta.get("versionNumber"),
+			upstream=src.get("upstream"),
+		)
+		provenance["files"].append(
+			{"name": name, "bytes": len(data), "sha256": got, "pinned": bool(src.get("sha256"))}
+		)
 	else:
 		raise FetchRefused(f"{ds['id']}: source type {src['type']!r} is not fetched automatically")
 	(folder / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
+
+
+_DATASET_ID = re.compile(r"[a-z0-9][a-z0-9-]{0,63}")
+
+
+def _dataset_slug(ds: dict) -> str:
+	"""The dataset id as a single safe path segment: lower-case letters, digits and hyphens only."""
+	match = _DATASET_ID.fullmatch(str(ds.get("id", "")))
+	if not match:
+		raise FetchRefused(f"dataset id {ds.get('id')!r} is not a plain slug")
+	return match.group(0)
+
+
+def inbox_path(ds: dict) -> Path:
+	"""Where `data import` looks for a hand-downloaded archive: `<cache>/_inbox/<dataset>.zip`. A fixed
+	place in the cache, so no path from the command line reaches a read or a write."""
+	slug = _dataset_slug(ds)
+	inbox = _safe_member_path(cache_root(), "_inbox", "import inbox")
+	return _safe_member_path(inbox, f"{slug}.zip", f"dataset {slug!r}")
+
+
+def import_archive(ds: dict, archive: Path | None = None, dest: Path | None = None) -> Path:
+	"""Put an archive downloaded by hand (a Kaggle download in a browser, say) into the cache, with
+	the same license gate, zip rules and provenance as a fetch. The license must be verified in the
+	manifest, since a local file cannot state one. The archive is read from `inbox_path(ds)` unless
+	a test passes one."""
+	if ds.get("status") != "enabled":
+		raise FetchRefused(f"{ds['id']} is {ds.get('status')}: {ds.get('note', 'not enabled')}")
+	if not ds.get("license_verified"):
+		raise FetchRefused(f"{ds['id']}: license not verified in the manifest")
+	slug = _dataset_slug(ds)
+	archive = Path(archive) if archive else inbox_path(ds)
+	if archive.suffix.lower() != ".zip" or not archive.is_file():
+		raise FetchRefused(f"{ds['id']}: put the downloaded .zip at {inbox_path(ds)}")
+	data = archive.read_bytes()
+	got = hashlib.sha256(data).hexdigest()
+	pinned = ds["source"].get("sha256")
+	if pinned and got != pinned:
+		raise FetchRefused(f"{ds['id']}: sha256 {got} != pinned {pinned}")
+	folder = Path(dest) if dest else _safe_member_path(cache_root(), slug, f"dataset {slug!r}")
+	folder.mkdir(parents=True, exist_ok=True)
+	with tempfile.TemporaryDirectory(prefix=".fetch-dataset-", dir=folder) as temporary:
+		staging = Path(temporary)
+		# The stored name is the checked slug, never anything from the user's path.
+		name = f"{slug}.zip"
+		_store(staging, name, data)
+		provenance = {
+			"dataset": ds["id"],
+			"title": ds["title"],
+			"fetched_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+			"citation": ds.get("citation"),
+			"license": sorted(x.lower() for x in ds.get("licenses", []))[0],
+			"license_evidence": ds.get("license_evidence"),
+			"imported_from": "manual download",
+			"source": ds["source"],
+			"files": [{"name": name, "bytes": len(data), "sha256": got, "pinned": bool(pinned)}],
+		}
+		(staging / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
+		_publish_dataset(staging, folder)
+	return folder
 
 
 def _publish_dataset(staging: Path, folder: Path) -> None:
@@ -286,10 +435,18 @@ def _foames(*names):
 	root = repo_root()
 	if str(root) not in sys.path:
 		sys.path.insert(0, str(root))
-	from foames.foames_mes import counters, oee, spc
+	from foames.foames_mes import counters, ecl, kpi, oee, spc
 	from foames.foames_process_mining import discovery, eventlog
 
-	mods = {"counters": counters, "oee": oee, "spc": spc, "discovery": discovery, "eventlog": eventlog}
+	mods = {
+		"counters": counters,
+		"ecl": ecl,
+		"kpi": kpi,
+		"oee": oee,
+		"spc": spc,
+		"discovery": discovery,
+		"eventlog": eventlog,
+	}
 	return tuple(mods[n] for n in names) if len(names) != 1 else mods[names[0]]
 
 
@@ -398,6 +555,7 @@ class Result:
 	checks: list[Check] = field(default_factory=list)
 	metrics: dict = field(default_factory=dict)
 	error: str | None = None
+	notes: list = field(default_factory=list)
 
 	@property
 	def passed(self) -> bool:
@@ -412,6 +570,7 @@ class Result:
 			"error": self.error,
 			"checks": [c.as_dict() for c in self.checks],
 			"metrics": self.metrics,
+			"notes": self.notes,
 		}
 
 
@@ -834,6 +993,10 @@ def synthetic(dataset_id: str, folder: Path, seed: int = 11) -> Path:
 				fh.write(" ".join(row) + "\n")
 				fail = 1 if rng.random() < (0.05 if i < 200 else 0.2) else -1
 				lh.write(f'{fail} "{(t0 + timedelta(hours=i)).strftime("%d/%m/%Y %H:%M:%S")}"\n')
+	elif dataset_id == "cnc-turning-xquality":
+		machining.synthetic_turning(folder, seed)
+	elif dataset_id == "cnc-milling-vibration":
+		machining.synthetic_milling(folder, seed)
 	else:
 		raise SystemExit(f"no synthetic fixture for {dataset_id}")
 	return folder
@@ -855,9 +1018,25 @@ def validate(ds: dict, folder: Path, stage: dict, stage_name: str, synthetic_dat
 			res.checks, res.metrics = check_secom(
 				load_secom(folder, ds, stage["max_rows"]), ds, stage["max_features"]
 			)
+		elif ds["kind"] == "machining-parts":
+			res.checks, res.metrics, res.notes = machining.check_turning(
+				machining.load_turning(folder, ds, stage["max_rows"]), ds, stage["max_features"]
+			)
+		elif ds["kind"] == "machining-vibration":
+			res.checks, res.metrics, res.notes = machining.check_milling(
+				machining.load_milling(folder, ds, stage["max_rows"]), ds, stage["max_features"]
+			)
 		else:
 			res.error = f"no checks for kind {ds['kind']!r}"
-	except (SchemaMismatch, ValueError, KeyError, IndexError, ZeroDivisionError, OSError) as exc:
+	except (
+		SchemaMismatch,
+		machining.SchemaMismatch,
+		ValueError,
+		KeyError,
+		IndexError,
+		ZeroDivisionError,
+		OSError,
+	) as exc:
 		res.error = f"{type(exc).__name__}: {exc}"
 	return res
 
@@ -887,6 +1066,8 @@ def render(results: list[Result]) -> str:
 			lines.append(
 				"Metrics (reported, not graded): " + json.dumps(r.metrics, default=str, sort_keys=True)[:1500]
 			)
+		if r.notes:
+			lines += ["", *r.notes]
 	return "\n".join(lines) + "\n"
 
 
@@ -898,6 +1079,14 @@ def cmd_data(opts) -> int:
 				"" if d.get("license_verified") else " (unverified)"
 			)
 			print(f"{d['id']:30} {d.get('status', ''):8} {d.get('kind', ''):27} {lic}")
+		return 0
+	if opts.data_command == "import":
+		ds = dataset(manifest, opts.dataset)
+		try:
+			print(f"{ds['id']}: {import_archive(ds)}")
+		except (FetchRefused, OSError) as exc:
+			print(f"{ds['id']}: not imported: {exc}", file=sys.stderr)
+			return 1
 		return 0
 	chosen = [dataset(manifest, i) for i in opts.datasets] if opts.datasets else enabled(manifest)
 	if opts.data_command == "fetch":
@@ -948,6 +1137,11 @@ def add_parser(sub) -> None:
 	d.set_defaults(fn=cmd_data)
 	d = dsub.add_parser("fetch", help="download enabled datasets into the cache ($FOAMES_BENCH_DATA)")
 	d.add_argument("--datasets", nargs="*")
+	d.set_defaults(fn=cmd_data)
+	d = dsub.add_parser(
+		"import", help="import <cache>/_inbox/<dataset>.zip, downloaded by hand (license gate, provenance)"
+	)
+	d.add_argument("dataset")
 	d.set_defaults(fn=cmd_data)
 	d = dsub.add_parser("validate", help="replay datasets through FoaMES and compare with independent values")
 	d.add_argument("--datasets", nargs="*")
