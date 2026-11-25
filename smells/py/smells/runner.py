@@ -139,5 +139,7 @@ def write_result(result: dict, out_dir: str | Path = "results") -> Path:
 	out.mkdir(parents=True, exist_ok=True)  # NOSONAR -- the operator's --out dir
 	name = f"{result['run']['id'].replace(':', '')}-{result['backend']['name']}-{uuid.uuid4().hex[:8]}.json"
 	path = out / name
-	path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")  # NOSONAR -- the operator's --out dir
+	path.write_text(  # NOSONAR -- the operator's --out dir
+		json.dumps(result, indent=2) + "\n", encoding="utf-8"
+	)
 	return path
