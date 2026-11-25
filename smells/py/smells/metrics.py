@@ -42,7 +42,7 @@ def peak_rss_mb() -> float | None:
 	except (ImportError, AttributeError, OSError):
 		pass
 	try:
-		with open("/proc/self/status", encoding="utf-8") as f:
+		with open("/proc/self/status", encoding="utf-8") as f:  # nosemgrep -- fixed OS path, no user input
 			for line in f:
 				if line.startswith("VmHWM:"):
 					return float(line.split()[1]) / 1024
@@ -64,7 +64,7 @@ def device_info() -> dict:
 
 def _mem_total_mb() -> float | None:
 	try:
-		with open("/proc/meminfo", encoding="utf-8") as f:
+		with open("/proc/meminfo", encoding="utf-8") as f:  # nosemgrep -- fixed OS path, no user input
 			for line in f:
 				if line.startswith("MemTotal:"):
 					return float(line.split()[1]) / 1024
