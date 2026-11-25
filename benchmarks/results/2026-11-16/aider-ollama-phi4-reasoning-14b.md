@@ -1,6 +1,6 @@
 # aider-ollama-phi4-reasoning-14b: benchmark run of 2026-11-16
 
-<!-- Copyright (c) 2026 CLR Technologies Inc. and contributors -->
+<!-- Copyright 2026 CLR Technologies Inc. -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 - **Run dates (UTC):** started 2026-11-16T05:44:13+00:00, last run finished 2026-11-16T12:42:54+00:00

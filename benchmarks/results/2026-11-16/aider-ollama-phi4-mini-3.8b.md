@@ -1,6 +1,6 @@
 # aider-ollama-phi4-mini-3.8b: benchmark run of 2026-11-16
 
-<!-- Copyright (c) 2026 CLR Technologies Inc. and contributors -->
+<!-- Copyright 2026 CLR Technologies Inc. -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 - **Run dates (UTC):** started 2026-11-16T05:31:21+00:00, last run finished 2026-11-16T12:21:28+00:00

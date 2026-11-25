@@ -1,4 +1,4 @@
-<!-- Copyright (c) 2026 CLR Technologies Inc. and contributors -->
+<!-- Copyright 2026 CLR Technologies Inc. -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 Notes on the 2026-11-16 runs, added to the README by publish_results.py.

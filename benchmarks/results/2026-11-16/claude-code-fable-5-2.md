@@ -1,6 +1,6 @@
 # claude-code-fable-5-2: benchmark run of 2026-11-16
 
-<!-- Copyright (c) 2026 CLR Technologies Inc. and contributors -->
+<!-- Copyright 2026 CLR Technologies Inc. -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 - **Run dates (UTC):** started 2026-11-16T05:12:08+00:00, last run finished 2026-11-16T15:08:42+00:00

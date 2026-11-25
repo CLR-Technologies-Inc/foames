@@ -1,6 +1,6 @@
 # aider-openrouter-free: benchmark run of 2026-11-16
 
-<!-- Copyright (c) 2026 CLR Technologies Inc. and contributors -->
+<!-- Copyright 2026 CLR Technologies Inc. -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 - **Run dates (UTC):** started 2026-11-16T01:26:37+00:00, last run finished 2026-11-16T01:44:28+00:00

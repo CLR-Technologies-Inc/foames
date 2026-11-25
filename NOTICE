@@ -1,9 +1,10 @@
 FoaMES
-Copyright 2026 CLR Technologies Inc. and contributors
+Copyright 2026 CLR Technologies Inc.
 
 This product is licensed under the Apache License, Version 2.0 (see LICENSE).
-Source files carry the SPDX identifier Apache-2.0. See docs/licensing.md for the
-license of each dependency and how FoaMES uses it.
+Source files carry the Apache-2.0 license notice and the SPDX identifier
+Apache-2.0. See docs/licensing.md for the license of each dependency and how
+FoaMES uses it.
 
 Third-party notices
 
@@ -58,3 +59,7 @@ Prior art and credits
 - The Sparkplug B decoder in foames/foames_mes/gateway/sparkplug.py is written
   from the public Eclipse Sparkplug specification. It contains no Eclipse Tahu
   code.
+
+- .github/workflows/scorecard.yml is based on the OpenSSF Scorecard starter
+  workflow (https://github.com/ossf/scorecard-action), Apache License 2.0,
+  Copyright the OpenSSF Scorecard authors. It keeps its original header.

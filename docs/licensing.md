@@ -1,23 +1,36 @@
 # Licensing
 
-FoaMES is licensed under the [Apache License 2.0](../LICENSE). Copyright 2026 CLR Technologies Inc. and contributors. Contributors keep the copyright in their work and license it to everyone under Apache-2.0 through the [CLA](../CONTRIBUTING.md#contributor-license-agreement). [NOTICE](../NOTICE) carries the third-party notices and credits that must travel with the code.
+FoaMES is licensed under the [Apache License 2.0](../LICENSE). Copyright 2026 CLR Technologies Inc. Contributors keep the copyright in their work and license it to everyone under Apache-2.0 through the [CLA](../CONTRIBUTING.md#contributor-license-agreement). [NOTICE](../NOTICE) carries the third-party notices and credits that must travel with the code.
 
 ## File headers
 
-Every Python, JavaScript, shell, YAML and Dockerfile source file starts with:
+Every Python, JavaScript, shell, YAML, TOML, CSS, HTML, pip requirements and Dockerfile source file starts with the Apache License 2.0 boilerplate notice (the one in the appendix of [LICENSE](../LICENSE)), followed by the SPDX identifier:
 
 ```python
-# Copyright (c) 2026 CLR Technologies Inc. and contributors
+# Copyright 2026 CLR Technologies Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 # SPDX-License-Identifier: Apache-2.0
 ```
 
-(`//` in JavaScript, and after the `#!` line in scripts.) The copyright line says who holds the copyright; the [SPDX identifier](https://spdx.org/licenses/Apache-2.0.html) says which license it is offered under. A copyright notice next to a license grant is how open-source licensing works: the Apache License's own appendix asks for one. JSON (DocType definitions) and Markdown files carry no header, as comments are not possible or not customary there; the repository [LICENSE](../LICENSE) covers them.
+`//` comments are used in JavaScript, a `/* */` block in CSS and an `<!-- -->` block in HTML. The notice goes after the `#!` line in scripts and after `<!doctype html>` in HTML. The copyright line says who holds the copyright, the notice states the license grant and the disclaimer, and the [SPDX identifier](https://spdx.org/licenses/Apache-2.0.html) names the license in a form tools can read. JSON (DocType definitions) and Markdown files carry no full notice, as comments are not possible or not customary there; the repository [LICENSE](../LICENSE) covers them, and Markdown pages that have a header keep the short `<!-- Copyright ... -->` and `<!-- SPDX-License-Identifier: Apache-2.0 -->` comments. Generated output under `benchmarks/results/` is not checked.
 
-`.github/scripts/check_license_headers.py` checks this on every pull request (through `pre-commit`) and locally after `pre-commit install`. A third-party file that keeps its own header goes on the script's `THIRD_PARTY` list, with an entry in NOTICE.
+`.github/scripts/check_license_headers.py` checks this on every pull request (through `pre-commit`) and locally after `pre-commit install`. Run it with `--fix` to add the notice to new files, or to replace the older two-line header. A third-party file that keeps its own header goes on the script's `THIRD_PARTY` list, with an entry in NOTICE.
 
 ### History
 
-The repository was created with a BSD 3-Clause LICENSE file and relicensed to Apache-2.0 a day later, before any outside contribution; CLR wrote all of the code up to then, so it could relicense it. The DocType, report and page files kept the header that Frappe's generator writes ("For license information, please see license.txt"). In a new Frappe app that file exists; here the license lives in LICENSE, so the reference dangled. Those headers were replaced with the SPDX form above.
+The repository was created with a BSD 3-Clause LICENSE file and relicensed to Apache-2.0 a day later, before any outside contribution; CLR wrote all of the code up to then, so it could relicense it. The DocType, report and page files kept the header that Frappe's generator writes ("For license information, please see license.txt"). In a new Frappe app that file exists; here the license lives in LICENSE, so the reference dangled. Those headers were replaced with a two-line copyright and SPDX header (PR #62), which was then expanded to the full Apache-2.0 notice above.
 
 ## Dependencies and sources
 
