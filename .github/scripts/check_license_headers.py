@@ -82,6 +82,11 @@ OLD_HEADER = re.compile(
 	r"(?:#|//|/\*|<!--) SPDX-License-Identifier: Apache-2\.0(?: \*/| -->)?\n"
 )
 
+# The header Frappe's DocType, report and page generator writes, replaced by --fix.
+FRAPPE_HEADER = re.compile(
+	r"(?:#|//) Copyright \(c\) \d{4}[^\n]*\n(?:#|//) For license information, please see license\.txt\n"
+)
+
 
 def notice_lines(year: str) -> list[str]:
 	return [f"Copyright {year} {HOLDER}", "", *NOTICE_BODY]
@@ -137,6 +142,9 @@ def fixed(style: str, text: str) -> str:
 	if old:
 		year = old.group("year")
 		rest = rest[old.end() :]
+	frappe = FRAPPE_HEADER.match(rest)
+	if frappe:
+		rest = rest[frappe.end() :]
 	sep = "" if rest.startswith("\n") or not rest else "\n"
 	return head + render(style, year) + sep + rest
 
@@ -154,13 +162,13 @@ def problems(root: Path, files: list[str], fix: bool = False) -> list[str]:
 		style = in_scope(name, path, text)
 		if style is None:
 			continue
+		if fix and not has_notice(style, text):
+			text = fixed(style, text)
+			path.write_text(text, encoding="utf-8")
 		if DANGLING.search(text) and name != ".github/scripts/check_license_headers.py":
 			found.append(f"{name}: refers to a license.txt; the license is in LICENSE")
 		if not has_notice(style, text):
-			if fix:
-				path.write_text(fixed(style, text), encoding="utf-8")
-			else:
-				found.append(f"{name}: missing the Apache-2.0 license notice")
+			found.append(f"{name}: missing the Apache-2.0 license notice")
 	return found
 
 
