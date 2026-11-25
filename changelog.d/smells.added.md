@@ -1,0 +1,1 @@
+foaMES-smells: testbench for running trained small models on memory-constrained assets (plant-floor edge first), with Python, C and Rust backends emitting a common result schema; the Python harness skeleton is runnable.

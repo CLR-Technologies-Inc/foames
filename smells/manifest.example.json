@@ -1,0 +1,17 @@
+{
+  "name": "smoke-mlp-v1",
+  "description": "Tiny 2-layer MLP used to smoke-test the harness end to end.",
+  "model": {
+    "path": "models/smoke-mlp.json",
+    "format": "smells-json-mlp"
+  },
+  "inputs": [
+    {"name": "x", "shape": [1, 4], "dist": "uniform", "low": -1.0, "high": 1.0, "seed": 7}
+  ],
+  "iters": 200,
+  "warmup": 20,
+  "budget": {
+    "peak_rss_mb": 256,
+    "latency_ms.p95": 50
+  }
+}
