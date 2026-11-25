@@ -1,6 +1,6 @@
 # FoaMES agent benchmark results: run of 2026-11-16
 
-<!-- Copyright (c) 2026 CLR Technologies Inc. and contributors -->
+<!-- Copyright 2026 CLR Technologies Inc. -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 **Run of 2026-11-16.** Runs started 2026-11-16T01:26:37+00:00 and the last finished 2026-11-16T20:17:16+00:00 (UTC), on FoaMES commit `11c643fbf2`, `1a844a1fd7`, `2cbb32a971`, `37ac1b3533`, `3e0e16e826`, `46a75d6abb`, `684820cb9c`, `711c83b57a`, `90d9f6049e`, `a1c95f786e`, `a5e355aa7b`, `ac71285e48`, `b568443e65`, `c8bf84e10b`, `d3d465fd36`. Report built 2026-11-16T20:20:15+00:00.

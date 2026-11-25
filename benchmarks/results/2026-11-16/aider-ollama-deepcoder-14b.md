@@ -1,6 +1,6 @@
 # aider-ollama-deepcoder-14b: benchmark run of 2026-11-16
 
-<!-- Copyright (c) 2026 CLR Technologies Inc. and contributors -->
+<!-- Copyright 2026 CLR Technologies Inc. -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 - **Run dates (UTC):** started 2026-11-16T04:48:10+00:00, last run finished 2026-11-16T10:13:56+00:00

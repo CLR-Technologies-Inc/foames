@@ -1,0 +1,1 @@
+Every source file (Python, JavaScript, shell, YAML, TOML, CSS, HTML, pip requirements and Dockerfiles) now carries the full Apache License 2.0 notice with the SPDX identifier, and the license-header check enforces it. `python .github/scripts/check_license_headers.py --fix` adds it.

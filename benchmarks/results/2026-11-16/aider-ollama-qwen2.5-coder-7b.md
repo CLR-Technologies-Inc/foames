@@ -1,6 +1,6 @@
 # aider-ollama-qwen2.5-coder-7b: benchmark run of 2026-11-16
 
-<!-- Copyright (c) 2026 CLR Technologies Inc. and contributors -->
+<!-- Copyright 2026 CLR Technologies Inc. -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 - **Run dates (UTC):** started 2026-11-16T03:13:59+00:00, last run finished 2026-11-16T06:29:14+00:00

@@ -28,12 +28,27 @@ See [Installation](README.md#installation) and [Contributing](README.md#contribu
 
 - Keep each pull request to one change, and explain why it is needed.
 - Add or update tests for behaviour changes. CI runs the tests on Frappe v15 and v16, with and without an optional ERP app installed.
-- Start every new source file with the license header (the `license-headers` pre-commit hook checks it):
+- Start every new source file with the Apache-2.0 license notice (the `license-headers` pre-commit hook checks it, and `python .github/scripts/check_license_headers.py --fix` adds it for you):
 
   ```python
-  # Copyright (c) 2026 CLR Technologies Inc. and contributors
+  # Copyright 2026 CLR Technologies Inc.
+  #
+  # Licensed under the Apache License, Version 2.0 (the "License");
+  # you may not use this file except in compliance with the License.
+  # You may obtain a copy of the License at
+  #
+  #     http://www.apache.org/licenses/LICENSE-2.0
+  #
+  # Unless required by applicable law or agreed to in writing, software
+  # distributed under the License is distributed on an "AS IS" BASIS,
+  # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  # See the License for the specific language governing permissions and
+  # limitations under the License.
+  #
   # SPDX-License-Identifier: Apache-2.0
   ```
+
+  Use `//` in JavaScript, `/* */` in CSS and `<!-- -->` in HTML. See [docs/licensing.md](docs/licensing.md#file-headers).
 
   Frappe's DocType generator writes a header that points at `license.txt`; replace it with this one.
 - Add a changelog fragment under [`changelog.d/`](changelog.d/README.md) for a user-facing change, for example `changelog.d/81.added.md`. Do not edit `CHANGELOG.md` or the version: both change only at release time ([docs/versioning.md](docs/versioning.md)).

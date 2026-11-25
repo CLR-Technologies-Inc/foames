@@ -1,6 +1,6 @@
 # aider-ollama-falcon3-10b: benchmark run of 2026-11-16
 
-<!-- Copyright (c) 2026 CLR Technologies Inc. and contributors -->
+<!-- Copyright 2026 CLR Technologies Inc. -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 - **Run dates (UTC):** started 2026-11-16T05:59:43+00:00, last run finished 2026-11-16T09:48:55+00:00

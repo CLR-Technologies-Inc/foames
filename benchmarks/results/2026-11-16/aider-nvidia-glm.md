@@ -1,6 +1,6 @@
 # aider-nvidia-glm: benchmark run of 2026-11-16
 
-<!-- Copyright (c) 2026 CLR Technologies Inc. and contributors -->
+<!-- Copyright 2026 CLR Technologies Inc. -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 - **Run dates (UTC):** started 2026-11-16T08:39:25+00:00, last run finished 2026-11-16T13:54:34+00:00
