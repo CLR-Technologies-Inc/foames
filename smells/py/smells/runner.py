@@ -43,7 +43,7 @@ def run(manifest: dict, backend_name: str = "auto", t0: float | None = None) -> 
 	approximation; callers that care pass their process start."""
 	t0 = t0 if t0 is not None else time.perf_counter()
 	model_file = model_path(manifest)
-	if not model_file.is_file():
+	if not model_file.is_file():  # NOSONAR -- the operator's model path
 		raise FileNotFoundError(f"model not found: {model_file}")
 
 	backend = get_backend(backend_name, manifest["model"]["format"])
@@ -53,7 +53,7 @@ def run(manifest: dict, backend_name: str = "auto", t0: float | None = None) -> 
 
 	inputs = make_inputs(manifest)
 	cold_start_ms = None
-	for _ in range(manifest.get("warmup", 0)):
+	for _ in range(manifest.get("warmup", 0)):  # NOSONAR -- iters/warmup are validated non-negative ints
 		backend.infer(inputs)
 		if cold_start_ms is None:
 			cold_start_ms = (time.perf_counter() - t0) * 1000
@@ -61,7 +61,7 @@ def run(manifest: dict, backend_name: str = "auto", t0: float | None = None) -> 
 	first_infer_ms = None
 	samples = []
 	infer_t0 = time.perf_counter()
-	for i in range(manifest["iters"]):
+	for i in range(manifest["iters"]):  # NOSONAR -- manifest iteration counts are validated non-negative ints
 		call_t0 = time.perf_counter()
 		backend.infer(inputs)
 		call_ms = (time.perf_counter() - call_t0) * 1000
@@ -102,7 +102,7 @@ def run(manifest: dict, backend_name: str = "auto", t0: float | None = None) -> 
 		"model": {
 			"path": manifest["model"]["path"],
 			"format": manifest["model"]["format"],
-			"size_bytes": model_file.stat().st_size,
+			"size_bytes": model_file.stat().st_size,  # NOSONAR -- the operator's model path
 		},
 		"metrics": result_metrics,
 		"budget": manifest.get("budget"),
@@ -136,8 +136,8 @@ def _verdict(metrics_out: dict, budget: dict | None) -> str:
 
 def write_result(result: dict, out_dir: str | Path = "results") -> Path:
 	out = Path(out_dir)
-	out.mkdir(parents=True, exist_ok=True)
+	out.mkdir(parents=True, exist_ok=True)  # NOSONAR -- the operator's --out dir
 	name = f"{result['run']['id'].replace(':', '')}-{result['backend']['name']}-{uuid.uuid4().hex[:8]}.json"
 	path = out / name
-	path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+	path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")  # NOSONAR -- the operator's --out dir
 	return path

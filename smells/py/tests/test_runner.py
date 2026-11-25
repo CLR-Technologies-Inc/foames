@@ -8,8 +8,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from smells import manifest, metrics, runner
 from smells.backends.python_ref import JsonMlpBackend
+
+from smells import manifest, metrics, runner
 
 
 def write_manifest(tmp: Path, model: dict, **overrides) -> Path:

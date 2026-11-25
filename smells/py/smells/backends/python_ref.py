@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Callable
 from pathlib import Path
 
 from .base import Backend, flatten
@@ -30,7 +31,7 @@ def _sigmoid(x: float) -> float:
 	return e / (1.0 + e)
 
 
-_ACTIVATIONS = {
+_ACTIVATIONS: dict[str, Callable[[float], float]] = {
 	"linear": lambda x: x,
 	"relu": lambda x: max(0.0, x),
 	"sigmoid": _sigmoid,
@@ -40,7 +41,11 @@ _ACTIVATIONS = {
 
 def _check_layer(weights, bias):
 	"""Validate a layer's weights and bias; returns them with bias defaulted to zeros."""
-	if not isinstance(weights, list) or not weights or not all(isinstance(row, list) and row for row in weights):
+	if (
+		not isinstance(weights, list)
+		or not weights
+		or not all(isinstance(row, list) and row for row in weights)
+	):
 		raise ValueError("layer 'weights' must be a non-empty list of non-empty rows")
 	width = len(weights[0])
 	if any(len(row) != width for row in weights):
