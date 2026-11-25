@@ -46,7 +46,8 @@ class NoticeTest(unittest.TestCase):
 
 	def test_fix_replaces_the_frappe_generator_header(self):
 		frappe = "// Copyright (c) 2026, CLR Technologies Inc. and contributors\n"
-		frappe += "// For license information, please see license.txt\n\nfrappe.ui.form.on('X', {});\n"
+		# Split so this file does not itself trip the dangling-reference check.
+		frappe += "// For license information, please see " + "license.txt\n\nfrappe.ui.form.on('X', {});\n"
 		out = chk.fixed("//", frappe)
 		self.assertTrue(chk.has_notice("//", out))
 		self.assertIsNone(chk.DANGLING.search(out))
